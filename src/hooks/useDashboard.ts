@@ -99,6 +99,7 @@ const useDashboard = (
     const from = dateRange?.fromDate;
     const to = dateRange?.toDate;
     const res = await getTutorProgressReport(page, limit, sortBy, sortOrder, from, to);
+    console.log('Tutor progress report response', res);
     setTutorReport({ tutors: res.data, total: res.pagination.total, page: res.pagination.page, limit: res.pagination.limit });
   };
 

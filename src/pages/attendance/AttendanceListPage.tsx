@@ -76,14 +76,42 @@ export default function AttendanceListPage() {
     await refetch();
   };
 
-  const columns: GridColDef[] = useMemo(() => [
-    { field: 'sessionDate', headerName: 'Date', width: 140, valueFormatter: (v: any) => new Date(v.value).toLocaleDateString() },
-    { field: 'sessionNumber', headerName: 'Session #', width: 110 },
-    { field: 'student', headerName: 'Student', width: 200, valueGetter: (p: any) => p.row.finalClass?.studentName },
-    { field: 'subjects', headerName: 'Subjects', width: 200, valueGetter: (p: any) => (p.row.finalClass?.subject || []).join(', ') },
-    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: any) => p.row.tutor?.name },
-    { field: 'status', headerName: 'Status', width: 180, renderCell: (p: any) => <AttendanceStatusChip status={p.value} /> },
-  ], []);
+  const columns: GridColDef[] = useMemo(
+    () => [
+      {
+        field: 'sessionDate',
+        headerName: 'Date',
+        width: 140,
+        valueFormatter: (v: any) => (v?.value ? new Date(v.value).toLocaleDateString() : ''),
+      },
+      { field: 'sessionNumber', headerName: 'Session #', width: 110 },
+      {
+        field: 'student',
+        headerName: 'Student',
+        width: 200,
+        valueGetter: (p: any) => p?.row?.finalClass?.studentName || '',
+      },
+      {
+        field: 'subjects',
+        headerName: 'Subjects',
+        width: 200,
+        valueGetter: (p: any) => (p?.row?.finalClass?.subject || []).join(', '),
+      },
+      {
+        field: 'tutor',
+        headerName: 'Tutor',
+        width: 180,
+        valueGetter: (p: any) => p?.row?.tutor?.name || '',
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        width: 180,
+        renderCell: (p: any) => <AttendanceStatusChip status={p?.value} />,
+      },
+    ],
+    []
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -133,7 +161,7 @@ export default function AttendanceListPage() {
               <DataGrid
                 rows={attendances}
                 columns={columns}
-                getRowId={(r: any) => r.id}
+                getRowId={(r: any) => r.id || r._id}
                 paginationMode="server"
                 rowCount={pagination.total}
                 pageSizeOptions={[filters.limit]}

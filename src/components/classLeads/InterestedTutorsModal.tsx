@@ -19,22 +19,27 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
         setError(null);
         const res = await announcementService.getInterestedTutors(announcementId);
         const list = (res as any)?.data ?? res;
+
         const normalized = (Array.isArray(list) ? list : []).map((r: any, idx: number) => {
-          const user = r?.user || r?.tutor?.user || (r?.tutor && (r.tutor as any)) || null;
-          const id = r?.id || r?._id || user?.id || r?.tutor?.id || r?.tutorId || r?.userId || r?.interestedAt || `${user?.email || 'row'}-${r?.interestedAt || idx}`;
+          const user = r?.user || null;
+          const rawId = r?.id || r?._id || user?._id || user?.id || `${user?.email || 'row'}-${idx}`;
+          const id = String(rawId);
+
           return {
+            // keep original fields
             ...r,
+            // normalized/derived fields used by the grid
             id,
             user,
-            verificationStatus: r?.verificationStatus ?? r?.tutor?.verificationStatus ?? r?.status ?? r?.tutor?.status ?? 'UNKNOWN',
-            name: r?.name ?? user?.name ?? r?.tutor?.name ?? '-',
-            experienceHours: r?.experienceHours ?? r?.tutor?.experienceHours ?? 0,
-            subjects: r?.subjects ?? r?.tutor?.subjects ?? [],
-            classesAssigned: r?.classesAssigned ?? r?.tutor?.classesAssigned ?? 0,
-            demosTaken: r?.demosTaken ?? r?.tutor?.demosTaken ?? 0,
-            approvalRatio: r?.approvalRatio ?? r?.tutor?.approvalRatio ?? 0,
-            ratings: r?.ratings ?? r?.tutor?.ratings ?? 0,
-            interestedAt: r?.interestedAt ?? r?.createdAt ?? r?.tutor?.interestedAt ?? r?.tutor?.createdAt ?? null,
+            name: r?.name ?? user?.name ?? '-',
+            experienceHours: r?.experienceHours ?? 0,
+            subjects: Array.isArray(r?.subjects) ? r.subjects : [],
+            classesAssigned: r?.classesAssigned ?? 0,
+            demosTaken: r?.demosTaken ?? 0,
+            approvalRatio: r?.approvalRatio ?? 0,
+            ratings: r?.ratings ?? 0,
+            verificationStatus: r?.verificationStatus ?? 'UNKNOWN',
+            interestedAt: r?.interestedAt ?? null,
           } as ITutorComparison as any;
         });
         setTutors(normalized);
@@ -48,20 +53,89 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
   }, [open, announcementId]);
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Tutor Name', width: 200, valueGetter: (p: any) => p?.row?.name ?? p?.row?.user?.name ?? p?.row?.tutor?.user?.name ?? p?.row?.tutor?.name ?? '-' },
-    { field: 'experienceHours', headerName: 'Experience (hrs)', width: 150, type: 'number', valueGetter: (p: any) => p?.row?.experienceHours ?? 0 },
-    { field: 'subjects', headerName: 'Subjects', width: 220, renderCell: (p: any) => (
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>{(p?.row?.subjects || []).map((s: string) => (<Chip key={s} label={s} size="small" />))}</Box>
-    ) },
-    { field: 'classesAssigned', headerName: 'Classes Assigned', width: 160, type: 'number', valueGetter: (p: any) => p?.row?.classesAssigned ?? 0 },
-    { field: 'demosTaken', headerName: 'Demos Taken', width: 130, type: 'number', valueGetter: (p: any) => p?.row?.demosTaken ?? 0 },
-    { field: 'approvalRatio', headerName: 'Approval Rate', width: 130, type: 'number', valueGetter: (p: any) => p?.row?.approvalRatio ?? 0, valueFormatter: (v: any) => `${Number(v?.value ?? 0)}%` },
-    { field: 'ratings', headerName: 'Rating', width: 110, type: 'number', valueGetter: (p: any) => p?.row?.ratings ?? 0 },
-    { field: 'verificationStatus', headerName: 'Status', width: 140, valueGetter: (p: any) => p?.row?.verificationStatus ?? p?.row?.status ?? p?.row?.tutor?.verificationStatus ?? p?.row?.tutor?.status ?? 'UNKNOWN', renderCell: (p: any) => <Chip label={p?.value ?? '-'} size="small" color={p?.value === 'VERIFIED' ? 'success' : 'default'} /> },
-    { field: 'interestedAt', headerName: 'Interested At', width: 210, valueGetter: (p: any) => p?.row?.interestedAt ?? p?.row?.createdAt ?? p?.row?.tutor?.interestedAt ?? p?.row?.tutor?.createdAt, valueFormatter: (v: any) => (v?.value ? new Date(v.value).toLocaleString() : '-') },
-    { field: 'actions', headerName: 'Actions', width: 120, sortable: false, renderCell: (p: any) => (
-      <Button size="small" variant="contained" onClick={() => onSelectTutor(p.row)}>Select</Button>
-    ) },
+    {
+      field: 'name',
+      headerName: 'Tutor Name',
+      width: 200,
+      renderCell: (params: any) => {
+        const r = params?.row || {};
+        const name = r.name ?? r.user?.name ?? '-';
+        return <Typography variant="body2">{name}</Typography>;
+      },
+    },
+    {
+      field: 'experienceHours',
+      headerName: 'Experience (hrs)',
+      width: 150,
+      renderCell: (params: any) => <Typography variant="body2">{params?.row?.experienceHours ?? 0}</Typography>,
+    },
+    {
+      field: 'subjects',
+      headerName: 'Subjects',
+      width: 220,
+      renderCell: (params: any) => (
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+          {(params?.row?.subjects || []).map((s: string) => (
+            <Chip key={s} label={s} size="small" />
+          ))}
+        </Box>
+      ),
+    },
+    {
+      field: 'classesAssigned',
+      headerName: 'Classes Assigned',
+      width: 160,
+      renderCell: (params: any) => <Typography variant="body2">{params?.row?.classesAssigned ?? 0}</Typography>,
+    },
+    {
+      field: 'demosTaken',
+      headerName: 'Demos Taken',
+      width: 130,
+      renderCell: (params: any) => <Typography variant="body2">{params?.row?.demosTaken ?? 0}</Typography>,
+    },
+    {
+      field: 'approvalRatio',
+      headerName: 'Approval Rate',
+      width: 130,
+      renderCell: (params: any) => {
+        const v = Number(params?.row?.approvalRatio ?? 0);
+        return <Typography variant="body2">{`${v.toFixed(1)}%`}</Typography>;
+      },
+    },
+    {
+      field: 'ratings',
+      headerName: 'Rating',
+      width: 110,
+      renderCell: (params: any) => <Typography variant="body2">{params?.row?.ratings ?? 0}</Typography>,
+    },
+    {
+      field: 'verificationStatus',
+      headerName: 'Status',
+      width: 140,
+      renderCell: (params: any) => {
+        const status = params?.row?.verificationStatus ?? 'UNKNOWN';
+        return <Chip label={status} size="small" color={status === 'VERIFIED' ? 'success' : 'default'} />;
+      },
+    },
+    {
+      field: 'interestedAt',
+      headerName: 'Interested At',
+      width: 210,
+      renderCell: (params: any) => {
+        const raw = params?.row?.interestedAt;
+        const label = raw ? new Date(raw).toLocaleString() : '-';
+        return <Typography variant="body2">{label}</Typography>;
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      renderCell: (params: any) => (
+        <Button size="small" variant="contained" onClick={() => onSelectTutor(params.row)}>Select</Button>
+      ),
+    },
   ];
 
   return (
@@ -77,7 +151,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
             <DataGrid
               rows={tutors || []}
               columns={columns}
-              getRowId={(r: any) => r?.id || r?._id || r?.user?.id || r?.user?._id || r?.tutorId || r?.userId || r?.interestedAt || `${r?.user?.email || 'row'}-${r?.interestedAt || ''}`}
+              getRowId={(r: any) => r.id}
               pageSizeOptions={[5, 10, 20]}
               initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
               disableRowSelectionOnClick

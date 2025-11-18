@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AnnouncementIcon from '@mui/icons-material/Announcement';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import leadService from '../../services/leadService';
 import demoService from '../../services/demoService';
 import announcementService from '../../services/announcementService';
@@ -18,11 +19,13 @@ import StatusTimeline from '../../components/classLeads/StatusTimeline';
 import AnnouncementModal from '../../components/classLeads/AnnouncementModal';
 import InterestedTutorsModal from '../../components/classLeads/InterestedTutorsModal';
 import DemoAssignmentModal from '../../components/classLeads/DemoAssignmentModal';
-import { CLASS_LEAD_STATUS } from '../../constants';
+import { CLASS_LEAD_STATUS, DEMO_STATUS, USER_ROLES } from '../../constants';
+import { selectCurrentUser } from '../../store/slices/authSlice';
 
 export default function ClassLeadDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const user = useSelector(selectCurrentUser);
   const [classLead, setClassLead] = useState<IClassLead | null>(null);
   const [demoHistory, setDemoHistory] = useState<IDemoHistory[]>([]);
   const [announcement, setAnnouncement] = useState<IAnnouncement | null>(null);
@@ -74,9 +77,51 @@ export default function ClassLeadDetailPage() {
   const handleSelectTutor = (t: ITutorComparison) => { setSelectedTutor(t); setOpenInterested(false); setOpenDemoAssign(true); };
   const handleDemoAssignSuccess = async () => { await refetchAll(); setSnack({ open: true, message: 'Demo assigned successfully', severity: 'success' }); };
 
+  const handleMarkDemoCompleted = async () => {
+    if (!id) return;
+    try {
+      await demoService.updateDemoStatus(id as string, DEMO_STATUS.COMPLETED);
+      await refetchAll();
+      setSnack({ open: true, message: 'Demo marked as completed', severity: 'success' });
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to update demo status';
+      setSnack({ open: true, message: msg, severity: 'error' });
+    }
+  };
+
+  const handleApproveDemo = async () => {
+    if (!id) return;
+    try {
+      await demoService.updateDemoStatus(id as string, DEMO_STATUS.APPROVED);
+      await refetchAll();
+      setSnack({ open: true, message: 'Demo approved and lead converted', severity: 'success' });
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to approve demo';
+      setSnack({ open: true, message: msg, severity: 'error' });
+    }
+  };
+
+  const handleRejectDemo = async () => {
+    if (!id) return;
+    const reason = window.prompt('Enter rejection reason (optional):') || undefined;
+    try {
+      await demoService.updateDemoStatus(id as string, DEMO_STATUS.REJECTED, undefined, reason);
+      await refetchAll();
+      setSnack({ open: true, message: 'Demo rejected', severity: 'success' });
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to reject demo';
+      setSnack({ open: true, message: msg, severity: 'error' });
+    }
+  };
+
   if (loading) return <LoadingSpinner fullScreen /> as any;
   if (error) return <Container maxWidth="lg" sx={{ py: 3 }}><ErrorAlert error={error} /></Container>;
   if (!classLead) return null;
+
+  const isManagerOrAdmin = user?.role === USER_ROLES.MANAGER || user?.role === USER_ROLES.ADMIN;
+  const demoStatus = (classLead as any)?.demoDetails?.demoStatus as string | undefined;
+  const canMarkDemoCompleted = isManagerOrAdmin && demoStatus === DEMO_STATUS.SCHEDULED;
+  const canApproveOrRejectDemo = isManagerOrAdmin && demoStatus === DEMO_STATUS.COMPLETED;
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -108,10 +153,69 @@ export default function ClassLeadDetailPage() {
               <Grid container spacing={1}>
                 <Grid item xs={12} sm={6}><Typography><strong>Name:</strong> {classLead.studentName}</Typography></Grid>
                 <Grid item xs={12} sm={6}><Typography><strong>Grade:</strong> {classLead.grade}</Typography></Grid>
+                {(classLead as any).parentPhone && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Parent Phone:</strong> {(classLead as any).parentPhone}</Typography>
+                  </Grid>
+                )}
                 <Grid item xs={12} sm={6}><Typography><strong>Mode:</strong> {classLead.mode}</Typography></Grid>
                 <Grid item xs={12} sm={6}><Typography><strong>Board:</strong> {classLead.board}</Typography></Grid>
-                {classLead.location && <Grid item xs={12} sm={6}><Typography><strong>Location:</strong> {classLead.location}</Typography></Grid>}
+
+                {/* Location details */}
+                {classLead.mode === 'HYBRID' && classLead.location && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Location:</strong> {classLead.location}</Typography>
+                  </Grid>
+                )}
+                {classLead.mode === 'OFFLINE' && (
+                  <>
+                    {(classLead as any).city && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography><strong>City:</strong> {(classLead as any).city}</Typography>
+                      </Grid>
+                    )}
+                    {(classLead as any).area && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography><strong>Area:</strong> {(classLead as any).area}</Typography>
+                      </Grid>
+                    )}
+                    {(classLead as any).address && (
+                      <Grid item xs={12}>
+                        <Typography><strong>Address:</strong> {(classLead as any).address}</Typography>
+                      </Grid>
+                    )}
+                  </>
+                )}
+
                 <Grid item xs={12} sm={6}><Typography><strong>Timing:</strong> {classLead.timing}</Typography></Grid>
+
+                {/* Class metadata */}
+                {(classLead as any).classesPerMonth != null && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Classes per Month:</strong> {(classLead as any).classesPerMonth}</Typography>
+                  </Grid>
+                )}
+                {(classLead as any).classDurationHours != null && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Class Duration (hours):</strong> {(classLead as any).classDurationHours}</Typography>
+                  </Grid>
+                )}
+                {(classLead as any).paymentAmount != null && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Fees:</strong> {(classLead as any).paymentAmount}</Typography>
+                  </Grid>
+                )}
+                {(classLead as any).preferredTutorGender && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography>
+                      <strong>Preferred Tutor:</strong>{' '}
+                      {((classLead as any).preferredTutorGender === 'MALE' && 'Male') ||
+                       ((classLead as any).preferredTutorGender === 'FEMALE' && 'Female') ||
+                       ((classLead as any).preferredTutorGender === 'NO_PREFERENCE' && 'No preference') ||
+                       (classLead as any).preferredTutorGender}
+                    </Typography>
+                  </Grid>
+                )}
                 <Grid item xs={12}>
                   <Typography><strong>Subjects:</strong></Typography>
                   <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -151,6 +255,15 @@ export default function ClassLeadDetailPage() {
                   <Button variant="contained" onClick={() => setOpenAnnouncement(true)} startIcon={<AnnouncementIcon />}>Post Announcement</Button>
                 )}
                 <Button variant="outlined" disabled={!announcement} onClick={() => setOpenInterested(true)}>View Interested Tutors</Button>
+                {canMarkDemoCompleted && (
+                  <Button variant="contained" color="success" onClick={handleMarkDemoCompleted}>Mark Demo Completed</Button>
+                )}
+                {canApproveOrRejectDemo && (
+                  <>
+                    <Button variant="contained" color="primary" onClick={handleApproveDemo}>Approve & Convert</Button>
+                    <Button variant="outlined" color="error" onClick={handleRejectDemo}>Reject Demo</Button>
+                  </>
+                )}
                 <Button variant="outlined" color="error" onClick={handleDelete} startIcon={<DeleteIcon />}>Delete Lead</Button>
               </Box>
             </CardContent>

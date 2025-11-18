@@ -17,8 +17,10 @@ import useNotifications from '../../hooks/useNotifications';
 import { INotification } from '../../types';
 import { NOTIFICATION_TYPE } from '../../constants';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationsCenterCard: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
   const [actionError, setActionError] = useState<string | null>(null);
@@ -50,6 +52,17 @@ const NotificationsCenterCard: React.FC = () => {
         return <CheckCircleIcon sx={{ ...sxCommon, color: 'warning.main' }} />;
       default:
         return <NotificationsIcon sx={{ ...sxCommon, color: 'text.secondary' }} />;
+    }
+  };
+
+  const handleViewRelated = (n: INotification) => {
+    const anyNotif = n as any;
+    if (anyNotif.relatedClassLead) {
+      navigate('/class-leads');
+      return;
+    }
+    if (anyNotif.relatedAnnouncement) {
+      navigate('/announcements');
     }
   };
 
@@ -240,9 +253,9 @@ const NotificationsCenterCard: React.FC = () => {
               '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' },
             }}
           >
-            {filtered.map((n: INotification) => (
+            {filtered.map((n: INotification, index: number) => (
               <Box
-                key={n.id}
+                key={n.id || `${n.type || 'notification'}-${index}`}
                 sx={{
                   border: '1px solid',
                   borderColor: 'grey.200',
@@ -306,6 +319,7 @@ const NotificationsCenterCard: React.FC = () => {
                       color="primary.main"
                       fontWeight={600}
                       sx={{ cursor: 'pointer' }}
+                      onClick={() => handleViewRelated(n)}
                     >
                       { (n as any).relatedClassLead ? 'View Related Class Lead →' : 'View Announcement →' }
                     </Typography>

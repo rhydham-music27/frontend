@@ -49,6 +49,7 @@ export type CreateAttendancePayload = {
   sessionDate: string;
   sessionNumber?: number;
   notes?: string;
+  studentAttendanceStatus?: string;
 };
 
 export const createAttendance = async (

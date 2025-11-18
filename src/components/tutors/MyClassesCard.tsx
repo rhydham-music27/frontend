@@ -28,8 +28,11 @@ import ScheduleTestModal from './ScheduleTestModal';
 import { getMyClasses } from '../../services/finalClassService';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../store/slices/authSlice';
 
 const MyClassesCard: React.FC = () => {
+  const user = useSelector(selectCurrentUser);
   const [classes, setClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,13 @@ const MyClassesCard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await getMyClasses(FINAL_CLASS_STATUS.ACTIVE);
+      if (!user?.id && !(user as any)?._id) {
+        setClasses([]);
+        setLoading(false);
+        return;
+      }
+      const tutorId = (user as any).id || (user as any)._id;
+      const res = await getMyClasses(tutorId, FINAL_CLASS_STATUS.ACTIVE);
       setClasses(res.data);
     } catch (e: any) {
       const msg = e?.response?.data?.message || 'Failed to load classes';

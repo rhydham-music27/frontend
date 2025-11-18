@@ -32,6 +32,18 @@ export const getAnnouncements = async (
   return data as PaginatedResponse<IAnnouncement[]>;
 };
 
+export const getTutorAvailableAnnouncements = async (
+  query: { page?: number; limit?: number; isActive?: boolean } = {}
+): Promise<PaginatedResponse<IAnnouncement[]>> => {
+  const params = new URLSearchParams();
+  if (query.page) params.append('page', String(query.page));
+  if (query.limit) params.append('limit', String(query.limit));
+  if (typeof query.isActive === 'boolean') params.append('isActive', String(query.isActive));
+  const url = `${API_ENDPOINTS.ANNOUNCEMENTS_TUTOR_AVAILABLE}?${params.toString()}`;
+  const { data } = await api.get(url);
+  return data as PaginatedResponse<IAnnouncement[]>;
+};
+
 export const getAnnouncementByLeadId = async (
   classLeadId: string
 ): Promise<ApiResponse<IAnnouncement>> => {
@@ -99,6 +111,7 @@ export const getCoordinatorAnnouncementStats = async (): Promise<
 export default {
   postAnnouncement,
   getAnnouncements,
+  getTutorAvailableAnnouncements,
   getAnnouncementByLeadId,
   getInterestedTutors,
   expressInterest,

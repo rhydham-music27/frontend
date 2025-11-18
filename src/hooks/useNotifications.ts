@@ -37,7 +37,11 @@ const useNotifications = (filters: NotificationsFilters = {}) => {
         limit: filters.limit,
         isRead: filters.isRead,
       });
-      setNotifications(res.data);
+      const normalized = (res.data || []).map((n: any) => ({
+        ...n,
+        id: n.id || n._id,
+      }));
+      setNotifications(normalized as INotification[]);
       setPagination(res.pagination);
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to fetch notifications');

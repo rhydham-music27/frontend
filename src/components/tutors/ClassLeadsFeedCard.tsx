@@ -12,13 +12,16 @@ import { StyledCard } from '../common/StyledCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
-import { getAnnouncements, expressInterest } from '../../services/announcementService';
-import { IAnnouncement } from '../../types';
+import { getTutorAvailableAnnouncements, expressInterest } from '../../services/announcementService';
+import tutorService from '../../services/tutorService';
+import { IAnnouncement, INotification, ITutor } from '../../types';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import useNotifications from '../../hooks/useNotifications';
 
 const ClassLeadsFeedCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
+  const { notifications, deleteNotif } = useNotifications({ page: 1, limit: 50, enabled: true });
   const [announcements, setAnnouncements] = useState<IAnnouncement[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,12 +29,13 @@ const ClassLeadsFeedCard: React.FC = () => {
   const [actionError, setActionError] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [ignoredIds, setIgnoredIds] = useState<Set<string>>(new Set());
+  const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
 
   const fetchAnnouncements = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getAnnouncements({ isActive: true, page: 1, limit: 50 });
+      const res = await getTutorAvailableAnnouncements({ isActive: true, page: 1, limit: 50 });
       const items = (res && (res as any).data) ? (res as any).data as IAnnouncement[] : [];
       setAnnouncements(items || []);
     } catch (e: any) {
@@ -42,22 +46,48 @@ const ClassLeadsFeedCard: React.FC = () => {
     }
   };
 
+  const fetchTutorProfile = async () => {
+    try {
+      const res = await tutorService.getMyProfile();
+      setTutorProfile((res as any)?.data || null);
+    } catch (e) {
+      // fail silently for highlighting; core functionality should still work
+      setTutorProfile(null);
+    }
+  };
+
   useEffect(() => {
+    const uid = (user as any)?._id || (user as any)?.id;
+    if (!uid) return;
+    fetchTutorProfile();
     fetchAnnouncements();
     return () => {};
-  }, []);
-
-  const filteredAnnouncements = useMemo(
-    () => announcements.filter(a => !ignoredIds.has((a as any).id || (a as any)._id)),
-    [announcements, ignoredIds]
-  );
+  }, [user]);
 
   const hasExpressedInterest = (a: IAnnouncement) => {
     const uid = (user as any)?._id || (user as any)?.id;
     if (!uid) return false;
     const list = (a as any).interestedTutors || [];
-    return Array.isArray(list) && list.some((t: any) => t?.id === uid || t?._id === uid || t?.tutorId === uid);
+    return (
+      Array.isArray(list) &&
+      list.some((t: any) => {
+        const tutor = t?.tutor || t;
+        const tid = tutor?.id || tutor?._id || t?.tutorId;
+        return Boolean(tid && tid === uid);
+      })
+    );
   };
+
+  const filteredAnnouncements = useMemo(
+    () =>
+      announcements.filter((a) => {
+        const aid = (a as any).id || (a as any)._id;
+        if (!aid) return false;
+        if (ignoredIds.has(aid)) return false;
+        return !hasExpressedInterest(a);
+      }),
+    [announcements, ignoredIds, user]
+  );
 
   const handleExpressInterest = async (announcementId: string) => {
     setActionLoading(prev => ({ ...prev, [announcementId]: true }));
@@ -67,13 +97,33 @@ const ClassLeadsFeedCard: React.FC = () => {
       const updated = (res as any)?.data as IAnnouncement;
       if (updated) {
         setAnnouncements(prev => prev.map(a => (((a as any).id || (a as any)._id) === ((updated as any).id || (updated as any)._id)) ? updated : a));
+        const updatedId = ((updated as any).id || (updated as any)._id) as string;
+        if (updatedId && Array.isArray(notifications) && notifications.length > 0) {
+          const toRemove = (notifications as INotification[]).filter((n: any) => {
+            const rel = n.relatedAnnouncement as any;
+            if (!rel) return false;
+            const relId = rel.id || rel._id;
+            return relId && relId === updatedId;
+          });
+          for (const n of toRemove) {
+            await deleteNotif(n.id);
+          }
+        }
       }
       setSuccessMessage('Interest expressed successfully! The manager will review your profile.');
       window.setTimeout(() => setSuccessMessage(null), 5000);
     } catch (e: any) {
       const msg = e?.response?.data?.message || e?.message || 'Failed to express interest. Please try again.';
-      const display = /already expressed interest/i.test(String(msg)) ? 'You have already expressed interest for this lead.' : msg;
+      const already = /already expressed interest/i.test(String(msg));
+      const display = already ? 'You have already expressed interest for this lead.' : msg;
       setActionError(prev => ({ ...prev, [announcementId]: display }));
+      if (already) {
+        setIgnoredIds(prev => {
+          const next = new Set(prev);
+          next.add(announcementId);
+          return next;
+        });
+      }
     } finally {
       setActionLoading(prev => ({ ...prev, [announcementId]: false }));
     }
@@ -151,14 +201,76 @@ const ClassLeadsFeedCard: React.FC = () => {
             const postedStr = postedAt ? new Date(postedAt).toLocaleDateString() : '';
             const cl = (a as any).classLead || {};
             const subjects = Array.isArray(cl?.subject) ? cl.subject.join(', ') : (cl?.subject || '');
+            const managerName = (a as any)?.postedBy?.name;
+
+            // Highlight logic: offline classes where city, preferred area and at least one subject match tutor profile
+            const isOffline = cl?.mode && cl.mode !== 'ONLINE';
+            const tutorSubjects = (tutorProfile && Array.isArray((tutorProfile as any).subjects)) ? (tutorProfile as any).subjects as string[] : [];
+            const leadSubjectsArray = Array.isArray(cl?.subject)
+              ? (cl as any).subject as string[]
+              : (cl?.subject ? [String(cl.subject)] : []);
+            const hasSubjectMatch =
+              isOffline &&
+              tutorSubjects.length > 0 &&
+              leadSubjectsArray.some((s) => tutorSubjects.includes(s));
+
+            const tutorAreas = (tutorProfile && Array.isArray((tutorProfile as any).preferredLocations))
+              ? (tutorProfile as any).preferredLocations as string[]
+              : [];
+            const clArea = (cl as any)?.area || '';
+            const clLocation = (cl as any)?.location || '';
+            const hasAreaMatch =
+              isOffline &&
+              tutorAreas.length > 0 &&
+              tutorAreas.some((aLoc) => !!aLoc && (aLoc === clArea || aLoc === clLocation));
+
+            const tutorCities = (tutorProfile && Array.isArray((tutorProfile as any).preferredCities))
+              ? (tutorProfile as any).preferredCities as string[]
+              : [];
+            const clCity = (cl as any)?.city || '';
+            const hasCityMatch =
+              isOffline &&
+              (tutorCities.length === 0
+                ? true
+                : tutorCities.includes(clCity));
+
+            const isHighlighted = Boolean(isOffline && hasSubjectMatch && hasAreaMatch && hasCityMatch);
 
             return (
-              <Box key={id} sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, mb: 2, position: 'relative', transition: 'all 0.3s ease', '&:hover': { backgroundColor: 'grey.50', borderColor: 'primary.light', transform: 'translateX(4px)' } }}>
+              <Box
+                key={id}
+                sx={{
+                  border: '1px solid',
+                  borderColor: isHighlighted ? 'primary.main' : 'grey.200',
+                  borderWidth: isHighlighted ? 2 : 1,
+                  borderRadius: 3,
+                  p: 2.5,
+                  mb: 2,
+                  position: 'relative',
+                  backgroundColor: isHighlighted ? 'rgba(25,118,210,0.04)' : 'inherit',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: isHighlighted ? 'rgba(25,118,210,0.08)' : 'grey.50',
+                    borderColor: 'primary.light',
+                    transform: 'translateX(4px)',
+                  },
+                }}
+              >
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Stack spacing={0.5}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <PersonIcon fontSize="small" color="action" aria-label="Student" />
-                      <Typography variant="h6" fontWeight={600} sx={{ wordBreak: 'break-word' }}>{cl?.studentName || 'Student'}</Typography>
+                      <Typography variant="h6" fontWeight={600} sx={{ wordBreak: 'break-word' }}>
+                        {managerName ? `  ${managerName}` : ''}
+                      </Typography>
+                      {isHighlighted && (
+                        <Chip
+                          label="Best Match"
+                          color="primary"
+                          size="small"
+                          sx={{ ml: 1, fontWeight: 600 }}
+                        />
+                      )}
                     </Box>
                     <Typography variant="body2" color="text.secondary">{postedStr ? `Posted on ${postedStr}` : ''}</Typography>
                   </Stack>
@@ -169,46 +281,52 @@ const ClassLeadsFeedCard: React.FC = () => {
                   </Tooltip>
                 </Box>
 
-                <Grid container spacing={2} mb={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <SchoolIcon fontSize="small" color="action" aria-label="Grade" />
-                      <Typography variant="body2">{cl?.grade || '-'}</Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <MenuBookIcon fontSize="small" color="action" aria-label="Subject" />
-                      <Typography variant="body2">{subjects}</Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary">{cl?.board || ''}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Chip 
-                      label={cl?.mode || ''} 
-                      size="small" 
-                      color={cl?.mode === 'ONLINE' ? 'info' : cl?.mode === 'OFFLINE' ? 'success' : 'secondary'} 
-                    />
-                  </Grid>
-                  {cl?.location && (
-                    <Grid item xs={12} sm={6}>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <LocationOnIcon fontSize="small" color="action" aria-label="Location" />
-                        <Typography variant="body2">{cl?.location}</Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                  {cl?.timing && (
-                    <Grid item xs={12} sm={6}>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <AccessTimeIcon fontSize="small" color="action" aria-label="Timing" />
-                        <Typography variant="body2">{cl?.timing}</Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                </Grid>
+                {(() => {
+                  const parentPhone = (cl as any)?.parentPhone || '';
+                  const classesPerMonth = (cl as any)?.classesPerMonth;
+                  const classDurationHours = (cl as any)?.classDurationHours;
+                  const paymentAmount = (cl as any)?.paymentAmount;
+                  const location = (cl as any)?.location || '-';
+                  const city = (cl as any)?.city || '-';
+                  const area = (cl as any)?.area || '-';
+
+                  const scheduleLine = cl?.timing || '';
+                  const monthlyClassesLine = classesPerMonth != null ? String(classesPerMonth) : '-';
+                  const durationLine = classDurationHours != null ? `${classDurationHours} hours` : '-';
+                  const modeLine = cl?.mode || '-';
+                  const genderPref = (cl as any)?.preferredTutorGender || '-';
+                  const managerName = (a as any)?.postedBy?.name
+                  const announcementText =
+                    `📣 New Class Lead Available\n` +
+                    `A new student lead has been added to the system. Eligible tutors may express interest.\n\n` +
+                    `👨‍🎓 Student Information\n` +
+                    `Student Name: ${cl?.studentName || '-'}\n` +
+                    `Grade / Board: ${cl?.grade || '-'} — ${cl?.board || '-'}\n` +
+                    `Subject(s): ${subjects || '-'}\n` +
+                    `Class Mode: ${modeLine}\n` +
+                    `Preferred Tutor Gender: ${genderPref}\n` +
+                    `Monthly Classes: ${monthlyClassesLine}\n` +
+                    `Class Duration: ${durationLine}\n` +
+                    `Schedule: ${scheduleLine || '-'}\n` +
+                    (parentPhone
+                      ? `Parent Contact: ${parentPhone}\n`
+                      : '') +
+                   +
+                    `\n` +
+                    `📍 Location\n` +
+                    `Location: ${location}\n` +
+                    `City: ${city}\n` +
+                    `Area: ${area}\n` +
+                    (modeLine === 'ONLINE'
+                      ? `(Class is Online; physical location not required)`
+                      : '');
+
+                  return (
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1 }}>
+                      {announcementText}
+                    </Typography>
+                  );
+                })()}
 
                 {!!(a as any)?.interestCount && (a as any).interestCount > 0 && (
                   <Box display="flex" alignItems="center" gap={0.5} mb={2}>

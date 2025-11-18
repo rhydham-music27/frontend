@@ -11,12 +11,21 @@ export interface IUser {
 export interface IClassLead {
   id: string;
   studentName: string;
+  parentPhone?: string;
   grade: string;
   subject: string;
   board: string;
   mode: string;
   location?: string;
+  city?: string;
+  area?: string;
+  address?: string;
+  leadSource?: string;
+  preferredTutorGender?: string;
   timing: string;
+  classesPerMonth?: number;
+  classDurationHours?: number;
+  paymentAmount?: number;
   status: string;
   assignedTutor?: IUser;
   demoDetails?: Record<string, any>;
@@ -161,6 +170,7 @@ export interface IAttendance {
   rejectedBy?: IUser;
   rejectedAt?: Date;
   rejectionReason?: string;
+  studentAttendanceStatus?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -383,12 +393,21 @@ export interface IPendingTierChange {
 
 export interface IClassLeadFormData {
   studentName: string;
+  parentPhone?: string;
   grade: string;
   subject: string[];
   board: string;
   mode: string;
   location?: string;
+  city?: string;
+  area?: string;
+  address?: string;
+  leadSource?: string;
+  preferredTutorGender?: string;
   timing: string;
+  classesPerMonth?: number;
+  classDurationHours?: number;
+  paymentAmount?: number;
   notes?: string;
 }
 

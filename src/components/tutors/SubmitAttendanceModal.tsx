@@ -11,10 +11,12 @@ import {
   Alert,
   CircularProgress,
   IconButton,
+  MenuItem,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { createAttendance } from '../../services/attendanceService';
+import { STUDENT_ATTENDANCE_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
 
 interface SubmitAttendanceModalProps {
@@ -30,6 +32,9 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
   const [sessionDate, setSessionDate] = useState<string>(todayStr());
   const [sessionNumber, setSessionNumber] = useState<number | string>('');
   const [notes, setNotes] = useState<string>('');
+  const [studentAttendanceStatus, setStudentAttendanceStatus] = useState<string>(
+    STUDENT_ATTENDANCE_STATUS.PRESENT
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -38,6 +43,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     setSessionDate(todayStr());
     setSessionNumber('');
     setNotes('');
+    setStudentAttendanceStatus(STUDENT_ATTENDANCE_STATUS.PRESENT);
     setLoading(false);
     setError(null);
     setSuccess(false);
@@ -63,6 +69,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
         sessionDate,
         sessionNumber: sessionNumber ? Number(sessionNumber) : undefined,
         notes: notes || undefined,
+        studentAttendanceStatus,
       };
 
       await createAttendance(payload);
@@ -125,6 +132,21 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
           onChange={(e) => { setSessionNumber(e.target.value); setError(null); }}
           sx={{ mb: 2 }}
         />
+
+        <TextField
+          select
+          label="Student Attendance Status"
+          required
+          fullWidth
+          value={studentAttendanceStatus}
+          onChange={(e) => { setStudentAttendanceStatus(e.target.value); setError(null); }}
+          helperText="Mark whether the student attended this session"
+          sx={{ mb: 2 }}
+        >
+          <MenuItem value={STUDENT_ATTENDANCE_STATUS.PRESENT}>Present</MenuItem>
+          <MenuItem value={STUDENT_ATTENDANCE_STATUS.ABSENT}>Absent</MenuItem>
+          <MenuItem value={STUDENT_ATTENDANCE_STATUS.LATE}>Late</MenuItem>
+        </TextField>
 
         <TextField
           multiline

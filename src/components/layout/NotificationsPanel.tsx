@@ -83,8 +83,18 @@ export default function NotificationsPanel({ open, onClose }: Props) {
                   }
                   secondary={
                     <>
-                      <Typography variant="body2" color="text.secondary">{n.message}</Typography>
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        color="text.secondary"
+                      >
+                        {n.message}
+                      </Typography>
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        color="text.disabled"
+                      >
                         {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                       </Typography>
                     </>

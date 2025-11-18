@@ -193,6 +193,7 @@ const ProfileVerificationCard: React.FC = () => {
                       ))}
                     </Box>
                   }
+                  secondaryTypographyProps={{ component: 'div' }}
                 />
               </ListItem>
             </List>
@@ -213,6 +214,7 @@ const ProfileVerificationCard: React.FC = () => {
                         ))}
                       </Box>
                     }
+                    secondaryTypographyProps={{ component: 'div' }}
                   />
                 </ListItem>
               </List>

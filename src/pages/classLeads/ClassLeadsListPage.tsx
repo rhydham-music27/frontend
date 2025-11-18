@@ -79,7 +79,21 @@ export default function ClassLeadsListPage() {
     { field: 'board', headerName: 'Board', width: 120 },
     { field: 'mode', headerName: 'Mode', width: 100 },
     { field: 'timing', headerName: 'Timing', width: 150 },
-    { field: 'status', headerName: 'Status', width: 150, renderCell: (p: any) => <ClassLeadStatusChip status={p.value} /> },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 260,
+      renderCell: (p: any) => {
+        const row = p?.row || {};
+        const hasPayment = !!(row as any).paymentReceived;
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <ClassLeadStatusChip status={p.value} />
+            {hasPayment && <Chip label="Payment Received" size="small" color="success" />}
+          </Box>
+        );
+      },
+    },
     { field: 'createdAt', headerName: 'Created', width: 160, sortable: false, renderCell: (p: any) => {
       const r = p?.row || {};
       let val: any = r.createdAt ?? r.created_at ?? r.createdOn ?? r.created ?? r.createdAtMs ?? r.created_at_ms ?? r.createdAtMillis ?? r.created_at_millis
@@ -149,7 +163,12 @@ export default function ClassLeadsListPage() {
                       <Typography variant="subtitle1" fontWeight={600}>{lead.studentName}</Typography>
                       <Typography variant="body2" color="text.secondary">Grade {lead.grade}</Typography>
                     </Box>
-                    <ClassLeadStatusChip status={lead.status} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <ClassLeadStatusChip status={lead.status} />
+                      {!!(lead as any).paymentReceived && (
+                        <Chip label="Payment Received" size="small" color="success" />
+                      )}
+                    </Box>
                   </Box>
                   <Grid container spacing={1} sx={{ mt: 0.5 }}>
                     <Grid item xs={6}>

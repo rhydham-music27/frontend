@@ -20,19 +20,79 @@ const TutorProgressTable: React.FC<Props> = ({ tutors, total, page, limit, loadi
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
+  console.log('TutorProgressTable rows', tutors);
+
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Tutor Name', width: 180, valueGetter: (params: any) => params?.row?.tutor?.user?.name || '-' },
-    { field: 'experienceHours', headerName: 'Experience (hrs)', width: 140, type: 'number', valueGetter: (params: any) => params?.row?.tutor?.experienceHours ?? 0 },
-    { field: 'subjects', headerName: 'Subjects', width: 200, valueGetter: (params: any) => (params?.row?.tutor?.subjects || []).join(', ') },
-    { field: 'classesCompleted', headerName: 'Classes Completed', width: 160, type: 'number' },
-    { field: 'totalRevenue', headerName: 'Revenue (₹)', width: 140, type: 'number', valueFormatter: (params: any) => `₹${Number(params.value || 0).toLocaleString()}` },
-    { field: 'averageRating', headerName: 'Rating', width: 140, renderCell: (params: any) => <Rating value={Number(params?.value || 0)} readOnly size="small" precision={0.1} /> },
-    { field: 'demoApprovalRatio', headerName: 'Demo Approval', width: 140, type: 'number', valueFormatter: (params: any) => `${params.value}%` },
-    { field: 'attendanceApprovalRate', headerName: 'Attendance Approval', width: 170, type: 'number', valueFormatter: (params: any) => `${params?.value ?? 0}%` },
-    { field: 'verificationStatus', headerName: 'Status', width: 120, renderCell: (params: any) => {
-      const status = params?.row?.tutor?.verificationStatus || 'UNKNOWN';
-      return <Chip label={status} size="small" color={status === 'VERIFIED' ? 'success' : 'default'} />;
-    } },
+    {
+      field: 'name',
+      headerName: 'Tutor Name',
+      width: 180,
+      renderCell: (params: any) => params?.row?.tutor?.user?.name || '-',
+    },
+    {
+      field: 'experienceHours',
+      headerName: 'Experience (hrs)',
+      width: 140,
+      type: 'number',
+      renderCell: (params: any) => Number(params?.row?.tutor?.experienceHours ?? 0),
+    },
+    {
+      field: 'subjects',
+      headerName: 'Subjects',
+      width: 200,
+      renderCell: (params: any) => (params?.row?.tutor?.subjects || []).join(', '),
+    },
+    {
+      field: 'classesCompleted',
+      headerName: 'Classes Completed',
+      width: 160,
+      type: 'number',
+      renderCell: (params: any) => Number(params?.row?.classesCompleted ?? 0),
+    },
+    {
+      field: 'totalRevenue',
+      headerName: 'Revenue (₹)',
+      width: 140,
+      type: 'number',
+      renderCell: (params: any) => `₹${Number(params?.row?.totalRevenue ?? 0).toLocaleString()}`,
+    },
+    {
+      field: 'averageRating',
+      headerName: 'Rating',
+      width: 140,
+      type: 'number',
+      renderCell: (params: any) => (
+        <Rating
+          value={Number(params?.row?.averageRating ?? 0)}
+          readOnly
+          size="small"
+          precision={0.1}
+        />
+      ),
+    },
+    {
+      field: 'demoApprovalRatio',
+      headerName: 'Demo Approval',
+      width: 140,
+      type: 'number',
+      renderCell: (params: any) => `${Number(params?.row?.demoApprovalRatio ?? 0)}%`,
+    },
+    {
+      field: 'attendanceApprovalRate',
+      headerName: 'Attendance Approval',
+      width: 170,
+      type: 'number',
+      renderCell: (params: any) => `${Number(params?.row?.attendanceApprovalRate ?? 0)}%`,
+    },
+    {
+      field: 'verificationStatus',
+      headerName: 'Status',
+      width: 120,
+      renderCell: (params: any) => {
+        const status = params?.row?.tutor?.verificationStatus || 'UNKNOWN';
+        return <Chip label={status} size="small" color={status === 'VERIFIED' ? 'success' : 'default'} />;
+      },
+    },
   ];
 
   const handleSortChange = (model: GridSortModel) => {

@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '../constants';
 import { PaginatedResponse, IFinalClass } from '../types';
 
 export const getMyClasses = async (
+  tutorId: string,
   status?: string,
   page: number = 1,
   limit: number = 10
@@ -11,7 +12,8 @@ export const getMyClasses = async (
   if (status) params.append('status', status);
   params.append('page', String(page));
   params.append('limit', String(limit));
-  const url = `${API_ENDPOINTS.FINAL_CLASSES_MY_CLASSES}?${params.toString()}`;
+  const base = `/api/final-classes/tutor/${tutorId}`;
+  const url = `${base}?${params.toString()}`;
   const { data } = await api.get(url);
   return data as PaginatedResponse<IFinalClass[]>;
 };

@@ -12,6 +12,7 @@ import MyClassesCard from '../../components/tutors/MyClassesCard';
 import PaymentsEarningsCard from '../../components/tutors/PaymentsEarningsCard';
 import FeedbackPerformanceCard from '../../components/tutors/FeedbackPerformanceCard';
 import NotificationsCenterCard from '../../components/tutors/NotificationsCenterCard';
+import AttendanceHistoryCard from '../../components/tutors/AttendanceHistoryCard';
 
 const TutorDashboardPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -110,6 +111,22 @@ const TutorDashboardPage: React.FC = () => {
           </Grid2>
           <Grid2 size={{ xs: 12 }}>
             <MyClassesCard />
+          </Grid2>
+        </Grid2>
+      </Box>
+
+      <Box mt={{ xs: 3, sm: 4 }}>
+        <Typography 
+          variant="h5" 
+          fontWeight={700} 
+          mb={{ xs: 2, sm: 2.5, md: 3 }}
+          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+        >
+          Attendance History
+        </Typography>
+        <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+          <Grid2 size={{ xs: 12 }}>
+            <AttendanceHistoryCard />
           </Grid2>
         </Grid2>
       </Box>

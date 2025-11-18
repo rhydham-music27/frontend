@@ -25,7 +25,21 @@ export default function DemoAssignmentModal({ open, onClose, classLead, selected
     try {
       setLoading(true);
       setError(null);
-      await demoService.assignDemo(classLead.id, selectedTutor.user.id, data.demoDate, data.demoTime, data.notes);
+      const leadId = (classLead as any).id ?? (classLead as any)._id;
+      if (!leadId) {
+        throw new Error('Missing class lead ID');
+      }
+      const tutorUserId =
+        (selectedTutor as any).user?.id ||
+        (selectedTutor as any).user?._id ||
+        (selectedTutor as any).tutor?.user?.id ||
+        (selectedTutor as any).tutor?.user?._id ||
+        (selectedTutor as any).tutorUserId ||
+        (selectedTutor as any).userId;
+      if (!tutorUserId) {
+        throw new Error('Missing tutor user ID');
+      }
+      await demoService.assignDemo(leadId, tutorUserId, data.demoDate, data.demoTime, data.notes);
       onSuccess();
       onClose();
     } catch (e: any) {

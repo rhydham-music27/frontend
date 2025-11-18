@@ -19,7 +19,12 @@ export default function CreateClassLeadPage() {
       setError(null);
       const res = await leadService.createClassLead(data);
       setSnack({ open: true, message: 'Lead created successfully', severity: 'success' });
-      navigate(`/class-leads/${res.data.id}`);
+      const createdId = (res as any)?.data?.id || (res as any)?.data?._id;
+      if (createdId) {
+        navigate(`/class-leads/${createdId}`);
+      } else {
+        navigate('/class-leads');
+      }
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to create lead');
     } finally {

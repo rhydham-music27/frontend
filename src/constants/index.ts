@@ -7,12 +7,32 @@ export const USER_ROLES = {
 } as const;
 
 export const CLASS_LEAD_STATUS = {
+  // Initial / enquiry stages
   NEW: 'NEW',
+  ENQUIRY: 'ENQUIRY',
+
+  // Announcement & demo lifecycle
   ANNOUNCED: 'ANNOUNCED',
   DEMO_SCHEDULED: 'DEMO_SCHEDULED',
   DEMO_COMPLETED: 'DEMO_COMPLETED',
+  DEMO_APPROVED_BY_PARENT: 'DEMO_APPROVED_BY_PARENT',
+  DEMO_REJECTED_BY_PARENT: 'DEMO_REJECTED_BY_PARENT',
+  TUTOR_NOT_FOUND_FOR_DEMO: 'TUTOR_NOT_FOUND_FOR_DEMO',
+  PARENT_DIDNT_RESPOND: 'PARENT_DIDNT_RESPOND',
+
+  // Commercial outcome
+  PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
+
+  // Conversion / closure
   CONVERTED: 'CONVERTED',
   REJECTED: 'REJECTED',
+} as const;
+
+export const LEAD_SOURCE = {
+  GOOGLE_PROFILE: 'GOOGLE_PROFILE',
+  WHATSAPP: 'WHATSAPP',
+  REFERRED: 'REFERRED',
+  OTHER: 'OTHER',
 } as const;
 
 export const DEMO_STATUS = {
@@ -27,6 +47,12 @@ export const ATTENDANCE_STATUS = {
   COORDINATOR_APPROVED: 'COORDINATOR_APPROVED',
   PARENT_APPROVED: 'PARENT_APPROVED',
   REJECTED: 'REJECTED',
+} as const;
+
+export const STUDENT_ATTENDANCE_STATUS = {
+  PRESENT: 'PRESENT',
+  ABSENT: 'ABSENT',
+  LATE: 'LATE',
 } as const;
 
 export const PAYMENT_STATUS = {
@@ -154,6 +180,7 @@ export const API_ENDPOINTS = {
   PAYMENTS: '/api/payments',
   ANALYTICS: '/api/analytics',
   ANNOUNCEMENTS: '/api/announcements',
+  ANNOUNCEMENTS_TUTOR_AVAILABLE: '/api/announcements/tutor/available',
   ANNOUNCEMENTS_BY_LEAD: (leadId: string) => `/api/announcements/lead/${leadId}`,
   ANNOUNCEMENTS_INTERESTED_TUTORS: (id: string) => `/api/announcements/${id}/interested-tutors`,
   ANNOUNCEMENTS_EXPRESS_INTEREST: (id: string) => `/api/announcements/${id}/interest`,

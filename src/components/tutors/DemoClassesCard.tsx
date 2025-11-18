@@ -139,7 +139,7 @@ const DemoClassesCard: React.FC = () => {
             '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' },
           }}
         >
-          {demos.map((demo) => {
+          {demos.map((demo, index) => {
             const studentName = demo.classLead?.studentName || '-';
             const subjectVal: any = (demo.classLead as any)?.subject;
             const subject = Array.isArray(subjectVal) ? subjectVal.join(', ') : subjectVal || '-';
@@ -149,7 +149,7 @@ const DemoClassesCard: React.FC = () => {
             const statusProps = getStatusChipProps(demo.status);
             return (
               <Box
-                key={demo.id}
+                key={demo.id || index}
                 sx={{
                   border: '1px solid',
                   borderColor: 'grey.200',
