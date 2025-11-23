@@ -1,6 +1,6 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants';
-import { PaginatedResponse, IFinalClass } from '../types';
+import { PaginatedResponse, IFinalClass, ApiResponse } from '../types';
 
 export const getMyClasses = async (
   tutorId: string,
@@ -18,4 +18,20 @@ export const getMyClasses = async (
   return data as PaginatedResponse<IFinalClass[]>;
 };
 
-export default { getMyClasses };
+export const updateFinalClassSchedule = async (
+  classId: string,
+  schedule: { daysOfWeek: string[]; timeSlot: string }
+): Promise<ApiResponse<IFinalClass>> => {
+  const { data } = await api.put(`/api/final-classes/${classId}`, { schedule });
+  return data as ApiResponse<IFinalClass>;
+};
+
+export const createOneTimeReschedule = async (
+  classId: string,
+  payload: { fromDate: string; toDate?: string; timeSlot: string }
+): Promise<ApiResponse<IFinalClass>> => {
+  const { data } = await api.post(`/api/final-classes/${classId}/reschedule`, payload);
+  return data as ApiResponse<IFinalClass>;
+};
+
+export default { getMyClasses, updateFinalClassSchedule, createOneTimeReschedule };

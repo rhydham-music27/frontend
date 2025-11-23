@@ -288,7 +288,7 @@ const ProfileVerificationCard: React.FC = () => {
                 Approval Ratio
               </Typography>
               <Typography variant="h6" fontWeight={700}>
-                {`${Math.round(((tutorProfile as any).approvalRatio ?? 0) * 100)}%`}
+                {`${Math.round(Math.max(0, Math.min(100, (tutorProfile as any).approvalRatio ?? 0)))}%`}
               </Typography>
             </Box>
           </Grid>

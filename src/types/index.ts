@@ -361,6 +361,7 @@ export interface ITutorPerformanceMetrics {
   tutor: ITutor;
   classesAssigned: number;
   classesCompleted: number;
+  totalClassHours: number;
   attendanceApprovalRate: number;
   averageTestScore: number;
   feedbackRatings: { overall: number; teachingQuality: number; punctuality: number; communication: number; subjectKnowledge: number };

@@ -30,7 +30,12 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const handleProfile = () => {
     handleMenuClose();
     const role = user?.role;
-    const target = role === USER_ROLES.COORDINATOR ? '/coordinator-profile' : '/profile';
+    const target =
+      role === USER_ROLES.COORDINATOR
+        ? '/coordinator-profile'
+        : role === USER_ROLES.TUTOR
+        ? '/tutor-profile'
+        : '/profile';
     navigate(target);
   };
 

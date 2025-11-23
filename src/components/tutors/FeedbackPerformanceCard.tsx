@@ -153,14 +153,15 @@ const FeedbackPerformanceCard: React.FC = () => {
 
   const totalFeedback = performanceMetrics?.totalFeedback || 0;
   const overall = clamp(performanceMetrics?.feedbackRatings?.overall ?? 0, 0, 5);
-  const classesCompleted = performanceMetrics?.classesCompleted || 0;
+  const totalClassHours = performanceMetrics?.totalClassHours || 0;
   const attendanceApprovalRate = clamp(performanceMetrics?.attendanceApprovalRate ?? 0, 0, 100);
   const recommendationRate = clamp(performanceMetrics?.recommendationRate ?? 0, 0, 100);
   const avgTestScore = clamp(performanceMetrics?.averageTestScore ?? 0, 0, 100);
 
   const demosTaken = tutorProfile?.demosTaken || 0;
   const demosApproved = tutorProfile?.demosApproved || 0;
-  const approvalRatio = tutorProfile?.approvalRatio || 0;
+  const approvalRatioRaw = tutorProfile?.approvalRatio || 0;
+  const approvalRatio = clamp(approvalRatioRaw, 0, 100);
 
   const conversionDisplay = demosTaken > 0 ? formatPercentage(approvalRatio) : 'N/A';
   const conversionSubtitle = `${demosApproved}/${demosTaken} demos`;
@@ -168,7 +169,8 @@ const FeedbackPerformanceCard: React.FC = () => {
   return (
     <StyledCard>
       <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+        <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
           <Box display="flex" alignItems="center" gap={1.5}>
             <AssessmentIcon sx={{ color: 'primary.main' }} />
             <Typography variant="h6" fontWeight={600}>Feedback & Performance</Typography>
@@ -183,121 +185,125 @@ const FeedbackPerformanceCard: React.FC = () => {
               aria-label="tutor tier badge"
             />
           </Tooltip>
-        </Box>
-
-        <Grid container spacing={2} mb={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <MetricsCard
-              title="Overall Rating"
-              value={`${overall.toFixed(1)}/5.0`}
-              subtitle={`${totalFeedback} review${totalFeedback === 1 ? '' : 's'}`}
-              icon={<StarIcon color="warning" />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <MetricsCard
-              title="Classes Completed"
-              value={classesCompleted}
-              subtitle="Total classes"
-              icon={<CheckCircleIcon color="success" />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <MetricsCard
-              title="Attendance Approval"
-              value={formatPercentage(attendanceApprovalRate)}
-              subtitle="Approval rate"
-              icon={<ThumbUpIcon color="info" />}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <MetricsCard
-              title="Demo Conversion"
-              value={conversionDisplay}
-              subtitle={conversionSubtitle}
-              icon={<TrendingUpIcon color="primary" />}
-            />
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
-          <StarIcon fontSize="small" />
-          <Typography variant="h6" fontWeight={600}>Rating Breakdown</Typography>
-        </Box>
-
-        <Stack spacing={2.5}>
-          {ratingItems.map((item) => (
-            <Box key={item.key}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                <Typography variant="body2" fontWeight={600}>{item.label}</Typography>
-                <Typography variant="body2" color="text.secondary">{item.value.toFixed(1)}/5.0</Typography>
-              </Box>
-              <Box display="flex" alignItems="center" gap={2}>
-                <Rating
-                  name={`${item.key}-rating`}
-                  value={item.value}
-                  precision={0.1}
-                  readOnly
-                  aria-label={`${item.label} rating`}
-                  icon={<StarIcon fontSize="inherit" />}
-                  emptyIcon={<StarIcon fontSize="inherit" />}
-                />
-                <LinearProgress
-                  variant="determinate"
-                  value={clamp((item.value / 5) * 100, 0, 100)}
-                  color={ratingColor(item.value)}
-                  sx={{ height: 8, borderRadius: 1, width: 100 }}
-                  aria-label={`${item.label} progress`}
-                />
-              </Box>
-            </Box>
-          ))}
-        </Stack>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Typography variant="h6" fontWeight={600} mb={2}>Performance Insights</Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="caption" color="text.secondary">Recommendation Rate</Typography>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="h5" fontWeight={700}>{formatPercentage(recommendationRate)}</Typography>
-                <ThumbUpIcon color="success" fontSize="small" />
-              </Box>
-              <Typography variant="body2" color="text.secondary">{Math.round((recommendationRate / 100) * totalFeedback)} would recommend</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="caption" color="text.secondary">Average Test Score</Typography>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="h5" fontWeight={700}>{`${avgTestScore.toFixed(1)}/100`}</Typography>
-                <SchoolIcon color="info" fontSize="small" />
-              </Box>
-              <Typography variant="body2" color="text.secondary">Student performance</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12}>
-            <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, bgcolor: 'grey.50' }}>
-              <Typography variant="caption" color="text.secondary">Total Feedback Received</Typography>
-              <Typography variant="h4" fontWeight={700} sx={{ color: 'primary.main' }}>{totalFeedback}</Typography>
-              <Typography variant="body2" color="text.secondary">Thank you for your dedication! Keep up the great work.</Typography>
-            </Box>
-          </Grid>
-        </Grid>
-
-        {lowestRating && lowestRating.value < 4 && (
-          <Box sx={{ bgcolor: 'info.lighter', p: 2, borderRadius: 2, mt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              💡 Tip: Focus on improving {lowestRating.label.toLowerCase()} to enhance your overall rating and tier level.
-            </Typography>
           </Box>
-        )}
-      </CardContent>
-    </StyledCard>
+
+          <Box
+            sx={{
+              border: '1px solid',
+              borderColor: 'grey.200',
+              borderRadius: 3,
+              p: { xs: 2, sm: 2.5 },
+              mb: 3,
+              bgcolor: 'background.paper',
+            }}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={6}>
+                <MetricsCard
+                  title="Overall Rating"
+                  value={`${overall.toFixed(1)}/5.0`}
+                  subtitle={`${totalFeedback} review${totalFeedback === 1 ? '' : 's'}`}
+                  icon={<StarIcon color="warning" />}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={6}>
+                <MetricsCard
+                  title="Class Hours Completed"
+                  value={totalClassHours}
+                  subtitle="Total hours of class taken"
+                  icon={<CheckCircleIcon color="success" />}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={6}>
+                <MetricsCard
+                  title="Demo Conversion"
+                  value={conversionDisplay}
+                  subtitle={conversionSubtitle}
+                  icon={<TrendingUpIcon color="primary" />}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <StarIcon fontSize="small" />
+            <Typography variant="h6" fontWeight={600}>Rating Breakdown</Typography>
+          </Box>
+
+          <Stack spacing={2.5}>
+            {ratingItems.map((item) => (
+              <Box key={item.key}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                  <Typography variant="body2" fontWeight={600}>{item.label}</Typography>
+                  <Typography variant="body2" color="text.secondary">{item.value.toFixed(1)}/5.0</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={2}>
+                  <Rating
+                    name={`${item.key}-rating`}
+                    value={item.value}
+                    precision={0.1}
+                    readOnly
+                    aria-label={`${item.label} rating`}
+                    icon={<StarIcon fontSize="inherit" />}
+                    emptyIcon={<StarIcon fontSize="inherit" />}
+                  />
+                  <LinearProgress
+                    variant="determinate"
+                    value={clamp((item.value / 5) * 100, 0, 100)}
+                    color={ratingColor(item.value)}
+                    sx={{ height: 8, borderRadius: 1, width: 100 }}
+                    aria-label={`${item.label} progress`}
+                  />
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" fontWeight={600} mb={2}>Performance Insights</Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="caption" color="text.secondary">Recommendation Rate</Typography>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="h5" fontWeight={700}>{formatPercentage(recommendationRate)}</Typography>
+                  <ThumbUpIcon color="success" fontSize="small" />
+                </Box>
+                <Typography variant="body2" color="text.secondary">{Math.round((recommendationRate / 100) * totalFeedback)} would recommend</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="caption" color="text.secondary">Average Test Score</Typography>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="h5" fontWeight={700}>{`${avgTestScore.toFixed(1)}/100`}</Typography>
+                  <SchoolIcon color="info" fontSize="small" />
+                </Box>
+                <Typography variant="body2" color="text.secondary">Student performance</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12}>
+              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, bgcolor: 'grey.50' }}>
+                <Typography variant="caption" color="text.secondary">Total Feedback Received</Typography>
+                <Typography variant="h4" fontWeight={700} sx={{ color: 'primary.main' }}>{totalFeedback}</Typography>
+                <Typography variant="body2" color="text.secondary">Thank you for your dedication! Keep up the great work.</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+
+          {lowestRating && lowestRating.value < 4 && (
+            <Box sx={{ bgcolor: 'info.lighter', p: 2, borderRadius: 2, mt: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                💡 Tip: Focus on improving {lowestRating.label.toLowerCase()} to enhance your overall rating and tier level.
+              </Typography>
+            </Box>
+          )}
+      </Box>
+    </CardContent>
+  </StyledCard>
   );
 };
 

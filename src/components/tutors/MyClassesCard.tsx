@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -16,7 +16,6 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import EventIcon from '@mui/icons-material/Event';
 import EmailIcon from '@mui/icons-material/Email';
 import ClassIcon from '@mui/icons-material/Class';
 import { StyledCard } from '../common/StyledCard';
@@ -24,7 +23,6 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
-import ScheduleTestModal from './ScheduleTestModal';
 import { getMyClasses } from '../../services/finalClassService';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
@@ -38,7 +36,6 @@ const MyClassesCard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
   const [attendanceModalOpen, setAttendanceModalOpen] = useState<boolean>(false);
-  const [testModalOpen, setTestModalOpen] = useState<boolean>(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   const fetchClasses = async () => {
@@ -71,11 +68,6 @@ const MyClassesCard: React.FC = () => {
     setAttendanceModalOpen(true);
   };
 
-  const handleTestClick = (cls: IFinalClass) => {
-    setSelectedClass(cls);
-    setTestModalOpen(true);
-  };
-
   const handleContactCoordinator = (cls: IFinalClass) => {
     const email = cls?.coordinator?.email;
     const subject = `Regarding Class: ${cls?.studentName}`;
@@ -86,7 +78,6 @@ const MyClassesCard: React.FC = () => {
 
   const handleModalClose = () => {
     setAttendanceModalOpen(false);
-    setTestModalOpen(false);
     setSelectedClass(null);
   };
 
@@ -94,7 +85,6 @@ const MyClassesCard: React.FC = () => {
     setActionSuccess('Action completed successfully.');
     fetchClasses();
     setAttendanceModalOpen(false);
-    setTestModalOpen(false);
     const timer = setTimeout(() => setActionSuccess(null), 5000);
     return () => clearTimeout(timer);
   };
@@ -285,15 +275,6 @@ const MyClassesCard: React.FC = () => {
                   </Button>
                   <Button
                     variant="outlined"
-                    color="primary"
-                    size="small"
-                    startIcon={<EventIcon />}
-                    onClick={() => handleTestClick(cls)}
-                  >
-                    Schedule Test
-                  </Button>
-                  <Button
-                    variant="outlined"
                     color="inherit"
                     size="small"
                     startIcon={<EmailIcon />}
@@ -316,15 +297,6 @@ const MyClassesCard: React.FC = () => {
         {selectedClass && attendanceModalOpen && (
           <SubmitAttendanceModal
             open={attendanceModalOpen}
-            onClose={handleModalClose}
-            finalClass={selectedClass}
-            onSuccess={handleActionSuccess}
-          />
-        )}
-
-        {selectedClass && testModalOpen && (
-          <ScheduleTestModal
-            open={testModalOpen}
             onClose={handleModalClose}
             finalClass={selectedClass}
             onSuccess={handleActionSuccess}

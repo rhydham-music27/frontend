@@ -126,8 +126,10 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
           sx={{ 
             color: 'text.primary',
             mb: { xs: 0.25, sm: 0.5 },
-            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+            fontSize: { xs: '1.3rem', sm: '1.6rem', md: '1.8rem' },
             lineHeight: 1.2,
+            maxWidth: '100%',
+            wordBreak: 'break-word',
           }}
         >
           {value}
@@ -139,7 +141,10 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
           fontWeight={500}
           sx={{ 
             mb: subtitle ? 0.5 : 0,
-            fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+            fontSize: { xs: '0.8rem', sm: '0.85rem' },
+            maxWidth: '100%',
+            wordBreak: 'break-word',
+            whiteSpace: 'normal',
           }}
         >
           {title}
@@ -152,6 +157,9 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
               color: 'text.secondary',
               display: 'block',
               fontSize: { xs: '0.7rem', sm: '0.75rem' },
+              maxWidth: '100%',
+              wordBreak: 'break-word',
+              whiteSpace: 'normal',
             }}
           >
             {subtitle}

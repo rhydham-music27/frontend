@@ -9,7 +9,7 @@ import { StyledCard } from '../common/StyledCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
-import { getMyDemos } from '../../services/demoService';
+import { getMyDemos, updateDemoStatus } from '../../services/demoService';
 import { IDemoHistory, PaginatedResponse } from '../../types';
 import { DEMO_STATUS } from '../../constants';
 
@@ -23,6 +23,7 @@ const DemoClassesCard: React.FC = () => {
     total: 0,
     pages: 0,
   });
+  const [updatingDemoId, setUpdatingDemoId] = useState<string | null>(null);
 
   const formatDate = (date?: string | Date) => {
     if (!date) return '-';
@@ -50,22 +51,32 @@ const DemoClassesCard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const targetPage = page ?? pagination.page;
-      const resp: PaginatedResponse<IDemoHistory[]> = await getMyDemos(targetPage, pagination.limit);
+
+      // Clamp requested page to a safe value based on current state
+      const requested = page ?? 1;
+      const safeRequestedPage = Math.max(1, requested);
+
+      const resp: PaginatedResponse<IDemoHistory[]> = await getMyDemos(safeRequestedPage, pagination.limit);
       const { data, pagination: p } = resp as any;
+
+      const pages = p?.pages || 1;
+      const safePageFromApi = Math.min(Math.max(p?.page || 1, 1), pages);
+
       setDemos(Array.isArray(data) ? data : []);
-      setPagination({ page: p.page, limit: p.limit, total: p.total, pages: p.pages });
+      setPagination({ page: safePageFromApi, limit: p.limit, total: p.total, pages });
     } catch (e: any) {
       const msg = e?.response?.data?.message || e?.message || 'Failed to load demo sessions.';
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit]);
+  }, [pagination.limit]);
 
   useEffect(() => {
-    fetchDemos();
-  }, [fetchDemos]);
+    // Initial load - always start from first page
+    fetchDemos(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (
@@ -118,9 +129,33 @@ const DemoClassesCard: React.FC = () => {
     if (pagination.page < pagination.pages) fetchDemos(pagination.page + 1);
   };
 
+  const handleMarkCompleted = async (demo: IDemoHistory) => {
+    const leadAny: any = demo.classLead as any;
+    const leadId: string | undefined = (demo.classLead as any)?.id || leadAny?._id;
+    if (!leadId) {
+      setError('Unable to identify the demo lead. Please contact support.');
+      return;
+    }
+    try {
+      setUpdatingDemoId(demo.id);
+      await updateDemoStatus(leadId, DEMO_STATUS.COMPLETED);
+      await fetchDemos(pagination.page);
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || 'Failed to mark demo as completed.';
+      setError(msg);
+    } finally {
+      setUpdatingDemoId(null);
+    }
+  };
+
   return (
     <StyledCard>
       <CardContent>
+        {error && demos.length > 0 && (
+          <Box mb={2}>
+            <ErrorAlert error={error} />
+          </Box>
+        )}
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
           <Box display="flex" alignItems="center" gap={1.5}>
             <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
@@ -246,6 +281,20 @@ const DemoClassesCard: React.FC = () => {
                     </Typography>
                   )}
                 </Box>
+
+                {demo.status === DEMO_STATUS.SCHEDULED && (
+                  <Box display="flex" justifyContent="flex-end" mt={1.5}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleMarkCompleted(demo)}
+                      disabled={updatingDemoId === demo.id}
+                    >
+                      Mark Completed
+                    </Button>
+                  </Box>
+                )}
               </Box>
             );
           })}

@@ -24,7 +24,8 @@ const MainLayout: React.FC = () => {
           ml: { md: `${drawerWidth}px`, xs: 0 },
           width: { md: `calc(100% - ${drawerWidth}px)`, xs: '100%' },
           minWidth: 0,
-          minHeight: '100vh',
+          height: '100vh',
+          overflowY: 'auto',
           backgroundColor: 'background.default',
           transition: 'margin 0.3s ease, width 0.3s ease',
         }}

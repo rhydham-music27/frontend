@@ -129,6 +129,44 @@ export const getAttendanceHistory = async (
   return data as ApiResponse<{ attendances: IAttendance[]; statistics: IAttendanceStatistics }>;
 };
 
+export const getMyAttendanceSummary = async (): Promise<
+  ApiResponse<
+    Array<{
+      classId: string;
+      className: string;
+      studentName: string;
+      totalSessionsTaken: number;
+      presentCount: number;
+    }>
+  >
+> => {
+  const { data } = await api.get(API_ENDPOINTS.ATTENDANCE_TUTOR_SUMMARY);
+  return data as ApiResponse<
+    Array<{
+      classId: string;
+      className: string;
+      studentName: string;
+      totalSessionsTaken: number;
+      presentCount: number;
+    }>
+  >;
+};
+
+export const downloadClassAttendancePdf = async (classId: string): Promise<void> => {
+  const url = API_ENDPOINTS.ATTENDANCE_CLASS_EXPORT_PDF(classId);
+  const response = await api.get(url, { responseType: 'blob' });
+
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = downloadUrl;
+  a.download = `attendance-${classId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(downloadUrl);
+};
+
 export default {
   getAttendances,
   getAttendanceById,
@@ -142,4 +180,6 @@ export default {
   getParentPendingApprovals,
   getAttendanceByClass,
   getAttendanceHistory,
+  getMyAttendanceSummary,
+  downloadClassAttendancePdf,
 };

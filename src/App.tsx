@@ -40,6 +40,10 @@ import DataManagementPage from './pages/admin/DataManagementPage';
 import TutorDashboardPage from './pages/tutors/TutorDashboardPage';
 import TutorRegistrationPage from './pages/tutors/TutorRegistrationPage';
 import TutorTimetablePage from './pages/tutors/TutorTimetablePage';
+import TutorPaymentsPage from './pages/tutors/TutorPaymentsPage';
+import TutorProfilePage from './pages/tutors/TutorProfilePage';
+import TutorAttendancePage from './pages/tutors/TutorAttendancePage';
+import CoordinatorSettingsPage from './pages/coordinator/CoordinatorSettingsPage';
 
 const App: React.FC = () => {
   const RoleBasedDashboard: React.FC = () => {
@@ -86,6 +90,8 @@ const App: React.FC = () => {
               <Route path="coordinator-dashboard" element={<CoordinatorDashboardPage />} />
               <Route path="tutor-dashboard" element={<TutorDashboardPage />} />
               <Route path="tutor-timetable" element={<TutorTimetablePage />} />
+              <Route path="tutor-payments" element={<TutorPaymentsPage />} />
+              <Route path="tutor-attendance" element={<TutorAttendancePage />} />
               <Route path="today-tasks" element={<TodayTasksPage />} />
               <Route path="assigned-classes" element={<AssignedClassesPage />} />
               <Route path="attendance-approvals" element={<AttendanceApprovalPage />} />
@@ -94,6 +100,7 @@ const App: React.FC = () => {
               <Route path="test-reports" element={<TestReportAnalysisPage />} />
               <Route path="tutor-performance" element={<TutorPerformancePage />} />
               <Route path="payment-tracking" element={<PaymentTrackingPage />} />
+              <Route path="coordinator-settings" element={<CoordinatorSettingsPage />} />
               <Route path="coordinator-profile" element={<CoordinatorProfilePage />} />
               <Route path="admin-dashboard" element={<AdminDashboardPage />} />
               <Route path="admin-profile" element={<AdminProfilePage />} />
@@ -117,6 +124,7 @@ const App: React.FC = () => {
               </Route>
               <Route path="analytics" element={<div>Analytics - Coming soon</div>} />
               <Route path="profile" element={<ManagerProfilePage />} />
+              <Route path="tutor-profile" element={<TutorProfilePage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

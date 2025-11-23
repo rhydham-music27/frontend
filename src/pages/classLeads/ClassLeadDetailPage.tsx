@@ -77,18 +77,6 @@ export default function ClassLeadDetailPage() {
   const handleSelectTutor = (t: ITutorComparison) => { setSelectedTutor(t); setOpenInterested(false); setOpenDemoAssign(true); };
   const handleDemoAssignSuccess = async () => { await refetchAll(); setSnack({ open: true, message: 'Demo assigned successfully', severity: 'success' }); };
 
-  const handleMarkDemoCompleted = async () => {
-    if (!id) return;
-    try {
-      await demoService.updateDemoStatus(id as string, DEMO_STATUS.COMPLETED);
-      await refetchAll();
-      setSnack({ open: true, message: 'Demo marked as completed', severity: 'success' });
-    } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Failed to update demo status';
-      setSnack({ open: true, message: msg, severity: 'error' });
-    }
-  };
-
   const handleApproveDemo = async () => {
     if (!id) return;
     try {
@@ -120,7 +108,6 @@ export default function ClassLeadDetailPage() {
 
   const isManagerOrAdmin = user?.role === USER_ROLES.MANAGER || user?.role === USER_ROLES.ADMIN;
   const demoStatus = (classLead as any)?.demoDetails?.demoStatus as string | undefined;
-  const canMarkDemoCompleted = isManagerOrAdmin && demoStatus === DEMO_STATUS.SCHEDULED;
   const canApproveOrRejectDemo = isManagerOrAdmin && demoStatus === DEMO_STATUS.COMPLETED;
 
   return (
@@ -255,9 +242,6 @@ export default function ClassLeadDetailPage() {
                   <Button variant="contained" onClick={() => setOpenAnnouncement(true)} startIcon={<AnnouncementIcon />}>Post Announcement</Button>
                 )}
                 <Button variant="outlined" disabled={!announcement} onClick={() => setOpenInterested(true)}>View Interested Tutors</Button>
-                {canMarkDemoCompleted && (
-                  <Button variant="contained" color="success" onClick={handleMarkDemoCompleted}>Mark Demo Completed</Button>
-                )}
                 {canApproveOrRejectDemo && (
                   <>
                     <Button variant="contained" color="primary" onClick={handleApproveDemo}>Approve & Convert</Button>
