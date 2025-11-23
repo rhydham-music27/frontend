@@ -39,6 +39,15 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
 
+  // Determine if today is a scheduled class day for this final class
+  const isTodayClassDay = (() => {
+    const schedule: any = (finalClass as any)?.schedule;
+    if (!schedule || !Array.isArray(schedule.daysOfWeek) || schedule.daysOfWeek.length === 0) return true;
+    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const todayName = dayNames[new Date().getDay()];
+    return schedule.daysOfWeek.includes(todayName);
+  })();
+
   const resetState = () => {
     setSessionDate(todayStr());
     setSessionNumber('');
@@ -55,18 +64,17 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
   };
 
   const handleSubmit = async () => {
-    if (!sessionDate) {
-      setError('Please select a session date.');
-      return;
-    }
     try {
       setLoading(true);
       setError(null);
       setSuccess(false);
 
+      // Always submit attendance for today's date to align with backend rules
+      const todayIso = new Date();
+
       const payload = {
         finalClassId: finalClass.id,
-        sessionDate,
+        sessionDate: todayIso.toISOString(),
         sessionNumber: sessionNumber ? Number(sessionNumber) : undefined,
         notes: notes || undefined,
         studentAttendanceStatus,
@@ -95,9 +103,12 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Submit attendance for this class session. The coordinator will review and approve it.
-        </Alert>
+        
+        {!isTodayClassDay && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Today is not a scheduled day for this class. You cannot submit attendance today.
+          </Alert>
+        )}
 
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2">Class: {finalClass.studentName}</Typography>
@@ -113,12 +124,10 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
         <TextField
           type="date"
           label="Session Date"
-          required
           fullWidth
           InputLabelProps={{ shrink: true }}
-          inputProps={{ max: todayStr() }}
           value={sessionDate}
-          onChange={(e) => { setSessionDate(e.target.value); setError(null); }}
+          disabled
           sx={{ mb: 2 }}
         />
 
@@ -177,7 +186,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
         <Button
           variant="contained"
           onClick={handleSubmit}
-          disabled={loading || !sessionDate}
+          disabled={loading || !sessionDate || !isTodayClassDay}
           startIcon={loading ? <CircularProgress size={18} /> : <CheckCircleIcon />}
         >
           {loading ? 'Submitting...' : 'Submit Attendance'}

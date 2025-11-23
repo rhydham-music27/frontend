@@ -183,7 +183,7 @@ const AttendanceHistoryCard: React.FC = () => {
   const statistics = useMemo(() => {
     const totalSessions = attendances.length;
     const approvedCount = attendances.filter((a) =>
-      [ATTENDANCE_STATUS.COORDINATOR_APPROVED, ATTENDANCE_STATUS.PARENT_APPROVED].includes(
+      [ATTENDANCE_STATUS.COORDINATOR_APPROVED, ATTENDANCE_STATUS.PARENT_APPROVED,ATTENDANCE_STATUS.APPROVED].includes(
         a.status as any
       )
     ).length;

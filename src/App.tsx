@@ -39,6 +39,7 @@ import CoordinatorsManagementPage from './pages/admin/CoordinatorsManagementPage
 import DataManagementPage from './pages/admin/DataManagementPage';
 import TutorDashboardPage from './pages/tutors/TutorDashboardPage';
 import TutorRegistrationPage from './pages/tutors/TutorRegistrationPage';
+import TutorTimetablePage from './pages/tutors/TutorTimetablePage';
 
 const App: React.FC = () => {
   const RoleBasedDashboard: React.FC = () => {
@@ -84,6 +85,7 @@ const App: React.FC = () => {
               <Route index element={<RoleBasedDashboard />} />
               <Route path="coordinator-dashboard" element={<CoordinatorDashboardPage />} />
               <Route path="tutor-dashboard" element={<TutorDashboardPage />} />
+              <Route path="tutor-timetable" element={<TutorTimetablePage />} />
               <Route path="today-tasks" element={<TodayTasksPage />} />
               <Route path="assigned-classes" element={<AssignedClassesPage />} />
               <Route path="attendance-approvals" element={<AttendanceApprovalPage />} />

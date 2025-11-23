@@ -22,6 +22,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import StorageIcon from '@mui/icons-material/Storage';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 
@@ -39,6 +40,8 @@ const iconForLabel = (label: string) => {
       return <AdminPanelSettingsIcon />;
     case 'Tutor Dashboard':
       return <DashboardIcon />;
+    case 'Timetable':
+      return <ScheduleIcon />;
     case 'Class Leads':
       return <AssignmentIcon />;
     case 'Test Scheduling':

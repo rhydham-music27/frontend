@@ -45,6 +45,7 @@ export const DEMO_STATUS = {
 export const ATTENDANCE_STATUS = {
   PENDING: 'PENDING',
   COORDINATOR_APPROVED: 'COORDINATOR_APPROVED',
+  APPROVED: 'APPROVED',
   PARENT_APPROVED: 'PARENT_APPROVED',
   REJECTED: 'REJECTED',
 } as const;
@@ -140,6 +141,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Dashboard', path: '/', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ADMIN] },
   { label: 'Admin Dashboard', path: '/admin-dashboard', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Tutor Dashboard', path: '/tutor-dashboard', allowedRoles: [USER_ROLES.TUTOR] },
+  { label: 'Timetable', path: '/tutor-timetable', allowedRoles: [USER_ROLES.TUTOR] },
   { label: "Today's Tasks", path: '/today-tasks', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Class Leads', path: '/class-leads', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
   { label: 'Tutors', path: '/tutors', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
@@ -265,7 +267,7 @@ export const API_ENDPOINTS = {
   COORDINATOR_TUTORS: '/api/tutors/coordinator/tutors',
   // Final classes - tutor
   FINAL_CLASSES_MY_CLASSES: '/api/final-classes/tutor/my-classes',
-  
+
   // Admin endpoints
   // Admin profile and base
   ADMIN: '/api/admin',
