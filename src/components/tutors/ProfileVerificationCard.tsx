@@ -23,17 +23,18 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import SchoolIcon from '@mui/icons-material/School';
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { StyledCard } from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/components/common/StyledCard';
-import VerificationStatusChip from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/components/tutors/VerificationStatusChip';
-import DocumentUploadForm from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/components/tutors/DocumentUploadForm';
-import DocumentViewer from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/components/tutors/DocumentViewer';
-import LoadingSpinner from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/components/common/LoadingSpinner';
-import ErrorAlert from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/components/common/ErrorAlert';
-import { getMyProfile, uploadDocument } from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/services/tutorService';
-import { ITutor } from 'c:/Users/Rhydham/Desktop/projects/ys-final/v3/frontend/src/types';
+import { StyledCard } from '@/components/common/StyledCard';
+import VerificationStatusChip from '@/components/tutors/VerificationStatusChip';
+import DocumentUploadForm from '@/components/tutors/DocumentUploadForm';
+import DocumentViewer from '@/components/tutors/DocumentViewer';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ErrorAlert from '@/components/common/ErrorAlert';
+import { getMyProfile, uploadDocument } from '@/services/tutorService';
+import { ITutor } from '@/types';
 
 const ProfileVerificationCard: React.FC = () => {
   const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
@@ -117,28 +118,12 @@ const ProfileVerificationCard: React.FC = () => {
     .map((s) => s[0]?.toUpperCase())
     .join('');
 
+  const experienceHours = tutorProfile!.experienceHours ?? 0;
+  const classesAssigned = (tutorProfile as any).classesAssigned ?? 0;
+
   return (
     <StyledCard>
       <CardContent>
-        <Box display="flex" alignItems="center" gap={3} mb={3}>
-          <Avatar sx={{ width: 80, height: 80, bgcolor: 'primary.main', fontSize: 28 }} aria-label="profile-avatar">
-            {initials || 'T'}
-          </Avatar>
-          <Stack spacing={1} sx={{ minWidth: 0 }}>
-            <Typography variant="h5" fontWeight={700} noWrap>
-              {tutorProfile?.user?.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" noWrap>
-              {tutorProfile?.user?.email}
-            </Typography>
-            <Box display="flex" alignItems="center" gap={1}>
-              <VerifiedUserIcon fontSize="small" aria-label="verification-status" />
-              <VerificationStatusChip status={tutorProfile!.verificationStatus as any} />
-            </Box>
-          </Stack>
-        </Box>
-
-        <Divider sx={{ my: 3 }} />
 
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <PersonIcon fontSize="small" aria-label="profile-information" />
@@ -293,6 +278,54 @@ const ProfileVerificationCard: React.FC = () => {
             </Box>
           </Grid>
         </Grid>
+
+        <Box mt={3}>
+          <Typography variant="h6" fontWeight={600} gutterBottom>
+            Teaching Summary
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ border: '1px solid #E2E8F0', borderRadius: 2, p: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  Tier
+                </Typography>
+                <Typography variant="h6" fontWeight={700}>
+                  {(tutorProfile as any).tier || 'N/A'}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ border: '1px solid #E2E8F0', borderRadius: 2, p: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  Overall Rating
+                </Typography>
+                <Typography variant="h6" fontWeight={700}>
+                  {`${(tutorProfile as any).ratings?.toFixed?.(1) ?? (tutorProfile as any).ratings ?? 0}/5`}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ border: '1px solid #E2E8F0', borderRadius: 2, p: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  Classes Completed
+                </Typography>
+                <Typography variant="h6" fontWeight={700}>
+                  {(tutorProfile as any).classesCompleted ?? 0}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ border: '1px solid #E2E8F0', borderRadius: 2, p: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  Interests Received
+                </Typography>
+                <Typography variant="h6" fontWeight={700}>
+                  {(tutorProfile as any).interestCount ?? 0}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
 
         <Divider sx={{ my: 3 }} />
 

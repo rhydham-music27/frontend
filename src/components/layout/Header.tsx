@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Box, Avatar, Menu, MenuItem, Divider, Badge, Tooltip } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -10,6 +10,8 @@ import { USER_ROLES } from '../../constants';
 import { useNavigate } from 'react-router-dom';
 import NotificationsPanel from './NotificationsPanel';
 import useNotifications from '../../hooks/useNotifications';
+import { getMyProfile } from '../../services/tutorService';
+import { ITutor } from '../../types';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -21,6 +23,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const { unreadCount } = useNotifications({ page: 1, limit: 20, enabled: Boolean(user) && notifOpen });
+  const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,22 +56,43 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       .slice(0, 2)
       .toUpperCase() || 'YS';
 
+  useEffect(() => {
+    const loadTutorAvatar = async () => {
+      if (!user || user.role !== USER_ROLES.TUTOR) return;
+      try {
+        const res = await getMyProfile();
+        const tutor = res.data;
+        setTutorProfile(tutor);
+        const profilePhotoDoc = (tutor.documents || []).find((doc) => doc.documentType === 'PROFILE_PHOTO');
+        if (profilePhotoDoc) {
+          setAvatarUrl(profilePhotoDoc.documentUrl);
+        } else {
+          setAvatarUrl(undefined);
+        }
+      } catch {
+        setAvatarUrl(undefined);
+      }
+    };
+
+    loadTutorAvatar();
+  }, [user]);
+
   return (
-    <AppBar 
-      position="fixed" 
-      color="primary" 
-      sx={{ 
+    <AppBar
+      position="fixed"
+      color="primary"
+      sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
         background: '#001F54',
       }}
     >
       <Toolbar sx={{ minHeight: { xs: 56, sm: 64, md: 70 }, px: { xs: 1, sm: 2 } }}>
-        <IconButton 
-          color="inherit" 
-          edge="start" 
-          onClick={onMenuClick} 
-          sx={{ 
-            display: { md: 'none', xs: 'inline-flex' }, 
+        <IconButton
+          color="inherit"
+          edge="start"
+          onClick={onMenuClick}
+          sx={{
+            display: { md: 'none', xs: 'inline-flex' },
             mr: { xs: 1, sm: 2 },
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -76,24 +101,24 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         >
           <MenuIcon />
         </IconButton>
-        
+
         <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} sx={{ flexGrow: 1 }}>
-          <Box 
-            component="img" 
-            src="/1.jpg" 
-            alt="Your Shikshak Logo" 
-            sx={{ 
-              height: { xs: 32, sm: 40 }, 
-              width: { xs: 32, sm: 40 }, 
+          <Box
+            component="img"
+            src="/1.jpg"
+            alt="Your Shikshak Logo"
+            sx={{
+              height: { xs: 32, sm: 40 },
+              width: { xs: 32, sm: 40 },
               borderRadius: '50%',
               border: '2px solid rgba(255, 255, 255, 0.3)',
               display: { xs: 'none', sm: 'block' },
-            }} 
+            }}
           />
           <Box>
-            <Typography 
-              variant="h6" 
-              sx={{ 
+            <Typography
+              variant="h6"
+              sx={{
                 fontWeight: 700,
                 fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
                 letterSpacing: '-0.01em',
@@ -102,9 +127,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             >
               Your Shikshak
             </Typography>
-            <Typography 
-              variant="caption" 
-              sx={{ 
+            <Typography
+              variant="caption"
+              sx={{
                 display: { xs: 'none', md: 'block' },
                 opacity: 0.9,
                 fontSize: '0.7rem',
@@ -118,8 +143,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
         <Box display="flex" alignItems="center" gap={{ xs: 0.5, sm: 1, md: 2 }}>
           <Tooltip title="Notifications" arrow>
-            <IconButton 
-              color="inherit" 
+            <IconButton
+              color="inherit"
               onClick={() => setNotifOpen(true)}
               size="small"
               sx={{
@@ -129,8 +154,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 },
               }}
             >
-              <Badge 
-                badgeContent={unreadCount} 
+              <Badge
+                badgeContent={unreadCount}
                 color="error"
                 sx={{
                   '& .MuiBadge-badge': {
@@ -147,9 +172,9 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           </Tooltip>
 
           <Tooltip title="Account" arrow>
-            <IconButton 
-              color="inherit" 
-              onClick={handleMenuOpen} 
+            <IconButton
+              color="inherit"
+              onClick={handleMenuOpen}
               size="small"
               sx={{
                 p: { xs: 0.5, sm: 0.75 },
@@ -158,24 +183,25 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                 },
               }}
             >
-              <Avatar 
-                sx={{ 
-                  width: { xs: 32, sm: 36 }, 
+              <Avatar
+                sx={{
+                  width: { xs: 32, sm: 36 },
                   height: { xs: 32, sm: 36 },
                   bgcolor: 'rgba(255, 255, 255, 0.2)',
                   border: '2px solid rgba(255, 255, 255, 0.3)',
                   fontWeight: 700,
                   fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 }}
+                src={avatarUrl}
               >
                 {initials}
               </Avatar>
             </IconButton>
           </Tooltip>
 
-          <Menu 
-            anchorEl={anchorEl} 
-            open={Boolean(anchorEl)} 
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
             onClose={handleMenuClose}
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}

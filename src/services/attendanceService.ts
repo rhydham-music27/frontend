@@ -47,7 +47,7 @@ export const getAttendanceById = async (
 export type CreateAttendancePayload = {
   finalClassId: string;
   sessionDate: string;
-  sessionNumber?: number;
+  topicCovered?: string;
   notes?: string;
   studentAttendanceStatus?: string;
 };
@@ -167,6 +167,20 @@ export const downloadClassAttendancePdf = async (classId: string): Promise<void>
   window.URL.revokeObjectURL(downloadUrl);
 };
 
+// Fetches the attendance PDF as a Blob so it can be rendered inline (e.g. in an iframe)
+export const fetchClassAttendancePdfBlob = async (
+  classId: string,
+  params?: { start?: string; end?: string }
+): Promise<Blob> => {
+  const search = new URLSearchParams();
+  if (params?.start) search.append('start', params.start);
+  if (params?.end) search.append('end', params.end);
+  const query = search.toString();
+  const url = `${API_ENDPOINTS.ATTENDANCE_CLASS_EXPORT_PDF(classId)}${query ? `?${query}` : ''}`;
+  const response = await api.get(url, { responseType: 'blob' });
+  return response.data as Blob;
+};
+
 export default {
   getAttendances,
   getAttendanceById,
@@ -182,4 +196,5 @@ export default {
   getAttendanceHistory,
   getMyAttendanceSummary,
   downloadClassAttendancePdf,
+  fetchClassAttendancePdfBlob,
 };

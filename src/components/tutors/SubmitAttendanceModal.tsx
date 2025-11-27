@@ -30,7 +30,7 @@ const todayStr = () => new Date().toISOString().split('T')[0];
 
 const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onClose, finalClass, onSuccess }) => {
   const [sessionDate, setSessionDate] = useState<string>(todayStr());
-  const [sessionNumber, setSessionNumber] = useState<number | string>('');
+  const [topicCovered, setTopicCovered] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [studentAttendanceStatus, setStudentAttendanceStatus] = useState<string>(
     STUDENT_ATTENDANCE_STATUS.PRESENT
@@ -50,7 +50,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
 
   const resetState = () => {
     setSessionDate(todayStr());
-    setSessionNumber('');
+    setTopicCovered('');
     setNotes('');
     setStudentAttendanceStatus(STUDENT_ATTENDANCE_STATUS.PRESENT);
     setLoading(false);
@@ -75,7 +75,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
       const payload = {
         finalClassId: finalClass.id,
         sessionDate: todayIso.toISOString(),
-        sessionNumber: sessionNumber ? Number(sessionNumber) : undefined,
+        topicCovered: topicCovered || undefined,
         notes: notes || undefined,
         studentAttendanceStatus,
       };
@@ -132,13 +132,12 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
         />
 
         <TextField
-          type="number"
-          label="Session Number (Optional)"
+          label="Topic Covered"
           fullWidth
-          placeholder="e.g., 5"
-          helperText="Leave empty to auto-calculate"
-          value={sessionNumber}
-          onChange={(e) => { setSessionNumber(e.target.value); setError(null); }}
+          placeholder="e.g., Trigonometry - Heights and Distances"
+          helperText="Briefly describe what was taught in this session"
+          value={topicCovered}
+          onChange={(e) => { setTopicCovered(e.target.value); setError(null); }}
           sx={{ mb: 2 }}
         />
 

@@ -27,8 +27,8 @@ export default function AttendanceApprovalCard({ attendance, userRole, onApprove
           <Grid item xs={12} md={8}>
             <Box display="flex" gap={2} flexWrap="wrap">
               <Typography variant="subtitle2">Session Date: {new Date(attendance.sessionDate).toLocaleDateString()}</Typography>
-              {attendance.sessionNumber && (
-                <Typography variant="subtitle2">Session #: {attendance.sessionNumber}</Typography>
+              {attendance.topicCovered && (
+                <Typography variant="subtitle2">Topic: {attendance.topicCovered}</Typography>
               )}
               <Typography variant="subtitle2">
                 Class: {attendance.finalClass.studentName} • {(attendance.finalClass.subject || []).join(', ')}

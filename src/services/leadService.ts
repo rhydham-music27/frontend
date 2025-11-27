@@ -64,6 +64,11 @@ export const getMyLeads = async (): Promise<ApiResponse<IClassLead[]>> => {
   return data as ApiResponse<IClassLead[]>;
 };
 
+export const getMyTutorLeads = async (): Promise<ApiResponse<IClassLead[]>> => {
+  const { data } = await api.get(API_ENDPOINTS.TUTOR_LEADS_MY);
+  return data as ApiResponse<IClassLead[]>;
+};
+
 export default {
   getClassLeads,
   getClassLeadById,
@@ -72,4 +77,5 @@ export default {
   updateClassLeadStatus,
   deleteClassLead,
   getMyLeads,
+  getMyTutorLeads,
 };

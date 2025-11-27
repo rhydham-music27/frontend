@@ -92,7 +92,7 @@ const FeedbackSummaryCard: React.FC = () => {
     <StyledCard>
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={6}>
+          <Grid item xs={12} sm={4} md={4}>
             <MetricsCard
               title="Overall Rating"
               value={`${overall.toFixed(1)}/5.0`}
@@ -100,7 +100,7 @@ const FeedbackSummaryCard: React.FC = () => {
               icon={<StarIcon color="warning" />}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={6}>
+          <Grid item xs={12} sm={4} md={4}>
             <MetricsCard
               title="Class Hours Completed"
               value={totalClassHours}
@@ -108,7 +108,7 @@ const FeedbackSummaryCard: React.FC = () => {
               icon={<CheckCircleIcon color="success" />}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={6}>
+          <Grid item xs={12} sm={4} md={4}>
             <MetricsCard
               title="Demo Conversion"
               value={conversionDisplay}

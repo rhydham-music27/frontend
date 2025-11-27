@@ -80,12 +80,21 @@ const ClassLeadsFeedCard: React.FC = () => {
 
   const filteredAnnouncements = useMemo(
     () =>
-      announcements.filter((a) => {
-        const aid = (a as any).id || (a as any)._id;
-        if (!aid) return false;
-        if (ignoredIds.has(aid)) return false;
-        return !hasExpressedInterest(a);
-      }),
+      announcements
+        .filter((a) => {
+          const aid = (a as any).id || (a as any)._id;
+          if (!aid) return false;
+          if (ignoredIds.has(aid)) return false;
+          // Keep leads even if tutor has already expressed interest; UI already reflects that state
+          return true;
+        })
+        // Sort so that leads without expressed interest come first, and
+        // already-interested leads are shown later in the list.
+        .sort((a, b) => {
+          const aInterested = hasExpressedInterest(a) ? 1 : 0;
+          const bInterested = hasExpressedInterest(b) ? 1 : 0;
+          return aInterested - bInterested;
+        }),
     [announcements, ignoredIds, user]
   );
 
@@ -337,7 +346,14 @@ const ClassLeadsFeedCard: React.FC = () => {
                 <Divider sx={{ my: 2 }} />
                 <Box display="flex" gap={2} flexWrap="wrap">
                   {interested ? (
-                    <Chip label="Already Interested" color="success" icon={<ThumbUpIcon />} />
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      startIcon={<ThumbUpIcon />}
+                      disabled
+                    >
+                      Already Expressed
+                    </Button>
                   ) : (
                     <>
                       <Button 

@@ -164,6 +164,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
               resolvedPath = '/coordinator-dashboard';
             }
           }
+
+          if (item.label === 'Profile' && userRole === USER_ROLES.TUTOR) {
+            resolvedPath = '/tutor-profile';
+          }
+
           const selected = location.pathname === resolvedPath || location.pathname.startsWith(resolvedPath + '/');
           
           return (

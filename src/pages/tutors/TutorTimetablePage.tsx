@@ -767,7 +767,12 @@ const TutorTimetablePage: React.FC = () => {
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <CalendarTodayIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />
             <Box>
-              <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
+              <Typography
+                variant="h6"
+                component="span"
+                fontWeight={700}
+                sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}
+              >
                 Classes Schedule
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>

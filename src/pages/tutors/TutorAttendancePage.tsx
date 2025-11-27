@@ -86,8 +86,16 @@ const TutorAttendancePage: React.FC = () => {
               ).padStart(2, '0')}`
             : '';
 
-          const durationHours =
-            (a.finalClass as any)?.classLead?.classDurationHours ?? undefined;
+          // Prefer explicit duration on attendance, otherwise fall back to classLead duration
+          let durationHours =
+            typeof a.durationHours === 'number'
+              ? a.durationHours
+              : (a.finalClass as any)?.classLead?.classDurationHours ?? undefined;
+
+          // For old seeded data without explicit duration, assume 1 hour per session
+          if (typeof durationHours !== 'number') {
+            durationHours = 1;
+          }
 
           return {
             classId: row.classId,
@@ -95,7 +103,7 @@ const TutorAttendancePage: React.FC = () => {
             status: (a as any).studentAttendanceStatus || a.status || '',
             // duration in hours; AttendanceSheet converts to minutes
             duration: typeof durationHours === 'number' ? durationHours : undefined,
-            topicsCovered: undefined,
+            topicsCovered: a.topicCovered || undefined,
             markedAt: a.submittedAt ? String(a.submittedAt) : a.createdAt ? String(a.createdAt) : '',
           } as AttendanceRecord;
         })
@@ -112,7 +120,8 @@ const TutorAttendancePage: React.FC = () => {
 
       setSheetTutorData({ attendanceRecords: mapped });
       setSheetClassInfo({
-        classId: row.classId,
+        // Use className as the visible Class ID on the sheet instead of the raw Mongo _id
+        classId: row.className || row.classId,
         studentName: row.studentName,
         subject: row.className,
         tutorName: user?.name,

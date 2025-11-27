@@ -135,10 +135,10 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
               <PersonIcon fontSize="small" />
               <Typography variant="body2">{(props.task as IAttendance).tutor.name}</Typography>
             </Box>
-            {(props.task as IAttendance).sessionNumber && (
+            {(props.task as IAttendance).topicCovered && (
               <Box display="flex" alignItems="center" gap={1}>
                 <AccessTimeIcon fontSize="small" />
-                <Typography variant="body2">Session #{(props.task as IAttendance).sessionNumber}</Typography>
+                <Typography variant="body2">Topic: {(props.task as IAttendance).topicCovered}</Typography>
               </Box>
             )}
             {(props.task as IAttendance).notes && (

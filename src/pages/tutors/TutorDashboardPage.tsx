@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+
 import { Container, Box, Typography, Grid2, Card, CardContent, TextField, Button, MenuItem } from '@mui/material';
 
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -6,7 +7,11 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
-import ProfileVerificationCard from '../../components/tutors/ProfileVerificationCard';
+import TutorDashboardKpiRow from '../../components/tutors/TutorDashboardKpiRow';
+import TutorProfileOverviewCard from '../../components/tutors/TutorProfileOverviewCard';
+import TodayScheduleCard from '../../components/tutors/TodayScheduleCard';
+import UpcomingTestsCard from '../../components/tutors/UpcomingTestsCard';
+import ActiveClassesOverviewCard from '../../components/tutors/ActiveClassesOverviewCard';
 import ClassLeadsFeedCard from '../../components/tutors/ClassLeadsFeedCard';
 import DemoClassesCard from '../../components/tutors/DemoClassesCard';
 import MyClassesCard from '../../components/tutors/MyClassesCard';
@@ -29,9 +34,39 @@ const TutorDashboardPage: React.FC = () => {
   const [selectedClassId, setSelectedClassId] = useState('');
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleToDate, setRescheduleToDate] = useState('');
-  const [rescheduleTime, setRescheduleTime] = useState('');
+  const [rescheduleStartTime, setRescheduleStartTime] = useState('');
+  const [rescheduleEndTime, setRescheduleEndTime] = useState('');
+
   const [savingReschedule, setSavingReschedule] = useState(false);
   const [rescheduleSuccess, setRescheduleSuccess] = useState<string | null>(null);
+
+  const availableSessionDates = useMemo(() => {
+    if (!selectedClassId) return [] as string[];
+    const selectedClass = rescheduleClasses.find((cls) => cls.id === selectedClassId);
+    if (!selectedClass) return [] as string[];
+
+    const daysOfWeek = (selectedClass as any)?.schedule?.daysOfWeek as string[] | undefined;
+    if (!daysOfWeek || daysOfWeek.length === 0) return [] as string[];
+
+    const allowedDays = new Set(daysOfWeek);
+    const result: string[] = [];
+    const today = new Date();
+
+    // Look ahead up to 60 days for matching schedule days
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const dayName = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][
+        d.getDay()
+      ];
+      if (allowedDays.has(dayName)) {
+        const iso = d.toISOString().split('T')[0];
+        result.push(iso);
+      }
+    }
+
+    return result;
+  }, [selectedClassId, rescheduleClasses]);
 
   useEffect(() => {
     const loadClasses = async () => {
@@ -54,8 +89,8 @@ const TutorDashboardPage: React.FC = () => {
   }, [user]);
 
   const handleSaveReschedule = async () => {
-    if (!selectedClassId || !rescheduleDate || !rescheduleTime.trim()) {
-      setRescheduleError('Please select a class, original date, and time slot.');
+    if (!selectedClassId || !rescheduleDate || !rescheduleStartTime.trim()) {
+      setRescheduleError('Please select a class, original date, and start time.');
       return;
     }
 
@@ -65,12 +100,29 @@ const TutorDashboardPage: React.FC = () => {
       setRescheduleSuccess(null);
 
       const targetDate = rescheduleToDate || rescheduleDate;
+      // Build timeSlot string from start and end times
+      let start = rescheduleStartTime;
+      let end = rescheduleEndTime;
+
+      // If end time is still empty for some reason, default to +60 minutes
+      if (start && !end) {
+        const [h, m] = start.split(':').map((v) => parseInt(v || '0', 10));
+        const base = new Date(0, 0, 1, h || 0, m || 0, 0, 0);
+        base.setMinutes(base.getMinutes() + 60);
+        const hh = String(base.getHours()).padStart(2, '0');
+        const mm = String(base.getMinutes()).padStart(2, '0');
+        end = `${hh}:${mm}`;
+      }
+
+      const timeSlot = start && end ? `${start} - ${end}` : start;
+
       await createOneTimeReschedule(selectedClassId, {
         fromDate: rescheduleDate,
         toDate: targetDate,
-        timeSlot: rescheduleTime.trim(),
+        timeSlot: timeSlot.trim(),
       });
-      setRescheduleTime('');
+      setRescheduleStartTime('');
+      setRescheduleEndTime('');
       setRescheduleToDate('');
       setRescheduleSuccess('Temporary reschedule saved successfully.');
 
@@ -124,6 +176,12 @@ const TutorDashboardPage: React.FC = () => {
 
       {error && <ErrorAlert error={error} />}
 
+      {!loading && !error && (
+        <>
+          <TutorDashboardKpiRow />
+        </>
+      )}
+
       <Box mb={{ xs: 3, sm: 4 }}>
         <Typography 
           variant="h5" 
@@ -131,14 +189,14 @@ const TutorDashboardPage: React.FC = () => {
           mb={{ xs: 2, sm: 2.5, md: 3 }}
           sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
-          Quick Overview
+          Today's Schedule & Tests
         </Typography>
         <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-          <Grid2 size={{ xs: 12, lg: 8 }}>
-            <ProfileVerificationCard />
+          <Grid2 size={{ xs: 12, md: 8 }}>
+            <TodayScheduleCard />
           </Grid2>
-          <Grid2 size={{ xs: 12, lg: 4 }}>
-            <FeedbackSummaryCard />
+          <Grid2 size={{ xs: 12, md: 4 }}>
+            <UpcomingTestsCard />
           </Grid2>
         </Grid2>
       </Box>
@@ -150,7 +208,7 @@ const TutorDashboardPage: React.FC = () => {
           mb={{ xs: 2, sm: 2.5, md: 3 }}
           sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
-          My Activity
+          Class Opportunities & Demos
         </Typography>
         <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
           <Grid2 size={{ xs: 12, md: 8 }}>
@@ -159,153 +217,25 @@ const TutorDashboardPage: React.FC = () => {
           <Grid2 size={{ xs: 12, md: 4 }}>
             <DemoClassesCard />
           </Grid2>
-          <Grid2 size={{ xs: 12 }}>
-            <MyClassesCard />
-          </Grid2>
         </Grid2>
       </Box>
 
-      <Box mb={{ xs: 3, sm: 4 }}>
+      <Box mt={{ xs: 3, sm: 4 }} mb={{ xs: 3, sm: 4 }}>
         <Typography 
           variant="h5" 
           fontWeight={700} 
           mb={{ xs: 2, sm: 2.5, md: 3 }}
           sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
-          Temporary Reschedule
-        </Typography>
-        <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-          <Grid2 size={{ xs: 12, md: 8 }}>
-            <Card>
-              <CardContent>
-                {(rescheduleError || rescheduleSuccess) && (
-                  <Box mb={1.5}>
-                    {rescheduleError && (
-                      <Typography variant="caption" color="error.main">
-                        {rescheduleError}
-                      </Typography>
-                    )}
-                    {rescheduleSuccess && (
-                      <Typography variant="caption" color="success.main">
-                        {rescheduleSuccess}
-                      </Typography>
-                    )}
-                  </Box>
-                )}
-                <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} mb={2}>
-                  <TextField
-                    select
-                    fullWidth
-                    size="small"
-                    label="Class"
-                    value={selectedClassId}
-                    onChange={(e) => setSelectedClassId(e.target.value)}
-                    disabled={rescheduleLoading || savingReschedule || rescheduleClasses.length === 0}
-                  >
-                    {rescheduleClasses.map((cls) => (
-                      <MenuItem key={cls.id} value={cls.id}>
-                        {cls.studentName}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    type="date"
-                    fullWidth
-                    size="small"
-                    label="Which date's session?"
-                    InputLabelProps={{ shrink: true }}
-                    value={rescheduleDate}
-                    onChange={(e) => setRescheduleDate(e.target.value)}
-                    disabled={savingReschedule}
-                  />
-                </Box>
-                <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} mb={2}>
-                  <TextField
-                    type="date"
-                    fullWidth
-                    size="small"
-                    label="Move session to which date? (optional)"
-                    helperText="If empty, the same date above will be used."
-                    InputLabelProps={{ shrink: true }}
-                    value={rescheduleToDate}
-                    onChange={(e) => setRescheduleToDate(e.target.value)}
-                    disabled={savingReschedule}
-                  />
-                </Box>
-                <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} alignItems={{ sm: 'flex-end' }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="New time slot"
-                    placeholder="e.g. 7:00 PM - 8:00 PM"
-                    value={rescheduleTime}
-                    onChange={(e) => setRescheduleTime(e.target.value)}
-                    disabled={savingReschedule}
-                  />
-                  <Button
-                    variant="contained"
-                    onClick={handleSaveReschedule}
-                    disabled={savingReschedule || rescheduleLoading}
-                  >
-                    Save
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid2>
-        </Grid2>
-      </Box>
-
-      <Box mt={{ xs: 3, sm: 4 }}>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
-          mb={{ xs: 2, sm: 2.5, md: 3 }}
-          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-        >
-          Attendance History
+          Active Classes Overview
         </Typography>
         <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
           <Grid2 size={{ xs: 12 }}>
-            <AttendanceHistoryCard />
+            <ActiveClassesOverviewCard />
           </Grid2>
         </Grid2>
       </Box>
 
-      <Box mt={{ xs: 3, sm: 4 }}>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
-          mb={{ xs: 2, sm: 2.5, md: 3 }}
-          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-        >
-          Financial Overview & Performance
-        </Typography>
-        <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-          <Grid2 size={{ xs: 12, lg: 8 }}>
-            <PaymentsEarningsCard />
-          </Grid2>
-          <Grid2 size={{ xs: 12, lg: 4 }}>
-            <FeedbackPerformanceCard />
-          </Grid2>
-        </Grid2>
-      </Box>
-
-      <Box mt={{ xs: 3, sm: 4 }}>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
-          mb={{ xs: 2, sm: 2.5, md: 3 }}
-          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-        >
-          Notifications & Updates
-        </Typography>
-        <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-          <Grid2 size={{ xs: 12 }}>
-            <NotificationsCenterCard />
-          </Grid2>
-        </Grid2>
-      </Box>
     </Container>
   );
 };

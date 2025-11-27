@@ -38,11 +38,13 @@ import ManagersManagementPage from './pages/admin/ManagersManagementPage';
 import CoordinatorsManagementPage from './pages/admin/CoordinatorsManagementPage';
 import DataManagementPage from './pages/admin/DataManagementPage';
 import TutorDashboardPage from './pages/tutors/TutorDashboardPage';
+import TutorClassesPage from './pages/tutors/TutorClassesPage';
 import TutorRegistrationPage from './pages/tutors/TutorRegistrationPage';
 import TutorTimetablePage from './pages/tutors/TutorTimetablePage';
 import TutorPaymentsPage from './pages/tutors/TutorPaymentsPage';
 import TutorProfilePage from './pages/tutors/TutorProfilePage';
 import TutorAttendancePage from './pages/tutors/TutorAttendancePage';
+import TutorLeadsPage from './pages/tutors/TutorLeadsPage';
 import CoordinatorSettingsPage from './pages/coordinator/CoordinatorSettingsPage';
 
 const App: React.FC = () => {
@@ -59,6 +61,23 @@ const App: React.FC = () => {
       return <Navigate to="/tutor-dashboard" replace />;
     }
     return <DashboardPage />;
+  };
+
+  const RoleBasedProfile: React.FC = () => {
+    const user = useSelector(selectCurrentUser);
+    const role = user?.role;
+
+    if (role === USER_ROLES.TUTOR) {
+      return <TutorProfilePage />;
+    }
+    if (role === USER_ROLES.COORDINATOR) {
+      return <CoordinatorProfilePage />;
+    }
+    if (role === USER_ROLES.ADMIN) {
+      return <AdminProfilePage />;
+    }
+    // Default to manager profile for MANAGER or unknown roles
+    return <ManagerProfilePage />;
   };
 
   return (
@@ -89,9 +108,11 @@ const App: React.FC = () => {
               <Route index element={<RoleBasedDashboard />} />
               <Route path="coordinator-dashboard" element={<CoordinatorDashboardPage />} />
               <Route path="tutor-dashboard" element={<TutorDashboardPage />} />
+              <Route path="tutor-classes" element={<TutorClassesPage />} />
               <Route path="tutor-timetable" element={<TutorTimetablePage />} />
               <Route path="tutor-payments" element={<TutorPaymentsPage />} />
               <Route path="tutor-attendance" element={<TutorAttendancePage />} />
+              <Route path="tutor-leads" element={<TutorLeadsPage />} />
               <Route path="today-tasks" element={<TodayTasksPage />} />
               <Route path="assigned-classes" element={<AssignedClassesPage />} />
               <Route path="attendance-approvals" element={<AttendanceApprovalPage />} />
@@ -123,7 +144,7 @@ const App: React.FC = () => {
                 <Route path=":id" element={<PaymentDetailPage />} />
               </Route>
               <Route path="analytics" element={<div>Analytics - Coming soon</div>} />
-              <Route path="profile" element={<ManagerProfilePage />} />
+              <Route path="profile" element={<RoleBasedProfile />} />
               <Route path="tutor-profile" element={<TutorProfilePage />} />
             </Route>
 

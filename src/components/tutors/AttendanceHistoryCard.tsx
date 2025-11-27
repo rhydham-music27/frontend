@@ -420,7 +420,7 @@ const AttendanceHistoryCard: React.FC = () => {
               : (a.finalClass?.subject as any) || '';
             const gradeBoard = `${a.finalClass?.grade || '-'} • ${a.finalClass?.board || '-'}`;
             const sessionDate = a.sessionDate ? formatDate(a.sessionDate as any) : '-';
-            const sessionNumber = a.sessionNumber;
+            const topicCovered = (a as any).topicCovered as string | undefined;
             const notes = a.notes;
             const submittedByName = a.submittedBy?.name || (a.submittedBy as any)?.user?.name;
             const submittedAt = a.submittedAt ? formatDate(a.submittedAt as any) : '';
@@ -462,9 +462,9 @@ const AttendanceHistoryCard: React.FC = () => {
                         {sessionDate}
                       </Typography>
                     </Box>
-                    {sessionNumber && (
+                    {topicCovered && (
                       <Typography variant="body2" color="text.secondary">
-                        Session #{sessionNumber}
+                        Topic: {topicCovered}
                       </Typography>
                     )}
                   </Box>

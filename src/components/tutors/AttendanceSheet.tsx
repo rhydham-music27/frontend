@@ -48,11 +48,7 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
   const containerRef = useRef<HTMLDivElement>(null);
 
   const records = tutorData.attendanceRecords
-    .filter(
-      (r) =>
-        r.classId === classInfo.classId &&
-        (!range || (r.date >= range.start && r.date <= range.end))
-    )
+    .filter((r) => !range || (r.date >= range.start && r.date <= range.end))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const csv = useMemo(() => {

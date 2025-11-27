@@ -157,6 +157,7 @@ export interface IAttendance {
   finalClass: IFinalClass;
   sessionDate: Date;
   sessionNumber?: number;
+   topicCovered?: string;
   tutor: IUser;
   coordinator: IUser;
   parent?: IUser;

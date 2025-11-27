@@ -53,7 +53,7 @@ const useAttendance = (filters: AttendanceFilters = {}) => {
   const refetch = fetchAttendances;
 
   const createAttendanceRecord = async (
-    payload: { finalClassId: string; sessionDate: string; sessionNumber?: number; notes?: string }
+    payload: { finalClassId: string; sessionDate: string; topicCovered?: string; notes?: string }
   ) => {
     const res = await createAttendance(payload);
     await refetch();
@@ -82,7 +82,7 @@ const useAttendance = (filters: AttendanceFilters = {}) => {
 
   const updateRecord = async (
     attendanceId: string,
-    data: Partial<{ sessionDate: string; sessionNumber: number; notes: string; status: string }>
+    data: Partial<{ sessionDate: string; topicCovered: string; notes: string; status: string }>
   ) => {
     const res = await updateAttendance(attendanceId, data);
     await refetch();

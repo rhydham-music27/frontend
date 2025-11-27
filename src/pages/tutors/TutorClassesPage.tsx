@@ -1,9 +1,9 @@
 import React from 'react';
 import { Container, Box, Typography } from '@mui/material';
-import ProfileVerificationCard from '../../components/tutors/ProfileVerificationCard';
-import TutorProfileOverviewCard from '../../components/tutors/TutorProfileOverviewCard';
+import ClassIcon from '@mui/icons-material/Class';
+import MyClassesCard from '../../components/tutors/MyClassesCard';
 
-const TutorProfilePage: React.FC = () => {
+const TutorClassesPage: React.FC = () => {
   return (
     <Container maxWidth="xl" disableGutters>
       <Box
@@ -23,46 +23,24 @@ const TutorProfilePage: React.FC = () => {
               fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
             }}
           >
-            My Profile
+            My Classes
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
           >
-            View and manage your tutor profile, documents, and verification status.
+            View your assigned classes, track progress, and manage attendance.
           </Typography>
         </Box>
-      </Box>
-
-      <Box
-        sx={{
-          mb: { xs: 3, sm: 4 },
-          px: { xs: 1.5, sm: 0 },
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: 960,
-            mx: 'auto',
-          }}
-        >
-          <TutorProfileOverviewCard />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+          <ClassIcon fontSize="small" />
         </Box>
       </Box>
 
-      <Box
-        sx={{
-          mb: { xs: 3, sm: 4 },
-          px: { xs: 1.5, sm: 0 },
-        }}
-      >
-        <Box sx={{ maxWidth: 960, mx: 'auto' }}>
-          <ProfileVerificationCard />
-        </Box>
-      </Box>
+      <MyClassesCard />
     </Container>
   );
 };
 
-export default TutorProfilePage;
+export default TutorClassesPage;
