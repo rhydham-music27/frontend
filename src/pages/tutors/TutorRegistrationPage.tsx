@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { tutorLeadAPI } from '@/api/client';
 import { tutorLeadRegistrationSchema } from '@/schemas/applicationschema';
+import generateTeacherId from '@/utils/generateTeacherId';
 import { Box, Container, Typography, Paper } from '@mui/material';
 
 export interface TutorLeadPageProps {
@@ -23,14 +24,22 @@ const TutorLeadRegistration = ({ onSubmit, isLoading }: TutorLeadPageProps) => {
       if (onSubmit) {
         await onSubmit(data);
       } else {
+        // parse and validate form data
         const payload = tutorLeadRegistrationSchema.parse(data);
-        const resp = await tutorLeadAPI.create(payload);
-        const teacherId = resp?.teacherId;
-        if (teacherId) {
-          navigate(`/login?email=${data.email}`);
-        } else {
-          toast.success('Registration successful! We will contact you soon.');
-        }
+
+        // generate a teacherId on the frontend using gender and city
+        const generatedTeacherId = generateTeacherId(data.gender as string, data.city as string);
+        // attach to payload - backend may or may not persist this field depending on server implementation
+        const toSend = { ...payload, teacherId: generatedTeacherId };
+
+        const resp = await tutorLeadAPI.create(toSend);
+
+        // prefer backend-returned id if provided, otherwise fall back to our generated id
+        const returnedTeacherId = resp?.teacherId || generatedTeacherId;
+
+        toast.success(`Registration successful! Your Teacher ID: ${returnedTeacherId}`);
+        // navigate to login with email; include teacherId as query param for convenience
+        navigate(`/login?email=${encodeURIComponent(data.email)}&teacherId=${encodeURIComponent(returnedTeacherId)}`);
       }
     } catch (error) {
       console.error('Registration failed:', error);

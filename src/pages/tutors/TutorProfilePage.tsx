@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Box, Typography } from '@mui/material';
 import ProfileVerificationCard from '../../components/tutors/ProfileVerificationCard';
-import TutorProfileOverviewCard from '../../components/tutors/TutorProfileOverviewCard';
+import MUIProfileCard from '../../components/tutors/MUIProfileCard';
 
 const TutorProfilePage: React.FC = () => {
   return (
@@ -43,11 +43,10 @@ const TutorProfilePage: React.FC = () => {
       >
         <Box
           sx={{
-            maxWidth: 960,
-            mx: 'auto',
+            maxWidth: '100%',
           }}
         >
-          <TutorProfileOverviewCard />
+          <MUIProfileCard />
         </Box>
       </Box>
 

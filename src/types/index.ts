@@ -44,6 +44,7 @@ export interface IDocument {
 export interface ITutor {
   id: string;
   user: IUser;
+  teacherId?: string;
   experienceHours: number;
   subjects: string[];
   ratings: number;
