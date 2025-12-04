@@ -34,4 +34,9 @@ export const createOneTimeReschedule = async (
   return data as ApiResponse<IFinalClass>;
 };
 
-export default { getMyClasses, updateFinalClassSchedule, createOneTimeReschedule };
+export const requestParentReschedule = async (classId: string): Promise<ApiResponse<null>> => {
+  const { data } = await api.post(`/api/final-classes/${classId}/parent-reschedule`);
+  return data as ApiResponse<null>;
+};
+
+export default { getMyClasses, updateFinalClassSchedule, createOneTimeReschedule, requestParentReschedule };

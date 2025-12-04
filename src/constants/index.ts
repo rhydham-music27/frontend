@@ -4,6 +4,7 @@ export const USER_ROLES = {
   TUTOR: 'TUTOR',
   COORDINATOR: 'COORDINATOR',
   PARENT: 'PARENT',
+  STUDENT: 'STUDENT',
 } as const;
 
 export const CLASS_LEAD_STATUS = {
@@ -146,15 +147,24 @@ export const NAVIGATION_ITEMS = [
   { label: 'Payments', path: '/tutor-payments', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'Attendance', path: '/tutor-attendance', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'My Leads', path: '/tutor-leads', allowedRoles: [USER_ROLES.TUTOR] },
+  { label: 'Notes', path: '/tutor-notes', allowedRoles: [USER_ROLES.TUTOR] },
   { label: "Today's Tasks", path: '/today-tasks', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Class Leads', path: '/class-leads', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
+  { label: 'Manager Tasks', path: '/manager-today-tasks', allowedRoles: [USER_ROLES.MANAGER] },
   { label: 'Tutors', path: '/tutors', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
   { label: 'Coordinators', path: '/coordinators', allowedRoles: [USER_ROLES.MANAGER] },
   { label: 'Managers', path: '/admin/managers', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Coordinators Management', path: '/admin/coordinators', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Data Management', path: '/admin/data-management', allowedRoles: [USER_ROLES.ADMIN] },
+  { label: 'Notes', path: '/notes', allowedRoles: [USER_ROLES.ADMIN, USER_ROLES.COORDINATOR] },
   { label: 'Register New Member', path: '/register', allowedRoles: [USER_ROLES.ADMIN] },
-  { label: 'Attendance', path: '/attendance', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.PARENT, USER_ROLES.ADMIN] },
+  { label: 'Attendance', path: '/attendance', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ADMIN] },
+  // Parent-specific navigation
+  { label: 'Parent Dashboard', path: '/parent-dashboard', allowedRoles: [USER_ROLES.PARENT] },
+  { label: 'Attendance', path: '/parent-attendance', allowedRoles: [USER_ROLES.PARENT] },
+  { label: 'Payments', path: '/parent-payments', allowedRoles: [USER_ROLES.PARENT] },
+  { label: 'Tests', path: '/parent-test', allowedRoles: [USER_ROLES.PARENT] },
+  { label: 'Notes', path: '/parent-notes', allowedRoles: [USER_ROLES.PARENT] },
   { label: 'My Classes', path: '/assigned-classes', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Attendance Approvals', path: '/attendance-approvals', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Test Scheduling', path: '/test-scheduling', allowedRoles: [USER_ROLES.COORDINATOR] },
@@ -178,6 +188,9 @@ export const API_ENDPOINTS = {
   AUTH_LOGOUT: '/api/auth/logout',
   AUTH_ME: '/api/auth/me',
   AUTH_REFRESH_TOKEN: '/api/auth/refresh-token',
+  AUTH_LOGIN_OTP_SEND: '/api/auth/login-otp/send',
+  AUTH_LOGIN_OTP_VERIFY: '/api/auth/login-otp/verify',
+  AUTH_PARENT_LOGIN_LOOKUP: '/api/auth/parent-login-lookup',
   LEADS: '/api/leads',
   LEADS_MY: '/api/leads/my-leads',
   TUTOR_LEADS_MY: '/api/leads/tutor/my-leads',
@@ -248,6 +261,13 @@ export const API_ENDPOINTS = {
   MANAGERS_PERFORMANCE_HISTORY: (id: string) => `/api/managers/${id}/performance-history`,
   MANAGERS_ACTIVITY_LOG: (id: string) => `/api/managers/${id}/activity-log`,
   MANAGERS_CONTRIBUTION: (id: string) => `/api/managers/${id}/contribution`,
+  // Notes endpoints
+  NOTES_ITEMS: '/api/notes',
+  NOTES_FOLDER_ITEMS: (parentId: string | null) => (parentId ? `/api/notes?parentId=${parentId}` : '/api/notes'),
+  NOTES_FOLDERS: '/api/notes/folders',
+  NOTES_FILES: '/api/notes/files',
+  NOTES_PARENT_ITEMS: (parentId: string | null) =>
+    parentId ? `/api/notes/parent/my-notes?parentId=${parentId}` : '/api/notes/parent/my-notes',
   // Coordinator endpoints
   COORDINATORS_DASHBOARD_STATS: '/api/coordinators/dashboard/stats',
   COORDINATORS_DASHBOARD_TASKS: '/api/coordinators/dashboard/tasks',
@@ -258,6 +278,7 @@ export const API_ENDPOINTS = {
   // Test endpoints
   TESTS: '/api/tests',
   TESTS_COORDINATOR: '/api/tests/coordinator/tests',
+  TESTS_PARENT_MY_TESTS: '/api/tests/parent/my-tests',
   TESTS_CLASS: (classId: string) => `/api/tests/class/${classId}`,
   TESTS_STATUS: (id: string) => `/api/tests/${id}/status`,
   TESTS_REPORT: (id: string) => `/api/tests/${id}/report`,
@@ -273,10 +294,15 @@ export const API_ENDPOINTS = {
   TUTORS_FEEDBACK: '/api/tutors/feedback',
   TUTORS_FEEDBACK_GET: (tutorId: string) => `/api/tutors/${tutorId}/feedback`,
   TUTORS_PERFORMANCE: (tutorId: string) => `/api/tutors/${tutorId}/performance`,
+  TUTORS_PUBLIC_REVIEWS: (teacherId: string) => `/api/tutors/public/${teacherId}/reviews`,
   COORDINATOR_TUTORS: '/api/tutors/coordinator/tutors',
   // Final classes - tutor
   FINAL_CLASSES_MY_CLASSES: '/api/final-classes/tutor/my-classes',
-
+  // Parent/student endpoints
+  STUDENTS_DASHBOARD_STATS: '/api/students/dashboard/stats',
+  STUDENTS_MY_CLASSES: '/api/students/my-classes',
+  STUDENTS_MY_ANNOUNCEMENTS: '/api/students/announcements',
+  PAYMENTS_PARENT_MY_PAYMENTS: '/api/payments/parent/my-payments',
   // Admin endpoints
   // Admin profile and base
   ADMIN: '/api/admin',

@@ -56,7 +56,13 @@ export const updatePaymentStatus = async (
   paymentId: string,
   payload: { status: string; paymentMethod?: string; transactionId?: string; notes?: string }
 ): Promise<ApiResponse<IPayment>> => {
-  const { data } = await api.patch(`${API_ENDPOINTS.PAYMENTS_STATUS(paymentId)}`, payload);
+  // Use the correct endpoint for updating payment status
+  const { data } = await api.patch(`${API_ENDPOINTS.PAYMENTS}/${paymentId}/status`, {
+    status: payload.status,
+    paymentMethod: payload.paymentMethod,
+    transactionId: payload.transactionId,
+    notes: payload.notes
+  });
   return data as ApiResponse<IPayment>;
 };
 
@@ -126,6 +132,18 @@ export const getMyPaymentSummary = async (
   return data as ApiResponse<{ payments: IPayment[]; statistics: IPaymentStatistics }>;
 };
 
+export const getParentPayments = async (
+  filters: { status?: string; fromDate?: string; toDate?: string } = {}
+): Promise<ApiResponse<{ payments: IPayment[]; statistics: IPaymentStatistics }>> => {
+  const params = new URLSearchParams();
+  if (filters.status) params.append('status', filters.status);
+  if (filters.fromDate) params.append('fromDate', filters.fromDate);
+  if (filters.toDate) params.append('toDate', filters.toDate);
+  const url = `${API_ENDPOINTS.PAYMENTS_PARENT_MY_PAYMENTS}?${params.toString()}`;
+  const { data } = await api.get(url);
+  return data as ApiResponse<{ payments: IPayment[]; statistics: IPaymentStatistics }>;
+};
+
 export const downloadPaymentReceipt = async (paymentId: string): Promise<void> => {
   const url = API_ENDPOINTS.PAYMENTS_RECEIPT(paymentId);
   window.open(url, '_blank');
@@ -143,5 +161,6 @@ export default {
   getPaymentStatistics,
   sendPaymentReminder,
   getMyPaymentSummary,
+  getParentPayments,
   downloadPaymentReceipt,
 };

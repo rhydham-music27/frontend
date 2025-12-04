@@ -80,6 +80,11 @@ export const getCoordinatorTests = async (status?: string): Promise<ApiResponse<
   return data as ApiResponse<ITest[]>;
 };
 
+export const getParentTests = async (): Promise<ApiResponse<ITest[]>> => {
+  const { data } = await api.get(API_ENDPOINTS.TESTS_PARENT_MY_TESTS);
+  return data as ApiResponse<ITest[]>;
+};
+
 export const getTestsByClass = async (
   classId: string,
   status?: string
@@ -106,6 +111,7 @@ export default {
   submitTestReport,
   cancelTest,
   getCoordinatorTests,
+  getParentTests,
   getTestsByClass,
   downloadTestReportPDF,
 };

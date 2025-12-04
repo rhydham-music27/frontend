@@ -137,16 +137,34 @@ export default function ClassLeadDetailPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>Student Information</Typography>
-              <Grid container spacing={1}>
-                <Grid item xs={12} sm={6}><Typography><strong>Name:</strong> {classLead.studentName}</Typography></Grid>
-                <Grid item xs={12} sm={6}><Typography><strong>Grade:</strong> {classLead.grade}</Typography></Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography>
+                    <strong>Student Name{(classLead as any).studentType === 'GROUP' ? 's' : ''}:</strong>{' '}
+                    {(classLead as any).studentType === 'GROUP' 
+                      ? (classLead as any).studentDetails?.map((student: any, index: number) => (
+                          <span key={index}>
+                            {student.name}
+                            {index < (classLead as any).studentDetails.length - 1 && ', '}
+                          </span>
+                        )) || 'No students'
+                      : classLead.studentName || 'N/A'
+                    }
+                  </Typography>
+                </Grid>
+                {(classLead as any).parentEmail && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Parent Email:</strong> {(classLead as any).parentEmail}</Typography>
+                  </Grid>
+                )}
                 {(classLead as any).parentPhone && (
                   <Grid item xs={12} sm={6}>
                     <Typography><strong>Parent Phone:</strong> {(classLead as any).parentPhone}</Typography>
                   </Grid>
                 )}
-                <Grid item xs={12} sm={6}><Typography><strong>Mode:</strong> {classLead.mode}</Typography></Grid>
+                <Grid item xs={12} sm={6}><Typography><strong>Grade:</strong> {classLead.grade}</Typography></Grid>
                 <Grid item xs={12} sm={6}><Typography><strong>Board:</strong> {classLead.board}</Typography></Grid>
+                <Grid item xs={12} sm={6}><Typography><strong>Mode:</strong> {classLead.mode}</Typography></Grid>
 
                 {/* Location details */}
                 {classLead.mode === 'HYBRID' && classLead.location && (
@@ -220,6 +238,74 @@ export default function ClassLeadDetailPage() {
                     })()}
                   </Box>
                 </Grid>
+
+                {/* Group student details */}
+                {(classLead as any).studentType === 'GROUP' && (classLead as any).studentDetails && (classLead as any).studentDetails.length > 0 && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><strong>Student Details</strong></Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {(classLead as any).studentDetails.map((student: any, index: number) => (
+                        <Box key={index} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Student {index + 1}: {student.name}
+                          </Typography>
+                          <Grid container spacing={1}>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2">
+                                <strong>Fees:</strong> ₹{student.fees || 0}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2">
+                                <strong>Tutor Fees:</strong> ₹{student.tutorFees || 0}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2">
+                                <strong>Profit:</strong> ₹{(student.fees || 0) - (student.tutorFees || 0)}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      ))}
+                      <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+                        <Typography variant="subtitle2" gutterBottom><strong>Total Summary</strong></Typography>
+                        <Grid container spacing={1}>
+                          <Grid item xs={12} sm={4}>
+                            <Typography variant="body2">
+                              <strong>Total Fees:</strong> ₹{(classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <Typography variant="body2">
+                              <strong>Total Tutor Fees:</strong> ₹{(classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <Typography variant="body2">
+                              <strong>Total Profit:</strong> ₹{
+                              ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0) -
+                              ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0)
+                            }
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Box>
+                  </Grid>
+                )}
+
+                {/* Single student fees */}
+                {(classLead as any).studentType === 'SINGLE' && (classLead as any).paymentAmount != null && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Fees:</strong> ₹{(classLead as any).paymentAmount}</Typography>
+                  </Grid>
+                )}
+                {(classLead as any).studentType === 'SINGLE' && (classLead as any).tutorFees != null && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Tutor Fees:</strong> ₹{(classLead as any).tutorFees}</Typography>
+                  </Grid>
+                )}
                 {(classLead as any).notes && <Grid item xs={12}><Typography><strong>Notes:</strong> {(classLead as any).notes}</Typography></Grid>}
               </Grid>
 

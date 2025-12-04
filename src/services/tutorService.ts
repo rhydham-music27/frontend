@@ -1,6 +1,14 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants';
-import { ApiResponse, PaginatedResponse, ITutor, ITutorFeedback, ITutorPerformanceMetrics, ISubmitFeedbackFormData } from '../types';
+import {
+  ApiResponse,
+  PaginatedResponse,
+  ITutor,
+  ITutorFeedback,
+  ITutorPerformanceMetrics,
+  ISubmitFeedbackFormData,
+  IPublicTutorReview,
+} from '../types';
 
 export type GetTutorsQuery = {
   page?: number;
@@ -165,6 +173,21 @@ export const getTutorPerformanceMetrics = async (
   return data as ApiResponse<ITutorPerformanceMetrics>;
 };
 
+export const getPublicTutorReviews = async (
+  teacherId: string,
+  query: { page?: number; limit?: number } = {}
+): Promise<PaginatedResponse<IPublicTutorReview[]>> => {
+  const params = new URLSearchParams();
+  if (query.page) params.append('page', String(query.page));
+  if (query.limit) params.append('limit', String(query.limit));
+  const qs = params.toString();
+  const url = qs
+    ? `${API_ENDPOINTS.TUTORS_PUBLIC_REVIEWS(teacherId)}?${qs}`
+    : API_ENDPOINTS.TUTORS_PUBLIC_REVIEWS(teacherId);
+  const { data } = await api.get(url);
+  return data as PaginatedResponse<IPublicTutorReview[]>;
+};
+
 export const getCoordinatorTutors = async (
   query: { page?: number; limit?: number; tier?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {}
 ): Promise<PaginatedResponse<ITutor[]>> => {
@@ -197,4 +220,5 @@ export default {
   getTutorFeedback,
   getTutorPerformanceMetrics,
   getCoordinatorTutors,
+  getPublicTutorReviews,
 };

@@ -23,6 +23,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import FolderIcon from '@mui/icons-material/Folder';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 
@@ -84,6 +85,8 @@ const iconForLabel = (label: string) => {
       return <PeopleIcon />;
     case 'Payment Tracking':
       return <AccountBalanceWalletIcon />;
+    case 'Notes':
+      return <FolderIcon />;
     default:
       return <DashboardIcon />;
   }

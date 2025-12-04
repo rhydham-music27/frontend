@@ -13,10 +13,11 @@ import { FINAL_CLASS_STATUS } from '../../constants';
 interface ClassDetailCardProps {
   finalClass: IFinalClass;
   onViewDetails?: (classId: string) => void;
+  onGenerateAdvancePayment?: (classId: string) => void;
   showActions?: boolean;
 }
 
-const ClassDetailCard: React.FC<ClassDetailCardProps> = ({ finalClass, onViewDetails, showActions = true }) => {
+const ClassDetailCard: React.FC<ClassDetailCardProps> = ({ finalClass, onViewDetails, onGenerateAdvancePayment, showActions = true }) => {
   const formatDate = (date?: Date) => (date ? new Date(date).toLocaleDateString() : '');
 
   const getStatusColor = (status: string): 'success' | 'info' | 'warning' | 'error' | 'default' => {
@@ -136,12 +137,24 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({ finalClass, onViewDet
         </Grid>
       </CardContent>
       {showActions ? (
-        <CardActions sx={{ px: 2, pb: 2 }}>
-          <Button variant="outlined" size="small" startIcon={<CheckCircleIcon />} onClick={() => onViewDetails?.(finalClass.id)}>
+        <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<CheckCircleIcon />}
+            onClick={() => onViewDetails?.(finalClass.id)}
+          >
             View Details
           </Button>
           <Button variant="outlined" size="small" startIcon={<AccessTimeIcon />} disabled>
             View Schedule
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={() => onGenerateAdvancePayment?.(finalClass.id)}
+          >
+            Generate Advance Payment
           </Button>
         </CardActions>
       ) : null}

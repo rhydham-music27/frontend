@@ -164,6 +164,12 @@ const TutorLeadsPage: React.FC = () => {
                         Approx. Fee: ₹{lead.paymentAmount}
                       </Typography>
                     )}
+
+                    {lead.tutorFees != null && (
+                      <Typography variant="body2" color="text.secondary">
+                        Your Fee: ₹{lead.tutorFees}
+                      </Typography>
+                    )}
                   </CardContent>
                 </Card>
               </Grid2>

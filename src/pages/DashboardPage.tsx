@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Box, Typography, Grid } from '@mui/material';
+import { Container, Box, Typography, Grid, Card, CardContent } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../store/slices/authSlice';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -125,35 +125,137 @@ const DashboardPage: React.FC = () => {
         <DateRangePicker fromDate={dateRange.fromDate} toDate={dateRange.toDate} onDateChange={handleDateChange} presets />
       </Box>
 
+      {/* KPI row similar to TutorDashboardKpiRow for consistent visual style */}
       <Box mb={{ xs: 3, sm: 4 }}>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
-          mb={{ xs: 2, sm: 2.5, md: 3 }}
-          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-        >
-          Key Metrics
-        </Typography>
         <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-        <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-          <MetricsCard title="Total Class Leads" value={overallStats?.classLeads.total ?? '-'} subtitle={`${overallStats?.classLeads.new ?? 0} new, ${overallStats?.classLeads.converted ?? 0} converted`} icon={<DashboardIcon />} color="primary.main" loading={loading && !overallStats} />
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                color: 'common.white',
+                borderRadius: 3,
+                boxShadow: 4,
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      display: 'inline-flex',
+                    }}
+                  >
+                    <DashboardIcon sx={{ fontSize: 22 }} />
+                  </Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    {overallStats?.classLeads.total ?? '-'}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Class Leads
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #16A34A, #15803D)',
+                color: 'common.white',
+                borderRadius: 3,
+                boxShadow: 4,
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      display: 'inline-flex',
+                    }}
+                  >
+                    <PaymentIcon sx={{ fontSize: 22 }} />
+                  </Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    ₹{Number(overallStats?.payments.feesCollected || 0).toLocaleString()}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Fees Collected
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #F97316, #EA580C)',
+                color: 'common.white',
+                borderRadius: 3,
+                boxShadow: 4,
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      display: 'inline-flex',
+                    }}
+                  >
+                    <PeopleIcon sx={{ fontSize: 22 }} />
+                  </Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    {overallStats?.tutors.verified ?? '-'}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Verified Tutors
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <Card
+              sx={{
+                background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+                color: 'common.white',
+                borderRadius: 3,
+                boxShadow: 4,
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      backgroundColor: 'rgba(255,255,255,0.15)',
+                      display: 'inline-flex',
+                    }}
+                  >
+                    <PaymentIcon sx={{ fontSize: 22 }} />
+                  </Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    ₹{Number(overallStats?.payments.tutorPayout || 0).toLocaleString()}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Tutor Payout
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-          <MetricsCard title="Active Classes" value={overallStats?.finalClasses.active ?? '-'} subtitle={`${overallStats?.finalClasses.completed ?? 0} completed`} icon={<ClassIcon />} color="success.main" loading={loading && !overallStats} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-          <MetricsCard title="Verified Tutors" value={overallStats?.tutors.verified ?? '-'} subtitle={`${overallStats?.tutors.total ?? 0} total tutors`} icon={<PeopleIcon />} color="info.main" loading={loading && !overallStats} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-          <MetricsCard title="Total Revenue" value={`₹${Number(overallStats?.payments.totalRevenue || 0).toLocaleString()}`} subtitle={`₹${Number(overallStats?.payments.paidRevenue || 0).toLocaleString()} paid`} icon={<PaymentIcon />} color="secondary.main" loading={loading && !overallStats} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-          <MetricsCard title="Conversion Rate" value={`${overallStats?.conversionRate ?? 0}%`} icon={<TrendingUpIcon />} color="primary.main" loading={loading && !overallStats} />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-          <MetricsCard title="Pending Approvals" value={overallStats?.pendingApprovals ?? pendingApprovals?.totalPending ?? '-'} subtitle="Requires attention" icon={<PendingActionsIcon />} color="warning.main" loading={loading && !overallStats} />
-        </Grid>
-      </Grid>
       </Box>
 
       <Box mb={{ xs: 3, sm: 4 }}>

@@ -18,6 +18,7 @@ export default function TutorVerificationPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTutor, setSelectedTutor] = useState<ITutor | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [docsOpen, setDocsOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<IDocument | null>(null);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
@@ -42,6 +43,11 @@ export default function TutorVerificationPage() {
   const handleViewDoc = (doc: IDocument) => {
     setSelectedDoc(doc);
     setViewerOpen(true);
+  };
+
+  const handleViewDocs = (t: ITutor) => {
+    setSelectedTutor(t);
+    setDocsOpen(true);
   };
 
   const handleReview = (t: ITutor) => {
@@ -92,8 +98,12 @@ export default function TutorVerificationPage() {
                         <Typography variant="body2">{(t.subjects || []).join(', ')}</Typography>
                       </Box>
                       <Divider sx={{ my: 1.5 }} />
-                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Documents ({t.documents?.length || 0})</Typography>
-                      <DocumentViewer documents={t.documents || []} onView={handleViewDoc} canDelete={false} />
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+                        <Typography variant="subtitle2">Documents ({t.documents?.length || 0})</Typography>
+                        <Button size="small" variant="outlined" onClick={() => handleViewDocs(t)}>
+                          Verify Documents
+                        </Button>
+                      </Box>
                       <Box mt={2}>
                         <Button variant="contained" fullWidth onClick={() => handleReview(t)}>Review & Verify</Button>
                       </Box>
@@ -136,6 +146,18 @@ export default function TutorVerificationPage() {
           <ErrorAlert error={tutorsError} />
         </Box>
       )}
+
+      <Dialog open={docsOpen} onClose={() => setDocsOpen(false)} maxWidth="md" fullWidth>
+        <DialogContent>
+          {selectedTutor && (
+            <DocumentViewer
+              documents={selectedTutor.documents || []}
+              onView={handleViewDoc}
+              canDelete={false}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={viewerOpen} onClose={() => setViewerOpen(false)} maxWidth="lg" fullWidth>
         <DialogContent>

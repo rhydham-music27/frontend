@@ -9,15 +9,7 @@ import { getMyClasses } from '../../services/finalClassService';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
-
-// Array of gradient backgrounds with light to solid color fade from left to right
-const GRADIENT_BGS = [
-  'linear-gradient(to right, #e0e1ff 0%, #6366F1 100%)', // Light indigo to indigo
-  'linear-gradient(to right, #dbeafe 0%, #3B82F6 100%)', // Light blue to blue
-  'linear-gradient(to right, #dcfce7 0%, #10B981 100%)', // Light green to green
-  'linear-gradient(to right, #fef3c7 0%, #F59E0B 100%)', // Light amber to amber
-  'linear-gradient(to right, #fce7f3 0%, #EC4899 100%)', // Light pink to pink
-];
+import ClassCard from '../parents/ClassCard';
 
 const TodayScheduleCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -145,7 +137,7 @@ const TodayScheduleCard: React.FC = () => {
               gap: 2,
               flex: '1 1 auto',
               overflowY: 'auto',
-              maxHeight: 404,
+              maxHeight: 600,
               pr: 2,
               '& > *': {
                 flexShrink: 0,
@@ -173,90 +165,18 @@ const TodayScheduleCard: React.FC = () => {
               const timeSlot = (cls as any)?.schedule?.timeSlot || '';
 
               return (
-                <Box
+                <ClassCard
                   key={cls.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    gap: 2,
-                    p: 1.5,
-                    borderRadius: '0 8px 8px 0',
-                    border: '1px solid rgba(0, 0, 0, 0.1)',
-                    borderLeft: 'none',
-                    position: 'relative',
-                    background: GRADIENT_BGS[classes.indexOf(cls) % GRADIENT_BGS.length],
-                    color: 'rgba(0, 0, 0, 0.87)',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                    transition: 'all 0.2s ease',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: '0',
-                      bottom: '0',
-                      width: '4px',
-                      backgroundColor: 'primary.main',
-                      borderTopLeftRadius: '8px',
-                      borderBottomLeftRadius: '8px',
-                    },
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                    },
-                  }}
-                >
-                  <Box display="flex" gap={1.5} alignItems="flex-start">
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
-                        color: 'common.white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <ClassIcon fontSize="small" />
-                    </Box>
-                    <Box>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        {cls.studentName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {subjects} • {cls.grade}
-                      </Typography>
-                      {timeSlot && (
-                        <Typography variant="body2" color="text.secondary">
-                          {timeSlot}
-                        </Typography>
-                      )}
-                      <Typography variant="caption" color="text.secondary">
-                        {cls.completedSessions}/{cls.totalSessions} sessions completed
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box display="flex" flexDirection="column" alignItems="flex-end" gap={1}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      onClick={() => handleMarkClick(cls)}
-                      sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        color: 'text.primary',
-                        '&:hover': {
-                          backgroundColor: 'white',
-                        },
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                      }}
-                    >
-                      Mark
-                    </Button>
-                  </Box>
-                </Box>
+                  classId={cls.id}
+                  subject={subjects}
+                  grade={cls.grade || 'N/A'}
+                  studentName={cls.studentName}
+                  topic={cls.topic || 'N/A'}
+                  schedule={timeSlot}
+                  completedSessions={cls.completedSessions}
+                  totalSessions={cls.totalSessions}
+                  onMarkClick={() => handleMarkClick(cls)}
+                />
               );
             })}
           </Box>

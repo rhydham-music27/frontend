@@ -14,10 +14,11 @@ import { getMyProfile } from '../../services/tutorService';
 import { ITutor } from '../../types';
 
 interface HeaderProps {
-  onMenuClick: () => void;
+  onMenuClick?: () => void;
+  showSidebarMenu?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -87,20 +88,22 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       }}
     >
       <Toolbar sx={{ minHeight: { xs: 56, sm: 64, md: 70 }, px: { xs: 1, sm: 2 } }}>
-        <IconButton
-          color="inherit"
-          edge="start"
-          onClick={onMenuClick}
-          sx={{
-            display: { md: 'none', xs: 'inline-flex' },
-            mr: { xs: 1, sm: 2 },
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
-          <MenuIcon />
-        </IconButton>
+        {showSidebarMenu && onMenuClick && (
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={onMenuClick}
+            sx={{
+              display: { md: 'none', xs: 'inline-flex' },
+              mr: { xs: 1, sm: 2 },
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
 
         <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} sx={{ flexGrow: 1 }}>
           <Box

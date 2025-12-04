@@ -34,50 +34,80 @@ export default function PaymentsListPage() {
     setSelected(null);
   };
 
+  const derivedStats = useMemo(() => {
+    const totalPayments = payments.length;
+    const totalAmount = payments.reduce((sum, p: IPayment | any) => sum + (p.amount || 0), 0);
+    const paidAmount = payments
+      .filter((p: IPayment | any) => String(p.status) === PAYMENT_STATUS.PAID)
+      .reduce((sum, p: IPayment | any) => sum + (p.amount || 0), 0);
+    const pendingAmount = payments
+      .filter((p: IPayment | any) => String(p.status) === PAYMENT_STATUS.PENDING)
+      .reduce((sum, p: IPayment | any) => sum + (p.amount || 0), 0);
+    const overdueAmount = payments
+      .filter((p: IPayment | any) => String(p.status) === PAYMENT_STATUS.OVERDUE)
+      .reduce((sum, p: IPayment | any) => sum + (p.amount || 0), 0);
+
+    return { totalPayments, totalAmount, paidAmount, pendingAmount, overdueAmount };
+  }, [payments]);
+
+  // Precompute display-friendly fields for the desktop DataGrid
+  const tableRows = useMemo(() => {
+    return payments.map((p: IPayment | any) => {
+      const fc = p.finalClass || {};
+      const name = fc.className || fc.studentName || '-';
+      const subject = Array.isArray(fc.subject)
+        ? fc.subject.join(', ')
+        : (fc.subject || '');
+      const classLabel = subject ? `${name} • ${subject}` : name;
+
+      const dateRaw = p.paymentDate || p.dueDate || p.createdAt;
+      const dateLabel = dateRaw ? new Date(dateRaw).toLocaleDateString() : '-';
+
+      const tutorLabel = p.tutor?.name || p.tutorName || p.tutorEmail || '-';
+      const amountLabel = typeof p.amount === 'number' ? `${p.currency || 'INR'} ${p.amount}` : '-';
+
+      const dueRaw = p.dueDate;
+      const dueLabel = dueRaw ? new Date(dueRaw).toLocaleDateString() : '-';
+
+      return {
+        ...p,
+        dateDisplay: dateLabel,
+        tutorDisplay: tutorLabel,
+        classDisplay: classLabel,
+        amountDisplay: amountLabel,
+        dueDisplay: dueLabel,
+      };
+    });
+  }, [payments]);
+
   const columns: GridColDef[] = useMemo(() => [
     {
-      field: 'paymentDate',
+      field: 'dateDisplay',
       headerName: 'Date',
       width: 140,
-      valueGetter: (p: any) => p?.row?.paymentDate || p?.row?.createdAt || null,
-      valueFormatter: (v: any) => (v?.value ? new Date(v.value).toLocaleDateString() : '-'),
     },
     {
-      field: 'tutor',
+      field: 'tutorDisplay',
       headerName: 'Tutor',
       width: 180,
-      valueGetter: (p: any) => p?.row?.tutor?.name || '-',
     },
     {
-      field: 'class',
+      field: 'classDisplay',
       headerName: 'Class',
       width: 220,
-      valueGetter: (p: any) => {
-        const r = p?.row;
-        if (!r) return '-';
-        const name = r.finalClass?.studentName || '-';
-        const subs = Array.isArray(r.finalClass?.subject) ? r.finalClass.subject.join(', ') : (r.finalClass?.subject || '-');
-        return `${name} • ${subs}`;
-      },
     },
     {
-      field: 'amount',
+      field: 'amountDisplay',
       headerName: 'Amount',
       width: 140,
-      valueGetter: (p: any) => {
-        const r = p?.row;
-        return r ? `${r.currency || 'INR'} ${r.amount ?? '-'}` : '-';
-      },
     },
     { field: 'status', headerName: 'Status', width: 140, renderCell: (p: any) => <PaymentStatusChip status={p?.value} /> },
     { field: 'paymentMethod', headerName: 'Method', width: 140 },
     { field: 'transactionId', headerName: 'Txn ID', width: 160 },
     {
-      field: 'dueDate',
+      field: 'dueDisplay',
       headerName: 'Due',
       width: 140,
-      valueGetter: (p: any) => p?.row?.dueDate || null,
-      valueFormatter: (v: any) => (v?.value ? new Date(v.value).toLocaleDateString() : '-'),
     },
     {
       field: 'actions',
@@ -98,31 +128,31 @@ export default function PaymentsListPage() {
         <Grid item xs={12} md={2}>
           <Card><CardContent>
             <Typography variant="subtitle2" color="text.secondary">Total Payments</Typography>
-            <Typography variant="h6">{statistics?.totalPayments ?? '-'}</Typography>
+            <Typography variant="h6">{statistics?.totalPayments ?? derivedStats.totalPayments ?? '-'}</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={12} md={2}>
           <Card><CardContent>
             <Typography variant="subtitle2" color="text.secondary">Total Amount</Typography>
-            <Typography variant="h6">{statistics?.totalAmount ?? '-'}</Typography>
+            <Typography variant="h6">{statistics?.totalAmount ?? derivedStats.totalAmount ?? '-'}</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={12} md={2}>
           <Card><CardContent>
             <Typography variant="subtitle2" color="text.secondary">Paid</Typography>
-            <Typography variant="h6" color="success.main">{statistics?.paidAmount ?? '-'}</Typography>
+            <Typography variant="h6" color="success.main">{statistics?.paidAmount ?? derivedStats.paidAmount ?? '-'}</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={12} md={2}>
           <Card><CardContent>
             <Typography variant="subtitle2" color="text.secondary">Pending</Typography>
-            <Typography variant="h6" color="warning.main">{statistics?.pendingAmount ?? '-'}</Typography>
+            <Typography variant="h6" color="warning.main">{statistics?.pendingAmount ?? derivedStats.pendingAmount ?? '-'}</Typography>
           </CardContent></Card>
         </Grid>
         <Grid item xs={12} md={2}>
           <Card><CardContent>
             <Typography variant="subtitle2" color="text.secondary">Overdue</Typography>
-            <Typography variant="h6" color="error.main">{statistics?.overdueAmount ?? '-'}</Typography>
+            <Typography variant="h6" color="error.main">{statistics?.overdueAmount ?? derivedStats.overdueAmount ?? '-'}</Typography>
           </CardContent></Card>
         </Grid>
       </Grid>
@@ -169,7 +199,7 @@ export default function PaymentsListPage() {
           </Stack>
         ) : (
           <DataGrid
-            rows={payments}
+            rows={tableRows}
             columns={columns}
             getRowId={(r: any) => r.id || r._id}
             paginationMode="server"

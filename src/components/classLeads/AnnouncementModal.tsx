@@ -32,7 +32,17 @@ export default function AnnouncementModal({ open, onClose, classLead, onSuccess 
           <Typography variant="body1" mb={2}>Are you sure you want to post this class lead to the announcement channel?</Typography>
           <Alert severity="info">All active tutors will be notified about this opportunity.</Alert>
           <Box bgcolor={(theme) => theme.palette.background.paper} p={2} borderRadius={1} mt={2}>
-            <Typography variant="subtitle2">Student: {classLead.studentName}</Typography>
+            <Typography variant="subtitle2">
+            Student{(classLead as any).studentType === 'GROUP' ? 's' : ''}: {(classLead as any).studentType === 'GROUP' 
+              ? (classLead as any).studentDetails?.map((student: any, index: number) => (
+                  <span key={index}>
+                    {student.name}
+                    {index < (classLead as any).studentDetails.length - 1 && ', '}
+                  </span>
+                )) || 'No students'
+              : classLead.studentName || 'N/A'
+            }
+          </Typography>
             <Typography>Grade: {classLead.grade}</Typography>
             <Typography>Subjects: {Array.isArray(classLead.subject) ? (classLead.subject as any).join(', ') : classLead.subject}</Typography>
             <Typography>Mode: {classLead.mode}</Typography>

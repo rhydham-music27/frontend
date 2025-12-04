@@ -12,6 +12,7 @@ const MUIProfileCard: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,6 +30,26 @@ const MUIProfileCard: React.FC = () => {
 
     fetchProfile();
   }, []);
+
+  const handleShareProfile = async () => {
+    if (!tutor) return;
+    // Prefer the same human-facing ID shown in the profile (teacherId)
+    const teacherId = tutor.teacherId || '';
+    if (!teacherId) return;
+    const origin = typeof window !== 'undefined' && window.location ? window.location.origin : '';
+    const url = `${origin}/ourtutor/${teacherId}`;
+    try {
+      if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      } else {
+        window.prompt('Copy this profile link', url);
+      }
+    } catch {
+      window.prompt('Copy this profile link', url);
+    }
+  };
 
   if (loading && !tutor) {
     return (
@@ -170,6 +191,16 @@ const MUIProfileCard: React.FC = () => {
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
               <span className="text-xs opacity-75">Tutor ID:</span>
               <span className="font-mono text-sm font-semibold">{personalDetails.tutorId}</span>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 justify-center md:justify-start">
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                onClick={handleShareProfile}
+              >
+                {shareCopied ? 'Link copied' : 'Share public profile'}
+              </Button>
             </div>
           </div>
 

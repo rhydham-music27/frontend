@@ -23,6 +23,7 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
+import TutorClassesStatsBox from './TutorClassesStatsBox';
 import { getMyClasses } from '../../services/finalClassService';
 import { getAttendanceByClass } from '../../services/attendanceService';
 import AttendanceSheet, {
@@ -269,14 +270,6 @@ const MyClassesCard: React.FC = () => {
     );
   }
 
-  const totalClasses = classes.length;
-  const totalCompletedSessions = classes.reduce((sum, cls) => sum + (cls.completedSessions || 0), 0);
-  const totalPlannedSessions = classes.reduce((sum, cls) => sum + (cls.totalSessions || 0), 0);
-  const totalRemainingSessions = Math.max(totalPlannedSessions - totalCompletedSessions, 0);
-  const overallProgress = totalPlannedSessions
-    ? Math.round((totalCompletedSessions / totalPlannedSessions) * 100)
-    : 0;
-
   return (
     <StyledCard>
       <CardContent>
@@ -294,73 +287,8 @@ const MyClassesCard: React.FC = () => {
           </Alert>
         )}
 
-        {/* KPI row inspired by YS trial Classes tab */}
-        <Grid container spacing={2} mb={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box
-              sx={{
-                borderRadius: 3,
-                p: 2,
-                bgcolor: 'primary.main',
-                color: 'primary.contrastText',
-              }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <ClassIcon fontSize="small" />
-                <Typography variant="h5" fontWeight={700}>{totalClasses}</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>Total Classes</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box
-              sx={{
-                borderRadius: 3,
-                p: 2,
-                bgcolor: 'success.main',
-                color: 'success.contrastText',
-              }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <CheckCircleIcon fontSize="small" />
-                <Typography variant="h5" fontWeight={700}>{totalCompletedSessions}</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>Completed Sessions</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box
-              sx={{
-                borderRadius: 3,
-                p: 2,
-                bgcolor: 'warning.main',
-                color: 'warning.contrastText',
-              }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <ClassIcon fontSize="small" />
-                <Typography variant="h5" fontWeight={700}>{totalRemainingSessions}</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>Remaining Sessions</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box
-              sx={{
-                borderRadius: 3,
-                p: 2,
-                bgcolor: 'secondary.main',
-                color: 'secondary.contrastText',
-              }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <TrendingUpIcon fontSize="small" />
-                <Typography variant="h5" fontWeight={700}>{overallProgress}%</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>Overall Progress</Typography>
-            </Box>
-          </Grid>
-        </Grid>
+        {/* Stats Boxes */}
+        <TutorClassesStatsBox classes={classes} newClassLeads={0} />
 
         {/* Two-column layout: Assigned Classes (left) + Attendance Tracker (right) */}
         <Grid container spacing={3}>
@@ -374,6 +302,9 @@ const MyClassesCard: React.FC = () => {
                 const isOffline = cls.mode === 'OFFLINE' || cls.mode === 'HYBRID';
                 const isSelected = selectedClass?.id === cls.id;
                 const classIdStr = String((cls as any).id || (cls as any)._id || '');
+                const isCompletedClass =
+                  (cls.totalSessions || 0) > 0 &&
+                  (cls.completedSessions || 0) >= (cls.totalSessions || 0);
                 return (
                   <Box
                     key={cls.id}
@@ -517,15 +448,17 @@ const MyClassesCard: React.FC = () => {
 
                     <Divider sx={{ my: 2 }} />
                     <Box display="flex" gap={1.5} flexWrap="wrap">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        startIcon={<CheckCircleIcon />}
-                        onClick={(e) => { e.stopPropagation(); handleAttendanceClick(cls); }}
-                      >
-                        Submit Attendance
-                      </Button>
+                      {!isCompletedClass && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          startIcon={<CheckCircleIcon />}
+                          onClick={(e) => { e.stopPropagation(); handleAttendanceClick(cls); }}
+                        >
+                          Submit Attendance
+                        </Button>
+                      )}
                       <Button
                         variant="outlined"
                         color="inherit"
@@ -676,9 +609,16 @@ const MyClassesCard: React.FC = () => {
                   color="primary"
                   startIcon={<CheckCircleIcon />}
                   sx={{ mb: 2 }}
+                  disabled={
+                    (selectedClass.totalSessions || 0) > 0 &&
+                    (selectedClass.completedSessions || 0) >= (selectedClass.totalSessions || 0)
+                  }
                   onClick={() => handleAttendanceClick(selectedClass!)}
                 >
-                  Mark Today's Attendance
+                  {(selectedClass.totalSessions || 0) > 0 &&
+                  (selectedClass.completedSessions || 0) >= (selectedClass.totalSessions || 0)
+                    ? 'Class completed'
+                    : "Mark Today's Attendance"}
                 </Button>
 
                 <Typography variant="caption" color="text.secondary">

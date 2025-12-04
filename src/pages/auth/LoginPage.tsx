@@ -206,6 +206,28 @@ const LoginPage: React.FC = () => {
               >
                 {loading ? <LoadingSpinner size={24} /> : 'Sign In'}
               </Button>
+
+              <Button
+                component={Link}
+                to="/login-otp"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  mt: 1,
+                  py: { xs: 1, sm: 1.1 },
+                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                  fontWeight: 500,
+                  borderRadius: { xs: '10px', sm: '12px' },
+                  borderColor: (theme) => alpha(theme.palette.primary.main, 0.6),
+                  color: 'primary.main',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  },
+                }}
+              >
+                Login with OTP
+              </Button>
             </Box>
 
             <Box mt={{ xs: 2.5, sm: 3 }} textAlign="center">

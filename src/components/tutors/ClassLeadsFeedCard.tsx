@@ -5,7 +5,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import SchoolIcon from '@mui/icons-material/School';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import { StyledCard } from '../common/StyledCard';
@@ -245,6 +247,72 @@ const ClassLeadsFeedCard: React.FC = () => {
 
             const isHighlighted = Boolean(isOffline && hasSubjectMatch && hasAreaMatch && hasCityMatch);
 
+            const grade = cl?.grade || '-';
+            const board = cl?.board || '-';
+            const mode = cl?.mode || '-';
+            const studentType = (cl as any)?.studentType || 'SINGLE';
+            const numberOfStudents = (cl as any)?.numberOfStudents || 1;
+            const studentDetails = (cl as any)?.studentDetails || [];
+            const location = (cl as any)?.location || '';
+            const city = (cl as any)?.city || '';
+            const area = (cl as any)?.area || '';
+            const scheduleLine = cl?.timing || '-';
+            const classesPerMonth = (cl as any)?.classesPerMonth;
+            const classDurationHours = (cl as any)?.classDurationHours;
+            const genderPref = (cl as any)?.preferredTutorGender || '-';
+            const qualifications = String((cl as any)?.qualifications || '').trim();
+            const requirementItems = qualifications
+              ? qualifications.split(/[,•\n]/).map((s) => s.trim()).filter(Boolean)
+              : [];
+
+            // Get student display information
+            const getStudentDisplay = () => {
+              if (studentType === 'GROUP') {
+                const studentNames = studentDetails.map((s: any) => s.name).filter(Boolean).join(', ');
+                return {
+                  type: 'GROUP',
+                  label: `Group (${numberOfStudents} students)`,
+                  names: studentNames || `${numberOfStudents} students`,
+                  icon: <GroupIcon fontSize="small" />
+                };
+              } else {
+                const studentName = cl?.studentName || 'Student';
+                return {
+                  type: 'SINGLE',
+                  label: 'Single Student',
+                  names: studentName,
+                  icon: <PersonIcon fontSize="small" />
+                };
+              }
+            };
+
+            const studentDisplay = getStudentDisplay();
+
+            // Calculate tutor fees
+            const getTutorFeesDisplay = () => {
+              if (studentType === 'GROUP') {
+                // Sum up tutor fees from all students in the group
+                const totalTutorFees = studentDetails.reduce((sum: number, student: any) => {
+                  return sum + (student.tutorFees || 0);
+                }, 0);
+                return {
+                  amount: totalTutorFees,
+                  label: `Total Tutor Fees: ₹${totalTutorFees.toLocaleString()}`,
+                  perStudent: studentDetails.length > 1 ? `₹${Math.round(totalTutorFees / studentDetails.length).toLocaleString()} per student` : null
+                };
+              } else {
+                // Single student tutor fees
+                const tutorFees = (cl as any)?.tutorFees || 0;
+                return {
+                  amount: tutorFees,
+                  label: `Tutor Fees: ₹${tutorFees.toLocaleString()}`,
+                  perStudent: null
+                };
+              }
+            };
+
+            const tutorFeesDisplay = getTutorFeesDisplay();
+
             return (
               <Box
                 key={id}
@@ -266,22 +334,40 @@ const ClassLeadsFeedCard: React.FC = () => {
                 }}
               >
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Stack spacing={0.5}>
+                  <Stack spacing={0.75}>
                     <Box display="flex" alignItems="center" gap={1}>
-                      <PersonIcon fontSize="small" color="action" aria-label="Student" />
-                      <Typography variant="h6" fontWeight={600} sx={{ wordBreak: 'break-word' }}>
-                        {managerName ? `  ${managerName}` : ''}
+                      <SchoolIcon fontSize="small" color="action" aria-label="Class" />
+                      <Typography variant="subtitle1" fontWeight={700} sx={{ wordBreak: 'break-word' }}>
+                        {`Class ${grade} - ${subjects || '-'}`}
                       </Typography>
+                      <Chip
+                        icon={studentDisplay.icon}
+                        label={studentDisplay.label}
+                        size="small"
+                        color={studentDisplay.type === 'GROUP' ? 'secondary' : 'primary'}
+                        variant="outlined"
+                        sx={{ ml: 1, fontWeight: 500 }}
+                      />
                       {isHighlighted && (
                         <Chip
-                          label="Best Match"
-                          color="primary"
+                          label="100% Match"
+                          color="success"
                           size="small"
                           sx={{ ml: 1, fontWeight: 600 }}
                         />
                       )}
                     </Box>
-                    <Typography variant="body2" color="text.secondary">{postedStr ? `Posted on ${postedStr}` : ''}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {`${board} | ${mode}`}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      {studentDisplay.names}
+                    </Typography>
+                    {postedStr && (
+                      <Typography variant="caption" color="text.secondary">
+                        {`Posted on ${postedStr}`}
+                      </Typography>
+                    )}
                   </Stack>
                   <Tooltip title="Ignore this lead">
                     <IconButton size="small" onClick={() => handleIgnore(id)} aria-label="Ignore lead">
@@ -290,52 +376,48 @@ const ClassLeadsFeedCard: React.FC = () => {
                   </Tooltip>
                 </Box>
 
-                {(() => {
-                  const parentPhone = (cl as any)?.parentPhone || '';
-                  const classesPerMonth = (cl as any)?.classesPerMonth;
-                  const classDurationHours = (cl as any)?.classDurationHours;
-                  const paymentAmount = (cl as any)?.paymentAmount;
-                  const location = (cl as any)?.location || '-';
-                  const city = (cl as any)?.city || '-';
-                  const area = (cl as any)?.area || '-';
-
-                  const scheduleLine = cl?.timing || '';
-                  const monthlyClassesLine = classesPerMonth != null ? String(classesPerMonth) : '-';
-                  const durationLine = classDurationHours != null ? `${classDurationHours} hours` : '-';
-                  const modeLine = cl?.mode || '-';
-                  const genderPref = (cl as any)?.preferredTutorGender || '-';
-                  const managerName = (a as any)?.postedBy?.name
-                  const announcementText =
-                    `📣 New Class Lead Available\n` +
-                    `A new student lead has been added to the system. Eligible tutors may express interest.\n\n` +
-                    `👨‍🎓 Student Information\n` +
-                    `Student Name: ${cl?.studentName || '-'}\n` +
-                    `Grade / Board: ${cl?.grade || '-'} — ${cl?.board || '-'}\n` +
-                    `Subject(s): ${subjects || '-'}\n` +
-                    `Class Mode: ${modeLine}\n` +
-                    `Preferred Tutor Gender: ${genderPref}\n` +
-                    `Monthly Classes: ${monthlyClassesLine}\n` +
-                    `Class Duration: ${durationLine}\n` +
-                    `Schedule: ${scheduleLine || '-'}\n` +
-                    (parentPhone
-                      ? `Parent Contact: ${parentPhone}\n`
-                      : '') +
-                   +
-                    `\n` +
-                    `📍 Location\n` +
-                    `Location: ${location}\n` +
-                    `City: ${city}\n` +
-                    `Area: ${area}\n` +
-                    (modeLine === 'ONLINE'
-                      ? `(Class is Online; physical location not required)`
-                      : '');
-
-                  return (
-                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1 }}>
-                      {announcementText}
+                <Stack spacing={1.25} mb={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <LocationOnIcon fontSize="small" color="action" />
+                    <Typography variant="body2">
+                      {location || area || city || '-'}
                     </Typography>
-                  );
-                })()}
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <AccessTimeIcon fontSize="small" color="action" />
+                    <Typography variant="body2">
+                      {scheduleLine}
+                      {classesPerMonth != null && ` (${classesPerMonth} classes/month)`}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <AttachMoneyIcon fontSize="small" color="action" />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {tutorFeesDisplay.label}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <PersonIcon fontSize="small" color="action" />
+                    <Typography variant="body2">
+                      {`Preferred Tutor: ${genderPref}`}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {requirementItems.length > 0 && (
+                  <Box mb={2}>
+                    <Typography variant="body2" fontWeight={600} gutterBottom>
+                      Parent Requirements:
+                    </Typography>
+                    <Stack spacing={0.5} pl={2}>
+                      {requirementItems.map((req, idx) => (
+                        <Typography key={idx} variant="body2" sx={{ position: 'relative' }}>
+                          {`• ${req}`}
+                        </Typography>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
 
                 {!!(a as any)?.interestCount && (a as any).interestCount > 0 && (
                   <Box display="flex" alignItems="center" gap={0.5} mb={2}>

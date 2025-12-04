@@ -108,17 +108,7 @@ const DemoClassesCard: React.FC = () => {
   }
 
   if (!loading && demos.length === 0) {
-    return (
-      <StyledCard>
-        <CardContent>
-          <EmptyState 
-            icon={<AssignmentIcon aria-label="no-demos" color="primary" />} 
-            title="No Demo Sessions" 
-            description="You don't have any assigned demo sessions yet. Check the Class Opportunities section for new leads!" 
-          />
-        </CardContent>
-      </StyledCard>
-    );
+    return null;
   }
 
   const onPrev = () => {
@@ -166,7 +156,7 @@ const DemoClassesCard: React.FC = () => {
 
         <Box 
           sx={{
-            maxHeight: 500,
+            maxHeight: 310,
             overflow: 'auto',
             pr: 1,
             '&::-webkit-scrollbar': { width: 8 },

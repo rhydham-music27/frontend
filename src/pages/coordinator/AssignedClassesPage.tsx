@@ -10,6 +10,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { getAssignedClasses } from '../../services/coordinatorService';
+import api from '../../services/api';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 
@@ -61,6 +62,19 @@ const AssignedClassesPage: React.FC = () => {
   const handlePageChange = (_: any, page: number) => setFilters((f) => ({ ...f, page }));
   const handleRefresh = () => fetchClasses();
   const handleViewDetails = (classId: string) => navigate(`/classes/${classId}`);
+  const handleGenerateAdvancePayment = async (classId: string) => {
+    try {
+      setError(null);
+      await api.post(`/api/payments/class/${classId}/advance`);
+      setSnackbar({ open: true, message: 'Advance payment created successfully', severity: 'success' });
+      // Optionally refresh classes to update any payment metrics
+      fetchClasses();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to create advance payment';
+      setError(msg);
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    }
+  };
   const handleToggleView = () => setViewMode((v) => (v === 'grid' ? 'list' : 'grid'));
 
   return (
@@ -147,19 +161,28 @@ const AssignedClassesPage: React.FC = () => {
       ) : (
         <>
           {viewMode === 'grid' ? (
-            <Grid container spacing={3}>
+            <Grid container spacing={2} mt={1}>
               {classes.map((cls) => (
-                <Grid item key={cls.id} xs={12} sm={6} md={4}>
-                  <ClassDetailCard finalClass={cls} onViewDetails={handleViewDetails} showActions />
+                <Grid item xs={12} sm={6} md={4} key={cls.id}>
+                  <ClassDetailCard
+                    finalClass={cls}
+                    onViewDetails={handleViewDetails}
+                    onGenerateAdvancePayment={handleGenerateAdvancePayment}
+                  />
                 </Grid>
               ))}
             </Grid>
           ) : (
-            <Stack spacing={2}>
+            <Box mt={1}>
               {classes.map((cls) => (
-                <ClassDetailCard key={cls.id} finalClass={cls} onViewDetails={handleViewDetails} showActions />
+                <ClassDetailCard
+                  key={cls.id}
+                  finalClass={cls}
+                  onViewDetails={handleViewDetails}
+                  onGenerateAdvancePayment={handleGenerateAdvancePayment}
+                />
               ))}
-            </Stack>
+            </Box>
           )}
 
           {pagination.pages > 1 ? (

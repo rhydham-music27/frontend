@@ -33,6 +33,11 @@ export const register = async (
   return { ...res.data, data: { user, accessToken } } as any;
 };
 
+export const parentLoginLookup = async (className: string) => {
+  const res = await api.post<ApiResponse<{ email: string }>>(API_ENDPOINTS.AUTH_PARENT_LOGIN_LOOKUP, { className });
+  return res.data;
+};
+
 export const logout = async () => {
   try {
     await api.post<ApiResponse<null>>(API_ENDPOINTS.AUTH_LOGOUT);
@@ -55,4 +60,18 @@ export const refreshToken = async (refreshToken: string) => {
   const { accessToken } = res.data.data;
   setAuthToken(accessToken);
   return accessToken;
+};
+
+export const sendLoginOtp = async (email: string) => {
+  const res = await api.post<ApiResponse<any>>(API_ENDPOINTS.AUTH_LOGIN_OTP_SEND, { email });
+  return res.data;
+};
+
+export const verifyLoginOtp = async (email: string, otp: string) => {
+  const res = await api.post<AuthResponse>(API_ENDPOINTS.AUTH_LOGIN_OTP_VERIFY, { email, otp });
+  const raw = res.data.data as any;
+  const user = raw.user;
+  const accessToken = raw?.tokens?.accessToken ?? raw?.accessToken;
+  if (accessToken) setAuthToken(accessToken);
+  return { ...res.data, data: { user, accessToken } } as any;
 };

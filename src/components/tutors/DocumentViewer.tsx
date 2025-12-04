@@ -30,36 +30,67 @@ export default function DocumentViewer({ documents, onDelete, canDelete = false,
 
   return (
     <Grid container spacing={2}>
-      {documents.map((doc, idx) => (
-        <Grid item xs={12} sm={6} md={4} key={`${doc.documentUrl}-${idx}`}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                {getIcon(doc.documentUrl)}
-                <Typography variant="subtitle2">{doc.documentType}</Typography>
-                <Chip size="small" label={doc.verifiedAt ? 'Verified' : 'Pending'} color={doc.verifiedAt ? 'success' : 'warning'} sx={{ ml: 'auto' }} />
-              </Box>
-              <Typography variant="caption" color="text.secondary">Uploaded: {fmt(doc.uploadedAt)}</Typography><br />
-              {doc.verifiedAt && (
-                <Typography variant="caption" color="text.secondary">Verified: {fmt(doc.verifiedAt)}</Typography>
-              )}
-            </CardContent>
-            <CardActions>
-              <IconButton size="small" onClick={() => onView && onView(doc)} title="View">
-                <VisibilityIcon />
-              </IconButton>
-              <IconButton size="small" onClick={() => window.open(doc.documentUrl, '_blank')} title="Download">
-                <DownloadIcon />
-              </IconButton>
-              {canDelete && (
-                <IconButton size="small" color="error" onClick={() => onDelete && onDelete(idx)} title="Delete">
-                  <DeleteIcon />
-                </IconButton>
-              )}
-            </CardActions>
-          </Card>
-        </Grid>
-      ))}
+      {documents.map((doc, idx) => {
+        const friendlyType = (doc.documentType || '').replace(/_/g, ' ');
+        return (
+          <Grid item xs={12} sm={12} md={6} key={`${doc.documentUrl}-${idx}`}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 2,
+                borderColor: 'grey.200',
+                boxShadow: '0 10px 25px rgba(15,23,42,0.08)',
+                height: '100%',
+              }}
+            >
+              <CardContent sx={{ pb: 1.5 }}>
+                <Box display="flex" alignItems="center" mb={1.5}>
+                  <Box display="flex" alignItems="center" gap={1.25}>
+                    {getIcon(doc.documentUrl)}
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                        {friendlyType || 'Document'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {doc.documentUrl.split('.').pop()?.toUpperCase() || 'FILE'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Chip
+                    size="small"
+                    label={doc.verifiedAt ? 'Verified' : 'Pending'}
+                    color={doc.verifiedAt ? 'success' : 'warning'}
+                    sx={{ ml: 'auto' }}
+                  />
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  Uploaded: {fmt(doc.uploadedAt)}
+                </Typography>
+                {doc.verifiedAt && (
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Verified: {fmt(doc.verifiedAt)}
+                  </Typography>
+                )}
+              </CardContent>
+              <CardActions sx={{ pt: 0.5, pb: 1.5, px: 1.5, justifyContent: canDelete ? 'space-between' : 'flex-start' }}>
+                <Box>
+                  <IconButton size="small" onClick={() => onView && onView(doc)} title="View">
+                    <VisibilityIcon />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => window.open(doc.documentUrl, '_blank')} title="Download">
+                    <DownloadIcon />
+                  </IconButton>
+                </Box>
+                {canDelete && (
+                  <IconButton size="small" color="error" onClick={() => onDelete && onDelete(idx)} title="Delete">
+                    <DeleteIcon />
+                  </IconButton>
+                )}
+              </CardActions>
+            </Card>
+          </Grid>
+        );
+      })}
     </Grid>
   );
 }

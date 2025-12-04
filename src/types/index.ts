@@ -11,6 +11,7 @@ export interface IUser {
 export interface IClassLead {
   id: string;
   studentName: string;
+  parentEmail?: string;
   parentPhone?: string;
   grade: string;
   subject: string;
@@ -26,6 +27,7 @@ export interface IClassLead {
   classesPerMonth?: number;
   classDurationHours?: number;
   paymentAmount?: number;
+  tutorFees?: number;
   status: string;
   assignedTutor?: IUser;
   demoDetails?: Record<string, any>;
@@ -359,6 +361,15 @@ export interface ITutorFeedback {
   updatedAt: Date;
 }
 
+export interface IPublicTutorReview {
+  id: string;
+  studentName: string;
+  submitterRole: 'PARENT' | 'STUDENT';
+  overallRating: number;
+  comments?: string;
+  createdAt: string | Date;
+}
+
 export interface ITutorPerformanceMetrics {
   tutor: ITutor;
   classesAssigned: number;
@@ -394,8 +405,13 @@ export interface IPendingTierChange {
   reason?: string;
 }
 
+export type StudentType = 'SINGLE' | 'GROUP';
+
 export interface IClassLeadFormData {
+  studentType: StudentType;
   studentName: string;
+  studentGender?: 'M' | 'F';
+  parentEmail?: string;
   parentPhone?: string;
   grade: string;
   subject: string[];
@@ -411,7 +427,16 @@ export interface IClassLeadFormData {
   classesPerMonth?: number;
   classDurationHours?: number;
   paymentAmount?: number;
+  tutorFees?: number;
   notes?: string;
+  // Group specific fields
+  numberOfStudents?: number;
+  studentDetails?: Array<{
+    name: string;
+    gender: 'M' | 'F';
+    fees: number;
+    tutorFees: number;
+  }>;
 }
 
 export type ApiResponse<T> = {
@@ -560,6 +585,24 @@ export interface IPendingApprovals {
   totalPending: number;
 }
 
+export interface IParentDashboardStats {
+  totalClasses: number;
+  activeClasses: number;
+  attendanceSummary: {
+    totalSessions: number;
+    approvedCount: number;
+    pendingCount: number;
+    approvalRate: number;
+  };
+  paymentSummary: {
+    totalAmount: number;
+    paidAmount: number;
+    pendingAmount: number;
+    overdueAmount: number;
+  };
+  upcomingTestsCount: number;
+}
+
 export interface IRevenueAnalytics {
   totalRevenue: number;
   paidRevenue: number;
@@ -575,7 +618,7 @@ export interface IDashboardStatistics {
   classLeads: { total: number; new: number; converted: number };
   finalClasses: { total: number; active: number; completed: number };
   tutors: { total: number; verified: number; active: number };
-  payments: { total: number; totalRevenue: number; paidRevenue: number; pendingRevenue: number };
+  payments: { total: number; totalRevenue: number; paidRevenue: number; pendingRevenue: number; feesCollected: number; tutorPayout: number };
   conversionRate: number;
   averageRevenuePerClass: number;
   pendingApprovals: number;
