@@ -1,5 +1,5 @@
-import React from 'react';
-import { Container, Box, Card, CardContent, Typography, Grid, Chip, Button } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Container, Box, Card, CardContent, Typography, Grid, Chip, Button, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
@@ -8,10 +8,28 @@ import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import { getStudentTests } from '../../services/studentService';
 
 const StudentTestsPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
+
+  const [loading, setLoading] = useState(true);
+  const [tests, setTests] = useState<
+    Array<{
+      id: string | number;
+      title: string;
+      subject: string;
+      type: string;
+      date: string;
+      time: string;
+      duration?: string;
+      status: string;
+      totalMarks?: number;
+      obtainedMarks?: number;
+      description?: string;
+    }>
+  >([]);
 
   const studentInfo = {
     name: user?.name || 'Student',
@@ -19,46 +37,24 @@ const StudentTestsPage: React.FC = () => {
     grade: (user as any)?.grade || 'N/A',
   };
 
-  // Mock test data - would come from API
-  const tests = [
-    {
-      id: 1,
-      title: 'Mathematics Chapter 5 Test',
-      subject: 'Mathematics',
-      type: 'Test',
-      date: '2024-12-10',
-      time: '10:00 AM',
-      duration: '45 minutes',
-      status: 'upcoming',
-      totalMarks: 100,
-      description: 'Chapter 5: Fractions and Decimals',
-    },
-    {
-      id: 2,
-      title: 'Science Lab Report',
-      subject: 'Science',
-      type: 'Assignment',
-      date: '2024-12-08',
-      time: '11:59 PM',
-      duration: '2 hours',
-      status: 'submitted',
-      totalMarks: 50,
-      obtainedMarks: 45,
-      description: 'Lab report on plant growth experiment',
-    },
-    {
-      id: 3,
-      title: 'English Essay Writing',
-      subject: 'English',
-      type: 'Assignment',
-      date: '2024-12-12',
-      time: '2:00 PM',
-      duration: '1 hour',
-      status: 'pending',
-      totalMarks: 25,
-      description: 'Essay on "My Favorite Season"',
-    },
-  ];
+  useEffect(() => {
+    const loadTests = async () => {
+      try {
+        setLoading(true);
+        const res = await getStudentTests({ page: 1, limit: 50 });
+        const data = (res as any)?.data || [];
+        setTests(Array.isArray(data) ? data : []);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load student tests', e as any);
+        setTests([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadTests();
+  }, []);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -94,6 +90,14 @@ const StudentTestsPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {loading && (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="40vh">
+          <CircularProgress />
+        </Box>
+      )}
+
+      {!loading && (
+        <>
       {/* Header */}
       <Box mb={4}>
         <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
@@ -123,6 +127,15 @@ const StudentTestsPage: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* No data state */}
+      {tests.length === 0 && (
+        <Box mt={2} mb={4}>
+          <Typography variant="body2" color="text.secondary">
+            No tests or assignments found yet.
+          </Typography>
+        </Box>
+      )}
 
       {/* Tests Grid */}
       <Grid container spacing={3}>
@@ -223,6 +236,8 @@ const StudentTestsPage: React.FC = () => {
           ← Back to Dashboard
         </Button>
       </Box>
+        </>
+      )}
     </Container>
   );
 };

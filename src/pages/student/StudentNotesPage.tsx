@@ -1,18 +1,31 @@
-import React from 'react';
-import { Container, Box, Card, CardContent, Typography, Grid, Button, Chip } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Container, Box, Card, CardContent, Typography, Grid, Button, CardActionArea, Dialog, DialogTitle, DialogContent, DialogActions, Stack, Breadcrumbs, Link as MUILink } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
-import BookIcon from '@mui/icons-material/Book';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
+import FolderIcon from '@mui/icons-material/Folder';
 import DescriptionIcon from '@mui/icons-material/Description';
-import DownloadIcon from '@mui/icons-material/Download';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { getStudentNotes } from '../../services/studentService';
+
+interface NoteItem {
+  id: string;
+  name: string;
+  type: 'FOLDER' | 'FILE';
+  mimeType?: string;
+  url?: string;
+}
 
 const StudentNotesPage: React.FC = () => {
   const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
+
+  const [items, setItems] = useState<NoteItem[]>([]);
+  const [path, setPath] = useState<{ id: string | null; name: string }[]>([{ id: null, name: 'Notes' }]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<NoteItem | null>(null);
 
   const studentInfo = {
     name: user?.name || 'Student',
@@ -20,78 +33,45 @@ const StudentNotesPage: React.FC = () => {
     grade: (user as any)?.grade || 'N/A',
   };
 
-  // Mock study materials data - would come from API
-  const studyMaterials = [
-    {
-      id: 1,
-      title: 'Mathematics Chapter 5 Notes',
-      subject: 'Mathematics',
-      type: 'pdf',
-      size: '2.5 MB',
-      uploadDate: '2024-12-01',
-      description: 'Complete notes for Chapter 5: Fractions and Decimals',
-      downloadUrl: '#',
-      previewUrl: '#',
-    },
-    {
-      id: 2,
-      title: 'Science Lab Video Tutorial',
-      subject: 'Science',
-      type: 'video',
-      size: '45 MB',
-      uploadDate: '2024-12-02',
-      description: 'Video tutorial for plant growth experiment',
-      downloadUrl: '#',
-      previewUrl: '#',
-    },
-    {
-      id: 3,
-      title: 'English Grammar Worksheet',
-      subject: 'English',
-      type: 'document',
-      size: '1.2 MB',
-      uploadDate: '2024-12-03',
-      description: 'Practice worksheet for grammar concepts',
-      downloadUrl: '#',
-      previewUrl: '#',
-    },
-    {
-      id: 4,
-      title: 'Mathematics Practice Problems',
-      subject: 'Mathematics',
-      type: 'pdf',
-      size: '3.1 MB',
-      uploadDate: '2024-12-04',
-      description: 'Additional practice problems with solutions',
-      downloadUrl: '#',
-      previewUrl: '#',
-    },
-  ];
+  const currentFolderId = path[path.length - 1]?.id || null;
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return <PictureAsPdfIcon sx={{ fontSize: 40, color: 'error.main' }} />;
-      case 'video':
-        return <VideoLibraryIcon sx={{ fontSize: 40, color: 'primary.main' }} />;
-      case 'document':
-        return <DescriptionIcon sx={{ fontSize: 40, color: 'secondary.main' }} />;
-      default:
-        return <BookIcon sx={{ fontSize: 40, color: 'grey.500' }} />;
+  useEffect(() => {
+    const loadItems = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await getStudentNotes({ parentId: currentFolderId });
+        const data = (res as any)?.data || [];
+        const mapped: NoteItem[] = (Array.isArray(data) ? data : []).map((n: any) => ({
+          id: String(n.id),
+          name: n.name,
+          type: n.type,
+          mimeType: n.mimeType,
+          url: n.url,
+        }));
+        setItems(mapped);
+      } catch (e: any) {
+        setError(e?.response?.data?.message || e?.message || 'Failed to load notes');
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadItems();
+  }, [currentFolderId]);
+
+  const handleItemClick = (item: NoteItem) => {
+    if (item.type === 'FOLDER') {
+      setPath((prev) => [...prev, { id: item.id, name: item.name }]);
+      return;
     }
+    setSelectedFile(item);
+    setViewerOpen(true);
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'pdf':
-        return 'error';
-      case 'video':
-        return 'primary';
-      case 'document':
-        return 'secondary';
-      default:
-        return 'default';
-    }
+  const handleBreadcrumbClick = (index: number) => {
+    setPath((prev) => prev.slice(0, index + 1));
   };
 
   return (
@@ -126,82 +106,82 @@ const StudentNotesPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Study Materials Grid */}
-      <Grid container spacing={3}>
-        {studyMaterials.map((material) => (
-          <Grid item xs={12} sm={6} md={4} key={material.id}>
-            <Card
-              sx={{
-                height: '100%',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-                },
-              }}
+      {/* Notes drive-style section */}
+      <Box mt={2}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2} spacing={2}>
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Notes
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              View notes and documents shared for your grade.
+            </Typography>
+          </Box>
+        </Stack>
+
+        <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+          {path.length > 1 && (
+            <Button
+              size="small"
+              startIcon={<ArrowBackIcon fontSize="small" />}
+              onClick={() => handleBreadcrumbClick(path.length - 2)}
             >
-              <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                <Box mb={2}>
-                  {getTypeIcon(material.type)}
-                </Box>
+              Back
+            </Button>
+          )}
+          <Breadcrumbs aria-label="breadcrumb" sx={{ fontSize: 13 }}>
+            {path.map((crumb, index) => (
+              <MUILink
+                key={crumb.id ?? 'root'}
+                color={index === path.length - 1 ? 'text.primary' : 'inherit'}
+                underline={index === path.length - 1 ? 'none' : 'hover'}
+                sx={{ cursor: index === path.length - 1 ? 'default' : 'pointer' }}
+                onClick={index === path.length - 1 ? undefined : () => handleBreadcrumbClick(index)}
+              >
+                {crumb.name}
+              </MUILink>
+            ))}
+          </Breadcrumbs>
+        </Stack>
 
-                <Typography variant="h6" fontWeight={600} gutterBottom sx={{ fontSize: '1rem' }}>
-                  {material.title}
+        {error && (
+          <Typography color="error" variant="body2" mb={2}>
+            {error}
+          </Typography>
+        )}
+
+        <Grid container spacing={2}>
+          {items.map((item) => (
+            <Grid item xs={12} sm={6} md={3} key={item.id}>
+              <Card variant="outlined">
+                <CardActionArea onClick={() => handleItemClick(item)}>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {item.type === 'FOLDER' ? <FolderIcon color="primary" /> : <DescriptionIcon color="action" />}
+                    <Box sx={{ overflow: 'hidden' }}>
+                      <Typography variant="subtitle2" noWrap>
+                        {item.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.type === 'FOLDER' ? 'Folder' : item.mimeType || 'File'}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
+
+          {!loading && items.length === 0 && (
+            <Grid item xs={12}>
+              <Box textAlign="center" py={6}>
+                <Typography variant="body2" color="text.secondary">
+                  No notes are available yet. When your coordinator shares documents for your grade, they will appear here.
                 </Typography>
-
-                <Box display="flex" justifyContent="center" gap={1} mb={2}>
-                  <Chip
-                    label={material.subject}
-                    color="primary"
-                    size="small"
-                    sx={{ fontWeight: 500 }}
-                  />
-                  <Chip
-                    label={material.type}
-                    color={getTypeColor(material.type) as any}
-                    size="small"
-                    sx={{ fontWeight: 500 }}
-                  />
-                </Box>
-
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: 48 }}>
-                  {material.description}
-                </Typography>
-
-                <Box mb={2}>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Size:</strong> {material.size}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Uploaded:</strong> {material.uploadDate}
-                  </Typography>
-                </Box>
-
-                <Box display="flex" gap={2} justifyContent="center">
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<DownloadIcon />}
-                    onClick={() => window.open(material.downloadUrl, '_blank')}
-                  >
-                    Download
-                  </Button>
-                  {material.type !== 'video' && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<VisibilityIcon />}
-                      onClick={() => window.open(material.previewUrl, '_blank')}
-                    >
-                      Preview
-                    </Button>
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+      </Box>
 
       {/* Back Button */}
       <Box mt={4}>
@@ -212,6 +192,46 @@ const StudentNotesPage: React.FC = () => {
           ← Back to Dashboard
         </Button>
       </Box>
+
+      {/* Preview Dialog */}
+      <Dialog
+        open={viewerOpen}
+        onClose={() => {
+          setViewerOpen(false);
+          setSelectedFile(null);
+        }}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>{selectedFile?.name || 'Document'}</DialogTitle>
+        <DialogContent dividers sx={{ height: '80vh', p: 0 }}>
+          {selectedFile?.url ? (
+            <Box sx={{ width: '100%', height: '100%' }}>
+              <iframe
+                src={`${selectedFile.url}#toolbar=0&navpanes=0&scrollbar=0`}
+                title={selectedFile.name}
+                style={{ border: 'none', width: '100%', height: '100%' }}
+              />
+            </Box>
+          ) : (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                This file does not have a preview URL.
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setViewerOpen(false);
+              setSelectedFile(null);
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -12,21 +12,37 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useNavigate } from 'react-router-dom';
 import leadService from '../../services/leadService';
+import finalClassService from '../../services/finalClassService';
+import coordinatorService from '../../services/coordinatorService';
 import { CLASS_LEAD_STATUS } from '../../constants';
-import { IClassLead } from '../../types';
+import { IClassLead, IFinalClass } from '../../types';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 
 const ManagerTodayTasksPage: React.FC = () => {
   const [leads, setLeads] = useState<IClassLead[]>([]);
+  const [unassignedClasses, setUnassignedClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
+  const [coordinators, setCoordinators] = useState<any[]>([]);
+  const [selectedCoordinatorUserId, setSelectedCoordinatorUserId] = useState<string>('');
+  const [assigning, setAssigning] = useState(false);
   const navigate = useNavigate();
 
   const fetchLeads = useCallback(async () => {
@@ -46,9 +62,53 @@ const ManagerTodayTasksPage: React.FC = () => {
     }
   }, []);
 
+  const fetchUnassignedClasses = useCallback(async () => {
+    try {
+      const res = await finalClassService.getUnassignedClasses();
+      setUnassignedClasses(res.data || []);
+    } catch (e: any) {
+      // Do not override main error; show inline later if needed
+      // eslint-disable-next-line no-console
+      console.error('Failed to load unassigned classes', e?.response?.data || e?.message || e);
+    }
+  }, []);
+
+  const openAssignModal = useCallback(
+    async (cls: IFinalClass) => {
+      setSelectedClass(cls);
+      setAssignModalOpen(true);
+      setSelectedCoordinatorUserId('');
+      try {
+        const res = await coordinatorService.getCoordinators(1, 50, true, true, 'createdAt', 'desc');
+        setCoordinators(res.data || []);
+      } catch (e: any) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load coordinators', e?.response?.data || e?.message || e);
+      }
+    },
+    []
+  );
+
+  const handleAssignCoordinator = useCallback(async () => {
+    if (!selectedClass || !selectedCoordinatorUserId) return;
+    try {
+      setAssigning(true);
+      await finalClassService.assignCoordinatorToClass(selectedClass.id || (selectedClass as any)._id, selectedCoordinatorUserId);
+      setAssignModalOpen(false);
+      setSelectedClass(null);
+      await fetchUnassignedClasses();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to assign coordinator', e?.response?.data || e?.message || e);
+    } finally {
+      setAssigning(false);
+    }
+  }, [selectedClass, selectedCoordinatorUserId, fetchUnassignedClasses]);
+
   useEffect(() => {
     void fetchLeads();
-  }, [fetchLeads]);
+    void fetchUnassignedClasses();
+  }, [fetchLeads, fetchUnassignedClasses]);
 
   const countsByStatus = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -84,6 +144,50 @@ const ManagerTodayTasksPage: React.FC = () => {
           <ErrorAlert error={error} onClose={() => setError(null)} />
         </Box>
       )}
+
+      {/* Assign Coordinator Modal */}
+      <Dialog open={assignModalOpen} onClose={() => !assigning && setAssignModalOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Assign Coordinator</DialogTitle>
+        <DialogContent>
+          <Box mt={1} mb={2}>
+            <Typography variant="body2" color="text.secondary">
+              {selectedClass
+                ? `Assign a coordinator for ${selectedClass.studentName} (${selectedClass.grade || 'N/A'})`
+                : 'Select a coordinator for this class.'}
+            </Typography>
+          </Box>
+          <FormControl fullWidth size="small">
+            <InputLabel id="coordinator-select-label">Coordinator</InputLabel>
+            <Select
+              labelId="coordinator-select-label"
+              value={selectedCoordinatorUserId}
+              label="Coordinator"
+              onChange={(e) => setSelectedCoordinatorUserId(e.target.value)}
+            >
+              {coordinators.map((c) => {
+                const user = (c as any).user || {};
+                return (
+                  <MenuItem key={(user as any).id || (user as any)._id} value={(user as any).id || (user as any)._id}>
+                    {(user as any).name || 'Unnamed'}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => !assigning && setAssignModalOpen(false)} disabled={assigning}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleAssignCoordinator}
+            disabled={assigning || !selectedCoordinatorUserId}
+          >
+            {assigning ? 'Assigning...' : 'Assign Coordinator'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {loading && !leads.length && (
         <Box mt={4} display="flex" justifyContent="center">
@@ -134,6 +238,50 @@ const ManagerTodayTasksPage: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
+      )}
+
+      {/* Unassigned Classes Section */}
+      {!loading && (
+        <Box mb={3} mt={2}>
+          <Typography variant="h6" gutterBottom>
+            Classes Without Coordinator
+          </Typography>
+          {unassignedClasses.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              All classes currently have a coordinator assigned.
+            </Typography>
+          ) : (
+            <Card>
+              <CardContent>
+                <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                  {unassignedClasses.length} classes need coordinator assignment
+                </Typography>
+                <List dense>
+                  {unassignedClasses.map((cls) => {
+                    const classId = (cls as any).id || (cls as any)._id;
+                    const studentName = (cls as any).studentName || 'Unnamed Class';
+                    return (
+                      <ListItem key={classId} secondaryAction={
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => openAssignModal(cls)}
+                        >
+                          Assign Coordinator
+                        </Button>
+                      }>
+                        <ListItemText
+                          primary={studentName}
+                          secondary={`${cls.grade || 'N/A'} · ${Array.isArray(cls.subject) ? cls.subject.join(', ') : cls.subject || 'N/A'} · Tutor: ${(cls.tutor as any)?.name || 'N/A'}`}
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              </CardContent>
+            </Card>
+          )}
+        </Box>
       )}
 
       {!loading && leads.length === 0 && !error && (

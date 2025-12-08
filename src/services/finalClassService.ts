@@ -39,4 +39,29 @@ export const requestParentReschedule = async (classId: string): Promise<ApiRespo
   return data as ApiResponse<null>;
 };
 
-export default { getMyClasses, updateFinalClassSchedule, createOneTimeReschedule, requestParentReschedule };
+export const getUnassignedClasses = async (): Promise<PaginatedResponse<IFinalClass[]>> => {
+	const params = new URLSearchParams();
+	params.append('noCoordinator', 'true');
+	params.append('page', '1');
+	params.append('limit', '100');
+	const url = `/api/final-classes?${params.toString()}`;
+	const { data } = await api.get(url);
+	return data as PaginatedResponse<IFinalClass[]>;
+};
+
+export const assignCoordinatorToClass = async (
+	classId: string,
+	coordinatorUserId: string
+): Promise<ApiResponse<IFinalClass>> => {
+	const { data } = await api.put(`/api/final-classes/${classId}`, { coordinatorUserId });
+	return data as ApiResponse<IFinalClass>;
+};
+
+export default {
+	getMyClasses,
+	updateFinalClassSchedule,
+	createOneTimeReschedule,
+	requestParentReschedule,
+	getUnassignedClasses,
+	assignCoordinatorToClass,
+};

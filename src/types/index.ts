@@ -128,7 +128,7 @@ export interface IFinalClass {
   id: string;
   classLead: IClassLead;
   tutor: IUser;
-  coordinator: IUser;
+  coordinator?: IUser | null;
   parent?: IUser;
   startDate: Date;
   endDate?: Date;

@@ -66,6 +66,7 @@ import StudentClassesPage from './pages/student/StudentClassesPage';
 import StudentAttendancePage from './pages/student/StudentAttendancePage';
 import StudentTestsPage from './pages/student/StudentTestsPage';
 import StudentNotesPage from './pages/student/StudentNotesPage';
+import StudentPaymentsPage from './pages/student/StudentPaymentsPage';
 
 const App: React.FC = () => {
   const RoleBasedDashboard: React.FC = () => {
@@ -252,6 +253,16 @@ const App: React.FC = () => {
                 <ProtectedRoute studentRoute={true}>
                   <StudentLayout>
                     <StudentNotesPage />
+                  </StudentLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student-payments"
+              element={
+                <ProtectedRoute studentRoute={true}>
+                  <StudentLayout>
+                    <StudentPaymentsPage />
                   </StudentLayout>
                 </ProtectedRoute>
               }

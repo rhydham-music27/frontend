@@ -30,14 +30,11 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     const status = error.response?.status;
     if (status === 401) {
-      // Clear stale auth and send user to login to avoid redirect loops
-      try {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      } catch {}
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      // TEMP: only log 401s for debugging, do not auto-logout or redirect to login
+      console.warn('Received 401 response from API', {
+        url: (error.config as any)?.url,
+        method: (error.config as any)?.method,
+      });
     } else if (status === 403) {
       console.error('Access forbidden');
     } else if (status !== undefined && status >= 500) {

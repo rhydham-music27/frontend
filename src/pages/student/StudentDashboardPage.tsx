@@ -99,15 +99,15 @@ const StudentDashboardPage: React.FC = () => {
           </Box>
 
           {/* Student Info Card */}
-          <Card sx={{ mb: 4, background: 'linear-gradient(135deg, #001F54 0%, #4589FF 100%)' }}>
-            <CardContent sx={{ p: 3 }}>
+          <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #001F54 0%, #4589FF 100%)', borderRadius: 3 }}>
+            <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
               <Grid container spacing={3} alignItems="center">
                 <Grid item>
                   <Avatar
                     sx={{
                       width: 80,
                       height: 80,
-                      bgcolor: 'rgba(255, 255, 255, 0.2)',
+                      bgcolor: 'rgba(255, 255, 255, 0.16)',
                       color: 'white',
                     }}
                   >
@@ -133,6 +133,57 @@ const StudentDashboardPage: React.FC = () => {
               </Grid>
             </CardContent>
           </Card>
+
+          {/* Stats Summary Row */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} sm={4}>
+              <Card sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Total Classes
+                  </Typography>
+                  <Typography variant="h5" fontWeight={600}>
+                    {dashboardStats?.classes?.total ?? 0}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Active now: {dashboardStats?.classes?.active ?? 0}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Card sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Attendance
+                  </Typography>
+                  <Typography variant="h5" fontWeight={600}>
+                    {dashboardStats?.attendance?.percentage
+                      ? `${dashboardStats.attendance.percentage}%`
+                      : '0%'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Keep your streak going!
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Card sx={{ borderRadius: 2 }}>
+                <CardContent>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Study Materials
+                  </Typography>
+                  <Typography variant="h5" fontWeight={600}>
+                    {dashboardStats?.notes?.total ?? 0}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Notes & resources shared with you
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
           {/* Menu Grid */}
           <Grid container spacing={3}>

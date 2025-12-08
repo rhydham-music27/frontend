@@ -254,8 +254,20 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
   const mode = watch('mode');
   const selectedCity = watch('city') || '';
 
+  const handleFormSubmit: SubmitHandler<IClassLeadFormData> = (formData) => {
+    const payload: IClassLeadFormData = { ...formData };
+
+    if (payload.studentType === 'SINGLE') {
+      // Group-only fields should not be sent for single-student leads
+      delete (payload as any).studentDetails;
+      delete (payload as any).numberOfStudents;
+    }
+
+    onSubmit(payload);
+  };
+
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={3}>
+    <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} display="flex" flexDirection="column" gap={3}>
       {/* Student Type Selection */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
         <Typography variant="h6" gutterBottom>Student Type</Typography>
