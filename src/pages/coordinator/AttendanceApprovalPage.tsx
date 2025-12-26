@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Container,
   Box,
@@ -29,6 +29,17 @@ import {
   rejectAttendance,
   getAttendances,
 } from '../../services/attendanceService';
+import AttendanceSheet, {
+  AttendanceRecord,
+  AssignedClass,
+  TutorProfile,
+} from '../../components/tutors/AttendanceSheet';
+import {
+  getCoordinatorPendingSheets,
+  approveAttendanceSheet,
+  rejectAttendanceSheet,
+  IAttendanceSheet,
+} from '../../services/attendanceSheetService';
 import { getAssignedClasses } from '../../services/coordinatorService';
 import { IAttendance, IAttendanceStatistics, IFinalClass } from '../../types';
 import { ATTENDANCE_STATUS, FINAL_CLASS_STATUS } from '../../constants';
@@ -37,7 +48,7 @@ import useAuth from '../../hooks/useAuth';
 const AttendanceApprovalPage: React.FC = () => {
   const { user } = useAuth();
 
-  const [view, setView] = useState<'pending' | 'all' | 'history'>('pending');
+  const [view, setView] = useState<'pending' | 'all' | 'history' | 'sheets'>('pending');
   const [pendingAttendances, setPendingAttendances] = useState<IAttendance[]>([]);
   const [allAttendances, setAllAttendances] = useState<IAttendance[]>([]);
   const [historyData, setHistoryData] = useState<{
@@ -60,6 +71,11 @@ const AttendanceApprovalPage: React.FC = () => {
     message: string;
     severity: 'success' | 'error' | 'info';
   }>({ open: false, message: '', severity: 'success' });
+  const [pendingSheets, setPendingSheets] = useState<IAttendanceSheet[]>([]);
+  const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
+  const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
+  const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
+  const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>();
 
   const activeFilterCount = useMemo(() => {
     return Object.values(filters).filter((v) => v && `${v}`.length > 0).length;
@@ -223,7 +239,142 @@ const AttendanceApprovalPage: React.FC = () => {
     if (view === 'pending') fetchPendingApprovals();
     if (view === 'all') fetchAllAttendances();
     if (view === 'history' && filters.classId) fetchClassHistory(filters.classId);
+    if (view === 'sheets') {
+      (async () => {
+        try {
+          const res = await getCoordinatorPendingSheets();
+          setPendingSheets(res.data || []);
+        } catch {
+          setPendingSheets([]);
+        }
+      })();
+    }
   }, [view, filters.classId, fetchAllAttendances, fetchClassHistory, fetchPendingApprovals]);
+
+  const handleApproveSheet = useCallback(
+    async (sheetId: string) => {
+      setLoading(true);
+      try {
+        await approveAttendanceSheet(sheetId);
+        setSnackbar({ open: true, message: 'Attendance sheet approved', severity: 'success' });
+        const res = await getCoordinatorPendingSheets();
+        setPendingSheets(res.data || []);
+      } catch (e: any) {
+        setSnackbar({ open: true, message: e?.message || 'Failed to approve sheet', severity: 'error' });
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const handleViewMonthlySheet = useCallback(
+    async (sheet: IAttendanceSheet) => {
+      try {
+        const finalClass: any = sheet.finalClass || {};
+        const classIdStr = String(finalClass.id || finalClass._id || '');
+        if (!classIdStr) {
+          setSnackbar({ open: true, message: 'Class information missing for this sheet', severity: 'error' });
+          return;
+        }
+
+        const res = await getAttendanceByClass(classIdStr);
+        const attendances = (res.data || []) as any[];
+        if (!attendances.length) {
+          setSnackbar({ open: true, message: 'No attendance records found for this class', severity: 'info' });
+          return;
+        }
+
+        const year = sheet.year;
+        const month = sheet.month; // 1-12
+        const monthStr = String(month).padStart(2, '0');
+
+        const mapped: AttendanceRecord[] = attendances
+          .map((a: any) => {
+            const dateObj = a.sessionDate ? new Date(a.sessionDate as any) : null;
+            const yyyyMmDd = dateObj
+              ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(
+                  dateObj.getDate()
+                ).padStart(2, '0')}`
+              : '';
+
+            let durationHours =
+              typeof a.durationHours === 'number'
+                ? a.durationHours
+                : (a.finalClass as any)?.classLead?.classDurationHours ?? undefined;
+
+            if (typeof durationHours !== 'number') {
+              durationHours = 1;
+            }
+
+            return {
+              classId: classIdStr,
+              date: yyyyMmDd,
+              status: (a as any).studentAttendanceStatus || a.status || '',
+              duration: typeof durationHours === 'number' ? durationHours : undefined,
+              topicsCovered: a.topicCovered || undefined,
+              markedAt: a.submittedAt
+                ? String(a.submittedAt)
+                : a.createdAt
+                ? String(a.createdAt)
+                : '',
+            } as AttendanceRecord;
+          })
+          .filter((r) => r.date && r.date.startsWith(`${year}-${monthStr}`));
+
+        if (!mapped.length) {
+          setSnackbar({ open: true, message: 'No attendance records for this month', severity: 'info' });
+          return;
+        }
+
+        const firstDay = `${year}-${monthStr}-01`;
+        const lastDate = new Date(year, month, 0).getDate();
+        const lastDay = `${year}-${monthStr}-${String(lastDate).padStart(2, '0')}`;
+
+        setSheetTutorData({ attendanceRecords: mapped } as TutorProfile);
+        setSheetClassInfo({
+          classId: finalClass.className || classIdStr,
+          studentName: finalClass.studentName || '',
+          subject: Array.isArray(finalClass.subject)
+            ? finalClass.subject.join(', ')
+            : (finalClass.subject as any),
+          tutorName: user?.name || 'Tutor',
+        } as AssignedClass);
+        setSheetRange({ start: firstDay, end: lastDay });
+
+        setTimeout(async () => {
+          try {
+            await sheetRef.current?.exportPdf();
+          } catch {
+            // ignore
+          }
+        }, 0);
+      } catch (e: any) {
+        setSnackbar({ open: true, message: e?.message || 'Failed to prepare attendance sheet PDF', severity: 'error' });
+      }
+    },
+    [user?.name]
+  );
+
+  const handleRejectSheet = useCallback(
+    async (sheetId: string) => {
+      // Simple inline reason collection for now
+      const reason = window.prompt('Reason for rejecting this attendance sheet?');
+      if (!reason) return;
+      setLoading(true);
+      try {
+        await rejectAttendanceSheet(sheetId, reason);
+        setSnackbar({ open: true, message: 'Attendance sheet rejected', severity: 'success' });
+        const res = await getCoordinatorPendingSheets();
+        setPendingSheets(res.data || []);
+      } catch (e: any) {
+        setSnackbar({ open: true, message: e?.message || 'Failed to reject sheet', severity: 'error' });
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -237,6 +388,69 @@ const AttendanceApprovalPage: React.FC = () => {
       {error && (
         <Box mb={2}>
           <ErrorAlert error={error} />
+        </Box>
+      )}
+
+      {view === 'sheets' && (
+        <Box>
+          {loading && pendingSheets.length === 0 ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Pending Monthly Sheets ({pendingSheets.length})
+              </Typography>
+              {pendingSheets.length === 0 ? (
+                <Typography color="text.secondary">No pending attendance sheets</Typography>
+              ) : (
+                pendingSheets.map((sheet) => (
+                  <Box key={sheet.id} sx={{ mb: 2, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }}>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {sheet.finalClass?.studentName}{' '}
+                      •{' '}
+                      {Array.isArray(sheet.finalClass?.subject)
+                        ? sheet.finalClass.subject.join(', ')
+                        : sheet.finalClass?.subject}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Period: {sheet.periodLabel || `${sheet.month}/${sheet.year}`}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      Sessions taken: {sheet.totalSessionsTaken ?? 0} /{' '}
+                      {sheet.totalSessionsPlanned ?? '—'} • Present: {sheet.presentCount ?? 0} • Absent:{' '}
+                      {sheet.absentCount ?? 0}
+                    </Typography>
+                    <Box mt={1.5} display="flex" gap={1.5} flexWrap="wrap">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleViewMonthlySheet(sheet)}
+                      >
+                        View Sheet
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleApproveSheet(sheet.id)}
+                        disabled={loading}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        onClick={() => handleRejectSheet(sheet.id)}
+                        disabled={loading}
+                      >
+                        Reject
+                      </Button>
+                    </Box>
+                  </Box>
+                ))
+              )}
+            </>
+          )}
         </Box>
       )}
 
@@ -258,6 +472,7 @@ const AttendanceApprovalPage: React.FC = () => {
           />
           <Tab value="all" label="All Attendance" />
           <Tab value="history" label="Class History" />
+          <Tab value="sheets" label="Attendance Sheets" />
         </Tabs>
       </Card>
 
@@ -480,6 +695,17 @@ const AttendanceApprovalPage: React.FC = () => {
         severity={snackbar.severity}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       />
+      {sheetTutorData && sheetClassInfo && (
+        <Box sx={{ position: 'absolute', left: -9999, top: -9999 }}>
+          <AttendanceSheet
+            ref={sheetRef}
+            tutorData={sheetTutorData}
+            classInfo={sheetClassInfo}
+            range={sheetRange}
+            sheetNo={1}
+          />
+        </Box>
+      )}
     </Container>
   );
 };

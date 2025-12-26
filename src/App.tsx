@@ -36,6 +36,7 @@ import PaymentTrackingPage from './pages/coordinator/PaymentTrackingPage';
 import CoordinatorProfilePage from './pages/coordinator/CoordinatorProfilePage';
 import CoordinatorsPage from './pages/manager/CoordinatorsPage';
 import ManagerTodayTasksPage from './pages/manager/ManagerTodayTasksPage';
+import ManagerAnalyticsPage from './pages/manager/ManagerAnalyticsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminProfilePage from './pages/admin/AdminProfilePage';
 import ManagersManagementPage from './pages/admin/ManagersManagementPage';
@@ -52,6 +53,7 @@ import TutorLeadsPage from './pages/tutors/TutorLeadsPage';
 import TutorNotesPage from './pages/tutors/TutorNotesPage';
 import NotesDrivePage from './pages/notes/NotesDrivePage';
 import TutorPublicProfilePage from './pages/public/TutorPublicProfilePage';
+import RequestTutorPage from './pages/public/RequestTutorPage';
 import CoordinatorSettingsPage from './pages/coordinator/CoordinatorSettingsPage';
 import ParentDashboardPage from './pages/parent/ParentDashboardPage';
 import ParentAttendancePage from './pages/parent/ParentAttendancePage';
@@ -67,6 +69,7 @@ import StudentAttendancePage from './pages/student/StudentAttendancePage';
 import StudentTestsPage from './pages/student/StudentTestsPage';
 import StudentNotesPage from './pages/student/StudentNotesPage';
 import StudentPaymentsPage from './pages/student/StudentPaymentsPage';
+import OptionsManagementPage from './pages/admin/OptionsManagementPage';
 
 const App: React.FC = () => {
   const RoleBasedDashboard: React.FC = () => {
@@ -167,6 +170,7 @@ const App: React.FC = () => {
                 <Route path="managers" element={<ManagersManagementPage />} />
                 <Route path="coordinators" element={<CoordinatorsManagementPage />} />
                 <Route path="data-management" element={<DataManagementPage />} />
+                <Route path="options" element={<OptionsManagementPage />} />
               </Route>
               <Route path="class-leads">
                 <Route index element={<ClassLeadsListPage />} />
@@ -181,7 +185,8 @@ const App: React.FC = () => {
                 <Route index element={<PaymentsListPage />} />
                 <Route path=":id" element={<PaymentDetailPage />} />
               </Route>
-              <Route path="analytics" element={<div>Analytics - Coming soon</div>} />
+              <Route path="analytics" element={<ManagerAnalyticsPage />} />
+
               <Route path="profile" element={<RoleBasedProfile />} />
               <Route path="tutor-profile" element={<TutorProfilePage />} />
             </Route>
@@ -269,6 +274,7 @@ const App: React.FC = () => {
             />
 
             <Route path="ourtutor/:teacherId" element={<TutorPublicProfilePage />} />
+            <Route path="/request-tutor" element={<RequestTutorPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

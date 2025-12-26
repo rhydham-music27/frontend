@@ -49,6 +49,7 @@ export interface ITutor {
   teacherId?: string;
   experienceHours: number;
   subjects: string[];
+  extracurricularActivities?: string[];
   ratings: number;
   classesAssigned: number;
   demosTaken: number;
@@ -637,11 +638,16 @@ export interface IManager {
   conversionRate: number;
   averageRevenuePerClass: number;
   joiningDate: Date;
-  department?: string;
   isActive: boolean;
   lastActivityAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  permissions?: {
+    canViewSiteLeads?: boolean;
+    canVerifyTutors?: boolean;
+    canCreateLeads?: boolean;
+    canManagePayments?: boolean;
+  };
 }
 
 export interface IAdmin {

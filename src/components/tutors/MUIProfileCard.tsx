@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar } from '@mui/material';
-import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, BookOpen, Clock, FileText, CheckCircle } from 'lucide-react';
+import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock, FileText, CheckCircle } from 'lucide-react';
 import { ITutor } from '../../types';
 import { getMyProfile, uploadDocument } from '../../services/tutorService';
 
@@ -12,6 +12,12 @@ const MUIProfileCard: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const [documentModalOpen, setDocumentModalOpen] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<string | null>(null);
+  const [selectedDocumentFile, setSelectedDocumentFile] = useState<File | null>(null);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [documentUploadError, setDocumentUploadError] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
@@ -138,18 +144,90 @@ const MUIProfileCard: React.FC = () => {
 
   const locationPreferences = {
     fullAddress: (tutor as any).fullAddress || '',
-    pinCode: (tutor as any).pinCode || '',
     teachingMode: (tutor as any).preferredMode || '',
     preferredLocations: (tutor as any).preferredLocations || [],
     availableTimeSlots: (tutor as any).availableTimeSlots || [],
   };
 
-  const documents = {
-    aadhar: (tutor.documents || []).some((d) => d.documentType === 'AADHAR' && d.verifiedAt),
-    panCard: (tutor.documents || []).some((d) => d.documentType === 'PAN_CARD' && d.verifiedAt),
-    collegeId: (tutor.documents || []).some((d) => d.documentType === 'COLLEGE_ID' && d.verifiedAt),
-    bankStatement: (tutor.documents || []).some((d) => d.documentType === 'BANK_STATEMENT' && d.verifiedAt),
-    qualificationCert: (tutor.documents || []).some((d) => d.documentType === 'QUALIFICATION_CERT' && d.verifiedAt),
+  type DocumentStatus = 'not_uploaded' | 'pending' | 'approved';
+
+  const computeStatusForType = (backendType: string): DocumentStatus => {
+    const allDocs = (tutor.documents || []).filter((d) => d.documentType === backendType);
+    if (!allDocs.length) return 'not_uploaded';
+    const anyApproved = allDocs.some((d) => d.verifiedAt);
+    if (anyApproved) return 'approved';
+    return 'pending';
+  };
+
+  const documents: Record<string, DocumentStatus> = {
+    'Photo of Yourself (Passport Size)': computeStatusForType('PROFILE_PHOTO'),
+    'Experience Proof (if available)': computeStatusForType('EXPERIENCE_PROOF'),
+    'Aadhar Card': computeStatusForType('AADHAR'),
+    'Marksheet / Highest Degree Marksheet': computeStatusForType('QUALIFICATION_CERT'),
+  };
+
+  const getDocumentTypeForLabel = (label: string): string | null => {
+    switch (label) {
+      case 'Photo of Yourself (Passport Size)':
+        return 'PROFILE_PHOTO';
+      case 'Experience Proof (if available)':
+        return 'EXPERIENCE_PROOF';
+      case 'Aadhar Card':
+        return 'AADHAR';
+      case 'Marksheet / Highest Degree Marksheet':
+        return 'QUALIFICATION_CERT';
+      default:
+        return null;
+    }
+  };
+
+  const handleOpenDocumentModal = (label: string) => {
+    const docType = getDocumentTypeForLabel(label);
+    if (!docType) return;
+    setSelectedDocumentType(docType);
+    setSelectedDocumentFile(null);
+    setDocumentUploadError(null);
+    setDocumentModalOpen(true);
+  };
+
+  const handleCloseDocumentModal = () => {
+    if (uploadingDocument) return;
+    setDocumentModalOpen(false);
+    setSelectedDocumentType(null);
+    setSelectedDocumentFile(null);
+    setDocumentUploadError(null);
+  };
+
+  const handleDocumentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedDocumentFile(file);
+    if (file) setDocumentUploadError(null);
+  };
+
+  const handleUploadDocumentFile = async () => {
+    if (!selectedDocumentType) {
+      setDocumentUploadError('Missing document type. Please close and try again.');
+      return;
+    }
+    if (!selectedDocumentFile) {
+      setDocumentUploadError('Please select a file to upload.');
+      return;
+    }
+    try {
+      setUploadingDocument(true);
+      setDocumentUploadError(null);
+      const res = await uploadDocument((tutor as any).id, selectedDocumentType, selectedDocumentFile);
+      setTutor(res.data);
+      setDocumentModalOpen(false);
+      setSelectedDocumentFile(null);
+      setSelectedDocumentType(null);
+    } catch (e: any) {
+      setDocumentUploadError(
+        e?.response?.data?.message || e?.message || 'Failed to upload document.'
+      );
+    } finally {
+      setUploadingDocument(false);
+    }
   };
 
   const tutorData = {
@@ -326,7 +404,7 @@ const MUIProfileCard: React.FC = () => {
             <div className="mb-3">
               <p className="text-xs font-medium text-gray-500 mb-2">Subjects</p>
               <div className="flex flex-wrap gap-2">
-                {workExperience.subjects.map((subject, index) => (
+                {workExperience.subjects.map((subject: string, index: number) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg"
@@ -341,7 +419,7 @@ const MUIProfileCard: React.FC = () => {
               <div className="mb-3">
                 <p className="text-xs font-medium text-gray-500 mb-2">Classes Can Teach</p>
                 <div className="flex flex-wrap gap-2">
-                  {workExperience.classesCanTeach.map((cls, index) => (
+                  {workExperience.classesCanTeach.map((cls: string, index: number) => (
                     <span
                       key={index}
                       className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-lg"
@@ -357,7 +435,7 @@ const MUIProfileCard: React.FC = () => {
               <div>
                 <p className="text-xs font-medium text-gray-500 mb-2">Education Boards</p>
                 <div className="flex flex-wrap gap-2">
-                  {workExperience.educationBoards.map((board, index) => (
+                  {workExperience.educationBoards.map((board: string, index: number) => (
                     <span
                       key={index}
                       className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-lg"
@@ -375,7 +453,7 @@ const MUIProfileCard: React.FC = () => {
           <div className="mt-4 pt-4 border-t">
             <p className="text-xs font-medium text-gray-500 mb-2">Extracurricular Activities</p>
             <div className="flex flex-wrap gap-2">
-              {workExperience.extracurricularActivities.map((activity, index) => (
+              {workExperience.extracurricularActivities.map((activity: string, index: number) => (
                 <span
                   key={index}
                   className="px-3 py-1 bg-violet-100 text-violet-700 text-xs font-medium rounded-lg"
@@ -403,9 +481,6 @@ const MUIProfileCard: React.FC = () => {
                   <p className="text-sm font-medium text-gray-900">
                     {locationPreferences.fullAddress}
                   </p>
-                  {locationPreferences.pinCode && (
-                    <p className="text-xs text-gray-600 mt-0.5">PIN: {locationPreferences.pinCode}</p>
-                  )}
                 </div>
               </div>
             )}
@@ -421,7 +496,7 @@ const MUIProfileCard: React.FC = () => {
               <div>
                 <p className="text-xs font-medium text-gray-500 mb-2">Preferred Locations</p>
                 <div className="flex flex-wrap gap-2">
-                  {locationPreferences.preferredLocations.map((location, index) => (
+                  {locationPreferences.preferredLocations.map((location: string, index: number) => (
                     <span
                       key={index}
                       className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg"
@@ -442,7 +517,7 @@ const MUIProfileCard: React.FC = () => {
               Available Time Slots
             </h2>
             <div className="space-y-2">
-              {locationPreferences.availableTimeSlots.map((slot, index) => (
+              {locationPreferences.availableTimeSlots.map((slot: string, index: number) => (
                 <div
                   key={index}
                   className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-md transition-all"
@@ -462,26 +537,49 @@ const MUIProfileCard: React.FC = () => {
           Documents
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {Object.entries(documents).map(([key, value]) => (
-            <div
-              key={key}
-              className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 hover:shadow-md transition-all"
-            >
-              <div className="flex items-center justify-center mb-2">
-                {value ? (
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                ) : (
-                  <FileText className="w-8 h-8 text-gray-400" />
-                )}
+          {Object.entries(documents).map(([label, status]) => {
+            let containerClass = '';
+            let iconClass = '';
+            let statusText = '';
+            let statusTextClass = '';
+
+            if (status === 'approved') {
+              containerClass = 'p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 hover:shadow-md transition-all cursor-pointer';
+              iconClass = 'w-8 h-8 text-green-600';
+              statusText = 'Approved';
+              statusTextClass = 'text-xs text-center text-green-600 font-medium mt-1';
+            } else if (status === 'pending') {
+              containerClass = 'p-4 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-300 hover:shadow-md transition-all cursor-pointer';
+              iconClass = 'w-8 h-8 text-yellow-500';
+              statusText = 'Pending Approval';
+              statusTextClass = 'text-xs text-center text-yellow-700 font-medium mt-1';
+            } else {
+              containerClass = 'p-4 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-md transition-all cursor-pointer';
+              iconClass = 'w-8 h-8 text-red-500';
+              statusText = 'Not Uploaded';
+              statusTextClass = 'text-xs text-center text-red-600 font-medium mt-1';
+            }
+
+            return (
+              <div
+                key={label}
+                className={containerClass}
+                onClick={() => handleOpenDocumentModal(label)}
+              >
+                <div className="flex items-center justify-center mb-2">
+                  {status === 'approved' ? (
+                    <CheckCircle className={iconClass} />
+                  ) : (
+                    <FileText className={iconClass} />
+                  )}
+                </div>
+                <p className="text-xs text-center font-medium text-gray-700">
+                  {label}
+                </p>
+                <p className={statusTextClass}>{statusText}</p>
               </div>
-              <p className="text-xs text-center font-medium text-gray-700 capitalize">
-                {key.replace(/([A-Z])/g, ' $1').trim()}
-              </p>
-              <p className="text-xs text-center text-green-600 font-medium mt-1">
-                {value ? 'Verified' : 'Pending'}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -522,6 +620,52 @@ const MUIProfileCard: React.FC = () => {
           </Button>
           <Button variant="contained" onClick={handleUploadAvatar} disabled={uploadingAvatar || !selectedFile}>
             {uploadingAvatar ? 'Uploading...' : 'Save'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Document Upload Dialog */}
+      <Dialog open={documentModalOpen} onClose={handleCloseDocumentModal} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 700 }}>Upload Document</DialogTitle>
+        <DialogContent>
+          <div className="flex flex-col gap-4 mt-2">
+            {selectedDocumentType && (
+              <p className="text-sm text-gray-700">
+                Document type:{' '}
+                <span className="font-semibold">{selectedDocumentType}</span>
+              </p>
+            )}
+            <div className="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center bg-gray-50">
+              <p className="text-sm font-medium text-gray-900 mb-1">Select a file to upload</p>
+              <p className="text-xs text-gray-500 mb-3">PDF, JPG, PNG up to 5MB.</p>
+              <Button variant="outlined" component="label" size="small">
+                Choose File
+                <input
+                  hidden
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleDocumentFileChange}
+                />
+              </Button>
+              {selectedDocumentFile && (
+                <p className="mt-2 text-xs text-gray-700">{selectedDocumentFile.name}</p>
+              )}
+            </div>
+            {documentUploadError && (
+              <p className="text-sm text-red-600 text-center">{documentUploadError}</p>
+            )}
+          </div>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseDocumentModal} disabled={uploadingDocument}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleUploadDocumentFile}
+            disabled={uploadingDocument || !selectedDocumentFile}
+          >
+            {uploadingDocument ? 'Uploading...' : 'Upload'}
           </Button>
         </DialogActions>
       </Dialog>

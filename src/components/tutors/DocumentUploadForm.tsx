@@ -11,7 +11,12 @@ interface Props {
   error?: string | null;
 }
 
-const DOCUMENT_TYPES = ['AADHAAR', 'CERTIFICATE', 'EXPERIENCE_PROOF', 'DEGREE', 'OTHER'];
+const DOCUMENT_TYPES: { value: string; label: string }[] = [
+  { value: 'PROFILE_PHOTO', label: 'Photo of Yourself (Passport Size)' },
+  { value: 'EXPERIENCE_PROOF', label: 'Experience Proof (if available)' },
+  { value: 'AADHAR', label: 'Aadhar Card' },
+  { value: 'QUALIFICATION_CERT', label: 'Marksheet / Highest Degree Marksheet' },
+];
 
 export default function DocumentUploadForm({ tutorId, onUploadSuccess, loading = false, error = null }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -41,9 +46,17 @@ export default function DocumentUploadForm({ tutorId, onUploadSuccess, loading =
   return (
     <Box display="flex" flexDirection="column" gap={2}>
       <Alert severity="info">Supported formats: PDF, JPEG, PNG. Max size: 5MB.</Alert>
-      <TextField select label="Document Type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} fullWidth>
+      <TextField
+        select
+        label="Document Type"
+        value={documentType}
+        onChange={(e) => setDocumentType(e.target.value)}
+        fullWidth
+      >
         {DOCUMENT_TYPES.map((t) => (
-          <MenuItem key={t} value={t}>{t.replace(/_/g, ' ')}</MenuItem>
+          <MenuItem key={t.value} value={t.value}>
+            {t.label}
+          </MenuItem>
         ))}
       </TextField>
       <div>

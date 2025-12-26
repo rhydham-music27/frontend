@@ -3,6 +3,8 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
+import { store } from '../store';
+import { showPermissionDenied } from '../store/slices/uiSlice';
 
 const api = axios.create({
   baseURL: 'http://localhost:5000',
@@ -29,6 +31,7 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     const status = error.response?.status;
+    const message = (error.response?.data as any)?.error || (error.response?.data as any)?.message;
     if (status === 401) {
       // TEMP: only log 401s for debugging, do not auto-logout or redirect to login
       console.warn('Received 401 response from API', {
@@ -37,6 +40,9 @@ api.interceptors.response.use(
       });
     } else if (status === 403) {
       console.error('Access forbidden');
+      if (message === 'You do not have permission to perform this action') {
+        store.dispatch(showPermissionDenied());
+      }
     } else if (status !== undefined && status >= 500) {
       console.error('Server error. Please try again later.');
     }

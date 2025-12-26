@@ -3,6 +3,9 @@ import { Box, useMediaQuery, useTheme, Toolbar } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import PermissionDeniedDialog from '../common/PermissionDeniedDialog';
+import { useSelector, useDispatch } from 'react-redux';
+import { hidePermissionDenied, selectPermissionDeniedOpen } from '../../store/slices/uiSlice';
 
 const drawerWidth = 280;
 
@@ -10,11 +13,13 @@ const MainLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const dispatch = useDispatch();
+  const permissionDeniedOpen = useSelector(selectPermissionDeniedOpen);
 
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 
   return (
-    <Box display="flex">
+    <Box display="flex" sx={{ position: 'relative' }}>
       <Header onMenuClick={handleDrawerToggle} />
       <Sidebar open={mobileOpen} onClose={handleDrawerToggle} drawerWidth={drawerWidth} />
       <Box
@@ -27,7 +32,8 @@ const MainLayout: React.FC = () => {
           height: '100vh',
           overflowY: 'auto',
           backgroundColor: 'background.default',
-          transition: 'margin 0.3s ease, width 0.3s ease',
+          transition: 'margin 0.3s ease, width 0.3s ease, filter 0.2s ease',
+          filter: permissionDeniedOpen ? 'blur(3px)' : 'none',
         }}
       >
         {/* Spacer to offset fixed AppBar height */}
@@ -36,6 +42,10 @@ const MainLayout: React.FC = () => {
           <Outlet />
         </Box>
       </Box>
+      <PermissionDeniedDialog
+        open={permissionDeniedOpen}
+        onClose={() => dispatch(hidePermissionDenied())}
+      />
     </Box>
   );
 };

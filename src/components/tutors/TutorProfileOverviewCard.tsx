@@ -15,7 +15,7 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { blue, green, orange } from '@mui/material/colors';
+import { blue, green, orange, red } from '@mui/material/colors';
 import { ITutor } from '../../types';
 import { getMyProfile, uploadDocument } from '../../services/tutorService';
 
@@ -64,6 +64,8 @@ const TutorProfileOverviewCard: React.FC = () => {
   const profileImageUrl = profilePhotoDoc?.documentUrl;
 
   const initials = (user?.name || '').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+
+  const hasPendingDocuments = (tutor.documents || []).some((doc: any) => !doc.verifiedAt);
 
   const handleOpenAvatarModal = () => {
     setUploadError(null);
@@ -261,13 +263,35 @@ const TutorProfileOverviewCard: React.FC = () => {
           </Grid2>
 
           <Grid2 size={{ xs: 12, md: 5 }}>
-            <Card>
-              <CardHeader title="Documents" />
+            <Card
+              sx={{
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor: hasPendingDocuments ? red[500] : 'divider',
+              }}
+            >
+              <CardHeader
+                title="Documents"
+                titleTypographyProps={{
+                  color: hasPendingDocuments ? 'error.main' : undefined,
+                }}
+              />
               <CardContent>
                 <Box display="flex" flexWrap="wrap" gap={1}>
                   {tutor.documents && tutor.documents.length > 0 ? (
                     tutor.documents.map((doc: any) => (
-                      <Chip key={`${doc.documentType}-${doc.documentUrl}`} label={doc.documentType} size="small" sx={{ bgcolor: doc.verifiedAt ? 'success.light' : orange[50], color: doc.verifiedAt ? 'success.dark' : orange[800] }} />
+                      <Chip
+                        key={`${doc.documentType}-${doc.documentUrl}`}
+                        label={doc.documentType}
+                        size="small"
+                        sx={{
+                          bgcolor: doc.verifiedAt ? 'success.light' : red[50],
+                          color: doc.verifiedAt ? 'success.dark' : red[700],
+                          borderColor: doc.verifiedAt ? 'success.light' : red[200],
+                          borderWidth: 1,
+                          borderStyle: 'solid',
+                        }}
+                      />
                     ))
                   ) : (
                     <Typography variant="body2" color="text.secondary">No documents uploaded yet.</Typography>

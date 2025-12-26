@@ -64,9 +64,6 @@ const ManagersManagementPage: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isActiveFilter, setIsActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [departmentFilter, setDepartmentFilter] = useState('');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const debouncedSearch = useMemo(() => {
     let timer: any;
@@ -83,11 +80,8 @@ const ManagersManagementPage: React.FC = () => {
     try {
       const filters: any = {};
       if (isActiveFilter !== 'all') filters.isActive = isActiveFilter === 'active';
-      if (departmentFilter) filters.department = departmentFilter;
       if (searchQuery) filters.search = searchQuery;
-      if (sortBy) filters.sortBy = sortBy;
-      if (sortOrder) filters.sortOrder = sortOrder;
-      const res = await managerService.getAllManagers(p + 1, l, filters.isActive, filters.department, filters.sortBy, filters.sortOrder);
+      const res = await managerService.getAllManagers(p + 1, l, filters.isActive);
       setManagers(res.data as unknown as IManager[]);
       setTotal(res.pagination.total);
     } catch (e: any) {
@@ -95,7 +89,7 @@ const ManagersManagementPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, isActiveFilter, departmentFilter, searchQuery, sortBy, sortOrder]);
+  }, [page, rowsPerPage, isActiveFilter, searchQuery]);
 
   const loadEligibleUsers = useCallback(async () => {
     setUsersLoading(true);
@@ -126,9 +120,17 @@ const ManagersManagementPage: React.FC = () => {
   useEffect(() => {
     setPage(0);
     loadManagers(0, rowsPerPage);
-  }, [isActiveFilter, departmentFilter, searchQuery, sortBy, sortOrder, rowsPerPage]);
+  }, [isActiveFilter, searchQuery, rowsPerPage]);
 
-  const handleCreateManager = useCallback(async (payload: { userId: string; department?: string }) => {
+  const handleCreateManager = useCallback(async (payload: {
+    userId: string;
+    permissions: {
+      canViewSiteLeads?: boolean;
+      canVerifyTutors?: boolean;
+      canCreateLeads?: boolean;
+      canManagePayments?: boolean;
+    };
+  }) => {
     try {
       await managerService.createManagerProfile(payload);
       setSnackbar({ open: true, message: 'Manager profile created successfully', severity: 'success' });
@@ -141,7 +143,18 @@ const ManagersManagementPage: React.FC = () => {
     }
   }, [loadManagers]);
 
-  const handleEditManager = useCallback(async (managerId: string, updateData: { department?: string; isActive?: boolean }) => {
+  const handleEditManager = useCallback(async (
+    managerId: string,
+    updateData: {
+      isActive?: boolean;
+      permissions?: {
+        canViewSiteLeads?: boolean;
+        canVerifyTutors?: boolean;
+        canCreateLeads?: boolean;
+        canManagePayments?: boolean;
+      };
+    }
+  ) => {
     try {
       await managerService.updateManagerProfile(managerId, updateData);
       setSnackbar({ open: true, message: 'Manager profile updated successfully', severity: 'success' });
@@ -223,20 +236,37 @@ const ManagersManagementPage: React.FC = () => {
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
-              <TextField fullWidth placeholder="Search by name or email" InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1 }} /> }} onChange={(e) => debouncedSearch(e.target.value)} />
+              <TextField
+                fullWidth
+                placeholder="Search by name or email"
+                InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1 }} /> }}
+                onChange={(e) => debouncedSearch(e.target.value)}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <TextField select label="Status" fullWidth value={isActiveFilter} onChange={(e) => setIsActiveFilter(e.target.value as any)}>
+              <TextField
+                select
+                label="Status"
+                fullWidth
+                value={isActiveFilter}
+                onChange={(e) => setIsActiveFilter(e.target.value as any)}
+              >
                 <option value="all">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField label="Department" fullWidth value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} />
-            </Grid>
             <Grid item xs={12} md={2}>
-              <Button fullWidth variant="outlined" onClick={() => { setDepartmentFilter(''); setIsActiveFilter('all'); setSearchQuery(''); }}>Clear</Button>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => {
+                  setIsActiveFilter('all');
+                  setSearchQuery('');
+                }}
+              >
+                Clear
+              </Button>
             </Grid>
           </Grid>
         </CardContent>
@@ -267,7 +297,6 @@ const ManagersManagementPage: React.FC = () => {
                   </TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>Department</TableCell>
                   <TableCell align="right">Leads Created</TableCell>
                   <TableCell align="right">Classes Converted</TableCell>
                   <TableCell align="right">Revenue Generated</TableCell>
@@ -292,7 +321,6 @@ const ManagersManagementPage: React.FC = () => {
                       </TableCell>
                       <TableCell>{m.user?.name}</TableCell>
                       <TableCell>{m.user?.email}</TableCell>
-                      <TableCell>{m.department || '-'}</TableCell>
                       <TableCell align="right">{m.classLeadsCreated}</TableCell>
                       <TableCell align="right">{m.classesConverted}</TableCell>
                       <TableCell align="right">₹{Number(m.revenueGenerated || 0).toLocaleString()}</TableCell>
@@ -339,7 +367,6 @@ const ManagersManagementPage: React.FC = () => {
                 </Box>
                 <Divider sx={{ my: 1 }} />
                 <Grid container spacing={1}>
-                  <Grid item xs={6}><Typography variant="body2">Department: {m.department || '-'}</Typography></Grid>
                   <Grid item xs={6}><Chip label={m.isActive ? 'Active' : 'Inactive'} color={m.isActive ? 'success' : 'default'} size="small" /></Grid>
                   <Grid item xs={4}><Typography variant="body2">Leads: {m.classLeadsCreated}</Typography></Grid>
                   <Grid item xs={4}><Typography variant="body2">Converted: {m.classesConverted}</Typography></Grid>

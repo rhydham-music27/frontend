@@ -5,9 +5,7 @@ import {
   Grid,
   Divider,
   Chip,
-  Avatar,
   CardContent,
-  Stack,
   List,
   ListItem,
   ListItemText,
@@ -25,16 +23,15 @@ import SchoolIcon from '@mui/icons-material/School';
 import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { StyledCard } from '@/components/common/StyledCard';
-import VerificationStatusChip from '@/components/tutors/VerificationStatusChip';
 import DocumentUploadForm from '@/components/tutors/DocumentUploadForm';
 import DocumentViewer from '@/components/tutors/DocumentViewer';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorAlert from '@/components/common/ErrorAlert';
 import { getMyProfile, uploadDocument } from '@/services/tutorService';
 import { ITutor } from '@/types';
+import { VERIFICATION_STATUS } from '@/constants';
 
 const ProfileVerificationCard: React.FC = () => {
   const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
@@ -110,16 +107,6 @@ const ProfileVerificationCard: React.FC = () => {
       </StyledCard>
     );
   }
-
-  const initials = (tutorProfile?.user?.name || '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join('');
-
-  const experienceHours = tutorProfile!.experienceHours ?? 0;
-  const classesAssigned = (tutorProfile as any).classesAssigned ?? 0;
 
   return (
     <StyledCard>
@@ -233,6 +220,22 @@ const ProfileVerificationCard: React.FC = () => {
             </Grid>
           )}
         </Grid>
+
+        {(tutorProfile as any).verificationStatus === VERIFICATION_STATUS.REJECTED && (
+          <Box mt={3}>
+            <Alert severity="error">
+              <Box display="flex" flexDirection="column" gap={0.5}>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Verification rejected  please re-upload documents
+                </Typography>
+                <Typography variant="body2">
+                  {(tutorProfile as any).verificationNotes ||
+                    'Your verification was rejected. Please review the feedback from our team and upload the corrected documents below to resubmit for verification.'}
+                </Typography>
+              </Box>
+            </Alert>
+          </Box>
+        )}
 
         <Divider sx={{ my: 3 }} />
 

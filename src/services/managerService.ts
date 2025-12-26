@@ -44,7 +44,6 @@ export const getAllManagers = async (
   page: number,
   limit: number,
   isActive?: boolean,
-  department?: string,
   sortBy?: string,
   sortOrder?: 'asc' | 'desc'
 ): Promise<PaginatedResponse<IManager[]>> => {
@@ -52,7 +51,6 @@ export const getAllManagers = async (
   params.append('page', String(page));
   params.append('limit', String(limit));
   if (typeof isActive === 'boolean') params.append('isActive', String(isActive));
-  if (department) params.append('department', department);
   if (sortBy) params.append('sortBy', sortBy);
   if (sortOrder) params.append('sortOrder', sortOrder);
   const url = `${API_ENDPOINTS.MANAGERS}?${params.toString()}`;
@@ -108,7 +106,15 @@ export const getManagerContribution = async (
 
 export const updateManagerProfile = async (
   managerId: string,
-  updateData: Partial<{ department: string; isActive: boolean }>
+  updateData: Partial<{
+    isActive: boolean;
+    permissions: {
+      canViewSiteLeads?: boolean;
+      canVerifyTutors?: boolean;
+      canCreateLeads?: boolean;
+      canManagePayments?: boolean;
+    };
+  }>
 ): Promise<ApiResponse<IManager>> => {
   const { data } = await api.put(`${API_ENDPOINTS.MANAGERS}/${managerId}`, updateData);
   return data as ApiResponse<IManager>;
@@ -122,7 +128,15 @@ export const getEligibleManagerUsers = async (): Promise<ApiResponse<IUser[]>> =
 
 // Create a manager profile
 export const createManagerProfile = async (
-  payload: { userId: string; department?: string }
+  payload: {
+    userId: string;
+    permissions: {
+      canViewSiteLeads?: boolean;
+      canVerifyTutors?: boolean;
+      canCreateLeads?: boolean;
+      canManagePayments?: boolean;
+    };
+  }
 ): Promise<ApiResponse<IManager>> => {
   const { data } = await api.post(API_ENDPOINTS.MANAGERS, payload);
   return data as ApiResponse<IManager>;

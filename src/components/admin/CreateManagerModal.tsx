@@ -9,8 +9,12 @@ import {
   Box,
   CircularProgress,
   Autocomplete,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Typography,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -22,17 +26,35 @@ interface CreateManagerModalProps {
   onClose: () => void;
   users: IUser[];
   usersLoading: boolean;
-  onCreate: (payload: { userId: string; department?: string }) => Promise<void>;
+  onCreate: (payload: {
+    userId: string;
+    permissions: {
+      canViewSiteLeads?: boolean;
+      canVerifyTutors?: boolean;
+      canCreateLeads?: boolean;
+      canManagePayments?: boolean;
+    };
+  }) => Promise<void>;
 }
 
 interface FormValues {
   userId: string;
-  department?: string;
+  permissions: {
+    canViewSiteLeads: boolean;
+    canVerifyTutors: boolean;
+    canCreateLeads: boolean;
+    canManagePayments: boolean;
+  };
 }
 
 const schema = yup.object({
   userId: yup.string().required('User is required'),
-  department: yup.string().optional().min(2, 'Too short').max(100, 'Too long'),
+  permissions: yup.object({
+    canViewSiteLeads: yup.boolean().required(),
+    canVerifyTutors: yup.boolean().required(),
+    canCreateLeads: yup.boolean().required(),
+    canManagePayments: yup.boolean().required(),
+  }),
 });
 
 const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ open, onClose, users, usersLoading, onCreate }) => {
@@ -40,9 +62,17 @@ const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ open, onClose, 
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
-  const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<FormValues>({
+  const { handleSubmit, setValue, formState: { errors }, reset, control } = useForm<FormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { userId: '', department: '' },
+    defaultValues: {
+      userId: '',
+      permissions: {
+        canViewSiteLeads: true,
+        canVerifyTutors: true,
+        canCreateLeads: true,
+        canManagePayments: true,
+      },
+    },
   });
 
   const onSubmit = async (values: FormValues) => {
@@ -96,14 +126,73 @@ const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ open, onClose, 
             )}
           />
 
-          <TextField
-            label="Department"
-            placeholder="e.g., Operations, Sales"
-            fullWidth
-            {...register('department')}
-            error={!!errors.department}
-            helperText={errors.department?.message || "Optional: Specify the manager's department"}
-          />
+          <Box mt={1}>
+            <Typography variant="subtitle2" gutterBottom>
+              Permissions
+            </Typography>
+            <FormGroup>
+              <Controller
+                name="permissions.canViewSiteLeads"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can view/check leads from site"
+                  />
+                )}
+              />
+              <Controller
+                name="permissions.canVerifyTutors"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can verify tutors"
+                  />
+                )}
+              />
+              <Controller
+                name="permissions.canCreateLeads"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can create leads themselves"
+                  />
+                )}
+              />
+              <Controller
+                name="permissions.canManagePayments"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can check and validate payments"
+                  />
+                )}
+              />
+            </FormGroup>
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

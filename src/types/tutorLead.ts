@@ -16,11 +16,11 @@ export interface TutorLeadFormData {
   qualification: string;
   experience: string;
   subjects: string[];
+  extracurricularActivities: string[];
   password: string;
   confirmPassword: string;
   city: string;
   preferredAreas: string[];
-  pincode: string;
 }
 
 // City-Area mapping type

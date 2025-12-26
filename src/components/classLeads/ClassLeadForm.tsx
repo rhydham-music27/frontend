@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm, SubmitHandler, useFieldArray, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { 
   Box, TextField, Button, MenuItem, Chip, Autocomplete, 
   FormControl, FormLabel, RadioGroup, Radio, FormControlLabel, 
-  Typography, IconButton, Divider, Grid, Paper, InputAdornment
+  Typography, IconButton, Grid, Paper, InputAdornment
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { BOARD_TYPE, TEACHING_MODE, CLASS_LEAD_STATUS } from '../../constants';
+import { BOARD_TYPE, TEACHING_MODE } from '../../constants';
+import { useOptions } from '@/hooks/useOptions';
 import { IClassLead, IClassLeadFormData, StudentType } from '../../types';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
@@ -21,17 +22,6 @@ type Props = {
   error?: string | null;
   submitButtonText?: string;
 };
-
-const subjectsOptions = [
-  'Mathematics',
-  'Physics',
-  'Chemistry',
-  'Biology',
-  'English',
-  'Hindi',
-  'Social Science',
-  'Computer Science',
-];
 
 const gradeOptions = [
   '1st',
@@ -47,13 +37,6 @@ const gradeOptions = [
   '11th',
   '12th',
 ];
-
-const cityOptions = ['Bhopal'];
-
-const areasByCity: Record<string, string[]> = {
-  Bhopal: ['Arera Colony', 'MP Nagar', 'Kolar Road', 'Hoshangabad Road', 'Berasia Road', 'Ayodhya Bypass', 'Bairagarh', 'Katara Hills', 'Shahpura', 'Jahangirabad', 'Govindpura', 'Ashoka Garden', 'Bawadiya Kalan', 'Raisen Road']
-
-};
 
 const schema = yup.object({
   studentType: yup.string().oneOf(['SINGLE', 'GROUP']).required('Please select student type'),
@@ -150,6 +133,10 @@ const schema = yup.object({
 });
 
 export default function ClassLeadForm({ initialData, onSubmit, loading, error, submitButtonText = 'Create Lead' }: Props) {
+  const { options: subjectOptions } = useOptions('SUBJECT');
+  const subjectLabels = useMemo(() => subjectOptions.map((o) => o.label), [subjectOptions]);
+  const { options: cityOptionItems } = useOptions('CITY');
+  const cityLabels = useMemo(() => cityOptionItems.map((o) => o.label), [cityOptionItems]);
   const defaultValues: IClassLeadFormData = useMemo(() => {
     const initialStudentType = (initialData as any)?.studentType || 'SINGLE';
     return {
@@ -253,6 +240,9 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   const mode = watch('mode');
   const selectedCity = watch('city') || '';
+  const areaType = selectedCity ? `AREA_${selectedCity.toUpperCase().replace(/\s+/g, '_')}` : '';
+  const { options: areaOptionItems } = useOptions(areaType);
+  const areaLabels = useMemo(() => areaOptionItems.map((o) => o.label), [areaOptionItems]);
 
   const handleFormSubmit: SubmitHandler<IClassLeadFormData> = (formData) => {
     const payload: IClassLeadFormData = { ...formData };
@@ -344,7 +334,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                 multiple
                 disableCloseOnSelect
                 freeSolo
-                options={subjectsOptions}
+                options={subjectLabels}
                 value={watch('subject') || []}
                 onChange={(_, value) => setValue('subject', value as string[], { shouldValidate: true })}
                 renderTags={(value: readonly string[], getTagProps) =>
@@ -405,7 +395,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                 render={({ field: { value = [], onChange } }) => (
                   <Autocomplete
                     multiple
-                    options={subjectsOptions}
+                    options={subjectLabels}
                     value={value}
                     onChange={(_, newValue) => {
                       onChange(newValue);
@@ -671,7 +661,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             error={!!errors.city}
             helperText={errors.city?.toString()}
           >
-            {cityOptions.map((c) => (
+            {cityLabels.map((c) => (
               <MenuItem key={c} value={c}>
                 {c}
               </MenuItem>
@@ -679,7 +669,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
           </TextField>
 
           <Autocomplete
-            options={selectedCity ? areasByCity[selectedCity] || [] : []}
+            options={selectedCity ? areaLabels : []}
             value={watch('area') || ''}
             onChange={(_, value) => setValue('area', value || '', { shouldValidate: true })}
             renderInput={(params) => (

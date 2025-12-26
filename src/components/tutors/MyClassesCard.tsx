@@ -26,6 +26,10 @@ import SubmitAttendanceModal from './SubmitAttendanceModal';
 import TutorClassesStatsBox from './TutorClassesStatsBox';
 import { getMyClasses } from '../../services/finalClassService';
 import { getAttendanceByClass } from '../../services/attendanceService';
+import {
+  upsertAttendanceSheet,
+  submitAttendanceSheet,
+} from '../../services/attendanceSheetService';
 import AttendanceSheet, {
   AttendanceRecord,
   AssignedClass,
@@ -54,6 +58,8 @@ const MyClassesCard: React.FC = () => {
   const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
   const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>();
   const [downloadingClassId, setDownloadingClassId] = useState<string | null>(null);
+  const [sheetGeneratingClassId, setSheetGeneratingClassId] = useState<string | null>(null);
+  const [sheetSubmittingClassId, setSheetSubmittingClassId] = useState<string | null>(null);
 
   const handleViewAttendanceSheet = async (cls: IFinalClass) => {
     const classIdStr = String((cls as any).id || (cls as any)._id || '');
@@ -227,6 +233,44 @@ const MyClassesCard: React.FC = () => {
       });
     }
     return ranges;
+  };
+
+  const handleGenerateMonthlySheet = async (cls: IFinalClass) => {
+    const classIdStr = String((cls as any).id || (cls as any)._id || '');
+    try {
+      setSheetGeneratingClassId(classIdStr);
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      await upsertAttendanceSheet(classIdStr, month, year);
+      setActionSuccess('Monthly attendance sheet generated for the current month.');
+    } catch (e) {
+      // silently fail; global error snackbar not wired here yet
+    } finally {
+      setSheetGeneratingClassId(null);
+    }
+  };
+
+  const handleSubmitMonthlySheet = async (cls: IFinalClass) => {
+    const classIdStr = String((cls as any).id || (cls as any)._id || '');
+    try {
+      setSheetSubmittingClassId(classIdStr);
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const res = await upsertAttendanceSheet(classIdStr, month, year);
+      const sheet = res.data as any;
+      if (!sheet || !sheet.id) {
+        setSheetSubmittingClassId(null);
+        return;
+      }
+      await submitAttendanceSheet(sheet.id);
+      setActionSuccess('Monthly attendance sheet submitted to coordinator for approval.');
+    } catch (e) {
+      // silently fail; global error snackbar not wired here yet
+    } finally {
+      setSheetSubmittingClassId(null);
+    }
   };
 
   if (loading) {
@@ -443,6 +487,28 @@ const MyClassesCard: React.FC = () => {
                         disabled={downloadingClassId === classIdStr}
                       >
                         {downloadingClassId === classIdStr ? 'Preparing...' : 'View Attendance Sheet'}
+                      </Button>
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGenerateMonthlySheet(cls);
+                        }}
+                        disabled={sheetGeneratingClassId === classIdStr}
+                      >
+                        {sheetGeneratingClassId === classIdStr ? 'Generating sheet...' : 'Generate Monthly Sheet'}
+                      </Button>
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSubmitMonthlySheet(cls);
+                        }}
+                        disabled={sheetSubmittingClassId === classIdStr}
+                      >
+                        {sheetSubmittingClassId === classIdStr ? 'Sending...' : 'Send Sheet to Coordinator'}
                       </Button>
                     </Box>
 

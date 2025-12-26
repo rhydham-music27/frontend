@@ -17,10 +17,6 @@ export const tutorLeadRegistrationSchema = z.object({
   confirmPassword: z.string().min(6),
   city: z.nativeEnum(City, { error: 'Please select a city' }),
   preferredAreas: z.array(z.string()).min(1, 'Select at least one area'),
-  pincode: z
-    .string()
-    .transform((v) => v.replace(/\D/g, ''))
-    .refine((v) => /^\d{6}$/.test(v), 'Pincode must be 6 digits'),
 }).refine((data) => data.password === data.confirmPassword, {
   path: ['confirmPassword'],
   message: 'Passwords do not match',
@@ -61,7 +57,6 @@ export const homeTutorRegistrationSchema = z.object({
     subjects: z.array(z.string()).optional(),
     preferredAreas: z.array(z.string()).optional(),
     city: z.string().optional(),
-    pincode: z.string().optional(),
     phoneNumber: z.string().optional(),
   }).optional(),
 });

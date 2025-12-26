@@ -8,6 +8,10 @@ import {
   TextField,
   Box,
   MenuItem,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Typography,
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -20,32 +24,64 @@ interface EditManagerModalProps {
   open: boolean;
   onClose: () => void;
   manager: IManager | null;
-  onUpdate: (managerId: string, updateData: { department?: string; isActive?: boolean }) => Promise<void>;
+  onUpdate: (managerId: string, updateData: {
+    isActive?: boolean;
+    permissions?: {
+      canViewSiteLeads?: boolean;
+      canVerifyTutors?: boolean;
+      canCreateLeads?: boolean;
+      canManagePayments?: boolean;
+    };
+  }) => Promise<void>;
 }
 
 interface FormValues {
-  department?: string;
   isActive: boolean;
+  permissions: {
+    canViewSiteLeads: boolean;
+    canVerifyTutors: boolean;
+    canCreateLeads: boolean;
+    canManagePayments: boolean;
+  };
 }
 
 const schema = yup.object({
   department: yup.string().optional().min(2, 'Too short').max(100, 'Too long'),
   isActive: yup.boolean().required(),
+  permissions: yup.object({
+    canViewSiteLeads: yup.boolean().required(),
+    canVerifyTutors: yup.boolean().required(),
+    canCreateLeads: yup.boolean().required(),
+    canManagePayments: yup.boolean().required(),
+  }),
 });
 
 const EditManagerModal: React.FC<EditManagerModalProps> = ({ open, onClose, manager, onUpdate }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, reset, control } = useForm<FormValues>({
+  const { handleSubmit, formState: { errors }, reset, control } = useForm<FormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { department: '', isActive: true },
+    defaultValues: {
+      isActive: true,
+      permissions: {
+        canViewSiteLeads: true,
+        canVerifyTutors: true,
+        canCreateLeads: true,
+        canManagePayments: true,
+      },
+    },
   });
 
   useEffect(() => {
     reset({
-      department: manager?.department || '',
       isActive: manager?.isActive ?? true,
+      permissions: {
+        canViewSiteLeads: manager?.permissions?.canViewSiteLeads ?? true,
+        canVerifyTutors: manager?.permissions?.canVerifyTutors ?? true,
+        canCreateLeads: manager?.permissions?.canCreateLeads ?? true,
+        canManagePayments: manager?.permissions?.canManagePayments ?? true,
+      },
     });
   }, [manager, reset]);
 
@@ -76,13 +112,73 @@ const EditManagerModal: React.FC<EditManagerModalProps> = ({ open, onClose, mana
             </Box>
           )}
           {error && <ErrorAlert error={error} />}
-          <TextField
-            label="Department"
-            fullWidth
-            {...register('department')}
-            error={!!errors.department}
-            helperText={errors.department?.message || 'Optional'}
-          />
+          <Box mt={1}>
+            <Typography variant="subtitle2" gutterBottom>
+              Permissions
+            </Typography>
+            <FormGroup>
+              <Controller
+                name="permissions.canViewSiteLeads"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can view/check leads from site"
+                  />
+                )}
+              />
+              <Controller
+                name="permissions.canVerifyTutors"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can verify tutors"
+                  />
+                )}
+              />
+              <Controller
+                name="permissions.canCreateLeads"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can create leads themselves"
+                  />
+                )}
+              />
+              <Controller
+                name="permissions.canManagePayments"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label="Can check and validate payments"
+                  />
+                )}
+              />
+            </FormGroup>
+          </Box>
           <Controller
             name="isActive"
             control={control}

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Avatar } from '@mui/material';
-import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, BookOpen, Clock, FileText, CheckCircle, Star } from 'lucide-react';
+import { User, Phone, Mail, GraduationCap, Briefcase, FileText, CheckCircle, Star } from 'lucide-react';
 import { ITutor, IPublicTutorReview } from '../../types';
 
 interface PublicTutorProfileCardProps {
@@ -18,13 +17,6 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
 
   const profilePhotoDoc = (tutor.documents || []).find((d) => d.documentType === 'PROFILE_PHOTO');
   const profileImageUrl = profilePhotoDoc?.documentUrl;
-
-  const initials = (user?.name || '')
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
 
   const personalDetails = {
     profilePhoto: profileImageUrl,
@@ -50,7 +42,6 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
 
   const locationPreferences = {
     fullAddress: (tutor as any).fullAddress || '',
-    pinCode: (tutor as any).pinCode || '',
     teachingMode: (tutor as any).preferredMode || '',
     preferredLocations: (tutor as any).preferredLocations || [],
     availableTimeSlots: (tutor as any).availableTimeSlots || [],

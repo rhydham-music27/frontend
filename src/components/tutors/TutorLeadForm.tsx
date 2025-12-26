@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -20,11 +20,10 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import SchoolIcon from '@mui/icons-material/School';
 import LockIcon from '@mui/icons-material/Lock';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
-import MapIcon from '@mui/icons-material/Map';
 import type { TutorLeadFormData, TutorLeadFormProps } from '@/types/tutorLead';
-import { Gender, City, Subject } from '../../types/enums';
+import { Gender } from '../../types/enums';
 import { validateEmail, validatePhone } from '@/utils/leadValidation';
-import { mockCityAreas } from '@/pages/TutorLeadRegistrationMockData';
+import { useOptions } from '@/hooks/useOptions';
 
 export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
   const [formData, setFormData] = useState<TutorLeadFormData>({
@@ -35,15 +34,29 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
     qualification: '',
     experience: '',
     subjects: [],
+    extracurricularActivities: [],
     password: '',
     confirmPassword: '',
     city: '',
     preferredAreas: [],
-    pincode: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [availableAreas, setAvailableAreas] = useState<string[]>([]);
+
+  const { options: subjectOptions } = useOptions('SUBJECT');
+  const subjectLabels = useMemo(() => subjectOptions.map((o) => o.label), [subjectOptions]);
+
+  const { options: extracurricularOptions } = useOptions('EXTRACURRICULAR');
+  const extracurricularLabels = useMemo(
+    () => extracurricularOptions.map((o) => o.label),
+    [extracurricularOptions]
+  );
+
+  const { options: cityOptions } = useOptions('CITY');
+  const areaType = formData.city
+    ? `AREA_${formData.city.toUpperCase().replace(/\s+/g, '_')}`
+    : '';
+  const { options: areaOptions } = useOptions(areaType);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -76,6 +89,10 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
       newErrors.subjects = 'Please select at least one subject';
     }
 
+    if (formData.extracurricularActivities.length === 0) {
+      newErrors.extracurricularActivities = 'Please select at least one extracurricular activity';
+    }
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
@@ -96,12 +113,6 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
       newErrors.preferredAreas = 'Please select at least one area';
     }
 
-    if (!formData.pincode) {
-      newErrors.pincode = 'Pincode is required';
-    } else if (!/^\d{6}$/.test(formData.pincode)) {
-      newErrors.pincode = 'Pincode must be 6 digits';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -117,14 +128,11 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
   };
 
   const handleCityChange = (city: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      city, 
-      preferredAreas: [] // Reset areas when city changes
+    setFormData((prev) => ({
+      ...prev,
+      city,
+      preferredAreas: [], // Reset areas when city changes
     }));
-    // Update available areas based on selected city
-    const areas = mockCityAreas[city as keyof typeof mockCityAreas] || [];
-    setAvailableAreas([...areas]);
   };
 
   return (
@@ -146,6 +154,33 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                 error={Boolean(errors.fullName)}
                 helperText={errors.fullName}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Autocomplete
+                multiple
+                options={extracurricularLabels}
+                value={formData.extracurricularActivities}
+                onChange={(_, value) =>
+                  setFormData((prev) => ({ ...prev, extracurricularActivities: value }))
+                }
+                renderTags={(value: readonly string[], getTagProps) =>
+                  value.map((option: string, index: number) => (
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={option}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Extracurricular activities you can teach/coach"
+                    placeholder="Select one or more activities"
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -229,14 +264,21 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Autocomplete
+              <Autocomplete<string, true, false, false>
                 multiple
-                options={Object.values(Subject)}
+                options={subjectLabels}
                 value={formData.subjects}
-                onChange={(_, value) => setFormData(prev => ({ ...prev, subjects: value }))}
+                onChange={(_, value: string[]) =>
+                  setFormData((prev) => ({ ...prev, subjects: value }))
+                }
                 renderTags={(value: readonly string[], getTagProps) =>
                   value.map((option: string, index: number) => (
-                    <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} />
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={option}
+                    />
                   ))
                 }
                 renderInput={(params) => (
@@ -267,43 +309,43 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
                   value={formData.city}
                   onChange={(e) => handleCityChange(e.target.value as string)}
                 >
-                  {Object.values(City).map((city) => (
-                    <MenuItem key={city} value={city}>{city}</MenuItem>
+                  {cityOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.label}>
+                      {opt.label}
+                    </MenuItem>
                   ))}
                 </Select>
                 {errors.city && <FormHelperText>{errors.city}</FormHelperText>}
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="pincode"
-                label="Pincode"
-                value={formData.pincode}
-                onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '') }))}
-                inputProps={{ maxLength: 6 }}
-                error={Boolean(errors.pincode)}
-                helperText={errors.pincode}
-              />
-            </Grid>
             <Grid item xs={12}>
               <Autocomplete
                 multiple
-                options={availableAreas}
+                options={areaOptions.map((o) => o.label)}
                 value={formData.preferredAreas}
-                onChange={(_, value) => setFormData(prev => ({ ...prev, preferredAreas: value }))}
+                onChange={(_, value: string[]) =>
+                  setFormData((prev) => ({ ...prev, preferredAreas: value }))
+                }
                 disabled={!formData.city}
                 renderTags={(value: readonly string[], getTagProps) =>
                   value.map((option: string, index: number) => (
-                    <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} />
+                    <Chip
+                      variant="outlined"
+                      label={option}
+                      {...getTagProps({ index })}
+                      key={option}
+                    />
                   ))
                 }
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Preferred Areas in City"
+                    label="Preferred Areas for Offline Classes"
                     error={Boolean(errors.preferredAreas)}
-                    helperText={errors.preferredAreas || (!formData.city ? 'Please select a city first' : '')}
+                    helperText={
+                      errors.preferredAreas ||
+                      (!formData.city ? 'Please select a city first' : '')
+                    }
                   />
                 )}
               />

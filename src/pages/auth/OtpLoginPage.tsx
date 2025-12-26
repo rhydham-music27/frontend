@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Box, Card, CardContent, Typography, TextField, Button } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import LoginIcon from '@mui/icons-material/Login';
 import { sendLoginOtp, verifyLoginOtp } from '../../services/authService';
@@ -11,12 +11,21 @@ import ErrorAlert from '../../components/common/ErrorAlert';
 const OtpLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [error, setLocalError] = useState<string | null>(null);
+
+  // Prefill email if passed via query param (e.g. /login-otp?email=someone@example.com)
+  useEffect(() => {
+    const emailFromQuery = searchParams.get('email');
+    if (emailFromQuery) {
+      setEmail(emailFromQuery);
+    }
+  }, [searchParams]);
 
   const handleSendOtp = async () => {
     if (!email.trim()) return;
@@ -40,6 +49,14 @@ const OtpLoginPage: React.FC = () => {
       const { user, accessToken } = resp.data || {};
       if (!user || !accessToken) {
         throw new Error('Failed to login with OTP');
+      }
+      // If tutor logs in via OTP, show complete-profile popup on dashboard
+      try {
+        if (typeof window !== 'undefined' && (user as any)?.role === 'TUTOR') {
+          window.localStorage.setItem('ys_tutor_show_complete_profile', 'true');
+        }
+      } catch {
+        // ignore storage errors
       }
       dispatch(setCredentials({ user, token: accessToken }));
       dispatch(setError(null));

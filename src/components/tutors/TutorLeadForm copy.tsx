@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Mail, Phone, GraduationCap, Briefcase, Lock, MapPin, Map } from 'lucide-react';
+import { User, Phone, GraduationCap, Lock, MapPin, Map } from 'lucide-react';
 import { SubjectsMultiSelect } from './SubjectsMultiSelect';
 import { AreasMultiSelect } from './AreasMultiSelect';
 import { PasswordInput } from './PasswordInput';
 import type { TutorLeadFormData, TutorLeadFormProps } from '@/types/tutorLead';
-import { Gender, City, Subject } from '@/types/enums';
+import { Gender } from '@/types/enums';
 import { validateEmail, validatePhone } from '@/utils/leadValidation';
-import { mockCityAreas } from '@/pages/TutorLeadRegistrationMockData';
+import { useOptions } from '@/hooks/useOptions';
 
 export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
   const [formData, setFormData] = useState<TutorLeadFormData>({
@@ -22,16 +22,26 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
     qualification: '',
     experience: '',
     subjects: [],
+    extracurricularActivities: [],
     password: '',
     confirmPassword: '',
     city: '',
     preferredAreas: [],
-    pincode: '',
   });
 
-  con
-  st [errors, setErrors] = useState<Record<string, string>>({});
-  const [availableAreas, setAvailableAreas] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { options: extracurricularOptions } = useOptions('EXTRACURRICULAR');
+  const extracurricularLabels = useMemo(
+    () => extracurricularOptions.map((o) => o.label),
+    [extracurricularOptions]
+  );
+
+  const { options: cityOptions } = useOptions('CITY');
+  const areaType = formData.city
+    ? `AREA_${formData.city.toUpperCase().replace(/\s+/g, '_')}`
+    : '';
+  const { options: areaOptions } = useOptions(areaType);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -84,12 +94,6 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
       newErrors.preferredAreas = 'Please select at least one area';
     }
 
-    if (!formData.pincode) {
-      newErrors.pincode = 'Pincode is required';
-    } else if (!/^\d{6}$/.test(formData.pincode)) {
-      newErrors.pincode = 'Pincode must be 6 digits';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -110,10 +114,6 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
       city, 
       preferredAreas: [] // Reset areas when city changes
     }));
-    
-    // Update available areas based on selected city
-    const areas = mockCityAreas[city as keyof typeof mockCityAreas] || [];
-    setAvailableAreas([...areas]);
   };
 
   return (
@@ -264,6 +264,43 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
               />
               {errors.subjects && <p className="form-error-text">{errors.subjects}</p>}
             </div>
+
+            {/* Extracurricular Activities */}
+            <div className="space-y-2 bg-white">
+              <Label className="form-label-text">
+                Extracurricular activities you can teach/coach
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {extracurricularLabels.map((activity) => {
+                  const selected = formData.extracurricularActivities.includes(activity);
+                  return (
+                    <Button
+                      key={activity}
+                      type="button"
+                      variant={selected ? 'default' : 'outline'}
+                      size="sm"
+                      className={selected ? 'bg-[#001F54] text-white' : ''}
+                      onClick={() => {
+                        setFormData((prev) => {
+                          const exists = prev.extracurricularActivities.includes(activity);
+                          return {
+                            ...prev,
+                            extracurricularActivities: exists
+                              ? prev.extracurricularActivities.filter((a) => a !== activity)
+                              : [...prev.extracurricularActivities, activity],
+                          };
+                        });
+                      }}
+                    >
+                      {activity}
+                    </Button>
+                  );
+                })}
+                {extracurricularLabels.length === 0 && (
+                  <p className="text-xs text-gray-500">No extracurricular options configured yet.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Location Preferences */}
@@ -287,31 +324,14 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.values(City).map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
+                    {cityOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.label}>
+                        {opt.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {errors.city && <p className="form-error-text">{errors.city}</p>}
-              </div>
-
-              {/* Pincode */}
-              <div className="space-y-2">
-                <Label htmlFor="pincode" className="form-label-text">
-                  Pincode <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="pincode"
-                  type="text"
-                  placeholder="Enter pincode"
-                  value={formData.pincode}
-                  onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '') }))}
-                  maxLength={6}
-                  className={`${errors.pincode ? 'border-red-500' : 'border-gray-300'} focus:border-[#001F54] focus:ring-[#001F54]`}
-                />
-                {errors.pincode && <p className="form-error-text">{errors.pincode}</p>}
               </div>
             </div>
 
@@ -319,10 +339,10 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
             <div className="space-y-2">
               <Label className="form-label-text flex items-center gap-2">
                 <Map size={16} />
-                Preferred Areas in City <span className="text-red-500">*</span>
+                Preferred Areas for Offline Classes <span className="text-red-500">*</span>
               </Label>
               <AreasMultiSelect
-                areas={availableAreas}
+                areas={areaOptions.map((o) => o.label)}
                 selected={formData.preferredAreas}
                 onChange={(areas) => setFormData(prev => ({ ...prev, preferredAreas: areas }))}
                 disabled={!formData.city}

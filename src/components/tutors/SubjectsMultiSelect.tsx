@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { Subject } from '@/types/enums';
+import { getSubjects, SubjectOption } from '@/services/subjectService';
 
 interface SubjectsMultiSelectProps {
   selected: string[];
@@ -14,8 +14,24 @@ interface SubjectsMultiSelectProps {
 
 export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMultiSelectProps) => {
   const [open, setOpen] = useState(false);
+  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
 
-  const subjects = Object.values(Subject);
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await getSubjects();
+        if (isMounted) {
+          setSubjects(data);
+        }
+      } catch {
+        // silently ignore and leave subjects empty
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSelect = (subject: string) => {
     const newSelected = selected.includes(subject)
@@ -51,16 +67,16 @@ export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMulti
             <CommandGroup className="max-h-64 overflow-auto">
               {subjects.map((subject) => (
                 <CommandItem
-                  key={subject}
-                  onSelect={() => handleSelect(subject)}
+                  key={subject._id}
+                  onSelect={() => handleSelect(subject.name)}
                   className="cursor-pointer hover:bg-[#001F54]/10 data-[selected=true]:bg-[#001F54]/10 data-[selected=true]:text-[#001F54]"
                 >
                   <Check
                     className={`mr-2 h-4 w-4 ${
-                      selected.includes(subject) ? 'opacity-100' : 'opacity-0'
+                      selected.includes(subject.name) ? 'opacity-100' : 'opacity-0'
                     }`}
                   />
-                  {subject}
+                  {subject.name}
                 </CommandItem>
               ))}
             </CommandGroup>
