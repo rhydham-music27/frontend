@@ -1,32 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Box, Card, CardContent, Typography, Grid, TextField, Button, Avatar } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import studentService from '../../services/studentService';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ErrorAlert from '../../components/common/ErrorAlert';
 import PersonIcon from '@mui/icons-material/Person';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
 
 const StudentProfilePage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(!!id);
+  const [error, setError] = useState<string | null>(null);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
-  const studentInfo = {
+  const [studentInfo, setStudentInfo] = useState<any>({
     name: user?.name || 'Student',
     studentId: (user as any)?.studentId || 'N/A',
     grade: (user as any)?.grade || 'N/A',
     gender: (user as any)?.gender || 'N/A',
     email: user?.email || '',
-    phone: '', // Would come from user data
-  };
+    phone: '',
+  });
 
   const [formData, setFormData] = useState({
     name: studentInfo.name,
     email: studentInfo.email,
     phone: studentInfo.phone,
   });
+
+  useEffect(() => {
+    if (id) {
+      const fetchStudent = async () => {
+        try {
+          setLoading(true);
+          const res = await studentService.getStudentProfile(id);
+          const s = res.data;
+          const info = {
+            name: s.name,
+            studentId: s.studentId,
+            grade: s.grade,
+            gender: s.gender,
+            email: s.email || '',
+            phone: s.phone || '',
+          };
+          setStudentInfo(info);
+          setFormData({
+            name: info.name,
+            email: info.email,
+            phone: info.phone,
+          });
+        } catch (err: any) {
+          setError(err.message || 'Failed to fetch student details');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStudent();
+    }
+  }, [id]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -50,8 +90,11 @@ const StudentProfilePage: React.FC = () => {
     setIsEditing(false);
   };
 
+  if (loading) return <LoadingSpinner />;
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
+      {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       {/* Header */}
       <Box mb={4}>
         <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
@@ -195,7 +238,8 @@ const StudentProfilePage: React.FC = () => {
                 )}
                 <Button
                   variant="outlined"
-                  onClick={() => navigate('/student-change-password')}
+                  onClick={() => setChangePasswordOpen(true)}
+                  startIcon={<LockResetIcon />}
                 >
                   Change Password
                 </Button>
@@ -214,6 +258,7 @@ const StudentProfilePage: React.FC = () => {
           ← Back to Dashboard
         </Button>
       </Box>
+      <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
     </Container>
   );
 };

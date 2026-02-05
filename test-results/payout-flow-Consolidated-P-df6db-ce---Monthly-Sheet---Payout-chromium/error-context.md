@@ -1,0 +1,274 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img "Your Shikshak Logo" [ref=e7]
+        - generic [ref=e8]:
+          - heading "Your Shikshak" [level=6] [ref=e9]
+          - generic [ref=e10]: Empowering Education
+      - generic [ref=e11]:
+        - button "Notifications" [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]:
+            - img [ref=e14]
+            - generic: "0"
+        - button "Account" [ref=e16] [cursor=pointer]:
+          - generic [ref=e17]: EA
+  - generic [ref=e19]:
+    - generic [ref=e20]:
+      - img "Logo" [ref=e21]
+      - generic [ref=e22]:
+        - heading "Your Shikshak" [level=6] [ref=e23]
+        - generic [ref=e24]: ADMIN
+    - list [ref=e25]:
+      - listitem [ref=e26]:
+        - button "Dashboard" [ref=e27] [cursor=pointer]:
+          - img [ref=e29]
+          - generic [ref=e32]: Dashboard
+      - listitem [ref=e33]:
+        - button "Analytics" [ref=e34] [cursor=pointer]:
+          - img [ref=e36]
+          - generic [ref=e39]: Analytics
+      - listitem [ref=e40]:
+        - button "Class Leads" [ref=e41] [cursor=pointer]:
+          - img [ref=e43]
+          - generic [ref=e46]: Class Leads
+      - listitem [ref=e47]:
+        - button "Lead CRM" [ref=e48] [cursor=pointer]:
+          - img [ref=e50]
+          - generic [ref=e53]: Lead CRM
+      - listitem [ref=e54]:
+        - button "Tutors" [ref=e55] [cursor=pointer]:
+          - img [ref=e57]
+          - generic [ref=e60]: Tutors
+      - listitem [ref=e61]:
+        - button "Managers" [ref=e62] [cursor=pointer]:
+          - img [ref=e64]
+          - generic [ref=e67]: Managers
+      - listitem [ref=e68]:
+        - button "Coordinators Management" [ref=e69] [cursor=pointer]:
+          - img [ref=e71]
+          - generic [ref=e75]: Coordinators Management
+      - listitem [ref=e76]:
+        - button "Final Classes" [ref=e77] [cursor=pointer]:
+          - img [ref=e79]
+          - generic [ref=e82]: Final Classes
+      - listitem [ref=e83]:
+        - button "Data Management" [ref=e84] [cursor=pointer]:
+          - img [ref=e86]
+          - generic [ref=e89]: Data Management
+      - listitem [ref=e90]:
+        - button "Notes" [ref=e91] [cursor=pointer]:
+          - img [ref=e93]
+          - generic [ref=e96]: Notes
+      - listitem [ref=e97]:
+        - button "Register New Member" [ref=e98] [cursor=pointer]:
+          - img [ref=e100]
+          - generic [ref=e103]: Register New Member
+      - listitem [ref=e104]:
+        - button "Attendance" [ref=e105] [cursor=pointer]:
+          - img [ref=e107]
+          - generic [ref=e110]: Attendance
+      - listitem [ref=e111]:
+        - button "Payments" [ref=e112] [cursor=pointer]:
+          - img [ref=e114]
+          - generic [ref=e117]: Payments
+      - listitem [ref=e118]:
+        - button "Profile" [ref=e119] [cursor=pointer]:
+          - img [ref=e121]
+          - generic [ref=e124]: Profile
+    - separator [ref=e125]
+    - generic [ref=e127]: © 2024 Your Shikshak
+  - main [ref=e129]:
+    - generic [ref=e132]:
+      - generic [ref=e133]:
+        - button "Back to List" [ref=e134] [cursor=pointer]:
+          - img [ref=e136]
+          - text: Back to List
+        - heading "Create New Class Lead" [level=4] [ref=e138]
+      - generic [ref=e141]:
+        - generic [ref=e143]:
+          - generic [ref=e144]:
+            - img [ref=e145]
+            - heading "Student Type" [level=6] [ref=e147]
+          - group [ref=e148]:
+            - radiogroup [ref=e149]:
+              - generic [ref=e150] [cursor=pointer]:
+                - generic [ref=e151]:
+                  - radio "Single Student" [checked] [ref=e152]
+                  - generic [ref=e153]:
+                    - img [ref=e154]
+                    - img [ref=e156]
+                - generic [ref=e158]: Single Student
+              - generic [ref=e159] [cursor=pointer]:
+                - generic [ref=e160]:
+                  - radio "Group of Students" [ref=e161]
+                  - img [ref=e163]
+                - generic [ref=e165]: Group of Students
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - img [ref=e169]
+            - heading "Curriculum" [level=6] [ref=e171]
+          - generic [ref=e174]:
+            - generic [ref=e175]: Board
+            - generic [ref=e176]:
+              - combobox "Board CBSE" [active] [ref=e177] [cursor=pointer]: CBSE
+              - textbox: CBSE
+              - img
+              - group:
+                - generic: Board
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - img [ref=e181]
+            - heading "Student Information" [level=6] [ref=e183]
+          - generic [ref=e184]:
+            - generic [ref=e186]:
+              - generic [ref=e187]: Student Name
+              - generic [ref=e188]:
+                - textbox "Student Name" [ref=e189]: E2E Student
+                - group:
+                  - generic: Student Name
+            - generic [ref=e191]:
+              - generic: Gender
+              - generic [ref=e192]:
+                - combobox "Gender" [ref=e193] [cursor=pointer]
+                - textbox
+                - img
+                - group:
+                  - generic: Gender
+            - generic [ref=e195]:
+              - generic: Grade/Class
+              - generic [ref=e196]:
+                - combobox "Grade/Class" [ref=e197] [cursor=pointer]
+                - textbox
+                - img
+                - group:
+                  - generic: Grade/Class
+              - paragraph [ref=e198]: Grade is required
+            - generic [ref=e201]:
+              - generic: Subjects
+              - generic [ref=e202]:
+                - combobox "Subjects" [disabled] [ref=e203]
+                - generic [ref=e204]:
+                  - button "Open" [disabled]:
+                    - img
+                - group:
+                  - generic: Subjects
+              - paragraph [ref=e205]: At least one subject is required
+        - generic [ref=e207]:
+          - generic [ref=e208]:
+            - img [ref=e209]
+            - heading "Class Requirements" [level=6] [ref=e211]
+          - generic [ref=e212]:
+            - group "Teaching Mode" [ref=e214]:
+              - generic [ref=e215]: Teaching Mode
+              - radiogroup [ref=e216]:
+                - generic [ref=e217] [cursor=pointer]:
+                  - generic [ref=e218]:
+                    - radio "ONLINE" [ref=e219]
+                    - img [ref=e221]
+                  - paragraph [ref=e223]: ONLINE
+                - generic [ref=e224] [cursor=pointer]:
+                  - generic [ref=e225]:
+                    - radio "OFFLINE" [ref=e226]
+                    - img [ref=e228]
+                  - paragraph [ref=e230]: OFFLINE
+                - generic [ref=e231] [cursor=pointer]:
+                  - generic [ref=e232]:
+                    - radio "HYBRID" [ref=e233]
+                    - img [ref=e235]
+                  - paragraph [ref=e237]: HYBRID
+            - generic [ref=e239]:
+              - generic: Preferred Timing
+              - generic [ref=e240]:
+                - textbox "Preferred Timing" [ref=e241]:
+                  - /placeholder: e.g., Weekdays 5-7 PM
+                - group:
+                  - generic: Preferred Timing
+            - generic [ref=e243]:
+              - generic: Classes per Month
+              - generic [ref=e244]:
+                - spinbutton "Classes per Month" [ref=e245]
+                - group:
+                  - generic: Classes per Month
+            - generic [ref=e247]:
+              - generic: Class Duration (hours)
+              - generic [ref=e248]:
+                - spinbutton "Class Duration (hours)" [ref=e249]
+                - group:
+                  - generic: Class Duration (hours)
+        - generic [ref=e251]:
+          - generic [ref=e252]:
+            - img [ref=e253]
+            - heading "Financials" [level=6] [ref=e255]
+          - generic [ref=e256]:
+            - generic [ref=e258]:
+              - generic [ref=e259]: Student Fees
+              - generic [ref=e260]:
+                - paragraph [ref=e262]: ₹
+                - spinbutton "Student Fees" [ref=e263]
+                - group:
+                  - generic: Student Fees
+            - generic [ref=e265]:
+              - generic [ref=e266]: Tutor Payout
+              - generic [ref=e267]:
+                - paragraph [ref=e269]: ₹
+                - spinbutton "Tutor Payout" [ref=e270]
+                - group:
+                  - generic: Tutor Payout
+        - generic [ref=e272]:
+          - generic [ref=e273]:
+            - img [ref=e274]
+            - heading "Contact Information" [level=6] [ref=e276]
+          - generic [ref=e277]:
+            - generic [ref=e279]:
+              - generic: Parent Name
+              - generic [ref=e280]:
+                - textbox "Parent Name" [ref=e281]
+                - group:
+                  - generic: Parent Name
+            - generic [ref=e283]:
+              - generic: Email
+              - generic [ref=e284]:
+                - textbox "Email" [ref=e285]
+                - group:
+                  - generic: Email
+            - generic [ref=e287]:
+              - generic: Phone
+              - generic [ref=e288]:
+                - textbox "Phone" [ref=e289]
+                - group:
+                  - generic: Phone
+        - generic [ref=e291]:
+          - generic [ref=e292]:
+            - img [ref=e293]
+            - heading "Additional Information" [level=6] [ref=e295]
+          - generic [ref=e296]:
+            - generic [ref=e298]:
+              - generic: Lead Source
+              - generic [ref=e299]:
+                - combobox "Lead Source" [ref=e300] [cursor=pointer]
+                - textbox
+                - img
+                - group:
+                  - generic: Lead Source
+            - generic [ref=e302]:
+              - generic: Preferred Tutor Gender
+              - generic [ref=e303]:
+                - combobox "Preferred Tutor Gender" [ref=e304] [cursor=pointer]
+                - textbox
+                - img
+                - group:
+                  - generic: Preferred Tutor Gender
+            - generic [ref=e306]:
+              - generic: Internal Notes / Remarks
+              - generic [ref=e307]:
+                - textbox "Internal Notes / Remarks" [ref=e308]
+                - group:
+                  - generic: Internal Notes / Remarks
+        - button "Create Lead" [ref=e310] [cursor=pointer]:
+          - img [ref=e312]
+          - text: Create Lead
+```

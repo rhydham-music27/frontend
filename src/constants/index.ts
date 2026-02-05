@@ -63,6 +63,12 @@ export const PAYMENT_STATUS = {
   OVERDUE: 'OVERDUE',
 } as const;
 
+export const PAYMENT_TYPE = {
+  FEES_COLLECTED: 'FEES_COLLECTED',
+  TUTOR_PAYOUT: 'TUTOR_PAYOUT',
+  MISCELLANEOUS: 'MISCELLANEOUS',
+} as const;
+
 export const FINAL_CLASS_STATUS = {
   ACTIVE: 'ACTIVE',
   COMPLETED: 'COMPLETED',
@@ -140,25 +146,29 @@ export const BOARD_TYPE = {
 
 export const NAVIGATION_ITEMS = [
   { label: 'Dashboard', path: '/', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ADMIN] },
-  { label: 'Admin Dashboard', path: '/admin-dashboard', allowedRoles: [USER_ROLES.ADMIN] },
+  { label: 'Analytics', path: '/analytics', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Tutor Dashboard', path: '/tutor-dashboard', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'Timetable', path: '/tutor-timetable', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'Classes', path: '/tutor-classes', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'Payments', path: '/tutor-payments', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'Attendance', path: '/tutor-attendance', allowedRoles: [USER_ROLES.TUTOR] },
+  { label: 'Tests', path: '/tutor-tests', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'My Leads', path: '/tutor-leads', allowedRoles: [USER_ROLES.TUTOR] },
   { label: 'Notes', path: '/tutor-notes', allowedRoles: [USER_ROLES.TUTOR] },
   { label: "Today's Tasks", path: '/today-tasks', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Class Leads', path: '/class-leads', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
+  { label: 'Lead CRM', path: '/manager/leads-crm', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
+
   { label: 'Manager Tasks', path: '/manager-today-tasks', allowedRoles: [USER_ROLES.MANAGER] },
   { label: 'Tutors', path: '/tutors', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
   { label: 'Coordinators', path: '/coordinators', allowedRoles: [USER_ROLES.MANAGER] },
   { label: 'Managers', path: '/admin/managers', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Coordinators Management', path: '/admin/coordinators', allowedRoles: [USER_ROLES.ADMIN] },
-  { label: 'Data Management', path: '/admin/data-management', allowedRoles: [USER_ROLES.ADMIN] },
+  { label: 'Final Classes', path: '/admin/final-classes', allowedRoles: [USER_ROLES.ADMIN] },
+  { label: 'Data Management', path: '/admin/options', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Notes', path: '/notes', allowedRoles: [USER_ROLES.ADMIN, USER_ROLES.COORDINATOR] },
   { label: 'Register New Member', path: '/register', allowedRoles: [USER_ROLES.ADMIN] },
-  { label: 'Attendance', path: '/attendance', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.COORDINATOR, USER_ROLES.ADMIN] },
+  { label: 'Attendance', path: '/attendance', allowedRoles: [USER_ROLES.COORDINATOR, USER_ROLES.ADMIN] },
   // Parent-specific navigation
   { label: 'Parent Dashboard', path: '/parent-dashboard', allowedRoles: [USER_ROLES.PARENT] },
   { label: 'Attendance', path: '/parent-attendance', allowedRoles: [USER_ROLES.PARENT] },
@@ -173,11 +183,8 @@ export const NAVIGATION_ITEMS = [
   { label: 'Tutor Performance', path: '/tutor-performance', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Payment Tracking', path: '/payment-tracking', allowedRoles: [USER_ROLES.COORDINATOR] },
   { label: 'Settings', path: '/coordinator-settings', allowedRoles: [USER_ROLES.COORDINATOR] },
-  { label: 'Payments', path: '/payments', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
-  { label: 'Analytics', path: '/analytics', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] },
+  { label: 'Payments', path: '/payments', allowedRoles: [USER_ROLES.ADMIN] },
   { label: 'Profile', path: '/profile', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.TUTOR, USER_ROLES.PARENT, USER_ROLES.ADMIN] },
-  { label: 'My Profile', path: '/coordinator-profile', allowedRoles: [USER_ROLES.COORDINATOR] },
-  { label: 'Admin Profile', path: '/admin-profile', allowedRoles: [USER_ROLES.ADMIN] },
 ];
 
 export const API_ENDPOINTS = {
@@ -189,8 +196,10 @@ export const API_ENDPOINTS = {
   AUTH_ME: '/api/auth/me',
   AUTH_REFRESH_TOKEN: '/api/auth/refresh-token',
   AUTH_LOGIN_OTP_SEND: '/api/auth/login-otp/send',
+  AUTH_LOGIN_OTP_RESEND: '/api/auth/login-otp/resend',
   AUTH_LOGIN_OTP_VERIFY: '/api/auth/login-otp/verify',
   AUTH_PARENT_LOGIN_LOOKUP: '/api/auth/parent-login-lookup',
+  AUTH_ACCEPT_TERMS: '/api/auth/accept-terms',
   LEADS: '/api/leads',
   LEADS_MY: '/api/leads/my-leads',
   TUTOR_LEADS_MY: '/api/leads/tutor/my-leads',
@@ -204,6 +213,7 @@ export const API_ENDPOINTS = {
   ANNOUNCEMENTS_TUTOR_AVAILABLE: '/api/announcements/tutor/available',
   ANNOUNCEMENTS_BY_LEAD: (leadId: string) => `/api/announcements/lead/${leadId}`,
   ANNOUNCEMENTS_INTERESTED_TUTORS: (id: string) => `/api/announcements/${id}/interested-tutors`,
+  ANNOUNCEMENTS_RECOMMENDED_TUTORS: (id: string) => `/api/announcements/${id}/recommended-tutors`,
   ANNOUNCEMENTS_EXPRESS_INTEREST: (id: string) => `/api/announcements/${id}/interest`,
   DEMOS: '/api/demos',
   DEMOS_ASSIGN: (leadId: string) => `/api/demos/assign/${leadId}`,
@@ -229,6 +239,7 @@ export const API_ENDPOINTS = {
   PAYMENTS_SEND_REMINDER: (id: string) => `/api/payments/${id}/send-reminder`,
   PAYMENTS_MY_SUMMARY: '/api/payments/tutor/summary',
   PAYMENTS_RECEIPT: (id: string) => `/api/payments/${id}/receipt`,
+  PAYMENTS_MANUAL: '/api/payments/manual',
   // Tutors extended endpoints
   TUTORS_MY_PROFILE: '/api/tutors/my-profile',
   TUTORS_PENDING_VERIFICATIONS: '/api/tutors/pending-verifications',
@@ -294,6 +305,7 @@ export const API_ENDPOINTS = {
   TUTORS_FEEDBACK: '/api/tutors/feedback',
   TUTORS_FEEDBACK_GET: (tutorId: string) => `/api/tutors/${tutorId}/feedback`,
   TUTORS_PERFORMANCE: (tutorId: string) => `/api/tutors/${tutorId}/performance`,
+  TUTORS_ADVANCED_ANALYTICS: (tutorId: string) => `/api/tutors/${tutorId}/advanced-analytics`,
   TUTORS_PUBLIC_REVIEWS: (teacherId: string) => `/api/tutors/public/${teacherId}/reviews`,
   COORDINATOR_TUTORS: '/api/tutors/coordinator/tutors',
   // Final classes - tutor

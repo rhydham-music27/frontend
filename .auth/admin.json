@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTgwYTc0NGYxYzA1ODY4MDgwMjgxMTIiLCJlbWFpbCI6ImFkbWluQHRlc3QuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzcwMDQyNDY4LCJleHAiOjE3NzAwNDYwNjh9.rXLJOWVPJ3AiAfG-YRsBZvVO3-dpGNEuQHAd57YWqrk"
+        },
+        {
+          "name": "user",
+          "value": "{\"id\":\"6980a744f1c0586808028112\",\"name\":\"E2E Admin\",\"email\":\"admin@test.com\",\"role\":\"ADMIN\",\"isActive\":true,\"acceptedTerms\":true,\"isProfileComplete\":true,\"createdAt\":\"2026-02-02T13:31:48.791Z\",\"updatedAt\":\"2026-02-02T14:27:48.991Z\"}"
+        }
+      ]
+    }
+  ]
+}

@@ -24,6 +24,7 @@ import PaymentsListPage from './pages/payments/PaymentsListPage';
 import PaymentDetailPage from './pages/payments/PaymentDetailPage';
 import TutorVerificationPage from './pages/tutors/TutorVerificationPage';
 import ManagerProfilePage from './pages/manager/ManagerProfilePage';
+import ManagerVerificationPage from './pages/manager/ManagerVerificationPage';
 import CoordinatorDashboardPage from './pages/coordinator/CoordinatorDashboardPage';
 import AssignedClassesPage from './pages/coordinator/AssignedClassesPage';
 import AttendanceApprovalPage from './pages/coordinator/AttendanceApprovalPage';
@@ -37,10 +38,13 @@ import CoordinatorProfilePage from './pages/coordinator/CoordinatorProfilePage';
 import CoordinatorsPage from './pages/manager/CoordinatorsPage';
 import ManagerTodayTasksPage from './pages/manager/ManagerTodayTasksPage';
 import ManagerAnalyticsPage from './pages/manager/ManagerAnalyticsPage';
+import ManagerLeadCRMPage from './pages/manager/LeadCRMPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdvancedAnalyticsPage from './pages/admin/AdvancedAnalyticsPage';
 import AdminProfilePage from './pages/admin/AdminProfilePage';
 import ManagersManagementPage from './pages/admin/ManagersManagementPage';
 import CoordinatorsManagementPage from './pages/admin/CoordinatorsManagementPage';
+import FinalClassesManagementPage from './pages/admin/FinalClassesManagementPage';
 import DataManagementPage from './pages/admin/DataManagementPage';
 import TutorDashboardPage from './pages/tutors/TutorDashboardPage';
 import TutorClassesPage from './pages/tutors/TutorClassesPage';
@@ -51,9 +55,11 @@ import TutorProfilePage from './pages/tutors/TutorProfilePage';
 import TutorAttendancePage from './pages/tutors/TutorAttendancePage';
 import TutorLeadsPage from './pages/tutors/TutorLeadsPage';
 import TutorNotesPage from './pages/tutors/TutorNotesPage';
+import TutorTestsPage from './pages/tutors/TutorTestsPage';
 import NotesDrivePage from './pages/notes/NotesDrivePage';
 import TutorPublicProfilePage from './pages/public/TutorPublicProfilePage';
 import RequestTutorPage from './pages/public/RequestTutorPage';
+import PublicLeadDetails from './pages/public/PublicLeadDetails';
 import CoordinatorSettingsPage from './pages/coordinator/CoordinatorSettingsPage';
 import ParentDashboardPage from './pages/parent/ParentDashboardPage';
 import ParentAttendancePage from './pages/parent/ParentAttendancePage';
@@ -69,12 +75,56 @@ import StudentAttendancePage from './pages/student/StudentAttendancePage';
 import StudentTestsPage from './pages/student/StudentTestsPage';
 import StudentNotesPage from './pages/student/StudentNotesPage';
 import StudentPaymentsPage from './pages/student/StudentPaymentsPage';
+import StudentTestDetailPage from './pages/student/StudentTestDetailPage';
 import OptionsManagementPage from './pages/admin/OptionsManagementPage';
+import AdminStudentProfilePage from './pages/admin/AdminStudentProfilePage';
+import ApprovalsManagementPage from './pages/admin/ApprovalsManagementPage';
 
 const App: React.FC = () => {
+  React.useEffect(() => {
+    // Disable right-click
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    // Disable common developer tool shortcuts
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F12
+      if (e.key === 'F12') {
+        e.preventDefault();
+      }
+      // Ctrl+Shift+I (Inspect), Ctrl+Shift+J (Console), Ctrl+Shift+C (Elements)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+        e.preventDefault();
+      }
+      // Ctrl+U (View Source)
+      if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+      }
+      // Ctrl+S (Save Page)
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   const RoleBasedDashboard: React.FC = () => {
     const user = useSelector(selectCurrentUser);
     const role = user?.role;
+    
+    // Redirect unverified managers
+    if (role === USER_ROLES.MANAGER && (user?.verificationStatus === 'PENDING' || !user?.verificationStatus)) {
+      return <Navigate to="/manager-verification" replace />;
+    }
+
     if (role === USER_ROLES.ADMIN) {
       return <Navigate to="/admin-dashboard" replace />;
     }
@@ -119,14 +169,7 @@ const App: React.FC = () => {
             <Route path="/login-otp" element={<OtpLoginPage />} />
             <Route path="/parent-login" element={<ParentLoginPage />} />
             <Route path="/student-login" element={<StudentLoginPage />} />
-            <Route
-              path="/register"
-              element={
-                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-                  <RegisterPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/register" element={<RegisterPage />} />
             <Route path="/tutor-register" element={<TutorRegistrationPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
@@ -145,6 +188,7 @@ const App: React.FC = () => {
               <Route path="tutor-timetable" element={<TutorTimetablePage />} />
               <Route path="tutor-payments" element={<TutorPaymentsPage />} />
               <Route path="tutor-attendance" element={<TutorAttendancePage />} />
+              <Route path="tutor-tests" element={<TutorTestsPage />} />
               <Route path="tutor-leads" element={<TutorLeadsPage />} />
               <Route path="tutor-notes" element={<TutorNotesPage />} />
               <Route path="notes" element={<NotesDrivePage />} />
@@ -169,8 +213,12 @@ const App: React.FC = () => {
               <Route path="admin">
                 <Route path="managers" element={<ManagersManagementPage />} />
                 <Route path="coordinators" element={<CoordinatorsManagementPage />} />
+                <Route path="final-classes" element={<FinalClassesManagementPage />} />
                 <Route path="data-management" element={<DataManagementPage />} />
                 <Route path="options" element={<OptionsManagementPage />} />
+                <Route path="student-profile/:id" element={<AdminStudentProfilePage />} />
+                <Route path="approvals" element={<ApprovalsManagementPage />} />
+                <Route path="analytics" element={<AdvancedAnalyticsPage />} />
               </Route>
               <Route path="class-leads">
                 <Route index element={<ClassLeadsListPage />} />
@@ -186,9 +234,13 @@ const App: React.FC = () => {
                 <Route path=":id" element={<PaymentDetailPage />} />
               </Route>
               <Route path="analytics" element={<ManagerAnalyticsPage />} />
+              <Route path="manager/leads-crm" element={<ManagerLeadCRMPage />} />
+              <Route path="manager-verification" element={<ManagerVerificationPage />} />
 
               <Route path="profile" element={<RoleBasedProfile />} />
-              <Route path="tutor-profile" element={<TutorProfilePage />} />
+              <Route path="tutor-profile/:id?" element={<TutorProfilePage />} />
+              <Route path="manager-profile/:id?" element={<ManagerProfilePage />} />
+              <Route path="coordinator-profile/:id?" element={<CoordinatorProfilePage />} />
             </Route>
 
             {/* Student Routes - Navbar Only */}
@@ -203,9 +255,9 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/student-profile"
+              path="/student-profile/:id?"
               element={
-                <ProtectedRoute studentRoute={true}>
+                <ProtectedRoute studentRoute={false} allowedRoles={[USER_ROLES.STUDENT, USER_ROLES.ADMIN, USER_ROLES.MANAGER]}>
                   <StudentLayout>
                     <StudentProfilePage />
                   </StudentLayout>
@@ -253,6 +305,16 @@ const App: React.FC = () => {
               }
             />
             <Route
+              path="/student-tests/:id"
+              element={
+                <ProtectedRoute studentRoute={true}>
+                  <StudentLayout>
+                    <StudentTestDetailPage />
+                  </StudentLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/student-notes"
               element={
                 <ProtectedRoute studentRoute={true}>
@@ -275,6 +337,7 @@ const App: React.FC = () => {
 
             <Route path="ourtutor/:teacherId" element={<TutorPublicProfilePage />} />
             <Route path="/request-tutor" element={<RequestTutorPage />} />
+            <Route path="/leads/public/:id" element={<PublicLeadDetails />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

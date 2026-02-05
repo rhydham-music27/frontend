@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import api from './api';
 
 export interface SubjectOption {
   _id: string;
@@ -7,7 +7,7 @@ export interface SubjectOption {
 }
 
 export const getSubjects = async (): Promise<SubjectOption[]> => {
-  const res = await apiClient.get('/subjects');
+  const res = await api.get('/subjects');
   const data = (res.data?.data || []) as any[];
   return data.map((s) => ({
     _id: String(s._id),

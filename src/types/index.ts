@@ -4,17 +4,33 @@ export interface IUser {
   name: string;
   role: string;
   phone?: string;
+  acceptedTerms: boolean;
+  preferredMode?: string;
+  isProfileComplete?: boolean;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  city?: string;
+  verificationStatus?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
+
+export enum TUTOR_TIER {
+  BRONZE = 'Tier 3 (BRONZE)',
+  SILVER = 'Tier 2 (SILVER)',
+  GOLD = 'Tier 1 (GOLD)',
+}
+
 export interface IClassLead {
   id: string;
+  studentType: 'SINGLE' | 'GROUP';
   studentName: string;
+  studentGender?: 'M' | 'F';
+  parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
   grade: string;
-  subject: string;
+  subject: string | string[];
   board: string;
   mode: string;
   location?: string;
@@ -29,11 +45,34 @@ export interface IClassLead {
   paymentAmount?: number;
   tutorFees?: number;
   status: string;
+  leadId: string;
+  paymentReceived?: boolean;
   assignedTutor?: IUser;
+  demoTutor?: IUser;
   demoDetails?: Record<string, any>;
   createdBy: IUser;
-  createdAt: Date;
-  updatedAt: Date;
+  numberOfStudents?: number;
+  studentDetails?: Array<{
+    name: string;
+    gender: 'M' | 'F';
+    fees: number;
+    tutorFees: number;
+    parentName?: string;
+    parentEmail?: string;
+    parentPhone?: string;
+    board?: string;
+    grade?: string;
+    subject?: string[];
+  }>;
+  notes?: string;
+  associatedStudents?: Array<{
+    name: string;
+    studentId: string;
+    gender?: string;
+    grade?: string;
+  }>;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface IDocument {
@@ -45,6 +84,7 @@ export interface IDocument {
 
 export interface ITutor {
   id: string;
+  _id: string;
   user: IUser;
   teacherId?: string;
   experienceHours: number;
@@ -67,12 +107,46 @@ export interface ITutor {
   isAvailable: boolean;
   preferredMode?: string;
   preferredLocations?: string[];
+  preferredCities?: string[];
+  permanentAddress?: string;
+  residentialAddress?: string;
+  alternatePhone?: string;
+  whatsappCommunityJoined: boolean;
   createdAt: Date;
   updatedAt: Date;
   tier: string;
   tierUpdatedAt?: Date;
   tierUpdatedBy?: IUser;
   pendingTierChange?: IPendingTierChange;
+  bio?: string;
+  languagesKnown: string[];
+  skills: string[];
+  publicProfileEnabled: boolean;
+  yearsOfExperience: number;
+  verificationFeeStatus?: 'PENDING' | 'PAID' | 'DEDUCT_FROM_FIRST_MONTH';
+  verificationFeePaymentProof?: string;
+  verificationFeePaymentDate?: Date;
+  settings?: {
+    availabilityPreferences?: {
+      daysAvailable?: string[];
+      timeSlots?: string[];
+      maxClassesPerWeek?: number;
+    };
+    teachingModePreference?: string;
+    preferredSubjects?: string[];
+    preferredLocations?: string[];
+    notificationSettings?: {
+      classAssignments?: boolean;
+      demoRequests?: boolean;
+      feedbackReceived?: boolean;
+    };
+  };
+  monthlyStats?: {
+    month: string;
+    totalClasses: number;
+    totalSessions: number;
+    completedSessions: number;
+  };
 }
 
 export interface ICoordinator {
@@ -103,7 +177,14 @@ export interface ICoordinatorDashboardStats {
 export interface ICoordinatorTodaysTasks {
   pendingAttendanceApprovals: IAttendance[];
   paymentReminders: any[];
-  testsToSchedule: any[];
+  testsToSchedule: Array<{
+    finalClassId: string;
+    className: string;
+    subject: string[];
+    grade: string;
+    testPerMonth: number;
+    testsScheduledThisMonth: number;
+  }>;
   parentComplaints: any[];
   counts: {
     pendingAttendance: number;
@@ -125,8 +206,17 @@ export interface IPaymentReminder extends Omit<IPayment, 'finalClass'> {
   finalClass: IFinalClass;
 }
 
+export interface ITutorHistory {
+  tutor: IUser;
+  startDate: Date;
+  endDate: Date;
+  reason?: string;
+  replacedBy?: IUser;
+}
+
 export interface IFinalClass {
   id: string;
+  className: string;
   classLead: IClassLead;
   tutor: IUser;
   coordinator?: IUser | null;
@@ -135,6 +225,7 @@ export interface IFinalClass {
   endDate?: Date;
   status: string;
   schedule: { daysOfWeek: string[]; timeSlot: string };
+  classesPerMonth?: number;
   totalSessions: number;
   completedSessions: number;
   studentName: string;
@@ -144,10 +235,14 @@ export interface IFinalClass {
   mode: string;
   location?: string;
   ratePerSession?: number;
+  testPerMonth?: number;
   convertedBy: IUser;
   convertedAt: Date;
+  attendanceSubmissionWindow?: number;
   createdAt: Date;
   updatedAt: Date;
+  notes?: string;
+  tutorHistory?: ITutorHistory[];
   progressPercentage?: number;
   metrics?: {
     progressPercentage: number;
@@ -177,15 +272,54 @@ export interface IAttendance {
   rejectionReason?: string;
   studentAttendanceStatus?: string;
   notes?: string;
+  teachingHours?: number;
+  absentReason?: string;
+  resources: Array<{
+    name: string;
+    url: string;
+    type: 'QUESTION' | 'REPORT' | 'WORKSHEET';
+  }>;
+  swotAnalysis?: {
+    strengths: string;
+    weaknesses: string;
+    opportunities: string;
+    threats: string;
+  };
+  studentImprovementScore?: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface IPayment {
+export interface IAttendanceSheet {
   id: string;
   finalClass: IFinalClass;
-  attendance: IAttendance;
-  tutor: IUser;
+  coordinator: IUser;
+  month: number;
+  year: number;
+  periodLabel?: string;
+  attendanceIds?: string[];
+  totalSessionsPlanned?: number;
+  totalSessionsTaken?: number;
+  presentCount?: number;
+  absentCount?: number;
+  status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdBy?: IUser;
+  submittedAt?: string | Date;
+  approvedBy?: IUser;
+  approvedAt?: string | Date;
+  rejectedBy?: IUser;
+  rejectedAt?: string | Date;
+  rejectionReason?: string;
+  createdAt: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface IPayment {
+  id: string;
+  finalClass?: IFinalClass;
+  attendance?: IAttendance;
+  attendanceSheet?: IAttendanceSheet;
+  tutor?: IUser;
   amount: number;
   currency: string;
   status: string;
@@ -195,6 +329,7 @@ export interface IPayment {
   dueDate: Date;
   paidBy?: IUser;
   notes?: string;
+  paymentType?: string;
   createdBy: IUser;
   createdAt: Date;
   updatedAt: Date;
@@ -224,6 +359,18 @@ export interface ITest {
   cancelledBy?: IUser;
   cancelledAt?: Date;
   notes?: string;
+  topicName?: string;
+  testSyllabus?: string;
+  questionAnalysis?: Array<{
+    topic: string;
+    totalQuestions: number;
+    correctedQuestions: number;
+  }>;
+  paperUrl?: string;
+  paperName?: string;
+  obtainedMarks?: number;
+  totalMarks?: number;
+  answerSheetUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -278,6 +425,22 @@ export interface IDemoHistory {
   rejectionReason?: string;
   notes?: string;
   createdAt: Date;
+}
+
+export interface INote {
+  id: string;
+  name: string;
+  type: 'FOLDER' | 'FILE';
+  parent?: string | null;
+  owner: IUser;
+  grade?: string;
+  mimeType?: string;
+  url?: string;
+  subject?: string;
+  chapter?: string;
+  classId?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface INotification {
@@ -383,6 +546,30 @@ export interface ITutorPerformanceMetrics {
   totalFeedback: number;
 }
 
+export interface ITutorAdvancedAnalytics {
+  sessions: {
+    completedThisWeek: number;
+    completedThisMonth: number;
+  };
+  earnings: {
+    thisWeek: number;
+    thisMonth: number;
+    total: number;
+  };
+  newClassesCount: number;
+  demos: {
+    total: number;
+    approved: number;
+    approvalRate: number;
+  };
+  classWiseEarnings: Array<{
+    className: string;
+    studentName: string;
+    totalAmount: number;
+    count: number;
+  }>;
+}
+
 export interface ISubmitFeedbackFormData {
   tutorId: string;
   finalClassId: string;
@@ -412,6 +599,7 @@ export interface IClassLeadFormData {
   studentType: StudentType;
   studentName: string;
   studentGender?: 'M' | 'F';
+  parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
   grade: string;
@@ -437,6 +625,12 @@ export interface IClassLeadFormData {
     gender: 'M' | 'F';
     fees: number;
     tutorFees: number;
+    parentName?: string;
+    parentEmail?: string;
+    parentPhone?: string;
+    board?: string;
+    grade?: string;
+    subject?: string[];
   }>;
 }
 
@@ -464,11 +658,30 @@ export interface IAttendanceStatistics {
 }
 
 export interface IPaymentStatistics {
-  totalPayments: number;
-  totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-  overdueAmount: number;
+  // Admin Metrics
+  totalClasses?: number;
+  feesCollected?: number;
+  totalPayouts?: number;
+  serviceCharge?: number;
+
+  // Generic / Tutor Metrics
+  totalPayments?: number;
+  totalAmount?: number;
+  paidAmount?: number;
+  pendingAmount?: number;
+  overdueAmount?: number;
+  averagePaymentAmount?: number;
+  miscellaneous?: number;
+  netProfit?: number;
+  monthly?: {
+    feesCollected: number;
+    tutorPayouts: number;
+    miscellaneous: number;
+    serviceCharge: number;
+    netProfit: number;
+  };
+  paymentsByStatus?: Record<string, number>;
+  paymentsByMethod?: Record<string, number>;
 }
 
 export interface ICoordinatorPaymentSummary {
@@ -484,6 +697,9 @@ export interface ICoordinatorPaymentSummary {
     overdueCount: number;
     upcomingCount: number;
     paidCount: number;
+    totalPayoutAmount: number;
+    paidPayoutAmount: number;
+    pendingPayoutAmount: number;
   };
   categorized: {
     overdue: IPayment[];
@@ -517,6 +733,7 @@ export interface IPaymentReminderFormData {
 export interface IPaymentFilters {
   status?: string;
   classId?: string;
+  paymentType?: string;
   fromDate?: string;
   toDate?: string;
   page: number;
@@ -570,6 +787,9 @@ export interface ITutorPerformance {
 
 export interface ICumulativeGrowth {
   date: string;
+  totalClasses: number;
+  activeClasses: number;
+  inactiveClasses: number;
   newClasses: number;
   cumulativeClasses: number;
 }
@@ -610,12 +830,25 @@ export interface IRevenueAnalytics {
   pendingRevenue: number;
   overdueRevenue: number;
   revenueByDate: Array<{ date: string; revenue: number; paidRevenue: number }>;
+  revenueTrends: Array<{ date: string; feesCollected: number; tutorPayout: number; serviceCharge: number }>;
   revenueByTutor: Array<{ tutor: ITutor; totalRevenue: number }>;
   monthlyRevenue: Array<{ month: string; revenue: number }>;
   averageRevenuePerClass: number;
 }
 
 export interface IDashboardStatistics {
+  kpi?: {
+    totalTeachers: number;
+    verifiedTeachers: number;
+    activeTeachers: number;
+    totalClassLeads: number;
+    activeClasses: number;
+    monthlyRevenue: number;
+    grossRevenue: number;
+    studentChurn?: number;
+    teacherChurn?: number;
+    averageClassPrice?: number;
+  };
   classLeads: { total: number; new: number; converted: number };
   finalClasses: { total: number; active: number; completed: number };
   tutors: { total: number; verified: number; active: number };
@@ -623,6 +856,21 @@ export interface IDashboardStatistics {
   conversionRate: number;
   averageRevenuePerClass: number;
   pendingApprovals: number;
+  crmCounts?: {
+    new: number;
+    announced: number;
+    interested: number;
+    demoScheduled: number;
+    demoPending: number;
+    won: number;
+  };
+  todaysTasks?: {
+    websiteLeadsCount: number;
+    coordinatorNotAssignedCount: number;
+    pendingTutorVerificationCount: number;
+    leadsNotClosedCount: number;
+    coordinatorRequestsCount: number;
+  };
 }
 
 export interface IManager {
@@ -638,6 +886,7 @@ export interface IManager {
   conversionRate: number;
   averageRevenuePerClass: number;
   joiningDate: Date;
+  department?: string;
   isActive: boolean;
   lastActivityAt?: Date;
   createdAt: Date;
@@ -648,6 +897,14 @@ export interface IManager {
     canCreateLeads?: boolean;
     canManagePayments?: boolean;
   };
+  bio?: string;
+  languagesKnown?: string[];
+  skills?: string[];
+  permanentAddress?: string;
+  residentialAddress?: string;
+  documents?: IDocument[];
+  verificationStatus?: string;
+  isProfileComplete?: boolean;
 }
 
 export interface IAdmin {
@@ -709,6 +966,7 @@ export interface IFinancialSummary {
   grossRevenue: number;
   collectionRate: number;
   growth: Array<{ month: string; total: number }>;
+  revenueTrends: Array<{ date: string; feesCollected: number; tutorPayout: number; serviceCharge: number }>;
 }
 
 export interface ISystemHealthIndicators {
@@ -727,9 +985,30 @@ export interface IAdminAnalytics {
   };
   managers: IManagerPerformanceSummary;
   coordinators: ICoordinatorPerformanceSummary;
-  tutors: ITutorStatsByStatus;
+  tutors: ITutorStatsByStatus & {
+    growth: Array<{
+      month: string;
+      total: number;
+      active: number;
+      verified: number;
+    }>;
+  };
   finance: IFinancialSummary;
-  classes: { growth: ICumulativeGrowth[] };
+  classes: {
+    leadsGrowth: IDateWiseData[];
+    growth: ICumulativeGrowth[];
+    locationGrowth: {
+      data: Array<{
+        month: string;
+        city: string;
+        area: string;
+        leads: number;
+        active: number;
+      }>;
+      cities: string[];
+      areas: string[];
+    };
+  };
   health: ISystemHealthIndicators;
 }
 
@@ -744,6 +1023,9 @@ export interface IManagerMetrics {
   conversionRate: number;
   averageRevenuePerClass: number;
   averageDemosPerLead: number;
+  studentChurn?: number;
+  teacherChurn?: number;
+  averageClassPrice?: number;
   dateRange?: { from?: string; to?: string };
 }
 
@@ -753,6 +1035,23 @@ export interface IManagerPerformanceHistory {
   classesConverted: number;
   revenue: number;
   conversionRate: number;
+}
+
+export interface IAdvancedAnalytics {
+  studentLTV: number;
+  studentCAC: number;
+  studentChurn: number;
+  teacherChurn: number;
+  teacherCAC: number;
+  avgTeacherEarnings: number;
+  arpu: number;
+  netRevenueChurn: number;
+  grossMargin: number;
+  conversionRate: number;
+  retention: { d30: number; d60: number; d90: number; d365: number };
+  coordinatorCostPerUser: number;
+  refundRate: number;
+  timeToValue: number;
 }
 
 // Auth related types

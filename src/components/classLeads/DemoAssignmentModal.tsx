@@ -11,8 +11,17 @@ import { yupResolver } from '@hookform/resolvers/yup';
 type FormData = { demoDate: string; demoTime: string; notes?: string };
 
 const schema = yup.object({
-  demoDate: yup.string().required(),
-  demoTime: yup.string().required(),
+  demoDate: yup
+    .string()
+    .required('Demo date is required')
+    .test('not-past', 'Demo date cannot be in the past', function(value) {
+      if (!value) return true;
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selectedDate >= today;
+    }),
+  demoTime: yup.string().required('Demo time is required'),
   notes: yup.string().max(500).optional(),
 });
 
@@ -56,7 +65,18 @@ export default function DemoAssignmentModal({ open, onClose, classLead, selected
         <Box display="flex" flexDirection="column" gap={2} mt={1}>
           <Alert severity="info">Assigning demo to {selectedTutor?.user?.name}</Alert>
           <Typography variant="body2">Experience: {selectedTutor.experienceHours} hrs • Approval: {selectedTutor.approvalRatio}%</Typography>
-          <TextField label="Demo Date" type="date" fullWidth InputLabelProps={{ shrink: true }} {...register('demoDate')} error={!!errors.demoDate} helperText={errors.demoDate?.message} />
+          <TextField 
+            label="Demo Date" 
+            type="date" 
+            fullWidth 
+            InputLabelProps={{ shrink: true }} 
+            inputProps={{ 
+              min: new Date().toISOString().split('T')[0] // Prevent selecting past dates
+            }}
+            {...register('demoDate')} 
+            error={!!errors.demoDate} 
+            helperText={errors.demoDate?.message} 
+          />
           <TextField label="Demo Time" type="time" fullWidth InputLabelProps={{ shrink: true }} {...register('demoTime')} error={!!errors.demoTime} helperText={errors.demoTime?.message} />
           <TextField label="Notes" multiline rows={3} fullWidth {...register('notes')} error={!!errors.notes} helperText={errors.notes?.message} />
           <ErrorAlert error={error} />

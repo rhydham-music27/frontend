@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem, Box, Typography, Alert } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem, Box, Alert } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -34,8 +34,24 @@ export default function PaymentUpdateModal({ open, onClose, payment, onUpdate }:
   const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm<FormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { status: payment?.status || PAYMENT_STATUS.PENDING, paymentMethod: payment?.paymentMethod, transactionId: payment?.transactionId, notes: payment?.notes },
+    defaultValues: {
+      status: payment?.status || PAYMENT_STATUS.PENDING,
+      paymentMethod: payment?.paymentMethod,
+      transactionId: payment?.transactionId,
+      notes: payment?.notes,
+    },
   });
+
+  React.useEffect(() => {
+    if (payment) {
+      reset({
+        status: payment.status,
+        paymentMethod: payment.paymentMethod,
+        transactionId: payment.transactionId,
+        notes: payment.notes,
+      });
+    }
+  }, [payment, reset]);
 
   const status = watch('status');
 
@@ -59,7 +75,7 @@ export default function PaymentUpdateModal({ open, onClose, payment, onUpdate }:
       <DialogContent>
         {payment && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            {payment.tutor.name} • {payment.currency} {payment.amount} • Current: {payment.status}
+            {payment.tutor?.name || 'General Payment'} • {payment.currency} {payment.amount} • Current: {payment.status}
           </Alert>
         )}
         <Box display="flex" flexDirection="column" gap={2}>

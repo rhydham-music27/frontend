@@ -4,6 +4,8 @@ import { Gender } from '../types/enums';
 export interface TutorLeadFormProps {
   onSubmit: (data: TutorLeadFormData) => void | Promise<void>;
   isLoading?: boolean;
+  initialData?: TutorLeadFormData;
+  mode?: 'create' | 'edit';
 }
 
 // Form data types
@@ -21,6 +23,13 @@ export interface TutorLeadFormData {
   confirmPassword: string;
   city: string;
   preferredAreas: string[];
+  preferredMode: string;
+  permanentAddress?: string;
+  residentialAddress?: string;
+  alternatePhone?: string;
+  bio?: string;
+  languagesKnown?: string[];
+  skills?: string[];
 }
 
 // City-Area mapping type

@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar } from '@mui/material';
-import { User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock, FileText, CheckCircle } from 'lucide-react';
+import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box } from '@mui/material';
+import { 
+  User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock, 
+  FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles, 
+  BarChart2, ShieldCheck, Info, Heart, ExternalLink
+} from 'lucide-react';
 import { ITutor } from '../../types';
-import { getMyProfile, uploadDocument } from '../../services/tutorService';
+import { getMyProfile, uploadDocument, getTutorById } from '../../services/tutorService';
 
-const MUIProfileCard: React.FC = () => {
+interface MUIProfileCardProps {
+  tutorId?: string;
+}
+
+const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   const [tutor, setTutor] = useState<ITutor | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +33,7 @@ const MUIProfileCard: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await getMyProfile();
+        const res = tutorId ? await getTutorById(tutorId) : await getMyProfile();
         setTutor(res.data);
       } catch (e: any) {
         setError(e?.response?.data?.message || 'Failed to load tutor profile.');
@@ -35,11 +43,10 @@ const MUIProfileCard: React.FC = () => {
     };
 
     fetchProfile();
-  }, []);
+  }, [tutorId]);
 
   const handleShareProfile = async () => {
     if (!tutor) return;
-    // Prefer the same human-facing ID shown in the profile (teacherId)
     const teacherId = tutor.teacherId || '';
     if (!teacherId) return;
     const origin = typeof window !== 'undefined' && window.location ? window.location.origin : '';
@@ -59,21 +66,21 @@ const MUIProfileCard: React.FC = () => {
 
   if (loading && !tutor) {
     return (
-      <div className="flex justify-center mb-12">
-        <CircularProgress size={28} />
+      <div className="flex justify-center items-center h-64">
+        <CircularProgress size={40} thickness={4} />
       </div>
     );
   }
 
-  if (error || !tutor) return null;
+  if (error || !tutor) return (
+    <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100">
+      <p className="text-red-600 font-medium">{error || 'Tutor not found'}</p>
+    </div>
+  );
 
   const { user } = tutor;
-  const rating = tutor.ratings ?? 0;
-  const totalHours = (tutor as any).experienceHours ?? 0;
-
   const profilePhotoDoc = (tutor.documents || []).find((d) => d.documentType === 'PROFILE_PHOTO');
   const profileImageUrl = profilePhotoDoc?.documentUrl;
-
   const initials = (user?.name || '').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   const handleOpenAvatarModal = () => {
@@ -86,7 +93,6 @@ const MUIProfileCard: React.FC = () => {
     if (uploadingAvatar) return;
     setAvatarModalOpen(false);
     setSelectedFile(null);
-    setUploadError(null);
   };
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +109,7 @@ const MUIProfileCard: React.FC = () => {
     try {
       setUploadingAvatar(true);
       setUploadError(null);
-      const res = await uploadDocument((tutor as any).id, 'PROFILE_PHOTO', selectedFile);
+      const res = await uploadDocument((tutor as any).id || tutor._id, 'PROFILE_PHOTO', selectedFile);
       setTutor(res.data);
       setAvatarModalOpen(false);
       setSelectedFile(null);
@@ -114,43 +120,7 @@ const MUIProfileCard: React.FC = () => {
     }
   };
 
-  // Map backend data to match reference structure
-  const personalDetails = {
-    profilePhoto: profileImageUrl,
-    fullName: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    alternateNumber: (tutor as any).alternatePhone || '',
-    dateOfBirth: (tutor as any).dateOfBirth || '',
-    gender: (tutor as any).gender || '',
-    tutorId: tutor.teacherId || user?.email || '',
-    whatsappNumber: user?.phone || '',
-  };
-
-  const education = {
-    highestQualification: (tutor as any).qualifications?.[0] || '',
-    currentInstitution: (tutor as any).currentInstitution || '',
-  };
-
-  const workExperience = {
-    teachingExperience: `${totalHours} Hours`,
-    employerName: (tutor as any).employerName || '',
-    currentlyEmployed: (tutor as any).currentlyEmployed || false,
-    subjects: (tutor as any).subjects || [],
-    classesCanTeach: (tutor as any).classesCanTeach || [],
-    educationBoards: (tutor as any).educationBoards || [],
-    extracurricularActivities: (tutor as any).extracurricularActivities || [],
-  };
-
-  const locationPreferences = {
-    fullAddress: (tutor as any).fullAddress || '',
-    teachingMode: (tutor as any).preferredMode || '',
-    preferredLocations: (tutor as any).preferredLocations || [],
-    availableTimeSlots: (tutor as any).availableTimeSlots || [],
-  };
-
   type DocumentStatus = 'not_uploaded' | 'pending' | 'approved';
-
   const computeStatusForType = (backendType: string): DocumentStatus => {
     const allDocs = (tutor.documents || []).filter((d) => d.documentType === backendType);
     if (!allDocs.length) return 'not_uploaded';
@@ -159,32 +129,22 @@ const MUIProfileCard: React.FC = () => {
     return 'pending';
   };
 
-  const documents: Record<string, DocumentStatus> = {
-    'Photo of Yourself (Passport Size)': computeStatusForType('PROFILE_PHOTO'),
-    'Experience Proof (if available)': computeStatusForType('EXPERIENCE_PROOF'),
-    'Aadhar Card': computeStatusForType('AADHAR'),
-    'Marksheet / Highest Degree Marksheet': computeStatusForType('QUALIFICATION_CERT'),
+  const docLabels = {
+    'PROFILE_PHOTO': 'Profile Photo',
+    'EXPERIENCE_PROOF': 'Experience Proof',
+    'AADHAR': 'Aadhar Card',
+    'QUALIFICATION_CERT': 'Qualification Certificate',
+    'DEGREE': 'Degree Document',
   };
 
-  const getDocumentTypeForLabel = (label: string): string | null => {
-    switch (label) {
-      case 'Photo of Yourself (Passport Size)':
-        return 'PROFILE_PHOTO';
-      case 'Experience Proof (if available)':
-        return 'EXPERIENCE_PROOF';
-      case 'Aadhar Card':
-        return 'AADHAR';
-      case 'Marksheet / Highest Degree Marksheet':
-        return 'QUALIFICATION_CERT';
-      default:
-        return null;
-    }
-  };
+  const docStatusItems = Object.entries(docLabels).map(([type, label]) => ({
+    type,
+    label,
+    status: computeStatusForType(type)
+  }));
 
-  const handleOpenDocumentModal = (label: string) => {
-    const docType = getDocumentTypeForLabel(label);
-    if (!docType) return;
-    setSelectedDocumentType(docType);
+  const handleOpenDocumentModal = (type: string) => {
+    setSelectedDocumentType(type);
     setSelectedDocumentFile(null);
     setDocumentUploadError(null);
     setDocumentModalOpen(true);
@@ -193,479 +153,437 @@ const MUIProfileCard: React.FC = () => {
   const handleCloseDocumentModal = () => {
     if (uploadingDocument) return;
     setDocumentModalOpen(false);
-    setSelectedDocumentType(null);
-    setSelectedDocumentFile(null);
-    setDocumentUploadError(null);
-  };
-
-  const handleDocumentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setSelectedDocumentFile(file);
-    if (file) setDocumentUploadError(null);
   };
 
   const handleUploadDocumentFile = async () => {
-    if (!selectedDocumentType) {
-      setDocumentUploadError('Missing document type. Please close and try again.');
-      return;
-    }
-    if (!selectedDocumentFile) {
-      setDocumentUploadError('Please select a file to upload.');
-      return;
-    }
+    if (!selectedDocumentType || !selectedDocumentFile) return;
     try {
       setUploadingDocument(true);
-      setDocumentUploadError(null);
-      const res = await uploadDocument((tutor as any).id, selectedDocumentType, selectedDocumentFile);
+      const res = await uploadDocument((tutor as any).id || tutor._id, selectedDocumentType, selectedDocumentFile);
       setTutor(res.data);
       setDocumentModalOpen(false);
-      setSelectedDocumentFile(null);
-      setSelectedDocumentType(null);
     } catch (e: any) {
-      setDocumentUploadError(
-        e?.response?.data?.message || e?.message || 'Failed to upload document.'
-      );
+      setDocumentUploadError(e?.response?.data?.message || 'Failed to upload document.');
     } finally {
       setUploadingDocument(false);
     }
   };
 
-  const tutorData = {
-    personalDetails,
-    education,
-    workExperience,
-    locationPreferences,
-    documents,
-    rating,
-    totalTeachingHours: totalHours,
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg p-6 text-white">
-        <div className="flex flex-col md:flex-row items-center gap-5">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white/20 shadow-xl cursor-pointer hover:opacity-90 transition-opacity" onClick={handleOpenAvatarModal}>
-              {personalDetails.profilePhoto ? (
-                <img
-                  src={personalDetails.profilePhoto}
-                  alt={personalDetails.fullName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                  <User className="w-16 h-16" />
+    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+      {/* 1. HERO SECTION */}
+      <div className="relative overflow-hidden bg-slate-900 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:shadow-blue-500/10 border border-white/5">
+        {/* Animated Background Accents */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
+        
+        <div className="relative z-10 p-8 md:p-12">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+            {/* Avatar & Tier */}
+            <div className="flex flex-col items-center gap-6">
+              <div 
+                className={`group relative w-36 h-36 md:w-48 md:h-48 rounded-[2rem] overflow-hidden ring-8 ring-white/5 shadow-2xl transition-all duration-500 ${!tutorId ? 'cursor-pointer hover:ring-blue-500/30' : ''}`}
+                onClick={!tutorId ? handleOpenAvatarModal : undefined}
+              >
+                {profileImageUrl ? (
+                  <img src={profileImageUrl} alt={user?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center">
+                    <User className="w-16 h-16 text-white/90" />
+                  </div>
+                )}
+                {!tutorId && (
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300 backdrop-blur-[2px]">
+                    <div className="text-center group-hover:scale-110 transition-transform">
+                       <Sparkles className="text-blue-400 w-10 h-10 mb-2 mx-auto drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                       <span className="text-white text-[10px] font-black tracking-widest uppercase">Update Photo</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="px-5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg">
+                <span className="text-xs font-black tracking-[0.2em] uppercase text-white/70">
+                   Tier: <span className={tutor.tier?.includes('GOLD') ? 'text-amber-400' : tutor.tier?.includes('SILVER') ? 'text-slate-300' : 'text-orange-400'}>
+                     {tutor.tier?.split('(')[1]?.replace(')', '') || 'Bronze'}
+                   </span>
+                </span>
+              </div>
+            </div>
+
+            {/* Basic Info */}
+            <div className="flex-1 text-center md:text-left space-y-6">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                  <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">{user?.name}</h1>
+                  {tutor.verificationStatus === 'VERIFIED' && (
+                    <div className="p-2 rounded-2xl bg-green-500/10 border border-green-500/20">
+                      <ShieldCheck className="w-6 h-6 text-green-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <div className="w-12 h-[2px] bg-blue-500/50 rounded-full" />
+                  <p className="text-blue-300 font-bold text-lg tracking-wide uppercase opacity-90">
+                    {tutor.qualifications?.[0] || "Professional Educator"}
+                  </p>
+                </div>
+                <p className="text-slate-400 font-medium text-lg max-w-2xl leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1">
+                  "{tutor.bio || "Dedicated to empowering students through personalized and innovative teaching methodologies."}"
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
+                <div className="bg-white/5 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3 transition-colors hover:bg-white/10">
+                  <Award className="w-5 h-5 text-blue-400" />
+                  <span className="text-xs font-black text-white tracking-widest uppercase">{tutor.teacherId || 'TUT-XXXX'}</span>
+                </div>
+                <div className="bg-white/5 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3 transition-colors hover:bg-white/10">
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <span className="text-lg font-black text-white">{tutor.ratings?.toFixed(1) || '0.0'}</span>
+                  <span className="text-[10px] font-bold text-white/40 border-l border-white/10 pl-3">({tutor.totalRatings} REVIEWS)</span>
+                </div>
+                {!tutorId && (
+                  <Button 
+                    startIcon={<ExternalLink size={18} />}
+                    variant="contained" 
+                    size="large"
+                    onClick={handleShareProfile}
+                    sx={{ 
+                      borderRadius: '18px', 
+                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      backdropFilter: 'blur(10px)',
+                      color: 'white',
+                      fontWeight: 800,
+                      textTransform: 'none',
+                      px: 4,
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        transform: 'translateY(-2px)'
+                      },
+                      transition: 'all 0.3s'
+                    }}
+                  >
+                    {shareCopied ? 'Copied!' : 'Share Profile'}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Availability Toggle / Status */}
+            <div className="bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10 min-w-[200px]">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Status</span>
+                <div className={`w-3 h-3 rounded-full animate-pulse ${tutor.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
+              </div>
+              <div className="text-center space-y-2">
+                <p className={`text-xl font-black ${tutor.isAvailable ? 'text-green-400' : 'text-red-400'}`}>
+                  {tutor.isAvailable ? 'READY FOR WORK' : 'OFF DUTY'}
+                </p>
+                <Divider sx={{ borderColor: 'rgba(255,255,255,0.05)' }} />
+                <p className="text-xs text-white/40">Join community: {tutor.whatsappCommunityJoined ? '✅ Joined' : '❌ Pending'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Grid container spacing={4}>
+        {/* 2. STATS OVERVIEW - FULL WIDTH INSIDE GRID */}
+        <Grid item xs={12}>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+            {[
+              { label: 'Classes Assigned', value: tutor.classesAssigned, icon: BarChart2, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { label: 'Completed', value: tutor.classesCompleted, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+              { label: 'Demos Taken', value: tutor.demosTaken, icon: Clock, color: 'text-violet-600', bg: 'bg-violet-50' },
+              { label: 'Appreciation', value: tutor.demosApproved, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
+              { label: 'Interest', value: tutor.interestCount, icon: Heart, color: 'text-rose-600', bg: 'bg-rose-50' },
+            ].map((stat, i) => (
+              <div key={i} className="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col items-center text-center group hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
+                <div className={`p-4 rounded-2xl ${stat.bg} mb-4 group-hover:rotate-12 transition-all duration-500 ${stat.color}`}>
+                  <stat.icon size={28} />
+                </div>
+                <div className="text-4xl font-black text-slate-900 tracking-tight">{stat.value}</div>
+                <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </Grid>
+
+        {/* 3. LEFT COLUMN: PERSONAL & CONTACT */}
+        <Grid item xs={12} lg={4} className="space-y-6">
+          {/* Contact Details */}
+          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+              <Phone className="text-blue-500" size={20} /> Contact Profile
+            </h3>
+            <div className="space-y-4">
+              {[
+                { label: 'Email Address', value: user?.email, icon: Mail },
+                { label: 'WhatsApp Number', value: user?.phone, icon: Phone },
+                { label: 'Alternate Phone', value: tutor?.alternatePhone, icon: Phone },
+                { label: 'Current City', value: user?.city, icon: MapPin },
+                { label: 'Gender', value: user?.gender?.toLowerCase(), icon: User, capitalize: true },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-4 group">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                    <item.icon size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{item.label}</p>
+                    <p className={`text-sm font-semibold text-slate-700 ${item.capitalize ? 'capitalize' : ''}`}>
+                      {item.value || 'Not provided'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Verification Status Card */}
+          <section className={`rounded-3xl shadow-sm p-6 border ${tutor.verificationStatus === 'VERIFIED' ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
+            <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+              <ShieldCheck className={tutor.verificationStatus === 'VERIFIED' ? 'text-green-600' : 'text-amber-600'} /> Verification Info
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-bold text-slate-500">Global Status:</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase ${
+                  tutor.verificationStatus === 'VERIFIED' ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'
+                }`}>
+                  {tutor.verificationStatus}
+                </span>
+              </div>
+              {tutor.verifiedAt && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-slate-500">Verified On:</span>
+                  <span className="text-slate-700 font-mono italic">{new Date(tutor.verifiedAt).toLocaleDateString()}</span>
+                </div>
+              )}
+              {tutor.verificationNotes && (
+                <div className="mt-4 p-3 rounded-xl bg-white/50 border border-slate-200">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1">
+                    <Info size={12} /> Remarks
+                  </p>
+                  <p className="text-xs text-slate-600 italic">"{tutor.verificationNotes}"</p>
                 </div>
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-xl px-2 py-0.5 shadow-lg">
-              <span className="text-[10px] font-bold">Active</span>
-            </div>
-          </div>
+          </section>
+        </Grid>
 
-          <div className="flex-1 text-center md:text-left space-y-1">
-            <h1 className="text-2xl font-bold">{personalDetails.fullName}</h1>
-            <p className="text-blue-300 text-sm">{education.highestQualification}</p>
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-              <span className="text-xs opacity-75">Tutor ID:</span>
-              <span className="font-mono text-sm font-semibold">{personalDetails.tutorId}</span>
-            </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2 justify-center md:justify-start">
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                onClick={handleShareProfile}
-              >
-                {shareCopied ? 'Link copied' : 'Share public profile'}
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
-              <div className="text-2xl font-bold">
-                {tutorData.rating >= 4.5 ? 'Tier 1' : tutorData.rating >= 4.0 ? 'Tier 2' : 'Tier 3'}
-              </div>
-              <div className="text-xs opacity-75">Tutor Tier</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
-              <div className="text-xl font-bold">{tutorData.totalTeachingHours}</div>
-              <div className="text-xs opacity-75">Total Hours</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-blue-600" />
-            Personal Details
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-start gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-xs text-gray-500 mb-0.5">Email Address</p>
-                <p className="text-sm font-medium text-gray-900">{personalDetails.email}</p>
+        {/* 4. MAIN COLUMN: TEACHING & EXPERIENCE */}
+        <Grid item xs={12} lg={8} className="space-y-6">
+          {/* Professional Credentials */}
+          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+              <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                <BookOpen className="text-blue-500" size={24} /> Academic & Expertise
+              </h3>
+              <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl">
+                <Briefcase className="text-slate-400" size={16} />
+                <span className="text-sm font-bold text-slate-600">{tutor.yearsOfExperience || 0}+ Years Practical Experience</span>
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-xs text-gray-500 mb-0.5">WhatsApp Number</p>
-                <p className="text-sm font-medium text-gray-900">{personalDetails.whatsappNumber}</p>
-              </div>
-            </div>
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6}>
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Languages Known</p>
+                    <div className="flex flex-wrap gap-2">
+                      {tutor.languagesKnown?.length ? tutor.languagesKnown.map((lang, idx) => (
+                        <Chip key={idx} icon={<Languages size={14} />} label={lang} className="bg-blue-50 text-blue-700 font-bold rounded-xl" />
+                      )) : <span className="text-slate-400 text-xs italic">Not specified</span>}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Core Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {tutor.skills?.length ? tutor.skills.map((skill, idx) => (
+                        <Chip key={idx} icon={<Sparkles size={14} />} label={skill} className="bg-indigo-50 text-indigo-700 font-bold rounded-xl" />
+                      )) : <span className="text-slate-400 text-xs italic">Not specified</span>}
+                    </div>
+                  </div>
+                </div>
+              </Grid>
 
-            {personalDetails.alternateNumber && (
-              <div className="flex items-start gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <Phone className="w-4 h-4 text-gray-400 mt-0.5" />
+              <Grid item xs={12} md={6}>
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Qualifications</p>
+                    <div className="space-y-2">
+                      {tutor.qualifications?.length ? tutor.qualifications.map((q, idx) => (
+                        <div key={idx} className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl">
+                          <GraduationCap className="text-blue-500" size={18} />
+                          <span className="text-sm font-bold text-slate-700">{q}</span>
+                        </div>
+                      )) : <span className="text-slate-400 text-xs italic">Not provided</span>}
+                    </div>
+                  </div>
+                </div>
+              </Grid>
+            </Grid>
+          </section>
+
+          {/* Preferences Section */}
+          <section className="bg-slate-900 rounded-3xl shadow-xl p-8 text-white/90">
+            <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
+              <Sparkles className="text-blue-400" size={24} /> Service Preferences
+            </h3>
+            
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6} className="space-y-8">
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Alternate Contact</p>
-                  <p className="text-sm font-medium text-gray-900">{personalDetails.alternateNumber}</p>
+                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Teaching Subjects</p>
+                  <div className="flex flex-wrap gap-3">
+                    {tutor.subjects?.map((sub, i) => (
+                      <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors border border-white/5">{sub}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {personalDetails.dateOfBirth && (
-              <div className="flex items-start gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Date of Birth</p>
-                  <p className="text-sm font-medium text-gray-900">{personalDetails.dateOfBirth}</p>
+                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Teaching Mode</p>
+                  <div className="bg-blue-600 inline-block px-6 py-3 rounded-2xl font-black tracking-widest text-shadow-sm">
+                    {tutor.preferredMode || 'NOT SELECTED'}
+                  </div>
                 </div>
-              </div>
-            )}
+              </Grid>
 
-            {personalDetails.gender && (
-              <div className="flex items-start gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <User className="w-4 h-4 text-gray-400 mt-0.5" />
+              <Grid item xs={12} md={6} className="space-y-8">
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Gender</p>
-                  <p className="text-sm font-medium text-gray-900">{personalDetails.gender}</p>
+                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Preferred Cities/Areas</p>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                       {tutor.preferredCities?.map((city, i) => (
+                         <Chip key={i} label={city} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: 700 }} />
+                       ))}
+                       {tutor.preferredLocations?.map((loc, i) => (
+                         <Chip key={i} label={loc} size="small" variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.1)' }} />
+                       ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-blue-600" />
-            Education
-          </h2>
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-              <p className="text-xs text-blue-600 font-medium mb-1">Highest Qualification</p>
-              <p className="text-lg font-bold text-blue-900">{education.highestQualification}</p>
-            </div>
-
-            {education.currentInstitution && (
-              <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <GraduationCap className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Current Institution</p>
-                  <p className="text-sm font-medium text-gray-900">{education.currentInstitution}</p>
+                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Availability Window</p>
+                  <div className="space-y-2">
+                    {tutor.settings?.availabilityPreferences?.daysAvailable?.length ? (
+                      <div className="flex items-center gap-3 text-sm font-semibold">
+                        <Calendar size={16} className="text-blue-400" />
+                        <span>{tutor.settings.availabilityPreferences.daysAvailable.join(', ')}</span>
+                      </div>
+                    ) : null}
+                    {tutor.settings?.availabilityPreferences?.timeSlots?.length ? (
+                      <div className="flex items-center gap-3 text-sm font-semibold opacity-80">
+                        <Clock size={16} className="text-blue-400" />
+                        <span>{tutor.settings.availabilityPreferences.timeSlots.join(' | ')}</span>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
+              </Grid>
+            </Grid>
+          </section>
+
+          {/* Detailed Addresses */}
+          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+              <MapPin className="text-rose-500" size={24} /> Official Address
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-slate-50 p-5 rounded-3xl border border-dashed border-slate-200">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Permanent Address</p>
+                <p className="text-sm font-medium text-slate-700 leading-relaxed">{tutor.permanentAddress || 'Permanent address not provided'}</p>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Briefcase className="w-5 h-5 text-blue-600" />
-          Work & Teaching Experience
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
-              <p className="text-xs text-green-600 font-medium mb-1">Teaching Experience</p>
-              <p className="text-lg font-bold text-green-900">{workExperience.teachingExperience}</p>
-            </div>
-
-            {workExperience.currentlyEmployed && workExperience.employerName && (
-              <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <Briefcase className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Currently Employed At</p>
-                  <p className="text-sm font-medium text-gray-900">{workExperience.employerName}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="mb-3">
-              <p className="text-xs font-medium text-gray-500 mb-2">Subjects</p>
-              <div className="flex flex-wrap gap-2">
-                {workExperience.subjects.map((subject: string, index: number) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg"
-                  >
-                    {subject}
-                  </span>
-                ))}
+              <div className="bg-slate-50 p-5 rounded-3xl border border-dashed border-slate-200">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Residential Address</p>
+                <p className="text-sm font-medium text-slate-700 leading-relaxed">{tutor.residentialAddress || 'Same as permanent'}</p>
               </div>
             </div>
+          </section>
+        </Grid>
 
-            {workExperience.classesCanTeach.length > 0 && (
-              <div className="mb-3">
-                <p className="text-xs font-medium text-gray-500 mb-2">Classes Can Teach</p>
-                <div className="flex flex-wrap gap-2">
-                  {workExperience.classesCanTeach.map((cls: string, index: number) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-lg"
-                    >
-                      {cls}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* 5. DOCUMENTS SECTION - FULL WIDTH GRID */}
+        <Grid item xs={12}>
+           <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+             <div className="flex items-center justify-between mb-8">
+               <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                 <FileText className="text-indigo-500" size={24} /> Compliance Documents
+               </h3>
+               {tutor.verificationFeeStatus === 'PAID' && (
+                 <Chip icon={<CheckCircle size={14} />} label="Verification Fee Paid" color="success" size="small" />
+               )}
+             </div>
+             
+             <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
+               {docStatusItems.map((item, idx) => (
+                 <div 
+                  key={idx} 
+                  onClick={() => handleOpenDocumentModal(item.type)}
+                  className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${
+                    item.status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
+                    item.status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
+                    'bg-slate-50 border-slate-100 hover:border-slate-300'
+                  }`}
+                 >
+                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
+                     item.status === 'approved' ? 'bg-green-500 text-white' :
+                     item.status === 'pending' ? 'bg-amber-500 text-white' :
+                     'bg-slate-400 text-white'
+                   }`}>
+                     {item.status === 'approved' ? <ShieldCheck size={28} /> : <FileText size={28} />}
+                   </div>
+                   <p className="text-xs font-black text-slate-800 uppercase mb-1">{item.label}</p>
+                   <p className={`text-[10px] font-bold ${
+                     item.status === 'approved' ? 'text-green-600' :
+                     item.status === 'pending' ? 'text-amber-600' :
+                     'text-slate-500'
+                   }`}>
+                     {item.status.replace('_', ' ').toUpperCase()}
+                   </p>
+                 </div>
+               ))}
+             </Box>
+           </section>
+        </Grid>
+      </Grid>
 
-            {workExperience.educationBoards.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-gray-500 mb-2">Education Boards</p>
-                <div className="flex flex-wrap gap-2">
-                  {workExperience.educationBoards.map((board: string, index: number) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-lg"
-                    >
-                      {board}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {workExperience.extracurricularActivities.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
-            <p className="text-xs font-medium text-gray-500 mb-2">Extracurricular Activities</p>
-            <div className="flex flex-wrap gap-2">
-              {workExperience.extracurricularActivities.map((activity: string, index: number) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-violet-100 text-violet-700 text-xs font-medium rounded-lg"
-                >
-                  {activity}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-blue-600" />
-            Location Preferences
-          </h2>
-          <div className="space-y-4">
-            {locationPreferences.fullAddress && (
-              <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Full Address</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {locationPreferences.fullAddress}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {locationPreferences.teachingMode && (
-              <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-                <p className="text-xs text-blue-600 font-medium mb-1">Teaching Mode</p>
-                <p className="text-lg font-bold text-blue-900">{locationPreferences.teachingMode}</p>
-              </div>
-            )}
-
-            {locationPreferences.preferredLocations.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-gray-500 mb-2">Preferred Locations</p>
-                <div className="flex flex-wrap gap-2">
-                  {locationPreferences.preferredLocations.map((location: string, index: number) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg"
-                    >
-                      {location}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {locationPreferences.availableTimeSlots.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-600" />
-              Available Time Slots
-            </h2>
-            <div className="space-y-2">
-              {locationPreferences.availableTimeSlots.map((slot: string, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-md transition-all"
-                >
-                  <Clock className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-900">{slot}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-600" />
-          Documents
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {Object.entries(documents).map(([label, status]) => {
-            let containerClass = '';
-            let iconClass = '';
-            let statusText = '';
-            let statusTextClass = '';
-
-            if (status === 'approved') {
-              containerClass = 'p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 hover:shadow-md transition-all cursor-pointer';
-              iconClass = 'w-8 h-8 text-green-600';
-              statusText = 'Approved';
-              statusTextClass = 'text-xs text-center text-green-600 font-medium mt-1';
-            } else if (status === 'pending') {
-              containerClass = 'p-4 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-300 hover:shadow-md transition-all cursor-pointer';
-              iconClass = 'w-8 h-8 text-yellow-500';
-              statusText = 'Pending Approval';
-              statusTextClass = 'text-xs text-center text-yellow-700 font-medium mt-1';
-            } else {
-              containerClass = 'p-4 rounded-xl bg-gradient-to-br from-red-50 to-red-100 border border-red-200 hover:shadow-md transition-all cursor-pointer';
-              iconClass = 'w-8 h-8 text-red-500';
-              statusText = 'Not Uploaded';
-              statusTextClass = 'text-xs text-center text-red-600 font-medium mt-1';
-            }
-
-            return (
-              <div
-                key={label}
-                className={containerClass}
-                onClick={() => handleOpenDocumentModal(label)}
-              >
-                <div className="flex items-center justify-center mb-2">
-                  {status === 'approved' ? (
-                    <CheckCircle className={iconClass} />
-                  ) : (
-                    <FileText className={iconClass} />
-                  )}
-                </div>
-                <p className="text-xs text-center font-medium text-gray-700">
-                  {label}
-                </p>
-                <p className={statusTextClass}>{statusText}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Avatar Upload Dialog */}
-      <Dialog open={avatarModalOpen} onClose={handleCloseAvatarModal} fullWidth maxWidth="xs">
-        <DialogTitle sx={{ fontWeight: 700 }}>Update Profile Picture</DialogTitle>
-        <DialogContent>
-          <div className="flex flex-col items-center gap-4 mt-4">
-            <Avatar
-              sx={{
-                width: 100,
-                height: 100,
-                bgcolor: '#2563eb',
-                fontSize: '2.5rem',
-              }}
-              src={profileImageUrl}
-            >
-              {initials || (user?.name || 'T')[0]}
-            </Avatar>
-
-            <div className="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center bg-gray-50">
-              <p className="text-sm font-medium text-gray-900 mb-1">Select an image to upload</p>
-              <p className="text-xs text-gray-500 mb-3">JPG, PNG up to 5MB. Your picture helps coordinators and parents recognise you.</p>
-              <Button variant="outlined" component="label" size="small">
-                Choose File
-                <input hidden type="file" accept="image/*" onChange={handleAvatarFileChange} />
-              </Button>
-            </div>
-
-            {uploadError && (
-              <p className="text-sm text-red-600 text-center">{uploadError}</p>
-            )}
-          </div>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseAvatarModal} disabled={uploadingAvatar}>
-            Cancel
+      {/* MODALS (Simplified for brevity but fully functional) */}
+      <Dialog open={avatarModalOpen} onClose={handleCloseAvatarModal} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: '32px', p: 1 } }}>
+        <DialogTitle className="font-black text-center text-slate-800">Refresh Identity</DialogTitle>
+        <DialogContent className="text-center">
+          <Avatar sx={{ width: 120, height: 120, mx: 'auto', my: 3, bgcolor: '#2563eb' }} src={profileImageUrl}>{initials}</Avatar>
+          <Button variant="outlined" component="label" sx={{ borderRadius: '16px', px: 4 }}>
+            SELECT PHOTO <input hidden type="file" accept="image/*" onChange={handleAvatarFileChange} />
           </Button>
-          <Button variant="contained" onClick={handleUploadAvatar} disabled={uploadingAvatar || !selectedFile}>
-            {uploadingAvatar ? 'Uploading...' : 'Save'}
+          {selectedFile && <p className="mt-4 text-xs font-bold text-blue-600">{selectedFile.name}</p>}
+          {uploadError && <p className="text-red-500 text-xs mt-2">{uploadError}</p>}
+        </DialogContent>
+        <DialogActions sx={{ px: 4, pb: 3 }}>
+          <Button onClick={handleCloseAvatarModal} sx={{ color: 'slate.400' }}>Cancel</Button>
+          <Button variant="contained" disabled={!selectedFile || uploadingAvatar} onClick={handleUploadAvatar} sx={{ borderRadius: '16px', px: 6 }}>
+            {uploadingAvatar ? 'UPLOADING...' : 'SAVE'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Document Upload Dialog */}
-      <Dialog open={documentModalOpen} onClose={handleCloseDocumentModal} fullWidth maxWidth="xs">
-        <DialogTitle sx={{ fontWeight: 700 }}>Upload Document</DialogTitle>
-        <DialogContent>
-          <div className="flex flex-col gap-4 mt-2">
-            {selectedDocumentType && (
-              <p className="text-sm text-gray-700">
-                Document type:{' '}
-                <span className="font-semibold">{selectedDocumentType}</span>
-              </p>
-            )}
-            <div className="w-full border-2 border-dashed border-gray-300 rounded-xl p-4 text-center bg-gray-50">
-              <p className="text-sm font-medium text-gray-900 mb-1">Select a file to upload</p>
-              <p className="text-xs text-gray-500 mb-3">PDF, JPG, PNG up to 5MB.</p>
-              <Button variant="outlined" component="label" size="small">
-                Choose File
-                <input
-                  hidden
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleDocumentFileChange}
-                />
-              </Button>
-              {selectedDocumentFile && (
-                <p className="mt-2 text-xs text-gray-700">{selectedDocumentFile.name}</p>
-              )}
-            </div>
-            {documentUploadError && (
-              <p className="text-sm text-red-600 text-center">{documentUploadError}</p>
-            )}
+      <Dialog open={documentModalOpen} onClose={handleCloseDocumentModal} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: '32px', p: 1 } }}>
+        <DialogTitle className="font-black text-slate-800">Compliance Upload</DialogTitle>
+        <DialogContent className="space-y-4">
+          <div className="p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-center">
+            <p className="text-sm font-bold text-slate-600 mb-2">Target: {docLabels[selectedDocumentType as keyof typeof docLabels]}</p>
+            <Button variant="contained" component="label" size="small" sx={{ borderRadius: '12px' }}>
+              CHOOSE FILE <input hidden type="file" onChange={(e) => setSelectedDocumentFile(e.target.files?.[0] || null)} />
+            </Button>
+            {selectedDocumentFile && <p className="text-xs mt-2 font-mono">{selectedDocumentFile.name}</p>}
           </div>
+          {documentUploadError && <p className="text-red-500 text-xs text-center">{documentUploadError}</p>}
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDocumentModal} disabled={uploadingDocument}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleUploadDocumentFile}
-            disabled={uploadingDocument || !selectedDocumentFile}
-          >
-            {uploadingDocument ? 'Uploading...' : 'Upload'}
+        <DialogActions sx={{ px: 4, pb: 3 }}>
+          <Button onClick={handleCloseDocumentModal}>Close</Button>
+          <Button variant="contained" color="secondary" disabled={!selectedDocumentFile || uploadingDocument} onClick={handleUploadDocumentFile} sx={{ borderRadius: '16px' }}>
+             {uploadingDocument ? 'UPLOADING...' : 'UPLOAD NOW'}
           </Button>
         </DialogActions>
       </Dialog>

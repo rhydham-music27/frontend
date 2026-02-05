@@ -28,7 +28,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { useNavigate } from 'react-router-dom';
 import { getPaymentSummary as fetchPaymentSummary, getAssignedClasses as fetchAssignedClassesApi } from '../../services/coordinatorService';
 import { IPayment, IFinalClass, IPaymentFilters, ICoordinatorPaymentSummary } from '../../types';
-import { PAYMENT_STATUS } from '../../constants';
+import { PAYMENT_STATUS, PAYMENT_TYPE } from '../../constants';
 import PaymentStatusChip from '../../components/payments/PaymentStatusChip';
 import PaymentReminderModal from '../../components/coordinator/PaymentReminderModal';
 import MetricsCard from '../../components/dashboard/MetricsCard';
@@ -41,12 +41,12 @@ const formatCurrency = (amount: number): string => `₹${(amount || 0).toLocaleS
 const formatDate = (date?: Date): string => (date ? format(new Date(date), 'dd MMM yyyy') : '-');
 
 const PaymentTrackingPage: React.FC = () => {
-  const [view, setView] = useState<'overdue' | 'upcoming' | 'history'>('overdue');
-  const [paymentData, setPaymentData] = useState<ICoordinatorPaymentSummary | null>(null);
+  const [paymentTypeTab, setPaymentTypeTab] = useState<string>(PAYMENT_TYPE.FEES_COLLECTED);
+  const [paymentData, setPaymentData] = useState<any | null>(null);
   const [assignedClasses, setAssignedClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<IPaymentFilters>({ page: 1, limit: 9 });
+  const [filters, setFilters] = useState<IPaymentFilters>({ page: 1, limit: 9, paymentType: PAYMENT_TYPE.FEES_COLLECTED });
   const [pagination, setPagination] = useState<{ total: number; pages: number }>({ total: 0, pages: 0 });
   const [selectedPayment, setSelectedPayment] = useState<IPayment | null>(null);
   const [reminderModalOpen, setReminderModalOpen] = useState<boolean>(false);
@@ -55,18 +55,9 @@ const PaymentTrackingPage: React.FC = () => {
 
   const displayedPayments = useMemo(() => {
     if (!paymentData) return [] as IPayment[];
-    const categorized = paymentData.categorized || { overdue: [], upcoming: [], paid: [] } as any;
-    switch (view) {
-      case 'overdue':
-        return categorized.overdue || [];
-      case 'upcoming':
-        return categorized.upcoming || [];
-      case 'history':
-        return categorized.paid || [];
-      default:
-        return [];
-    }
-  }, [paymentData, view]);
+    // filters.paymentType is already applied in fetch
+    return (paymentData.payments || []) as IPayment[];
+  }, [paymentData]);
 
   const fetchClasses = useCallback(async () => {
     try {
@@ -104,20 +95,15 @@ const PaymentTrackingPage: React.FC = () => {
   }, [fetchPayments]);
 
   useEffect(() => {
-    if (view === 'history') {
-      setFilters((prev) => ({ ...prev, status: PAYMENT_STATUS.PAID, page: 1 }));
-    } else {
-      setFilters((prev) => ({ ...prev, status: PAYMENT_STATUS.PENDING, page: 1 }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view]);
+    setFilters((prev) => ({ ...prev, page: 1, paymentType: paymentTypeTab }));
+  }, [paymentTypeTab]);
 
   const handleFilterChange = (field: keyof IPaymentFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [field]: value, page: 1 }));
   };
 
   const handleClearFilters = () => {
-    setFilters({ page: 1, limit: 9, status: view === 'history' ? PAYMENT_STATUS.PAID : PAYMENT_STATUS.PENDING });
+    setFilters({ page: 1, limit: 9, paymentType: paymentTypeTab });
   };
 
   const handlePageChange = (_: any, page: number) => {
@@ -146,13 +132,11 @@ const PaymentTrackingPage: React.FC = () => {
     setSelectedPayment(null);
   };
 
-  const handleViewClass = (classId: string) => {
+  const handleViewClass = () => {
     navigate('/assigned-classes');
   };
 
-  const overdueCount = paymentData?.statistics?.overdueCount || 0;
-  const upcomingCount = paymentData?.statistics?.upcomingCount || 0;
-  const paidCount = paymentData?.statistics?.paidCount || 0;
+  // Unused metrics derived from displayed payments can be removed if strictly following lint
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -161,53 +145,71 @@ const PaymentTrackingPage: React.FC = () => {
         <Button variant="outlined" startIcon={<RefreshIcon />} onClick={handleRefresh}>Refresh</Button>
       </Box>
 
+      <Card sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs 
+          value={paymentTypeTab} 
+          onChange={(_, v) => setPaymentTypeTab(v)}
+          sx={{ px: 2 }}
+        >
+          <Tab value={PAYMENT_TYPE.FEES_COLLECTED} label="Fees Received" />
+          <Tab value={PAYMENT_TYPE.TUTOR_PAYOUT} label="Tutor Payouts" />
+        </Tabs>
+      </Card>
+
       {paymentData?.statistics && (
         <Grid container spacing={2} mb={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <Box onClick={() => setView('overdue')} sx={{ cursor: 'pointer' }}>
-              <MetricsCard
-                title="Overdue Payments"
-                value={overdueCount}
-                icon={<WarningIcon color="error" />}
-                subtitle={`Overdue: ${formatCurrency(paymentData.statistics.overdueAmount || 0)}`}
-              />
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box onClick={() => setView('upcoming')} sx={{ cursor: 'pointer' }}>
-              <MetricsCard
-                title="Upcoming Payments"
-                value={upcomingCount}
-                icon={<PaymentsIcon color="warning" />}
-                subtitle={`Pending: ${formatCurrency(paymentData.statistics.pendingAmount || 0)}`}
-              />
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box onClick={() => setView('history')} sx={{ cursor: 'pointer' }}>
-              <MetricsCard
-                title="Paid Payments"
-                value={paidCount}
-                icon={<CheckCircleIcon color="success" />}
-                subtitle={`Paid: ${formatCurrency(paymentData.statistics.paidAmount || 0)}`}
-              />
-            </Box>
+            <MetricsCard
+              title={paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? "Total Fees" : "Total Payouts"}
+              value={formatCurrency(paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? paymentData.statistics.totalAmount : paymentData.statistics.totalPayoutAmount)}
+              icon={<PaymentsIcon color="primary" />}
+            />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <MetricsCard
-              title="Total Amount"
-              value={formatCurrency(paymentData.statistics.totalAmount || 0)}
-              icon={<PaymentsIcon color="primary" />}
+              title="Paid"
+              value={formatCurrency(paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? paymentData.statistics.paidAmount : paymentData.statistics.paidPayoutAmount)}
+              icon={<CheckCircleIcon color="success" />}
             />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <MetricsCard
+              title="Pending"
+              value={formatCurrency(paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? paymentData.statistics.pendingAmount : paymentData.statistics.pendingPayoutAmount)}
+              icon={<PaymentsIcon color="warning" />}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            {paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? (
+              <MetricsCard
+                title="Overdue Fees"
+                value={formatCurrency(paymentData.statistics.overdueAmount || 0)}
+                icon={<WarningIcon color="error" />}
+              />
+            ) : (
+              <MetricsCard
+                title="Overdue Count"
+                value={paymentData.statistics.overdueCount}
+                icon={<WarningIcon color="error" />}
+              />
+            )}
           </Grid>
         </Grid>
       )}
 
       <Card sx={{ mb: 2 }}>
-        <Tabs value={view} onChange={(_, v) => setView(v)} variant="scrollable" scrollButtons allowScrollButtonsMobile>
-          <Tab icon={<Badge color="error" badgeContent={overdueCount}> <WarningIcon /> </Badge>} iconPosition="start" value="overdue" label="Overdue Payments" />
-          <Tab icon={<Badge color="warning" badgeContent={upcomingCount}> <PaymentsIcon /> </Badge>} iconPosition="start" value="upcoming" label="Upcoming Payments" />
-          <Tab icon={<Badge color="success" badgeContent={paidCount}> <HistoryIcon /> </Badge>} iconPosition="start" value="history" label="Payment History" />
+        <Tabs 
+          value={filters.status || ''} 
+          onChange={(_, v) => handleFilterChange('status', v || undefined)} 
+          variant="scrollable" 
+          scrollButtons 
+          allowScrollButtonsMobile
+        >
+          <MenuItem value="" sx={{ display: 'none' }} /> 
+          <Tab value="" label="All Statuses" />
+          <Tab icon={<Badge color="error" badgeContent={filters.status === PAYMENT_STATUS.OVERDUE ? displayedPayments.length : 0}> <WarningIcon /> </Badge>} iconPosition="start" value={PAYMENT_STATUS.OVERDUE} label="Overdue" />
+          <Tab icon={<Badge color="warning" badgeContent={filters.status === PAYMENT_STATUS.PENDING ? displayedPayments.length : 0}> <PaymentsIcon /> </Badge>} iconPosition="start" value={PAYMENT_STATUS.PENDING} label="Pending" />
+          <Tab icon={<Badge color="success" badgeContent={filters.status === PAYMENT_STATUS.PAID ? displayedPayments.length : 0}> <HistoryIcon /> </Badge>} iconPosition="start" value={PAYMENT_STATUS.PAID} label="History" />
         </Tabs>
       </Card>
 
@@ -278,11 +280,14 @@ const PaymentTrackingPage: React.FC = () => {
                       <PaymentsIcon />
                       <Typography variant="h6">{formatCurrency(payment.amount)}</Typography>
                     </Box>
-                    <PaymentStatusChip status={payment.status} />
+                    <PaymentStatusChip status={payment.status} paymentType={payment.paymentType} />
                   </Box>
                   <Divider sx={{ my: 1 }} />
                   <Typography variant="subtitle2">Class Details</Typography>
-                  <Typography variant="body2">{(payment.finalClass as any)?.studentName}</Typography>
+                  <Typography variant="body2">
+                    {(payment.finalClass as any)?.studentName}
+                    {payment.attendanceSheet?.periodLabel && ` (${payment.attendanceSheet.periodLabel})`}
+                  </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {(payment.finalClass as any)?.subject?.join(', ')} - Grade {(payment.finalClass as any)?.grade}
                   </Typography>
@@ -331,12 +336,12 @@ const PaymentTrackingPage: React.FC = () => {
                   )}
                 </CardContent>
                 <CardActions>
-                  {(payment.status === PAYMENT_STATUS.PENDING || payment.status === PAYMENT_STATUS.OVERDUE) && (
+                  {paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED && (payment.status === PAYMENT_STATUS.PENDING || payment.status === PAYMENT_STATUS.OVERDUE) && (
                     <Button size="small" variant="contained" startIcon={<SendIcon />} onClick={() => handleSendReminder(payment)} disabled={!(payment.finalClass as any)?.parent}>
                       Send Reminder
                     </Button>
                   )}
-                  <Button size="small" variant="outlined" onClick={() => handleViewClass((payment.finalClass as any)?.id)}>
+                  <Button size="small" variant="outlined" onClick={handleViewClass}>
                     View Class
                   </Button>
                   {payment.status === PAYMENT_STATUS.PAID && (
@@ -351,14 +356,13 @@ const PaymentTrackingPage: React.FC = () => {
             <Grid item xs={12}>
               <Box textAlign="center" py={6}>
                 <Typography variant="h6" color="text.secondary">
-                  {view === 'overdue' && 'No overdue payments'}
-                  {view === 'upcoming' && 'No upcoming payments'}
-                  {view === 'history' && 'No payment history'}
+                  {paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED && 'No overdue payments'}
+                  {paymentTypeTab === PAYMENT_TYPE.TUTOR_PAYOUT && 'No overdue payouts'}
+                  {filters.status === PAYMENT_STATUS.PENDING && 'No pending payments'}
+                  {filters.status === PAYMENT_STATUS.PAID && 'No payment history'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {view === 'overdue' && 'Great! There are no overdue payments at the moment.'}
-                  {view === 'upcoming' && 'No payments are due in the next few days.'}
-                  {view === 'history' && 'No paid payments found for the selected filters.'}
+                  {paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? 'Great! There are no overdue payments at the moment.' : 'Great! All payouts are up to date.'}
                 </Typography>
                 {(filters.classId || filters.fromDate || filters.toDate) && (
                   <Button sx={{ mt: 2 }} variant="outlined" onClick={handleClearFilters}>Clear Filters</Button>

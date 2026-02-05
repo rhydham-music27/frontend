@@ -6,13 +6,24 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SchoolIcon from '@mui/icons-material/School';
+import PhoneIcon from '@mui/icons-material/Phone';
+import { useNavigate } from 'react-router-dom';
 import { getMyTutorLeads } from '../../services/leadService';
 import { IClassLead, ApiResponse } from '../../types';
+import GroupStudentsModal from '../../components/classLeads/GroupStudentsModal';
+import SnackbarNotification from '../../components/common/SnackbarNotification';
 
 const TutorLeadsPage: React.FC = () => {
   const [leads, setLeads] = useState<IClassLead[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
+  const [selectedLeadStudents, setSelectedLeadStudents] = useState<any[]>([]);
+  const [selectedLeadName, setSelectedLeadName] = useState('');
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'info' });
+  
+  const navigate = useNavigate();
 
   const loadLeads = async () => {
     try {
@@ -32,15 +43,32 @@ const TutorLeadsPage: React.FC = () => {
     loadLeads();
   }, []);
 
+  const handleStudentNameClick = (lead: IClassLead) => {
+    const studentType = lead.studentType;
+    if (studentType === 'GROUP') {
+      setSelectedLeadStudents(lead.associatedStudents || lead.studentDetails || []);
+      setSelectedLeadName(lead.studentName || 'Group Lead');
+      setGroupModalOpen(true);
+    } else {
+      const studentId = lead.associatedStudents?.[0]?.studentId || (lead as any).studentId;
+      if (studentId) {
+        navigate(`/admin/student-profile/${studentId}`);
+      } else {
+        setSnackbar({ open: true, message: 'No student profile associated with this lead', severity: 'info' });
+      }
+    }
+  };
+
   return (
     <Container maxWidth="xl" disableGutters>
       <Box
         display="flex"
         alignItems={{ xs: 'flex-start', sm: 'center' }}
         justifyContent="space-between"
-        mb={{ xs: 3, sm: 4 }}
+        mb={{ xs: 2, sm: 3, md: 4 }}
         flexDirection={{ xs: 'column', sm: 'row' }}
-        gap={{ xs: 2, sm: 2 }}
+        gap={{ xs: 1.5, sm: 2 }}
+        px={{ xs: 2, sm: 0 }}
       >
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
@@ -53,7 +81,7 @@ const TutorLeadsPage: React.FC = () => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
+            sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}
           >
             View all class leads that have been assigned to you.
           </Typography>
@@ -90,11 +118,12 @@ const TutorLeadsPage: React.FC = () => {
       )}
 
       {!loading && !error && leads.length > 0 && (
-        <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+        <Grid2 container spacing={{ xs: 2, sm: 2, md: 3 }} sx={{ px: { xs: 2, sm: 0 } }}>
           {leads.map((lead) => {
             const subjects = Array.isArray(lead.subject) ? lead.subject.join(', ') : (lead.subject as any) || '';
-            const locationLine = [lead.area, lead.city, lead.location].filter(Boolean).join(' • ');
+            const fullAddress = [lead.address, lead.area, lead.city].filter(Boolean).join(', ');
             const timing = lead.timing || '';
+            const parentContact = lead.parentPhone || 'Not provided';
 
             return (
               <Grid2 key={lead.id} size={{ xs: 12, md: 6, lg: 4 }}>
@@ -112,7 +141,14 @@ const TutorLeadsPage: React.FC = () => {
                   <CardContent sx={{ p: 2.5 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
                       <Box>
-                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                        <Typography 
+                          variant="subtitle1" 
+                          fontWeight={700} 
+                          gutterBottom
+                          color="primary"
+                          sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+                          onClick={() => handleStudentNameClick(lead)}
+                        >
                           {lead.studentName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -137,8 +173,14 @@ const TutorLeadsPage: React.FC = () => {
                         <Typography variant="body2">{timing || 'Timing not set'}</Typography>
                       </Box>
                       <Box display="flex" alignItems="center" gap={0.75}>
-                        <LocationOnIcon fontSize="small" color="action" />
-                        <Typography variant="body2">{locationLine || 'Location not specified'}</Typography>
+                        <PhoneIcon fontSize="small" color="action" />
+                        <Typography variant="body2" fontWeight={600}>{parentContact}</Typography>
+                      </Box>
+                      <Box display="flex" alignItems="flex-start" gap={0.75}>
+                        <LocationOnIcon fontSize="small" color="action" sx={{ mt: 0.25 }} />
+                        <Typography variant="body2" sx={{ flex: 1, wordBreak: 'break-word' }}>
+                          {fullAddress || 'Address not specified'}
+                        </Typography>
                       </Box>
                     </Box>
 
@@ -177,6 +219,19 @@ const TutorLeadsPage: React.FC = () => {
           })}
         </Grid2>
       )}
+      <GroupStudentsModal
+        open={groupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        students={selectedLeadStudents}
+        leadName={selectedLeadName}
+      />
+      
+      <SnackbarNotification
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity as any}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </Container>
   );
 };

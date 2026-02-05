@@ -14,6 +14,15 @@ export type LeadsFilters = {
   search?: string;
   page?: number;
   limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  studentName?: string;
+  grade?: string;
+  subject?: string;
+  board?: string;
+  mode?: string;
+  createdByName?: string;
+  area?: string;
 };
 
 const useClassLeads = (filters: LeadsFilters = {}) => {
@@ -32,6 +41,15 @@ const useClassLeads = (filters: LeadsFilters = {}) => {
         limit: filters.limit,
         status: filters.status,
         search: filters.search,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        studentName: filters.studentName,
+        grade: filters.grade,
+        subject: filters.subject,
+        board: filters.board,
+        mode: filters.mode,
+        createdByName: filters.createdByName,
+        area: filters.area,
       });
       setLeads(res.data);
       setPagination(res.pagination);
@@ -40,7 +58,21 @@ const useClassLeads = (filters: LeadsFilters = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [filters.page, filters.limit, filters.status, filters.search]);
+  }, [
+    filters.page, 
+    filters.limit, 
+    filters.status, 
+    filters.search, 
+    filters.sortBy, 
+    filters.sortOrder,
+    filters.studentName,
+    filters.grade,
+    filters.subject,
+    filters.board,
+    filters.mode,
+    filters.createdByName,
+    filters.area
+  ]);
 
   useEffect(() => {
     fetchLeads();

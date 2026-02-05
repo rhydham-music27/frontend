@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Chip, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Chip, Typography, Link as MuiLink } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -7,161 +8,215 @@ import announcementService from '../../services/announcementService';
 import { ITutorComparison } from '../../types';
 
 export default function InterestedTutorsModal({ open, onClose, announcementId, onSelectTutor }: { open: boolean; onClose: () => void; announcementId: string; onSelectTutor: (t: ITutorComparison) => void; }) {
-  const [tutors, setTutors] = useState<ITutorComparison[]>([]);
+  const [interestedTutors, setInterestedTutors] = useState<ITutorComparison[]>([]);
+  const [recommendedTutors, setRecommendedTutors] = useState<ITutorComparison[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTutors = async () => {
+    const fetchData = async () => {
       if (!open) return;
       try {
         setLoading(true);
         setError(null);
-        const res = await announcementService.getInterestedTutors(announcementId);
-        const list = (res as any)?.data ?? res;
+        
+        const [interestedRes, recommendedRes] = await Promise.all([
+          announcementService.getInterestedTutors(announcementId),
+          announcementService.getRecommendedTutors(announcementId)
+        ]);
 
-        const normalized = (Array.isArray(list) ? list : []).map((r: any, idx: number) => {
-          const user = r?.user || null;
-          const rawId = r?.id || r?._id || user?._id || user?.id || `${user?.email || 'row'}-${idx}`;
-          const id = String(rawId);
+        const normalizeTutors = (list: any) => {
+          const items = (list as any)?.data ?? list;
+          return (Array.isArray(items) ? items : []).map((r: any, idx: number) => {
+            const user = r?.user || null;
+            const rawId = r?.id || r?._id || user?._id || user?.id || `${user?.email || 'row'}-${idx}`;
+            const id = String(rawId);
 
-          return {
-            // keep original fields
-            ...r,
-            // normalized/derived fields used by the grid
-            id,
-            user,
-            name: r?.name ?? user?.name ?? '-',
-            experienceHours: r?.experienceHours ?? 0,
-            subjects: Array.isArray(r?.subjects) ? r.subjects : [],
-            classesAssigned: r?.classesAssigned ?? 0,
-            demosTaken: r?.demosTaken ?? 0,
-            approvalRatio: r?.approvalRatio ?? 0,
-            ratings: r?.ratings ?? 0,
-            verificationStatus: r?.verificationStatus ?? 'UNKNOWN',
-            interestedAt: r?.interestedAt ?? null,
-          } as ITutorComparison as any;
-        });
-        setTutors(normalized);
+            return {
+              ...r,
+              id,
+              user,
+              name: r?.name ?? user?.name ?? '-',
+              experienceHours: r?.experienceHours ?? 0,
+              subjects: Array.isArray(r?.subjects) ? r.subjects : [],
+              classesAssigned: r?.classesAssigned ?? 0,
+              demosTaken: r?.demosTaken ?? 0,
+              approvalRatio: r?.approvalRatio ?? 0,
+              ratings: r?.ratings ?? 0,
+              verificationStatus: r?.verificationStatus ?? 'UNKNOWN',
+              interestedAt: r?.interestedAt ?? null,
+              matchPercentage: r?.matchPercentage ?? 0,
+              teacherId: r?.teacherId,
+            } as ITutorComparison as any;
+          });
+        };
+
+        setInterestedTutors(normalizeTutors(interestedRes));
+        setRecommendedTutors(normalizeTutors(recommendedRes));
       } catch (e: any) {
-        setError(e?.response?.data?.message || 'Failed to load interested tutors');
+        setError(e?.response?.data?.message || 'Failed to load tutor data');
       } finally {
         setLoading(false);
       }
     };
-    fetchTutors();
+    fetchData();
   }, [open, announcementId]);
 
   const columns: GridColDef[] = [
     {
       field: 'name',
       headerName: 'Tutor Name',
-      width: 200,
+      width: 180,
       renderCell: (params: any) => {
-        const r = params?.row || {};
-        const name = r.name ?? r.user?.name ?? '-';
-        return <Typography variant="body2">{name}</Typography>;
+        const name = params?.row?.name ?? params?.row?.user?.name ?? '-';
+        const teacherId = params?.row?.teacherId;
+        
+        if (teacherId) {
+          return (
+            <MuiLink
+              component={Link}
+              to={`/ourtutor/${teacherId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="body2"
+              sx={{ fontWeight: 600, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+            >
+              {name}
+            </MuiLink>
+          );
+        }
+        
+        return <Typography variant="body2" sx={{ fontWeight: 500 }}>{name}</Typography>;
       },
     },
     {
       field: 'experienceHours',
-      headerName: 'Experience (hrs)',
-      width: 150,
+      headerName: 'Exp (hrs)',
+      width: 100,
       renderCell: (params: any) => <Typography variant="body2">{params?.row?.experienceHours ?? 0}</Typography>,
     },
     {
       field: 'subjects',
       headerName: 'Subjects',
-      width: 220,
+      width: 200,
       renderCell: (params: any) => (
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          {(params?.row?.subjects || []).map((s: string) => (
-            <Chip key={s} label={s} size="small" />
+          {(params?.row?.subjects || []).slice(0, 3).map((s: string) => (
+            <Chip key={s} label={s} size="small" variant="outlined" sx={{ fontSize: '0.7rem' }} />
           ))}
+          {(params?.row?.subjects || []).length > 3 && (
+            <Typography variant="caption" color="textSecondary">+{params.row.subjects.length - 3}</Typography>
+          )}
         </Box>
       ),
     },
     {
-      field: 'classesAssigned',
-      headerName: 'Classes Assigned',
-      width: 160,
-      renderCell: (params: any) => <Typography variant="body2">{params?.row?.classesAssigned ?? 0}</Typography>,
-    },
-    {
-      field: 'demosTaken',
-      headerName: 'Demos Taken',
-      width: 130,
-      renderCell: (params: any) => <Typography variant="body2">{params?.row?.demosTaken ?? 0}</Typography>,
-    },
-    {
       field: 'approvalRatio',
       headerName: 'Approval Rate',
-      width: 130,
+      width: 110,
       renderCell: (params: any) => {
         const v = Number(params?.row?.approvalRatio ?? 0);
-        return <Typography variant="body2">{`${v.toFixed(1)}%`}</Typography>;
+        return <Typography variant="body2">{`${v.toFixed(0)}%`}</Typography>;
       },
     },
     {
       field: 'ratings',
       headerName: 'Rating',
-      width: 110,
-      renderCell: (params: any) => <Typography variant="body2">{params?.row?.ratings ?? 0}</Typography>,
+      width: 80,
+      renderCell: (params: any) => <Typography variant="body2">{params?.row?.ratings ?? 0}★</Typography>,
     },
     {
-      field: 'verificationStatus',
-      headerName: 'Status',
-      width: 140,
+      field: 'matchPercentage',
+      headerName: 'Match Score',
+      width: 110,
       renderCell: (params: any) => {
-        const status = params?.row?.verificationStatus ?? 'UNKNOWN';
-        return <Chip label={status} size="small" color={status === 'VERIFIED' ? 'success' : 'default'} />;
+        const v = Number(params?.row?.matchPercentage ?? 0);
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: v >= 80 ? 'success.main' : v >= 50 ? 'primary.main' : 'text.secondary' }}>
+              {v}%
+            </Typography>
+          </Box>
+        );
       },
     },
     {
       field: 'interestedAt',
-      headerName: 'Interested At',
-      width: 210,
+      headerName: 'Info',
+      width: 140,
       renderCell: (params: any) => {
+        if (params.row.isRecommendation) {
+          return <Typography variant="caption" color="textSecondary">Recommended</Typography>;
+        }
         const raw = params?.row?.interestedAt;
-        const label = raw ? new Date(raw).toLocaleString() : '-';
-        return <Typography variant="body2">{label}</Typography>;
+        return <Typography variant="caption">{raw ? new Date(raw).toLocaleDateString() : '-'}</Typography>;
       },
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 120,
+      width: 100,
       sortable: false,
       renderCell: (params: any) => (
-        <Button size="small" variant="contained" onClick={() => onSelectTutor(params.row)}>Select</Button>
+        <Button size="small" variant="contained" onClick={() => onSelectTutor(params.row)} sx={{ fontSize: '0.7rem' }}>Select</Button>
       ),
     },
   ];
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Interested Tutors - Comparison View</DialogTitle>
-      <DialogContent>
-        <Box sx={{ height: 500 }}>
-          {loading ? (
-            <LoadingSpinner />
-          ) : error ? (
-            <ErrorAlert error={error} />
-          ) : (
-            <DataGrid
-              rows={tutors || []}
-              columns={columns}
-              getRowId={(r: any) => r.id}
-              pageSizeOptions={[5, 10, 20]}
-              initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
-              disableRowSelectionOnClick
-              sx={{ border: 'none' }}
-            />
-          )}
-        </Box>
+      <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Typography variant="h6">Mentor Matching for Class Lead</Typography>
+      </DialogTitle>
+      <DialogContent sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {error && <ErrorAlert error={error} />}
+        
+        {loading ? (
+          <Box sx={{ p: 4 }}><LoadingSpinner /></Box>
+        ) : (
+          <>
+            <Box>
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, color: 'primary.main' }}>
+                Interested Tutors ({interestedTutors.length})
+              </Typography>
+              <Box sx={{ height: 300, width: '100%' }}>
+                <DataGrid
+                  rows={interestedTutors}
+                  columns={columns}
+                  getRowId={(r: any) => r.id}
+                  hideFooter={interestedTutors.length <= 5}
+                  initialState={{ 
+                    pagination: { paginationModel: { pageSize: 5 } },
+                    sorting: { sortModel: [{ field: 'matchPercentage', sort: 'desc' }] }
+                  }}
+                  sx={{ border: 'none', backgroundColor: 'rgba(0,0,0,0.01)' }}
+                />
+              </Box>
+            </Box>
+
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, color: 'secondary.main' }}>
+                Recommended Mentors ({recommendedTutors.length})
+              </Typography>
+              <Box sx={{ height: 300, width: '100%' }}>
+                <DataGrid
+                  rows={recommendedTutors}
+                  columns={columns}
+                  getRowId={(r: any) => r.id}
+                  hideFooter={recommendedTutors.length <= 5}
+                  initialState={{ 
+                    pagination: { paginationModel: { pageSize: 5 } },
+                    sorting: { sortModel: [{ field: 'matchPercentage', sort: 'desc' }] }
+                  }}
+                  sx={{ border: 'none', backgroundColor: 'rgba(0,0,0,0.01)' }}
+                />
+              </Box>
+            </Box>
+          </>
+        )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+      <DialogActions sx={{ borderTop: 1, borderColor: 'divider', p: 2 }}>
+        <Button onClick={onClose} variant="outlined">Close</Button>
       </DialogActions>
     </Dialog>
   );

@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { Gender, City, Subject } from '@/types/enums';
+import { Gender } from '@/types/enums';
 
 // Tutor Lead Registration Schema
 export const tutorLeadRegistrationSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
-  gender: z.nativeEnum(Gender),
+  gender: z.string().min(1, 'Gender is required'),
   phoneNumber: z
     .string()
     .transform((v) => v.replace(/\D/g, ''))
@@ -12,11 +12,18 @@ export const tutorLeadRegistrationSchema = z.object({
   email: z.string().email('Invalid email format'),
   qualification: z.string().min(1, 'Qualification is required'),
   experience: z.string().min(1, 'Experience is required'),
-  subjects: z.array(z.nativeEnum(Subject)).min(1, 'Select at least one subject'),
+  subjects: z.array(z.string()).min(1, 'Select at least one subject'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6),
-  city: z.nativeEnum(City, { error: 'Please select a city' }),
+  city: z.string().min(1, 'Please select a city'),
   preferredAreas: z.array(z.string()).min(1, 'Select at least one area'),
+  preferredMode: z.string().min(1, 'Select a preferred mode'),
+  permanentAddress: z.string().optional(),
+  residentialAddress: z.string().optional(),
+  alternatePhone: z.string().optional(),
+  bio: z.string().optional(),
+  languagesKnown: z.array(z.string()).optional(),
+  skills: z.array(z.string()).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   path: ['confirmPassword'],
   message: 'Passwords do not match',

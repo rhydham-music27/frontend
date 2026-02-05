@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -22,6 +23,7 @@ import {
   IconButton,
   Checkbox,
   CircularProgress,
+  Link,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -40,6 +42,7 @@ import { IManager, IUser } from '../../types';
 
 const ManagersManagementPage: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [managers, setManagers] = useState<IManager[]>([]);
@@ -225,27 +228,103 @@ const ManagersManagementPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ p: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Managers Management</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateModalOpen(true)}>Create Manager</Button>
+      {/* Hero Section */}
+      <Box 
+        sx={{ 
+          background: 'linear-gradient(135deg, #DD2C00 0%, #BF360C 100%)', // distinct Orange/Red theme for Managers
+          color: 'white',
+          py: { xs: 4, md: 5 },
+          px: { xs: 2, md: 4 },
+          borderRadius: { xs: 0, md: 3 },
+          mb: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography variant="h4" fontWeight={800} gutterBottom>
+            Managers Management
+          </Typography>
+          <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
+            Oversee manager profiles, assign permissions, and track team performance.
+          </Typography>
+        </Box>
+
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Button 
+            variant="contained" 
+            startIcon={<AddIcon />} 
+            onClick={() => navigate('/register?role=MANAGER')}
+            sx={{
+              bgcolor: 'white',
+              color: '#BF360C',
+              fontWeight: 700,
+              px: 3,
+              py: 1,
+              '&:hover': {
+                bgcolor: 'rgba(255,255,255,0.9)',
+              },
+            }}
+          >
+            Create Manager
+          </Button>
+        </Box>
+        
+        {/* Abstract shapes */}
+        <Box sx={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+        }} />
+        <Box sx={{
+          position: 'absolute',
+          bottom: -40,
+          left: 40,
+          width: 300,
+          height: 300,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)',
+        }} />
       </Box>
 
       {error && <Box mb={2}><ErrorAlert error={error} /></Box>}
 
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Grid container spacing={2}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 4,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+        }}
+      >
+          <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
+                size="small"
+                variant="outlined"
                 placeholder="Search by name or email"
-                InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1 }} /> }}
+                InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }}
                 onChange={(e) => debouncedSearch(e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <TextField
                 select
+                size="small"
                 label="Status"
                 fullWidth
                 value={isActiveFilter}
@@ -260,6 +339,7 @@ const ManagersManagementPage: React.FC = () => {
               <Button
                 fullWidth
                 variant="outlined"
+                color="inherit"
                 onClick={() => {
                   setIsActiveFilter('all');
                   setSearchQuery('');
@@ -269,8 +349,7 @@ const ManagersManagementPage: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
+      </Paper>
 
       {selectedManagers.length > 0 && (
         <Box bgcolor="primary.light" p={2} borderRadius={1} mb={2} display="flex" alignItems="center" justifyContent="space-between">
@@ -283,25 +362,26 @@ const ManagersManagementPage: React.FC = () => {
       )}
 
       {!isXs ? (
-        <Paper>
+        <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
           <TableContainer>
             <Table size="small">
               <TableHead>
-                <TableRow>
+                <TableRow sx={{ bgcolor: 'secondary.main', '& th': { color: 'white', fontWeight: 700 } }}>
                   <TableCell padding="checkbox">
                     <Checkbox
+                      sx={{ color: 'white!important' }}
                       indeterminate={selectedManagers.length > 0 && selectedManagers.length < managers.length}
                       checked={managers.length > 0 && selectedManagers.length === managers.length}
                       onChange={handleSelectAll}
                     />
                   </TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell align="right">Leads Created</TableCell>
-                  <TableCell align="right">Classes Converted</TableCell>
-                  <TableCell align="right">Revenue Generated</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ color: 'inherit' }}>Name</TableCell>
+                  <TableCell sx={{ color: 'inherit' }}>Email</TableCell>
+                  <TableCell align="right" sx={{ color: 'inherit' }}>Leads Created</TableCell>
+                  <TableCell align="right" sx={{ color: 'inherit' }}>Classes Converted</TableCell>
+                  <TableCell align="right" sx={{ color: 'inherit' }}>Revenue Generated</TableCell>
+                  <TableCell sx={{ color: 'inherit' }}>Status</TableCell>
+                  <TableCell sx={{ color: 'inherit' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -319,7 +399,11 @@ const ManagersManagementPage: React.FC = () => {
                       <TableCell padding="checkbox">
                         <Checkbox checked={selectedManagers.includes(m.id)} onChange={() => handleSelectOne(m.id)} />
                       </TableCell>
-                      <TableCell>{m.user?.name}</TableCell>
+                      <TableCell>
+                        <Link component={RouterLink} to={`/manager-profile/${m.id || (m as any)._id}`} sx={{ fontWeight: 600, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                          {m.user?.name}
+                        </Link>
+                      </TableCell>
                       <TableCell>{m.user?.email}</TableCell>
                       <TableCell align="right">{m.classLeadsCreated}</TableCell>
                       <TableCell align="right">{m.classesConverted}</TableCell>
@@ -357,7 +441,9 @@ const ManagersManagementPage: React.FC = () => {
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start">
                   <Box>
                     <Checkbox checked={selectedManagers.includes(m.id)} onChange={() => handleSelectOne(m.id)} />
-                    <Typography variant="subtitle1" fontWeight={600}>{m.user?.name}</Typography>
+                    <Link component={RouterLink} to={`/manager-profile/${m.id || (m as any)._id}`} sx={{ fontWeight: 600, color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+                      <Typography variant="subtitle1" fontWeight={600}>{m.user?.name}</Typography>
+                    </Link>
                     <Typography variant="body2" color="text.secondary">{m.user?.email}</Typography>
                   </Box>
                   <Box display="flex" gap={1}>

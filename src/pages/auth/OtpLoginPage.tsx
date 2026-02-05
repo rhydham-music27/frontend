@@ -3,7 +3,7 @@ import { Container, Box, Card, CardContent, Typography, TextField, Button } from
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import LoginIcon from '@mui/icons-material/Login';
-import { sendLoginOtp, verifyLoginOtp } from '../../services/authService';
+import { sendLoginOtp, resendLoginOtp, verifyLoginOtp } from '../../services/authService';
 import { setCredentials, setError } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -16,8 +16,11 @@ const OtpLoginPage: React.FC = () => {
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [sending, setSending] = useState(false);
+  const [resending, setResending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [error, setLocalError] = useState<string | null>(null);
+  const [canResend, setCanResend] = useState(false);
+  const [resendTimer, setResendTimer] = useState(60);
 
   // Prefill email if passed via query param (e.g. /login-otp?email=someone@example.com)
   useEffect(() => {
@@ -27,6 +30,16 @@ const OtpLoginPage: React.FC = () => {
     }
   }, [searchParams]);
 
+  // Resend timer countdown
+  useEffect(() => {
+    if (step === 'otp' && resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (resendTimer === 0) {
+      setCanResend(true);
+    }
+  }, [resendTimer, step]);
+
   const handleSendOtp = async () => {
     if (!email.trim()) return;
     try {
@@ -34,9 +47,29 @@ const OtpLoginPage: React.FC = () => {
       setLocalError(null);
       await sendLoginOtp(email.trim());
       setStep('otp');
+      setResendTimer(60);
+      setCanResend(false);
       dispatch(setError(null));
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!email.trim() || !canResend) return;
+    try {
+      setResending(true);
+      setLocalError(null);
+      await resendLoginOtp(email.trim());
+      setResendTimer(60);
+      setCanResend(false);
+      setOtp(''); // Clear previous OTP
+      dispatch(setError(null));
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || 'Failed to resend OTP';
+      setLocalError(msg);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -259,13 +292,27 @@ const OtpLoginPage: React.FC = () => {
                   {verifying ? 'Verifying…' : 'Verify OTP'}
                 </Button>
 
-                <Button
-                  onClick={() => setStep('email')}
-                  variant="text"
-                  sx={{ mt: -1, alignSelf: 'flex-start' }}
-                >
-                  Change email
-                </Button>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mt={-1}>
+                  <Button
+                    onClick={() => setStep('email')}
+                    variant="text"
+                    sx={{ alignSelf: 'flex-start' }}
+                  >
+                    Change email
+                  </Button>
+
+                  <Button
+                    onClick={handleResendOtp}
+                    variant="text"
+                    disabled={!canResend || resending}
+                    sx={{
+                      alignSelf: 'flex-end',
+                      color: canResend ? 'primary.main' : 'text.disabled',
+                    }}
+                  >
+                    {resending ? 'Resending...' : canResend ? 'Resend OTP' : `Resend in ${resendTimer}s`}
+                  </Button>
+                </Box>
               </Box>
             )}
 

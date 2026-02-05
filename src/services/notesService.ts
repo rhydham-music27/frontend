@@ -17,6 +17,12 @@ export const listNotes = async (parentId: string | null) => {
   return res.data;
 };
 
+export const listTutorNotes = async (parentId: string | null) => {
+  const url = parentId ? `/api/notes/tutor-notes?parentId=${parentId}` : '/api/notes/tutor-notes';
+  const res = await api.get<ApiResponse<NoteItemDto[]>>(url);
+  return res.data;
+};
+
 export const listParentNotes = async (parentId: string | null) => {
   const url = API_ENDPOINTS.NOTES_PARENT_ITEMS(parentId);
   const res = await api.get<ApiResponse<NoteItemDto[]>>(url);

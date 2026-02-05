@@ -1,21 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Card,
-  Tabs,
-  Tab,
-  TextField,
-  MenuItem,
-  Button,
-  Grid,
-  Divider,
-  Alert,
-  Badge,
-} from '@mui/material';
+import { Container, Box, Typography, Tabs, Tab, Card, CardContent, Grid, Button, Divider, Chip, TextField, Grow, MenuItem, Alert } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import AttendanceApprovalCard from '../../components/attendance/AttendanceApprovalCard';
 import RejectAttendanceModal from '../../components/attendance/RejectAttendanceModal';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -38,17 +23,16 @@ import {
   getCoordinatorPendingSheets,
   approveAttendanceSheet,
   rejectAttendanceSheet,
-  IAttendanceSheet,
 } from '../../services/attendanceSheetService';
 import { getAssignedClasses } from '../../services/coordinatorService';
-import { IAttendance, IAttendanceStatistics, IFinalClass } from '../../types';
+import { IAttendance, IAttendanceStatistics, IFinalClass, IAttendanceSheet } from '../../types';
 import { ATTENDANCE_STATUS, FINAL_CLASS_STATUS } from '../../constants';
 import useAuth from '../../hooks/useAuth';
 
 const AttendanceApprovalPage: React.FC = () => {
   const { user } = useAuth();
 
-  const [view, setView] = useState<'pending' | 'all' | 'history' | 'sheets'>('pending');
+  const [view, setView] = useState<'pending' | 'all' | 'history' | 'sheets'>('sheets');
   const [pendingAttendances, setPendingAttendances] = useState<IAttendance[]>([]);
   const [allAttendances, setAllAttendances] = useState<IAttendance[]>([]);
   const [historyData, setHistoryData] = useState<{
@@ -294,8 +278,8 @@ const AttendanceApprovalPage: React.FC = () => {
             const dateObj = a.sessionDate ? new Date(a.sessionDate as any) : null;
             const yyyyMmDd = dateObj
               ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(
-                  dateObj.getDate()
-                ).padStart(2, '0')}`
+                dateObj.getDate()
+              ).padStart(2, '0')}`
               : '';
 
             let durationHours =
@@ -316,8 +300,8 @@ const AttendanceApprovalPage: React.FC = () => {
               markedAt: a.submittedAt
                 ? String(a.submittedAt)
                 : a.createdAt
-                ? String(a.createdAt)
-                : '',
+                  ? String(a.createdAt)
+                  : '',
             } as AttendanceRecord;
           })
           .filter((r) => r.date && r.date.startsWith(`${year}-${monthStr}`));
@@ -377,12 +361,79 @@ const AttendanceApprovalPage: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h4">Attendance Approvals</Typography>
-        <Button variant="outlined" startIcon={<RefreshIcon />} onClick={handleRefresh}>
-          Refresh
-        </Button>
+    <Container maxWidth="xl" sx={{ p: 3 }}>
+      {/* Hero Section */}
+      <Box 
+        sx={{ 
+          background: 'linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%)',
+          color: 'white',
+          py: { xs: 4, md: 5 },
+          px: { xs: 2, md: 4 },
+          borderRadius: { xs: 2, md: 3 },
+          mb: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        }}
+      >
+        <Box sx={{ position: 'relative', zIndex: 1, mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h4" fontWeight={800} gutterBottom>
+              Attendance Approvals
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
+              Review and manage attendance records submitted by parents.
+            </Typography>
+          </Box>
+          <Button 
+            variant="contained" 
+            startIcon={<RefreshIcon />} 
+            onClick={handleRefresh}
+            sx={{ 
+              bgcolor: 'rgba(255,255,255,0.2)', 
+              backdropFilter: 'blur(4px)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } 
+            }}
+          >
+            Refresh
+          </Button>
+        </Box>
+
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Tabs 
+            value={view} 
+            onChange={(_e, v) => setView(v)}
+            sx={{
+              '& .MuiTab-root': { color: 'rgba(255,255,255,0.7)', fontWeight: 600, minHeight: 48, fontSize: '0.95rem' },
+              '& .Mui-selected': { color: '#fff !important' },
+              '& .MuiTabs-indicator': { backgroundColor: '#fff', height: 4 }
+            }}
+          >
+            <Tab value="all" label="All Records" />
+            <Tab value="history" label="Class History" />
+            <Tab value="sheets" label="Monthly Sheets" />
+          </Tabs>
+        </Box>
+        
+        {/* Abstract shapes */}
+        <Box sx={{
+          position: 'absolute',
+          top: -30,
+          right: -30,
+          width: 250,
+          height: 250,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+        }} />
+        <Box sx={{
+          position: 'absolute',
+          bottom: -50,
+          left: 100,
+          width: 350,
+          height: 350,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%)',
+        }} />
       </Box>
 
       {error && (
@@ -397,30 +448,43 @@ const AttendanceApprovalPage: React.FC = () => {
             <LoadingSpinner />
           ) : (
             <>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
                 Pending Monthly Sheets ({pendingSheets.length})
               </Typography>
               {pendingSheets.length === 0 ? (
-                <Typography color="text.secondary">No pending attendance sheets</Typography>
+                <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
+                  <Typography variant="body1" color="text.secondary">No pending attendance sheets</Typography>
+                </Box>
               ) : (
                 pendingSheets.map((sheet) => (
-                  <Box key={sheet.id} sx={{ mb: 2, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }}>
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {sheet.finalClass?.studentName}{' '}
-                      •{' '}
-                      {Array.isArray(sheet.finalClass?.subject)
-                        ? sheet.finalClass.subject.join(', ')
-                        : sheet.finalClass?.subject}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Period: {sheet.periodLabel || `${sheet.month}/${sheet.year}`}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mt: 0.5 }}>
-                      Sessions taken: {sheet.totalSessionsTaken ?? 0} /{' '}
-                      {sheet.totalSessionsPlanned ?? '—'} • Present: {sheet.presentCount ?? 0} • Absent:{' '}
-                      {sheet.absentCount ?? 0}
-                    </Typography>
-                    <Box mt={1.5} display="flex" gap={1.5} flexWrap="wrap">
+                  <Box key={sheet.id} sx={{ mb: 2, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight={700}>
+                            {sheet.finalClass?.studentName}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                             {(Array.isArray(sheet.finalClass?.subject) ? sheet.finalClass.subject.join(', ') : sheet.finalClass?.subject)}
+                            </Typography>
+                        </Box>
+                        <Chip label={sheet.periodLabel || `${sheet.month}/${sheet.year}`} size="small" variant="outlined" />
+                    </Box>
+                    <Grid container spacing={2} mb={3}>
+                        <Grid item xs={4}>
+                             <Typography variant="caption" color="text.secondary">SESSIONS</Typography>
+                             <Typography variant="body2" fontWeight={600}>{sheet.totalSessionsTaken ?? 0} / {sheet.totalSessionsPlanned ?? '—'}</Typography>
+                        </Grid>
+                         <Grid item xs={4}>
+                             <Typography variant="caption" color="text.secondary">PRESENT</Typography>
+                             <Typography variant="body2" fontWeight={600} color="success.main">{sheet.presentCount ?? 0}</Typography>
+                        </Grid>
+                         <Grid item xs={4}>
+                             <Typography variant="caption" color="text.secondary">ABSENT</Typography>
+                             <Typography variant="body2" fontWeight={600} color="error.main">{sheet.absentCount ?? 0}</Typography>
+                        </Grid>
+                    </Grid>
+                    
+                    <Box display="flex" gap={1.5} flexWrap="wrap">
                       <Button
                         variant="outlined"
                         size="small"
@@ -428,14 +492,7 @@ const AttendanceApprovalPage: React.FC = () => {
                       >
                         View Sheet
                       </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => handleApproveSheet(sheet.id)}
-                        disabled={loading}
-                      >
-                        Approve
-                      </Button>
+                      <Box flex={1} />
                       <Button
                         variant="outlined"
                         size="small"
@@ -444,6 +501,14 @@ const AttendanceApprovalPage: React.FC = () => {
                         disabled={loading}
                       >
                         Reject
+                      </Button>
+                       <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleApproveSheet(sheet.id)}
+                        disabled={loading || (Number(sheet.totalSessionsTaken || 0) < Number(sheet.totalSessionsPlanned || 0))}
+                      >
+                        Approve
                       </Button>
                     </Box>
                   </Box>
@@ -454,50 +519,30 @@ const AttendanceApprovalPage: React.FC = () => {
         </Box>
       )}
 
-      <Card sx={{ mb: 2 }}>
-        <Tabs
-          value={view}
-          onChange={(_, v) => setView(v)}
-          indicatorColor="primary"
-          textColor="primary"
-          variant="scrollable"
-        >
-          <Tab
-            value="pending"
-            label={
-              <Badge color="primary" badgeContent={pendingAttendances.length} max={999} showZero>
-                Pending Approvals
-              </Badge>
-            }
-          />
-          <Tab value="all" label="All Attendance" />
-          <Tab value="history" label="Class History" />
-          <Tab value="sheets" label="Attendance Sheets" />
-        </Tabs>
-      </Card>
-
       {view === 'pending' && (
         <Box>
           {loading && pendingAttendances.length === 0 ? (
             <LoadingSpinner />
           ) : (
             <>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Pending Approvals ({pendingAttendances.length})
-              </Typography>
               {pendingAttendances.length === 0 ? (
-                <Typography color="text.secondary">No pending approvals</Typography>
+                <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
+                   <Typography variant="h6" color="text.secondary" gutterBottom>All Caught Up</Typography>
+                   <Typography variant="body2" color="text.secondary">No pending approvals required.</Typography>
+                </Box>
               ) : (
-                pendingAttendances.map((a) => (
-                  <Box key={a.id} sx={{ mb: 2 }}>
-                    <AttendanceApprovalCard
-                      attendance={a}
-                      userRole="COORDINATOR"
-                      onApprove={handleApprove}
-                      onReject={handleRejectClick}
-                      loading={loading}
-                    />
-                  </Box>
+                pendingAttendances.map((a, index) => (
+                  <Grow in={true} timeout={300 + index * 50} key={a.id}>
+                    <Box sx={{ mb: 2 }}>
+                      <AttendanceApprovalCard
+                        attendance={a}
+                        userRole="COORDINATOR"
+                        onApprove={handleApprove}
+                        onReject={handleRejectClick}
+                        loading={loading}
+                      />
+                    </Box>
+                  </Grow>
                 ))
               )}
             </>
@@ -507,96 +552,100 @@ const AttendanceApprovalPage: React.FC = () => {
 
       {view === 'all' && (
         <Box>
-          <Card sx={{ p: 2, mb: 2 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Class"
-                  value={filters.classId || ''}
-                  onChange={(e) => handleFilterChange('classId', e.target.value)}
-                >
-                  <MenuItem value="">All Classes</MenuItem>
-                  {assignedClasses.map((cls) => (
-                    <MenuItem key={cls.id} value={cls.id}>
-                      {cls.studentName} • {(Array.isArray(cls.subject) ? cls.subject : [cls.subject]).join(', ')}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Status"
-                  value={filters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  {Object.values(ATTENDANCE_STATUS).map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  label="From Date"
-                  InputLabelProps={{ shrink: true }}
-                  value={filters.fromDate || ''}
-                  onChange={(e) => handleFilterChange('fromDate', e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  label="To Date"
-                  InputLabelProps={{ shrink: true }}
-                  value={filters.toDate || ''}
-                  onChange={(e) => handleFilterChange('toDate', e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    {activeFilterCount > 0 && (
-                      <Badge color="secondary" badgeContent={activeFilterCount} sx={{ mr: 2 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Active filters
-                        </Typography>
-                      </Badge>
-                    )}
-                  </Box>
-                  <Button variant="text" startIcon={<FilterListIcon />} onClick={handleClearFilters}>
-                    Clear Filters
-                  </Button>
-                </Box>
-              </Grid>
-            </Grid>
+          <Card elevation={0} sx={{ mb: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+             <CardContent sx={{ py: 2 }}>
+                <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                    select
+                    fullWidth
+                    label="Class"
+                    size="small"
+                    value={filters.classId || ''}
+                    onChange={(e) => handleFilterChange('classId', e.target.value)}
+                    >
+                    <MenuItem value="">All Classes</MenuItem>
+                    {assignedClasses.map((cls) => (
+                        <MenuItem key={cls.id} value={cls.id}>
+                        {cls.studentName} • {(Array.isArray(cls.subject) ? cls.subject : [cls.subject]).join(', ')}
+                        </MenuItem>
+                    ))}
+                    </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                    select
+                    fullWidth
+                    label="Status"
+                    size="small"
+                    value={filters.status || ''}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    >
+                    <MenuItem value="">All</MenuItem>
+                    {Object.values(ATTENDANCE_STATUS).map((s) => (
+                        <MenuItem key={s} value={s}>
+                        {s}
+                        </MenuItem>
+                    ))}
+                    </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                    type="date"
+                    fullWidth
+                    label="From Date"
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                    value={filters.fromDate || ''}
+                    onChange={(e) => handleFilterChange('fromDate', e.target.value)}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                    type="date"
+                    fullWidth
+                    label="To Date"
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                    value={filters.toDate || ''}
+                    onChange={(e) => handleFilterChange('toDate', e.target.value)}
+                    />
+                </Grid>
+                </Grid>
+                 <Box display="flex" justifyContent="flex-end" mt={2}>
+                     {activeFilterCount > 0 && (
+                        <Button size="small" onClick={handleClearFilters} color="inherit">
+                            Clear Filters ({activeFilterCount})
+                        </Button>
+                     )}
+                 </Box>
+            </CardContent>
           </Card>
 
           {loading && <LoadingSpinner />}
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Showing {allAttendances.length} attendance records
-          </Typography>
+          {!loading && (
+             <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 500 }}>
+                Showing {allAttendances.length} records
+            </Typography>
+          )}
+
           {allAttendances.length === 0 && !loading ? (
-            <Typography color="text.secondary">No attendance records found</Typography>
+             <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
+                <Typography color="text.secondary">No attendance records found matching filters.</Typography>
+             </Box>
           ) : (
-            allAttendances.map((a) => (
-              <Box key={a.id} sx={{ mb: 2 }}>
-                <AttendanceApprovalCard
-                  attendance={a}
-                  userRole="COORDINATOR"
-                  onApprove={handleApprove}
-                  onReject={handleRejectClick}
-                  loading={loading}
-                />
-              </Box>
+            allAttendances.map((a, index) => (
+              <Grow in={true} timeout={300 + index * 50} key={a.id}>
+                <Box sx={{ mb: 2 }}>
+                    <AttendanceApprovalCard
+                    attendance={a}
+                    userRole="COORDINATOR"
+                    onApprove={handleApprove}
+                    onReject={handleRejectClick}
+                    loading={loading}
+                    />
+                </Box>
+              </Grow>
             ))
           )}
         </Box>

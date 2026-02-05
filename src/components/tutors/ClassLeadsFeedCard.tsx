@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Chip, Stack, Divider, IconButton, Tooltip, Alert, CardContent, Grid, Button } from '@mui/material';
+import { Box, Typography, Chip, Stack, Divider, IconButton, Tooltip, Alert, CardContent, Button } from '@mui/material';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CloseIcon from '@mui/icons-material/Close';
 import SchoolIcon from '@mui/icons-material/School';
@@ -8,7 +8,6 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import { StyledCard } from '../common/StyledCard';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -80,24 +79,119 @@ const ClassLeadsFeedCard: React.FC = () => {
     );
   };
 
+  const computeMatchPercentage = (cl: any, tutor: ITutor | null): number => {
+    if (!cl || !tutor) return 0;
+
+    const leadSubjects: string[] = Array.isArray(cl.subject)
+      ? (cl.subject as string[])
+      : cl.subject
+      ? [String(cl.subject)]
+      : [];
+    const tutorSubjects: string[] = Array.isArray((tutor as any).subjects)
+      ? ((tutor as any).subjects as string[])
+      : [];
+    const preferredSubjects: string[] = Array.isArray((tutor as any).settings?.preferredSubjects)
+      ? ((tutor as any).settings.preferredSubjects as string[])
+      : [];
+
+    const tutorAllSubjects = new Set<string>([...tutorSubjects, ...preferredSubjects].filter(Boolean));
+    const subjectApplicable = leadSubjects.length > 0 && tutorAllSubjects.size > 0;
+    const subjectMatch = subjectApplicable
+      ? leadSubjects.some((s) => tutorAllSubjects.has(String(s)))
+      : false;
+
+    const leadMode: string | undefined = cl.mode ? String(cl.mode) : undefined;
+    const tutorPreferredMode: string | undefined = (tutor as any).preferredMode || (tutor as any).settings?.teachingModePreference;
+    const modeApplicable = !!(leadMode && tutorPreferredMode);
+    const modeMatch = modeApplicable ? leadMode === tutorPreferredMode : false;
+
+    const leadCity: string = (cl as any).city || '';
+    const leadArea: string = (cl as any).area || '';
+    const leadLocation: string = (cl as any).location || '';
+
+    const tutorPreferredCities: string[] = Array.isArray((tutor as any).preferredCities)
+      ? ((tutor as any).preferredCities as string[])
+      : [];
+    const tutorPreferredLocations: string[] = Array.isArray((tutor as any).preferredLocations)
+      ? ((tutor as any).preferredLocations as string[])
+      : Array.isArray((tutor as any).settings?.preferredLocations)
+      ? ((tutor as any).settings.preferredLocations as string[])
+      : [];
+
+    const cityApplicable = !!(leadCity && tutorPreferredCities.length);
+    const cityMatch = cityApplicable ? tutorPreferredCities.includes(leadCity) : false;
+
+    const areaApplicable = !!((leadArea || leadLocation) && tutorPreferredLocations.length);
+    const areaMatch = areaApplicable
+      ? tutorPreferredLocations.some((loc) => !!loc && (loc === leadArea || loc === leadLocation))
+      : false;
+
+    // Weights add up to 1.0; only include criteria that are applicable so
+    // missing tutor preferences do not unfairly reduce the score.
+    const subjectWeight = 0.4;
+    const modeWeight = 0.2;
+    const cityWeight = 0.2;
+    const areaWeight = 0.2;
+
+    let totalWeight = 0;
+    let score = 0;
+
+    if (subjectApplicable) {
+      totalWeight += subjectWeight;
+      if (subjectMatch) score += subjectWeight;
+    }
+    if (modeApplicable) {
+      totalWeight += modeWeight;
+      if (modeMatch) score += modeWeight;
+    }
+    if (cityApplicable) {
+      totalWeight += cityWeight;
+      if (cityMatch) score += cityWeight;
+    }
+    if (areaApplicable) {
+      totalWeight += areaWeight;
+      if (areaMatch) score += areaWeight;
+    }
+
+    if (totalWeight === 0) {
+      // No applicable preferences: treat as neutral 100% so opportunities are not penalized.
+      return 100;
+    }
+
+    const normalized = (score / totalWeight) * 100;
+    return Math.round(Math.max(0, Math.min(100, normalized)));
+  };
+
   const filteredAnnouncements = useMemo(
-    () =>
-      announcements
+    () => {
+      const enriched = announcements
         .filter((a) => {
           const aid = (a as any).id || (a as any)._id;
           if (!aid) return false;
           if (ignoredIds.has(aid)) return false;
-          // Keep leads even if tutor has already expressed interest; UI already reflects that state
           return true;
         })
-        // Sort so that leads without expressed interest come first, and
-        // already-interested leads are shown later in the list.
-        .sort((a, b) => {
-          const aInterested = hasExpressedInterest(a) ? 1 : 0;
-          const bInterested = hasExpressedInterest(b) ? 1 : 0;
-          return aInterested - bInterested;
-        }),
-    [announcements, ignoredIds, user]
+        .map((a) => {
+          const cl = (a as any).classLead || {};
+          const matchPercentage = computeMatchPercentage(cl, tutorProfile);
+          return { announcement: a, matchPercentage };
+        });
+
+      // Sort by: highest match first, then ones without interest first.
+      enriched.sort((x, y) => {
+        const aInterested = hasExpressedInterest(x.announcement) ? 1 : 0;
+        const bInterested = hasExpressedInterest(y.announcement) ? 1 : 0;
+
+        if (x.matchPercentage !== y.matchPercentage) {
+          return y.matchPercentage - x.matchPercentage;
+        }
+
+        return aInterested - bInterested;
+      });
+
+      return enriched;
+    },
+    [announcements, ignoredIds, tutorProfile, user]
   );
 
   const handleExpressInterest = async (announcementId: string) => {
@@ -205,47 +299,18 @@ const ClassLeadsFeedCard: React.FC = () => {
         )}
 
         <Box sx={{ maxHeight: 600, overflow: 'auto', pr: 1, '&::-webkit-scrollbar': { width: 8 }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8 }, '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' } }}>
-          {filteredAnnouncements.map((a) => {
-            const id = ((a as any).id || (a as any)._id) as string;
+          {filteredAnnouncements.map((item) => {
+            const a = item.announcement as IAnnouncement;
+            const matchPercentage = item.matchPercentage as number;
+            const id = (((a as any).id || (a as any)._id) as string);
             const interested = hasExpressedInterest(a);
             const postedAt = (a as any)?.createdAt || (a as any)?.postedAt;
             const postedStr = postedAt ? new Date(postedAt).toLocaleDateString() : '';
             const cl = (a as any).classLead || {};
             const subjects = Array.isArray(cl?.subject) ? cl.subject.join(', ') : (cl?.subject || '');
-            const managerName = (a as any)?.postedBy?.name;
 
             // Highlight logic: offline classes where city, preferred area and at least one subject match tutor profile
-            const isOffline = cl?.mode && cl.mode !== 'ONLINE';
-            const tutorSubjects = (tutorProfile && Array.isArray((tutorProfile as any).subjects)) ? (tutorProfile as any).subjects as string[] : [];
-            const leadSubjectsArray = Array.isArray(cl?.subject)
-              ? (cl as any).subject as string[]
-              : (cl?.subject ? [String(cl.subject)] : []);
-            const hasSubjectMatch =
-              isOffline &&
-              tutorSubjects.length > 0 &&
-              leadSubjectsArray.some((s) => tutorSubjects.includes(s));
-
-            const tutorAreas = (tutorProfile && Array.isArray((tutorProfile as any).preferredLocations))
-              ? (tutorProfile as any).preferredLocations as string[]
-              : [];
-            const clArea = (cl as any)?.area || '';
-            const clLocation = (cl as any)?.location || '';
-            const hasAreaMatch =
-              isOffline &&
-              tutorAreas.length > 0 &&
-              tutorAreas.some((aLoc) => !!aLoc && (aLoc === clArea || aLoc === clLocation));
-
-            const tutorCities = (tutorProfile && Array.isArray((tutorProfile as any).preferredCities))
-              ? (tutorProfile as any).preferredCities as string[]
-              : [];
-            const clCity = (cl as any)?.city || '';
-            const hasCityMatch =
-              isOffline &&
-              (tutorCities.length === 0
-                ? true
-                : tutorCities.includes(clCity));
-
-            const isHighlighted = Boolean(isOffline && hasSubjectMatch && hasAreaMatch && hasCityMatch);
+            const isHighlighted = Boolean(matchPercentage >= 80);
 
             const grade = cl?.grade || '-';
             const board = cl?.board || '-';
@@ -258,7 +323,6 @@ const ClassLeadsFeedCard: React.FC = () => {
             const area = (cl as any)?.area || '';
             const scheduleLine = cl?.timing || '-';
             const classesPerMonth = (cl as any)?.classesPerMonth;
-            const classDurationHours = (cl as any)?.classDurationHours;
             const genderPref = (cl as any)?.preferredTutorGender || '-';
             const qualifications = String((cl as any)?.qualifications || '').trim();
             const requirementItems = qualifications
@@ -348,14 +412,12 @@ const ClassLeadsFeedCard: React.FC = () => {
                         variant="outlined"
                         sx={{ ml: 1, fontWeight: 500 }}
                       />
-                      {isHighlighted && (
-                        <Chip
-                          label="100% Match"
-                          color="success"
-                          size="small"
-                          sx={{ ml: 1, fontWeight: 600 }}
-                        />
-                      )}
+                      <Chip
+                        label={`${matchPercentage}% match`}
+                        color={matchPercentage >= 80 ? 'success' : matchPercentage >= 50 ? 'primary' : 'default'}
+                        size="small"
+                        sx={{ ml: 1, fontWeight: 600 }}
+                      />
                     </Box>
                     <Typography variant="body2" color="text.secondary">
                       {`${board} | ${mode}`}

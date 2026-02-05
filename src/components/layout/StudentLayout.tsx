@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Toolbar, List, ListItem, ListItemButton, ListItemText, Typography, Divider, alpha } from '@mui/material';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Header from './Header';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCurrentUser, setAcceptedTerms } from '../../store/slices/authSlice';
+import TermsAndConditionsModal from '../common/TermsAndConditionsModal';
+import { acceptTerms } from '../../services/authService';
+import { toast } from 'sonner';
 
 interface StudentLayoutProps {
   children?: React.ReactNode;
@@ -10,6 +15,10 @@ interface StudentLayoutProps {
 const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const user = useSelector(selectCurrentUser);
+  const showTerms = user !== null && !user.acceptedTerms;
+  const [termsLoading, setTermsLoading] = useState(false);
 
   const navItems = [
     { label: 'Dashboard', path: '/student-dashboard' },
@@ -131,6 +140,24 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
           </Box>
         </Box>
       </Box>
+      <TermsAndConditionsModal 
+        open={showTerms} 
+        loading={termsLoading}
+        onAccept={async () => {
+          try {
+            setTermsLoading(true);
+            const res = await acceptTerms();
+            if (res.success) {
+              dispatch(setAcceptedTerms());
+              toast.success('Thank you for accepting our Terms and Conditions!');
+            }
+          } catch (err: any) {
+            toast.error(err?.message || 'Failed to accept terms');
+          } finally {
+            setTermsLoading(false);
+          }
+        }} 
+      />
     </Box>
   );
 };

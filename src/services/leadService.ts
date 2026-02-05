@@ -9,6 +9,13 @@ export type GetLeadsQuery = {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  studentName?: string;
+  grade?: string;
+  subject?: string;
+  board?: string;
+  mode?: string;
+  createdByName?: string;
+  area?: string;
 };
 
 export const getClassLeads = async (
@@ -21,6 +28,13 @@ export const getClassLeads = async (
   if (query.search) params.append('search', query.search);
   if (query.sortBy) params.append('sortBy', query.sortBy);
   if (query.sortOrder) params.append('sortOrder', query.sortOrder);
+  if (query.studentName) params.append('studentName', query.studentName);
+  if (query.grade) params.append('grade', query.grade);
+  if (query.subject) params.append('subject', query.subject);
+  if (query.board) params.append('board', query.board);
+  if (query.mode) params.append('mode', query.mode);
+  if (query.createdByName) params.append('createdByName', query.createdByName);
+  if (query.area) params.append('area', query.area);
   const url = `${API_ENDPOINTS.LEADS}?${params.toString()}`;
   const { data } = await api.get(url);
   return data as PaginatedResponse<IClassLead[]>;
@@ -69,6 +83,46 @@ export const getMyTutorLeads = async (): Promise<ApiResponse<IClassLead[]>> => {
   return data as ApiResponse<IClassLead[]>;
 };
 
+export const getLeadFilterOptions = async (): Promise<ApiResponse<{ 
+  grades: string[]; 
+  subjects: string[]; 
+  boards: string[]; 
+  modes: string[];
+  sources: string[];
+  genders: string[];
+  tiers: string[];
+  areas: string[]; 
+  cities: string[]; 
+  creators: string[]; 
+  managers: { id: string; name: string }[] 
+}>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.LEADS}/filter-options`);
+  return data as ApiResponse<{ 
+    grades: string[]; 
+    subjects: string[]; 
+    boards: string[]; 
+    modes: string[];
+    sources: string[];
+    genders: string[];
+    tiers: string[];
+    areas: string[]; 
+    cities: string[]; 
+    creators: string[]; 
+    managers: { id: string; name: string }[] 
+  }>;
+};
+
+export const getCRMLeads = async (managerId?: string): Promise<ApiResponse<Record<string, IClassLead[]>>> => {
+  const url = managerId ? `${API_ENDPOINTS.LEADS}/crm?managerId=${managerId}` : `${API_ENDPOINTS.LEADS}/crm`;
+  const { data } = await api.get(url);
+  return data as ApiResponse<Record<string, IClassLead[]>>;
+};
+
+export const reassignLead = async (leadId: string, managerId: string): Promise<ApiResponse<IClassLead>> => {
+  const { data } = await api.patch(`${API_ENDPOINTS.LEADS}/${leadId}/reassign`, { managerId });
+  return data as ApiResponse<IClassLead>;
+};
+
 export default {
   getClassLeads,
   getClassLeadById,
@@ -78,4 +132,7 @@ export default {
   deleteClassLead,
   getMyLeads,
   getMyTutorLeads,
+  getLeadFilterOptions,
+  getCRMLeads,
+  reassignLead,
 };

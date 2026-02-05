@@ -7,15 +7,16 @@ import { IClassLead, IClassLeadFormData } from '../../types';
 import leadService from '../../services/leadService';
 import { CLASS_LEAD_STATUS } from '../../constants';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ErrorAlert from '../../components/common/ErrorAlert';
+import ErrorDialog from '../../components/common/ErrorDialog';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
+import { useErrorDialog } from '../../hooks/useErrorDialog';
 
 export default function EditClassLeadPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [classLead, setClassLead] = useState<IClassLead | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { error, showError, clearError, handleError } = useErrorDialog();
   const [submitLoading, setSubmitLoading] = useState(false);
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
   const [status, setStatus] = useState<string>('');
@@ -24,12 +25,11 @@ export default function EditClassLeadPage() {
     const fetchLead = async () => {
       try {
         setLoading(true);
-        setError(null);
         const res = await leadService.getClassLeadById(id as string);
         setClassLead(res.data);
         setStatus(res.data.status);
       } catch (e: any) {
-        setError(e?.response?.data?.message || 'Failed to load class lead');
+        handleError(e);
       } finally {
         setLoading(false);
       }
@@ -40,7 +40,6 @@ export default function EditClassLeadPage() {
   const handleSubmit = async (data: Partial<IClassLeadFormData>) => {
     try {
       setSubmitLoading(true);
-      setError(null);
       await leadService.updateClassLead(id as string, data);
       if (classLead && status && status !== classLead.status) {
         await leadService.updateClassLeadStatus(id as string, status);
@@ -48,14 +47,13 @@ export default function EditClassLeadPage() {
       setSnack({ open: true, message: 'Lead updated successfully', severity: 'success' });
       navigate(`/class-leads/${id}`);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Failed to update lead');
+      handleError(e);
     } finally {
       setSubmitLoading(false);
     }
   };
 
   if (loading) return <LoadingSpinner fullScreen /> as any;
-  if (error) return <Container maxWidth="md" sx={{ py: 3 }}><ErrorAlert error={error} /></Container>;
   if (!classLead) return null;
 
   return (
@@ -79,10 +77,16 @@ export default function EditClassLeadPage() {
               ))}
             </TextField>
           </Box>
-          <ClassLeadForm initialData={classLead} onSubmit={handleSubmit as any} loading={submitLoading} error={error} submitButtonText="Update Lead" />
+          <ClassLeadForm initialData={classLead} onSubmit={handleSubmit as any} loading={submitLoading} submitButtonText="Update Lead" />
         </CardContent>
       </Card>
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />
+      <ErrorDialog
+        open={showError}
+        onClose={clearError}
+        error={error}
+        title="Unable to Load Lead"
+      />
     </Container>
   );
 }

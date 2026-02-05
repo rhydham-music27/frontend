@@ -1,14 +1,36 @@
-import React from 'react';
-import { Container, Box, Card, CardContent, Typography, TextField, Button, Link as MLink, Grid2, MenuItem } from '@mui/material';
+import React, { useState } from 'react';
+import { 
+  Container, 
+  Box, 
+  Card, 
+  CardContent, 
+  Typography, 
+  TextField, 
+  Button, 
+  Link as MLink, 
+  MenuItem,
+  InputAdornment,
+  Grid,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import BadgeIcon from '@mui/icons-material/Badge';
+import EmailIcon from '@mui/icons-material/Email';
+import LockIcon from '@mui/icons-material/Lock';
+import PhoneIcon from '@mui/icons-material/Phone';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WorkIcon from '@mui/icons-material/Work';
 import { USER_ROLES } from '../../constants';
+// Grid component is used from @mui/material
 
 interface RegisterFormValues {
   name: string;
@@ -17,31 +39,73 @@ interface RegisterFormValues {
   confirmPassword: string;
   phone?: string;
   role: string;
+  permissions?: {
+    canViewSiteLeads?: boolean;
+    canVerifyTutors?: boolean;
+    canCreateLeads?: boolean;
+    canManagePayments?: boolean;
+  };
 }
 
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Minimum 2 characters'),
   email: yup.string().required('Email is required').email('Enter a valid email'),
-  password: yup.string().required('Password is required').min(6, 'Minimum 6 characters'),
+  password: yup.string().required('Password is required'),
   confirmPassword: yup
     .string()
     .oneOf([yup.ref('password')], 'Passwords must match')
     .required('Confirm your password'),
   phone: yup.string().optional(),
   role: yup.string().oneOf(Object.values(USER_ROLES) as string[], 'Invalid role').required('Role is required'),
+  permissions: yup.object({
+    canViewSiteLeads: yup.boolean().optional(),
+    canVerifyTutors: yup.boolean().optional(),
+    canCreateLeads: yup.boolean().optional(),
+    canManagePayments: yup.boolean().optional(),
+  }).optional(),
 });
 
 const RegisterPage: React.FC = () => {
-  const { register: registerUser, loading, error, clearError } = useAuth();
+  const { register: registerUser, loading, error, isAuthenticated, clearError } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [isRegisteredSuccessfully, setIsRegisteredSuccessfully] = useState(false);
+  
+  // Detect if there's a specific role requested (e.g. from Admin Manager page)
+  const queryRole = searchParams.get('role')?.toUpperCase();
+  const isRoleLocked = !!queryRole && (Object.values(USER_ROLES) as string[]).includes(queryRole);
+  const initialRole = isRoleLocked ? queryRole : USER_ROLES.TUTOR; // Default to Tutor for public registration
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormValues>({ resolver: yupResolver(schema) });
+  } = useForm<RegisterFormValues>({ 
+    resolver: yupResolver(schema),
+    defaultValues: {
+      role: initialRole,
+      permissions: {
+        canViewSiteLeads: true,
+        canVerifyTutors: true,
+        canCreateLeads: true,
+        canManagePayments: true,
+      },
+    }
+  });
 
   const onSubmit = async ({ confirmPassword, ...data }: RegisterFormValues) => {
-    await registerUser(data.name, data.email, data.password, data.phone, data.role);
+    try {
+      // Clean up permissions if role is not MANAGER
+      const submitData = { ...data };
+      if (data.role !== USER_ROLES.MANAGER) {
+        delete submitData.permissions;
+      }
+      
+      // If user is already authenticated (Admin), skip auto-login for new user
+      await registerUser(submitData.name, submitData.email, submitData.password, submitData.phone, submitData.role, isAuthenticated, submitData.permissions);
+      setIsRegisteredSuccessfully(true);
+    } catch (e) {
+      // Error handled by hook state 'error'
+    }
   };
 
   return (
@@ -52,254 +116,373 @@ const RegisterPage: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         p: 2,
-        background: 'linear-gradient(135deg, #001F54 0%, #4589FF 50%, #295dde 100%)',
+        background: 'linear-gradient(135deg, #4A148C 0%, #311B92 100%)', // Admin Purple Theme
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
-        <Box className="animate-scale-in" textAlign="center" mb={{ xs: 3, sm: 4 }}>
-          <Box 
-            display="inline-flex" 
-            alignItems="center" 
-            justifyContent="center" 
-            mb={{ xs: 1.5, sm: 2 }}
-            sx={{
-              p: { xs: 1.5, sm: 2 },
-              borderRadius: { xs: '16px', sm: '20px' },
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <Box 
-              component="img" 
-              src="/1.jpg" 
-              alt="logo" 
-              sx={{ 
-                height: { xs: 48, sm: 56 }, 
-                width: { xs: 48, sm: 56 }, 
-                borderRadius: '50%', 
-                mr: { xs: 1.5, sm: 2 },
-                border: '3px solid rgba(255, 255, 255, 0.3)',
-              }} 
-            />
-            <Box textAlign="left">
-              <Typography 
-                variant="h3" 
-                fontWeight={800} 
+      {/* Abstract Background Shapes */}
+      <Box sx={{
+        position: 'absolute',
+        top: -100,
+        left: -100,
+        width: 400,
+        height: 400,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+        animation: 'pulse 15s infinite ease-in-out',
+      }} />
+      <Box sx={{
+        position: 'absolute',
+        bottom: -50,
+        right: -50,
+        width: 300,
+        height: 300,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)',
+        animation: 'pulse 10s infinite ease-in-out reverse',
+      }} />
+
+      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+        <Box textAlign="center" mb={4}>
+           {/* Logo / Brand Area */}
+           <Box 
+             display="inline-flex" 
+             alignItems="center" 
+             gap={2}
+             sx={{ 
+               p: 1.5, 
+               pr: 3,
+               borderRadius: 10,
+               bgcolor: 'rgba(255,255,255,0.1)',
+               backdropFilter: 'blur(10px)',
+               border: '1px solid rgba(255,255,255,0.2)',
+               boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+             }}
+           >
+              <Box 
+                component="img" 
+                src="/1.jpg" 
+                alt="Logo" 
                 sx={{ 
-                  color: 'white',
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
-                  lineHeight: 1.2,
-                }}
-              >
+                  width: 40, 
+                  height: 40, 
+                  borderRadius: '50%', 
+                  border: '2px solid white' 
+                }} 
+              />
+              <Typography variant="h5" fontWeight={700} color="white" sx={{ letterSpacing: 0.5 }}>
                 Your Shikshak
               </Typography>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  fontWeight: 500,
-                  fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                }}
-              >
-                Join our educational platform
-              </Typography>
-            </Box>
-          </Box>
+           </Box>
+           <Typography variant="h4" fontWeight={800} color="white" mt={3}>
+             {isRoleLocked ? `Register ${queryRole.charAt(0) + queryRole.slice(1).toLowerCase()}` : 'Register New Member'}
+           </Typography>
+           <Typography variant="body1" color="rgba(255,255,255,0.8)" mt={1}>
+             Create accounts for Managers, Tutors, Parents, or other Admins.
+           </Typography>
         </Box>
 
         <Card 
-          elevation={0}
-          className="animate-slide-in-up"
+          elevation={24}
           sx={{ 
-            borderRadius: { xs: '20px', sm: '24px' },
-            boxShadow: '0px 20px 60px rgba(0, 0, 0, 0.3)',
-            overflow: 'hidden',
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+            overflow: 'visible' // To allow potential popouts if needed, but verify borders
           }}
         >
-          <Box
-            sx={{
-              background: '#001F54',
-              p: { xs: 2.5, sm: 3 },
-              textAlign: 'center',
-            }}
-          >
-            <PersonAddIcon sx={{ fontSize: { xs: 40, sm: 48 }, color: 'white', mb: { xs: 0.75, sm: 1 } }} />
-            <Typography 
-              variant="h5" 
-              color="white" 
-              fontWeight={700}
-              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-            >
-              Create Account
-            </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'rgba(255, 255, 255, 0.9)', 
-                mt: 0.5,
-                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-              }}
-            >
-              Get started with Your Shikshak today
-            </Typography>
-          </Box>
-
-          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-            <ErrorAlert error={error} onClose={clearError} />
+          <CardContent sx={{ p: { xs: 3, md: 5 } }}>
             
-            <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-              <Grid2 container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
-                <Grid2 size={{ xs: 12 }}>
-                  <TextField
-                    label="Full Name"
-                    fullWidth
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
-                    {...register('name')}
-                    InputProps={{
-                      sx: { borderRadius: '12px' },
-                    }}
-                  />
-                </Grid2>
-
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    label="Email Address"
-                    type="email"
-                    fullWidth
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    {...register('email')}
-                    InputProps={{
-                      sx: { borderRadius: '12px' },
-                    }}
-                  />
-                </Grid2>
-
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    label="Phone (optional)"
-                    fullWidth
-                    error={!!errors.phone}
-                    helperText={errors.phone?.message}
-                    {...register('phone')}
-                    InputProps={{
-                      sx: { borderRadius: '12px' },
-                    }}
-                  />
-                </Grid2>
-
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    label="Role"
-                    select
-                    fullWidth
-                    error={!!errors.role}
-                    helperText={errors.role?.message}
-                    defaultValue={USER_ROLES.MANAGER}
-                    {...register('role')}
-                    InputProps={{ sx: { borderRadius: '12px' } }}
-                  >
-                    {Object.values(USER_ROLES).map((role) => (
-                      <MenuItem key={role} value={role}>
-                        {role}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid2>
-
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    label="Password"
-                    type="password"
-                    fullWidth
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    {...register('password')}
-                    InputProps={{
-                      sx: { borderRadius: '12px' },
-                    }}
-                  />
-                </Grid2>
-
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    label="Confirm Password"
-                    type="password"
-                    fullWidth
-                    error={!!errors.confirmPassword}
-                    helperText={errors.confirmPassword?.message}
-                    {...register('confirmPassword')}
-                    InputProps={{
-                      sx: { borderRadius: '12px' },
-                    }}
-                  />
-                </Grid2>
-
-                <Grid2 size={{ xs: 12 }}>
-                  <Button 
-                    type="submit" 
-                    variant="contained" 
-                    fullWidth 
-                    disabled={loading}
-                    sx={{
-                      py: { xs: 1.25, sm: 1.5 },
-                      fontSize: { xs: '0.9375rem', sm: '1rem' },
-                      fontWeight: 600,
-                      borderRadius: { xs: '10px', sm: '12px' },
-                      background: 'linear-gradient(135deg, #8A3FFC 0%, #A56EFF 100%)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #6929C4 0%, #8A3FFC 100%)',
-                      },
-                    }}
-                  >
-                    {loading ? <LoadingSpinner size={24} /> : 'Create Account'}
-                  </Button>
-                </Grid2>
-              </Grid2>
-            </Box>
-
-            <Box mt={{ xs: 2.5, sm: 3 }} textAlign="center">
-              <Typography 
-                variant="body2" 
-                color="text.secondary"
-                sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
-              >
-                Already have an account?{' '}
-                <MLink 
-                  component={Link} 
-                  to="/login" 
-                  sx={{ 
-                    color: 'secondary.main',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
-                  }}
+            {isRegisteredSuccessfully ? (
+              <Box textAlign="center" py={4}>
+                <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
+                <Typography variant="h5" fontWeight={700} gutterBottom>
+                  Account Created Successfully!
+                </Typography>
+                <Typography variant="body1" color="text.secondary" mb={4}>
+                  A confirmation email has been sent to the registered email address.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  onClick={() => setIsRegisteredSuccessfully(false)}
+                  sx={{ borderRadius: 2, px: 4 }}
                 >
-                  Sign In
+                  Register Another Member
+                </Button>
+              </Box>
+            ) : (
+              <>
+                <Box display="flex" alignItems="center" gap={2} mb={4} sx={{ borderBottom: '1px solid', borderColor: 'divider', pb: 2 }}>
+                  <Box 
+                    sx={{ 
+                      width: 48, 
+                      height: 48, 
+                      borderRadius: 2, 
+                      bgcolor: 'primary.main', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    <PersonAddIcon sx={{ color: 'white' }} />
+                  </Box>
+                  <Box>
+                    <Typography variant="h6" fontWeight={700}>Account Details</Typography>
+                    <Typography variant="body2" color="text.secondary">Enter the new member's information.</Typography>
+                  </Box>
+                </Box>
+
+                <ErrorAlert error={error} onClose={clearError} />
+
+                <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Full Name"
+                        placeholder="e.g. Rahul Sharma"
+                        fullWidth
+                        error={!!errors.name}
+                        helperText={errors.name?.message}
+                        {...register('name')}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <BadgeIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Email Address"
+                        placeholder="email@example.com"
+                        type="email"
+                        fullWidth
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
+                        {...register('email')}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <EmailIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Phone Number"
+                        placeholder="+91..."
+                        fullWidth
+                        error={!!errors.phone}
+                        helperText={errors.phone?.message}
+                        {...register('phone')}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PhoneIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        select
+                        label="Role"
+                        fullWidth
+                        disabled={isRoleLocked}
+                        error={!!errors.role}
+                        helperText={errors.role?.message || (isRoleLocked ? `Role is locked to ${queryRole}` : '')}
+                        {...register('role')}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <WorkIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      >
+                        {Object.values(USER_ROLES).map((role) => (
+                          <MenuItem key={role} value={role}>
+                            {role.charAt(0) + role.slice(1).toLowerCase().replace('_', ' ')}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Password"
+                        type="password"
+                        fullWidth
+                        error={!!errors.password}
+                        helperText={errors.password?.message}
+                        {...register('password')}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LockIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Confirm Password"
+                        type="password"
+                        fullWidth
+                        error={!!errors.confirmPassword}
+                        helperText={errors.confirmPassword?.message}
+                        {...register('confirmPassword')}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LockIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    {/* Manager Permissions Section */}
+                    <ManagerPermissionsSection register={register} errors={errors} />
+
+                    <Grid item xs={12}>
+                      <Box mt={2}>
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          fullWidth
+                          disabled={loading}
+                          size="large"
+                          sx={{
+                            py: 1.5,
+                            borderRadius: 2,
+                            fontSize: '1rem',
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            boxShadow: '0 8px 20px rgba(74, 20, 140, 0.3)',
+                            transition: 'transform 0.2s',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 12px 24px rgba(74, 20, 140, 0.4)',
+                            },
+                          }}
+                        >
+                          {loading ? <LoadingSpinner size={24} /> : 'Create Member Account'}
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </>
+            )}
+
+            <Box mt={4} textAlign="center">
+              <Typography variant="body2" color="text.secondary">
+                Need to sign in instead?{' '}
+                <MLink component={Link} to="/login" fontWeight={600} underline="hover">
+                  Go to Login
                 </MLink>
               </Typography>
             </Box>
           </CardContent>
         </Card>
-
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            display: 'block',
-            textAlign: 'center',
-            mt: 3,
-            color: 'rgba(255, 255, 255, 0.8)',
-          }}
-        >
-          © 2024 Your Shikshak. All rights reserved.
-        </Typography>
       </Container>
     </Box>
+  );
+};
+
+// Helper component for Manager Permissions
+interface ManagerPermissionsSectionProps {
+  register: any;
+  errors: any;
+}
+
+const ManagerPermissionsSection: React.FC<ManagerPermissionsSectionProps> = ({ register }) => {
+  const [selectedRole, setSelectedRole] = React.useState<string>('');
+  
+  React.useEffect(() => {
+    // Watch for role changes using a simple workaround
+    const subscription = setInterval(() => {
+      const roleInput = document.querySelector<HTMLInputElement>('input[name="role"]');
+      if (roleInput && roleInput.value !== selectedRole) {
+        setSelectedRole(roleInput.value);
+      }
+    }, 100);
+    return () => clearInterval(subscription);
+  }, [selectedRole]);
+
+  if (selectedRole !== USER_ROLES.MANAGER) return null;
+
+  return (
+    <Grid item xs={12}>
+      <Box 
+        sx={{ 
+          p: 3, 
+          bgcolor: 'primary.light', 
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'primary.main'
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={700} gutterBottom color="primary.dark">
+          Manager Permissions
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          Select which actions this manager can perform:
+        </Typography>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                defaultChecked
+                {...register('permissions.canViewSiteLeads')}
+              />
+            }
+            label="Can view and update leads created by admin"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                defaultChecked
+                {...register('permissions.canVerifyTutors')}
+              />
+            }
+            label="Can verify tutors"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                defaultChecked
+                {...register('permissions.canCreateLeads')}
+              />
+            }
+            label="Can create their own leads"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                defaultChecked
+                {...register('permissions.canManagePayments')}
+              />
+            }
+            label="Can check and validate payments"
+          />
+        </FormGroup>
+      </Box>
+    </Grid>
   );
 };
 

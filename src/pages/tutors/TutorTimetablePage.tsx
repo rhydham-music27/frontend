@@ -34,6 +34,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import { getMyClasses, updateFinalClassSchedule } from '../../services/finalClassService';
 import { IFinalClass } from '../../types';
+import ScheduleTestModal from '../../components/tutors/ScheduleTestModal';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
@@ -265,6 +266,9 @@ const TutorTimetablePage: React.FC = () => {
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null);
+
+  const [testModalOpen, setTestModalOpen] = useState(false);
+  const [testModalClass, setTestModalClass] = useState<IFinalClass | null>(null);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -524,6 +528,16 @@ const TutorTimetablePage: React.FC = () => {
   const handleCloseDialog = () => {
     setSelectedDate(null);
     setSelectedClasses([]);
+  };
+
+  const openTestModalForClass = (cls: IFinalClass) => {
+    setTestModalClass(cls);
+    setTestModalOpen(true);
+  };
+
+  const closeTestModal = () => {
+    setTestModalOpen(false);
+    setTestModalClass(null);
   };
 
   if (loading) {
@@ -896,6 +910,19 @@ const TutorTimetablePage: React.FC = () => {
                                 }}
                               />
                             )}
+                            {Boolean((cls as any).coordinator) ? (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => openTestModalForClass(cls)}
+                              >
+                                Schedule Test
+                              </Button>
+                            ) : (
+                              <Typography variant="caption" color="text.secondary">
+                                Coordinator not assigned yet — tests will be enabled once a coordinator is assigned.
+                              </Typography>
+                            )}
                           </Stack>
                         </Stack>
 
@@ -959,6 +986,101 @@ const TutorTimetablePage: React.FC = () => {
       </Dialog>
 
       {/* Set Timetable Dialog for Unscheduled Classes */}
+      <Dialog
+        open={scheduleModalOpen}
+        onClose={scheduleSaving ? undefined : closeScheduleModal}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={700}>
+            Set Timetable
+          </Typography>
+          {scheduleModalClass && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {scheduleModalClass.studentName}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1.5 }}>
+          {(scheduleError || scheduleSuccess) && (
+            <Box mb={1.5}>
+              {scheduleError && (
+                <Typography variant="caption" color="error.main">
+                  {scheduleError}
+                </Typography>
+              )}
+              {scheduleSuccess && (
+                <Typography variant="caption" color="success.main">
+                  {scheduleSuccess}
+                </Typography>
+              )}
+            </Box>
+          )}
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Days of week
+          </Typography>
+          <FormGroup row sx={{ mb: 2 }}>
+            {DAYS_ORDER.map((day) => (
+              <FormControlLabel
+                key={day}
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={scheduleDays.includes(day)}
+                    onChange={() => toggleDay(day)}
+                  />
+                }
+                label={day.charAt(0) + day.slice(1).toLowerCase()}
+              />
+            ))}
+          </FormGroup>
+
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Time slot
+          </Typography>
+          <Grid container spacing={2} sx={{ mb: 1 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Start time"
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                value={scheduleStartTime}
+                onChange={(e) => setScheduleStartTime(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                size="small"
+                label="End time"
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                value={scheduleEndTime}
+                onChange={(e) => setScheduleEndTime(e.target.value)}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+          <Button onClick={handleCloseDialog} variant="outlined">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {testModalClass && (
+        <ScheduleTestModal
+          open={testModalOpen}
+          onClose={closeTestModal}
+          finalClass={testModalClass}
+        />
+      )}
+
       <Dialog
         open={scheduleModalOpen}
         onClose={scheduleSaving ? undefined : closeScheduleModal}

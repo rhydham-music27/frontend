@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   Container,
@@ -7,9 +7,7 @@ import {
   Grid2,
   Card,
   CardContent,
-  TextField,
   Button,
-  MenuItem,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -19,112 +17,27 @@ import { selectCurrentUser } from "../../store/slices/authSlice";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import TutorDashboardKpiRow from "../../components/tutors/TutorDashboardKpiRow";
-import TutorProfileOverviewCard from "../../components/tutors/TutorProfileOverviewCard";
+import TutorAdvancedAnalyticsCards from "../../components/tutors/TutorAdvancedAnalyticsCards";
+import PerformanceCharts from "../../components/tutors/PerformanceCharts";
 import TodayScheduleCard from "../../components/tutors/TodayScheduleCard";
 import UpcomingTestsCard from "../../components/tutors/UpcomingTestsCard";
 import ActiveClassesOverviewCard from "../../components/tutors/ActiveClassesOverviewCard";
 import ClassLeadsFeedCard from "../../components/tutors/ClassLeadsFeedCard";
 import DemoClassesCard from "../../components/tutors/DemoClassesCard";
-import MyClassesCard from "../../components/tutors/MyClassesCard";
-import PaymentsEarningsCard from "../../components/tutors/PaymentsEarningsCard";
-import FeedbackPerformanceCard from "../../components/tutors/FeedbackPerformanceCard";
-import FeedbackSummaryCard from "../../components/tutors/FeedbackSummaryCard";
-import NotificationsCenterCard from "../../components/tutors/NotificationsCenterCard";
-import AttendanceHistoryCard from "../../components/tutors/AttendanceHistoryCard";
-import {
-  getMyClasses,
-  createOneTimeReschedule,
-} from "../../services/finalClassService";
-import { FINAL_CLASS_STATUS } from "../../constants";
-import { IFinalClass, ITutor } from "../../types";
-import { getMyProfile } from "../../services/tutorService";
+import VerificationFeeModal from "../../components/tutors/VerificationFeeModal";
+import { ITutor } from "../../types";
+import { getMyProfile, updateVerificationFeeStatus } from "../../services/tutorService";
+import { toast } from "sonner";
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 const TutorDashboardPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
   const navigate = useNavigate();
   const [loading] = useState(false);
-  const [error] = useState<any>(null);
-  const [rescheduleClasses, setRescheduleClasses] = useState<IFinalClass[]>([]);
-  const [rescheduleLoading, setRescheduleLoading] = useState(false);
-  const [rescheduleError, setRescheduleError] = useState<string | null>(null);
-  const [selectedClassId, setSelectedClassId] = useState("");
-  const [rescheduleDate, setRescheduleDate] = useState("");
-  const [rescheduleToDate, setRescheduleToDate] = useState("");
-  const [rescheduleStartTime, setRescheduleStartTime] = useState("");
-  const [rescheduleEndTime, setRescheduleEndTime] = useState("");
-
-  const [savingReschedule, setSavingReschedule] = useState(false);
-  const [rescheduleSuccess, setRescheduleSuccess] = useState<string | null>(
-    null
-  );
-
+  const [error, setError] = useState<string | null>(null);
   const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+  const [showVerificationFeeModal, setShowVerificationFeeModal] = useState(false);
   const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
-
-  const availableSessionDates = useMemo(() => {
-    if (!selectedClassId) return [] as string[];
-    const selectedClass = rescheduleClasses.find(
-      (cls) => cls.id === selectedClassId
-    );
-    if (!selectedClass) return [] as string[];
-
-    const daysOfWeek = (selectedClass as any)?.schedule?.daysOfWeek as
-      | string[]
-      | undefined;
-    if (!daysOfWeek || daysOfWeek.length === 0) return [] as string[];
-
-    const allowedDays = new Set(daysOfWeek);
-    const result: string[] = [];
-    const today = new Date();
-
-    // Look ahead up to 60 days for matching schedule days
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      const dayName = [
-        "SUNDAY",
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-      ][d.getDay()];
-      if (allowedDays.has(dayName)) {
-        const iso = d.toISOString().split("T")[0];
-        result.push(iso);
-      }
-    }
-
-    return result;
-  }, [selectedClassId, rescheduleClasses]);
-
-  useEffect(() => {
-    const loadClasses = async () => {
-      if (!user) return;
-      try {
-        setRescheduleLoading(true);
-        setRescheduleError(null);
-        const tutorId = (user as any).id || (user as any)._id;
-        const resp = await getMyClasses(
-          tutorId,
-          FINAL_CLASS_STATUS.ACTIVE,
-          1,
-          50
-        );
-        setRescheduleClasses(resp.data || []);
-      } catch (e: any) {
-        const msg =
-          e?.response?.data?.message ||
-          "Failed to load classes for rescheduling.";
-        setRescheduleError(msg);
-      } finally {
-        setRescheduleLoading(false);
-      }
-    };
-
-    loadClasses();
-  }, [user]);
 
   // After OTP tutor login, show a blocking modal asking them to complete profile
   // ONLY if the tutor profile is actually incomplete.
@@ -161,8 +74,9 @@ const TutorDashboardPage: React.FC = () => {
         if (isIncomplete && !cancelled) {
           setShowCompleteProfileModal(true);
         }
-      } catch {
+      } catch (err: any) {
         // If profile fetch fails, don't block the tutor dashboard.
+        setError(err.message || "Failed to fetch profile info");
       } finally {
         try {
           if (typeof window !== "undefined") {
@@ -181,55 +95,31 @@ const TutorDashboardPage: React.FC = () => {
     };
   }, [user]);
 
-  const handleSaveReschedule = async () => {
-    if (!selectedClassId || !rescheduleDate || !rescheduleStartTime.trim()) {
-      setRescheduleError(
-        "Please select a class, original date, and start time."
-      );
-      return;
-    }
-
+  const handleVerificationFeeSubmit = async (data: { method: 'PAY_NOW' | 'DEDUCT_LATER'; file?: File }) => {
+    if (!tutorProfile?.id) return;
     try {
-      setSavingReschedule(true);
-      setRescheduleError(null);
-      setRescheduleSuccess(null);
-
-      const targetDate = rescheduleToDate || rescheduleDate;
-      // Build timeSlot string from start and end times
-      let start = rescheduleStartTime;
-      let end = rescheduleEndTime;
-
-      // If end time is still empty for some reason, default to +60 minutes
-      if (start && !end) {
-        const [h, m] = start.split(":").map((v) => parseInt(v || "0", 10));
-        const base = new Date(0, 0, 1, h || 0, m || 0, 0, 0);
-        base.setMinutes(base.getMinutes() + 60);
-        const hh = String(base.getHours()).padStart(2, "0");
-        const mm = String(base.getMinutes()).padStart(2, "0");
-        end = `${hh}:${mm}`;
+      if (data.method === 'PAY_NOW') {
+         await updateVerificationFeeStatus(tutorProfile.id, 'PAID', data.file, new Date());
+         toast.success('Verification proof submitted successfully! Please wait for admin approval.');
+      } else {
+         await updateVerificationFeeStatus(tutorProfile.id, 'DEDUCT_FROM_FIRST_MONTH');
+         toast.success('Verification method updated. Fee will be deducted from your first payout.');
       }
-
-      const timeSlot = start && end ? `${start} - ${end}` : start;
-
-      await createOneTimeReschedule(selectedClassId, {
-        fromDate: rescheduleDate,
-        toDate: targetDate,
-        timeSlot: timeSlot.trim(),
-      });
-      setRescheduleStartTime("");
-      setRescheduleEndTime("");
-      setRescheduleToDate("");
-      setRescheduleSuccess("Temporary reschedule saved successfully.");
-    } catch (e: any) {
-      const msg = e?.response?.data?.message || "Failed to save reschedule.";
-      setRescheduleError(msg);
-    } finally {
-      setSavingReschedule(false);
+      // Refresh profile
+      const resp = await getMyProfile();
+      setTutorProfile((prev) => resp.data ? resp.data : prev);
+      setShowVerificationFeeModal(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit verification details.');
     }
   };
 
+  const isProfileComplete = tutorProfile && tutorProfile.subjects?.length > 0;
+  const showVerificationBanner = isProfileComplete && (!tutorProfile.verificationFeeStatus || tutorProfile.verificationFeeStatus === 'PENDING');
+
+
   return (
-    <Container maxWidth="xl" disableGutters sx={{ position: "relative" }}>
+    <Container maxWidth="xl" disableGutters sx={{ position: "relative", px: { xs: 2.5, sm: 0 } }}>
       <Box
         display="flex"
         alignItems={{ xs: "flex-start", sm: "center" }}
@@ -237,14 +127,21 @@ const TutorDashboardPage: React.FC = () => {
         mb={{ xs: 3, sm: 4 }}
         flexDirection={{ xs: "column", sm: "row" }}
         gap={{ xs: 2, sm: 2 }}
+        sx={{
+          py: { xs: 1, sm: 0 }
+        }}
       >
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
             variant="h4"
-            fontWeight={700}
+            fontWeight={800}
             sx={{
               mb: 0.5,
-              fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+              fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
+              letterSpacing: '-0.02em',
+              background: 'linear-gradient(45deg, #1e293b 30%, #334155 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
             }}
           >
             Tutor Dashboard
@@ -252,17 +149,25 @@ const TutorDashboardPage: React.FC = () => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" } }}
+            sx={{ 
+              fontSize: { xs: "0.875rem", sm: "1rem" },
+              lineHeight: 1.6,
+              maxWidth: { xs: '100%', sm: '600px' }
+            }}
           >
-            Welcome back, {user?.name || "Tutor"}! Track your classes, demos,
-            and performance.
+            Welcome back, <Box component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>{user?.name || "Tutor"}</Box>! Track your classes, demos, and performance.
           </Typography>
         </Box>
         <Box
           sx={{
-            display: "flex",
+            display: { xs: "none", sm: "flex" },
             alignItems: "center",
             gap: 1,
+            p: 1.5,
+            borderRadius: '12px',
+            bgcolor: 'grey.50',
+            border: '1px solid',
+            borderColor: 'grey.100',
             color: "text.secondary",
           }}
         >
@@ -287,7 +192,48 @@ const TutorDashboardPage: React.FC = () => {
 
         {!loading && !error && (
           <>
+            {showVerificationBanner && (
+               <Card sx={{ mb: 4, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                 <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                   <Box>
+                     <Typography variant="h6" fontWeight={700} display="flex" alignItems="center" gap={1}>
+                       <VerifiedUserIcon /> Complete Your Verification
+                     </Typography>
+                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                       Pay the one-time verification fee to activate your profile and start receiving class leads.
+                     </Typography>
+                   </Box>
+                   <Button 
+                      variant="contained" 
+                      color="secondary" 
+                      onClick={() => setShowVerificationFeeModal(true)}
+                      sx={{ fontWeight: 700 }}
+                   >
+                     Pay Verification Fee
+                   </Button>
+                 </CardContent>
+               </Card>
+            )}
+
             <TutorDashboardKpiRow />
+            <TutorAdvancedAnalyticsCards />
+            <Box mb={4}>
+              <PerformanceCharts 
+                improvementData={[
+                  { date: 'Jan 01', score: 65 },
+                  { date: 'Jan 07', score: 68 },
+                  { date: 'Jan 14', score: 72 },
+                  { date: 'Jan 21', score: 75 },
+                  { date: 'Jan 28', score: 82 },
+                ]}
+                swotData={{
+                  strengths: ['Punctual', 'Clear concepts'],
+                  weaknesses: ['Late reports'],
+                  opportunities: ['New grade class'],
+                  threats: ['Student busy with sports'],
+                }}
+              />
+            </Box>
           </>
         )}
         <Box mb={{ xs: 3, sm: 4 }}>
@@ -373,7 +319,7 @@ const TutorDashboardPage: React.FC = () => {
                 fullWidth
                 onClick={() => {
                   setShowCompleteProfileModal(false);
-                  navigate("/tutor-profile");
+                  navigate("/tutor-register?mode=edit");
                 }}
               >
                 Go to Complete Profile
@@ -382,6 +328,14 @@ const TutorDashboardPage: React.FC = () => {
           </Card>
         </Box>
       )}
+
+      {/* Verification Fee Modal */}
+      <VerificationFeeModal 
+        open={showVerificationFeeModal} 
+        onClose={() => setShowVerificationFeeModal(false)}
+        onSubmit={handleVerificationFeeSubmit}
+      />
+
     </Container>
   );
 };

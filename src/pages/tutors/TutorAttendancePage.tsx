@@ -4,14 +4,14 @@ import {
   Container,
   Typography,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableContainer,
   Button,
   CircularProgress,
+  Stack,
+  TextField,
+  IconButton,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -24,6 +24,7 @@ import AttendanceSheet, {
 } from '../../components/tutors/AttendanceSheet';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import ErrorAlert from '../../components/common/ErrorAlert';
 
 interface TutorAttendanceSummaryRow {
   classId: string;
@@ -39,6 +40,7 @@ const TutorAttendancePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
 
   const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
   const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
@@ -63,17 +65,21 @@ const TutorAttendancePage: React.FC = () => {
 
   useEffect(() => {
     fetchSummary();
-  }, []);
+  }, [selectedMonth]);
 
   const handleDownloadSheet = async (row: TutorAttendanceSummaryRow) => {
     try {
       setDownloadingId(row.classId);
 
       const res = await getAttendanceByClass(row.classId);
-      const attendances = res.data || [];
+      const attendances = (res.data || []).filter((a: any) => {
+          if (!selectedMonth) return true;
+          return a.sessionDate && a.sessionDate.slice(0, 7) === selectedMonth;
+      });
 
       if (!attendances.length) {
         setDownloadingId(null);
+        setError(`No attendance records found for ${selectedMonth} for this class.`);
         return;
       }
 
@@ -86,13 +92,11 @@ const TutorAttendancePage: React.FC = () => {
               ).padStart(2, '0')}`
             : '';
 
-          // Prefer explicit duration on attendance, otherwise fall back to classLead duration
           let durationHours =
             typeof a.durationHours === 'number'
               ? a.durationHours
               : (a.finalClass as any)?.classLead?.classDurationHours ?? undefined;
 
-          // For old seeded data without explicit duration, assume 1 hour per session
           if (typeof durationHours !== 'number') {
             durationHours = 1;
           }
@@ -101,7 +105,6 @@ const TutorAttendancePage: React.FC = () => {
             classId: row.classId,
             date: yyyyMmDd,
             status: (a as any).studentAttendanceStatus || a.status || '',
-            // duration in hours; AttendanceSheet converts to minutes
             duration: typeof durationHours === 'number' ? durationHours : undefined,
             topicsCovered: a.topicCovered || undefined,
             markedAt: a.submittedAt ? String(a.submittedAt) : a.createdAt ? String(a.createdAt) : '',
@@ -109,18 +112,12 @@ const TutorAttendancePage: React.FC = () => {
         })
         .filter((r) => r.date);
 
-      if (!mapped.length) {
-        setDownloadingId(null);
-        return;
-      }
-
       const dates = mapped.map((r) => r.date).sort();
       const start = dates[0];
       const end = dates[dates.length - 1];
 
       setSheetTutorData({ attendanceRecords: mapped });
       setSheetClassInfo({
-        // Use className as the visible Class ID on the sheet instead of the raw Mongo _id
         classId: row.className || row.classId,
         studentName: row.studentName,
         subject: row.className,
@@ -128,7 +125,6 @@ const TutorAttendancePage: React.FC = () => {
       });
       setSheetRange({ start, end });
 
-      // Wait for state update + render
       setTimeout(async () => {
         try {
           await sheetRef.current?.exportPdf();
@@ -142,35 +138,32 @@ const TutorAttendancePage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" disableGutters>
-      <Box
-        display="flex"
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
-        justifyContent="space-between"
-        mb={{ xs: 3, sm: 4 }}
-        flexDirection={{ xs: 'column', sm: 'row' }}
-        gap={{ xs: 2, sm: 2 }}
-      >
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            sx={{ mb: 0.5, fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' } }}
-          >
-            Attendance Summary
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography variant="h4" fontWeight={700} gutterBottom>
+            Attendance Logs
           </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
-          >
-            Overview of attendance you have taken across your classes.
+          <Typography variant="body2" color="text.secondary">
+            Manage your teaching sessions, track student attendance, and generate official reports.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-          <AssignmentTurnedInIcon fontSize="small" />
-        </Box>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <TextField
+              type="month"
+              size="small"
+              label="Select Month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              sx={{ width: 180 }}
+          />
+          <IconButton onClick={fetchSummary} color="primary">
+            <AssignmentTurnedInIcon />
+          </IconButton>
+        </Stack>
       </Box>
+
+      {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
 
       {loading && (
         <Box display="flex" justifyContent="center" py={8}>
@@ -178,62 +171,48 @@ const TutorAttendancePage: React.FC = () => {
         </Box>
       )}
 
-      {!loading && error && (
-        <Box display="flex" flexDirection="column" alignItems="center" gap={2} py={4}>
-          <Typography color="error.main" variant="body2">
-            {error}
-          </Typography>
-          <Button variant="outlined" onClick={fetchSummary}>
-            Retry
-          </Button>
-        </Box>
+      {!loading && !error && (
+        <Grid container spacing={3}>
+            {rows.length === 0 ? (
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 4, textAlign: 'center' }}>
+                        <Typography color="text.secondary">No attendance records found for this period.</Typography>
+                    </Paper>
+                </Grid>
+            ) : (
+                rows.map((row) => (
+                    <Grid item xs={12} md={6} lg={4} key={row.classId}>
+                        <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                            <CardContent>
+                                <Typography variant="h6" fontWeight={700} gutterBottom>{row.studentName}</Typography>
+                                <Typography variant="body2" color="primary" sx={{ mb: 2 }}>{row.className}</Typography>
+                                
+                                <Box display="flex" justifyContent="space-between" mb={1}>
+                                    <Typography variant="body2" color="text.secondary">Total Sessions:</Typography>
+                                    <Typography variant="body2" fontWeight={600}>{row.totalSessionsTaken}</Typography>
+                                </Box>
+                                <Box display="flex" justifyContent="space-between" mb={3}>
+                                    <Typography variant="body2" color="text.secondary">Present:</Typography>
+                                    <Typography variant="body2" fontWeight={600} color="success.main">{row.presentCount}</Typography>
+                                </Box>
+
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    startIcon={<DownloadIcon />}
+                                    onClick={() => handleDownloadSheet(row)}
+                                    disabled={downloadingId === row.classId}
+                                >
+                                    {downloadingId === row.classId ? 'Exporting...' : 'Export Attendance Report'}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                ))
+            )}
+        </Grid>
       )}
 
-      {!loading && !error && rows.length === 0 && (
-        <Box py={6} display="flex" justifyContent="center">
-          <Typography color="text.secondary" variant="body2">
-            No attendance records found.
-          </Typography>
-        </Box>
-      )}
-
-      {!loading && !error && rows.length > 0 && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Class Name</TableCell>
-                <TableCell>Student Name</TableCell>
-                <TableCell align="right">Total Classes Taken</TableCell>
-                <TableCell align="right">Present</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.classId} hover>
-                  <TableCell>{row.className}</TableCell>
-                  <TableCell>{row.studentName}</TableCell>
-                  <TableCell align="right">{row.totalSessionsTaken}</TableCell>
-                  <TableCell align="right">{row.presentCount}</TableCell>
-                  <TableCell align="right">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<DownloadIcon />}
-                      onClick={() => handleDownloadSheet(row)}
-                      disabled={downloadingId === row.classId}
-                    >
-                      {downloadingId === row.classId ? 'Preparing...' : 'Download Attendance'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-      {/* Hidden attendance sheet used only for PDF generation */}
       {sheetTutorData && sheetClassInfo && (
         <Box sx={{ position: 'absolute', left: -9999, top: -9999 }}>
           <AttendanceSheet

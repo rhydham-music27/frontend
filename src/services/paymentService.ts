@@ -1,11 +1,12 @@
 import api from './api';
 import { API_ENDPOINTS } from '../constants';
-import { ApiResponse, PaginatedResponse, IPayment, IPaymentStatistics, IPaymentReminderFormData } from '../types';
+import { ApiResponse, PaginatedResponse, IPayment, IPaymentStatistics } from '../types';
 
 export type GetPaymentsQuery = {
   page?: number;
   limit?: number;
   status?: string;
+  paymentType?: string;
   tutorId?: string;
   finalClassId?: string;
   fromDate?: string;
@@ -21,6 +22,7 @@ export const getPayments = async (
   if (query.page) params.append('page', String(query.page));
   if (query.limit) params.append('limit', String(query.limit));
   if (query.status) params.append('status', query.status);
+  if (query.paymentType) params.append('paymentType', query.paymentType);
   if (query.tutorId) params.append('tutorId', query.tutorId);
   if (query.finalClassId) params.append('finalClassId', query.finalClassId);
   if (query.fromDate) params.append('fromDate', query.fromDate);
@@ -41,6 +43,19 @@ export const createPayment = async (
   attendanceId: string
 ): Promise<ApiResponse<IPayment>> => {
   const { data } = await api.post(API_ENDPOINTS.PAYMENTS, { attendanceId });
+  return data as ApiResponse<IPayment>;
+};
+
+export const createManualPayment = async (payload: {
+  tutor: string;
+  amount: number;
+  paymentType: string;
+  dueDate: string;
+  finalClass?: string;
+  notes?: string;
+  currency?: string;
+}): Promise<ApiResponse<IPayment>> => {
+  const { data } = await api.post(API_ENDPOINTS.PAYMENTS_MANUAL, payload);
   return data as ApiResponse<IPayment>;
 };
 
@@ -149,6 +164,11 @@ export const downloadPaymentReceipt = async (paymentId: string): Promise<void> =
   window.open(url, '_blank');
 };
 
+export const getPaymentFilters = async (): Promise<ApiResponse<{ classes: { _id: string; label: string }[] }>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.PAYMENTS}/filters`);
+  return data as ApiResponse<{ classes: { _id: string; label: string }[] }>;
+};
+
 export default {
   getPayments,
   getPaymentById,
@@ -163,4 +183,6 @@ export default {
   getMyPaymentSummary,
   getParentPayments,
   downloadPaymentReceipt,
+  getPaymentFilters,
+  createManualPayment,
 };

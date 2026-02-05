@@ -16,6 +16,7 @@ import {
   Chip,
   CardActions,
   alpha,
+  Fade,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -137,7 +138,7 @@ const TestSchedulingPage: React.FC = () => {
   const selectedClass = assignedClasses.find((c) => c.id === formData.finalClassId);
 
   return (
-    <Container maxWidth="lg" disableGutters>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
       <PageHeader
         title="Test Scheduling"
         subtitle="Schedule and manage student assessments"
@@ -146,9 +147,9 @@ const TestSchedulingPage: React.FC = () => {
           { label: 'Test Scheduling' },
         ]}
         actions={
-          <Button 
-            variant="outlined" 
-            startIcon={<RefreshIcon />} 
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
             onClick={handleRefresh}
             sx={{ borderRadius: '10px', fontWeight: 600 }}
           >
@@ -159,404 +160,415 @@ const TestSchedulingPage: React.FC = () => {
 
       {error && <ErrorAlert error={error} />}
 
-      <Card 
+      <Card
         elevation={0}
-        sx={{ 
+        sx={{
           mb: { xs: 2, sm: 3 },
           border: '1px solid #E2E8F0',
           borderRadius: { xs: '12px', sm: '16px' },
+          background: (theme) => alpha(theme.palette.background.paper, 0.8),
+          backdropFilter: 'blur(8px)'
         }}
       >
-        <Tabs 
-          value={view} 
-          onChange={(_e, val) => setView(val)} 
+        <Tabs
+          value={view}
+          onChange={(_e, val) => setView(val)}
           aria-label="test-tabs"
           variant={isXs ? 'fullWidth' : 'scrollable'}
           allowScrollButtonsMobile
           sx={{
+            '& .MuiTabs-indicator': {
+              height: 3,
+              borderRadius: '3px 3px 0 0',
+            },
             '& .MuiTab-root': {
               fontWeight: 600,
               fontSize: { xs: '0.8125rem', sm: '0.875rem', md: '0.9375rem' },
               textTransform: 'none',
               minHeight: { xs: 48, sm: 56 },
-              px: { xs: 1, sm: 2 },
+              px: { xs: 1, sm: 3 },
             },
             '& .MuiTab-iconWrapper': {
               fontSize: { xs: 18, sm: 20 },
+              mb: 0,
+              mr: 1
             },
           }}
         >
-          <Tab 
+          <Tab
             label={isXs ? 'Schedule' : 'Schedule New Test'}
-            value="schedule" 
-            icon={<AddIcon />} 
-            iconPosition="start" 
+            value="schedule"
+            icon={<AddIcon />}
+            iconPosition="start"
           />
-          <Tab 
+          <Tab
             label={isXs ? `Tests (${scheduledTests.length})` : `Scheduled Tests (${scheduledTests.length})`}
-            value="scheduled" 
-            icon={<CalendarTodayIcon />} 
-            iconPosition="start" 
+            value="scheduled"
+            icon={<CalendarTodayIcon />}
+            iconPosition="start"
           />
         </Tabs>
       </Card>
 
-      {view === 'schedule' && (
-        <Card 
-          elevation={0}
-          sx={{ 
-            border: '1px solid #E2E8F0',
-            borderRadius: { xs: '12px', sm: '16px' },
-          }}
-        >
-          <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            <Typography 
-              variant="h5" 
-              fontWeight={700} 
-              gutterBottom
-              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-            >
-              Schedule a New Test
-            </Typography>
-            <Alert 
-              severity="info" 
-              sx={{ 
-                mb: { xs: 3, sm: 4 },
-                borderRadius: { xs: '10px', sm: '12px' },
-                fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                '& .MuiAlert-icon': {
-                  fontSize: { xs: 20, sm: 24 },
-                },
+      <Fade in={true} key={view} timeout={400}>
+        <Box>
+          {view === 'schedule' && (
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: { xs: '12px', sm: '16px' },
               }}
             >
-              Select a class and schedule a test session to assess student progress
-            </Alert>
-            <Grid2 container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
-              <Grid2 size={{ xs: 12 }}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Select Class"
-                  value={formData.finalClassId}
-                  onChange={(e) => handleClassSelect(e.target.value)}
-                  InputProps={{
-                    sx: { borderRadius: '12px' },
-                  }}
+              <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  gutterBottom
+                  sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
                 >
-                  {assignedClasses.map((cls) => (
-                    <MenuItem key={cls.id} value={cls.id}>
-                      <Box display="flex" flexDirection="column">
-                        <Typography variant="body1">
-                          {cls.studentName} - {cls.subject.join(', ')} (Grade {cls.grade})
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Tutor: {cls.tutor?.name}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  type="date"
-                  label="Test Date"
-                  value={formData.testDate}
-                  onChange={(e) => handleInputChange('testDate', e.target.value)}
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ min: new Date().toISOString().split('T')[0] }}
-                  InputProps={{
-                    sx: { borderRadius: '12px' },
-                  }}
-                />
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Test Time"
-                  placeholder="e.g., 4:00 PM - 5:00 PM"
-                  value={formData.testTime}
-                  onChange={(e) => handleInputChange('testTime', e.target.value)}
-                  fullWidth
-                  InputProps={{
-                    sx: { borderRadius: '12px' },
-                  }}
-                />
-              </Grid2>
-              <Grid2 size={{ xs: 12 }}>
-                <TextField
-                  label="Additional Notes"
-                  multiline
-                  rows={4}
-                  fullWidth
-                  value={formData.notes || ''}
-                  onChange={(e) => handleInputChange('notes', e.target.value)}
-                  placeholder="Any special instructions or topics to focus on"
-                  InputProps={{
-                    sx: { borderRadius: '12px' },
-                  }}
-                />
-              </Grid2>
-            </Grid2>
-
-            {selectedClass && (
-              <Box
-                sx={{
-                  mt: { xs: 3, sm: 4 },
-                  p: { xs: 2, sm: 2.5, md: 3 },
-                  borderRadius: { xs: '10px', sm: '12px' },
-                  background: alpha('#0F62FE', 0.04),
-                  border: '1px solid',
-                  borderColor: alpha('#0F62FE', 0.1),
-                }}
-              >
-                <Typography 
-                  variant="subtitle1" 
-                  fontWeight={700} 
-                  gutterBottom 
-                  sx={{ 
-                    mb: { xs: 1.5, sm: 2 },
-                    fontSize: { xs: '0.9375rem', sm: '1rem' },
-                  }}
-                >
-                  Selected Class Details
+                  Schedule a New Test
                 </Typography>
-                <Grid2 container spacing={{ xs: 1.5, sm: 2 }}>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <PersonIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                      <Typography variant="body2" fontWeight={600}>
-                        Student: {selectedClass.studentName}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-                      Grade {selectedClass.grade} · {selectedClass.board}
-                    </Typography>
-                  </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <SchoolIcon fontSize="small" sx={{ color: 'secondary.main' }} />
-                      <Typography variant="body2" fontWeight={600}>
-                        Subjects: {selectedClass.subject.join(', ')}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-                      Mode: {selectedClass.mode}
-                    </Typography>
-                  </Grid2>
-                  {selectedClass.schedule?.timeSlot && (
-                    <Grid2 size={{ xs: 12 }}>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <AccessTimeIcon fontSize="small" sx={{ color: 'info.main' }} />
-                        <Typography variant="body2" fontWeight={600}>
-                          Class Time: {selectedClass.schedule.timeSlot}
-                        </Typography>
-                      </Box>
-                    </Grid2>
-                  )}
+                <Alert
+                  severity="info"
+                  sx={{
+                    mb: { xs: 3, sm: 4 },
+                    borderRadius: { xs: '10px', sm: '12px' },
+                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                    '& .MuiAlert-icon': {
+                      fontSize: { xs: 20, sm: 24 },
+                    },
+                  }}
+                >
+                  Select a class and schedule a test session to assess student progress
+                </Alert>
+                <Grid2 container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
                   <Grid2 size={{ xs: 12 }}>
-                    <Divider sx={{ my: 1 }} />
-                    <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
-                      Tutor Information
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedClass.tutor?.name} · {selectedClass.tutor?.email}
-                      {selectedClass.tutor?.phone && ` · ${selectedClass.tutor.phone}`}
-                    </Typography>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Select Class"
+                      value={formData.finalClassId}
+                      onChange={(e) => handleClassSelect(e.target.value)}
+                      InputProps={{
+                        sx: { borderRadius: '12px' },
+                      }}
+                    >
+                      {assignedClasses.map((cls) => (
+                        <MenuItem key={cls.id} value={cls.id}>
+                          <Box display="flex" flexDirection="column">
+                            <Typography variant="body1">
+                              {cls.studentName} - {cls.subject.join(', ')} (Grade {cls.grade})
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Tutor: {cls.tutor?.name}
+                            </Typography>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid2>
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      type="date"
+                      label="Test Date"
+                      value={formData.testDate}
+                      onChange={(e) => handleInputChange('testDate', e.target.value)}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ min: new Date().toISOString().split('T')[0] }}
+                      InputProps={{
+                        sx: { borderRadius: '12px' },
+                      }}
+                    />
+                  </Grid2>
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <TextField
+                      label="Test Time"
+                      placeholder="e.g., 4:00 PM - 5:00 PM"
+                      value={formData.testTime}
+                      onChange={(e) => handleInputChange('testTime', e.target.value)}
+                      fullWidth
+                      InputProps={{
+                        sx: { borderRadius: '12px' },
+                      }}
+                    />
+                  </Grid2>
+                  <Grid2 size={{ xs: 12 }}>
+                    <TextField
+                      label="Additional Notes"
+                      multiline
+                      rows={4}
+                      fullWidth
+                      value={formData.notes || ''}
+                      onChange={(e) => handleInputChange('notes', e.target.value)}
+                      placeholder="Any special instructions or topics to focus on"
+                      InputProps={{
+                        sx: { borderRadius: '12px' },
+                      }}
+                    />
                   </Grid2>
                 </Grid2>
-              </Box>
-            )}
 
-            <Box 
-              mt={{ xs: 3, sm: 4 }} 
-              display="flex" 
-              flexDirection={{ xs: 'column', sm: 'row' }}
-              gap={{ xs: 1.5, sm: 2 }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                size={isXs ? 'medium' : 'large'}
-                startIcon={<AddIcon />}
-                onClick={handleSubmit}
-                disabled={loading || !formData.finalClassId || !formData.testDate || !formData.testTime}
-                fullWidth={isXs}
-                sx={{
-                  borderRadius: { xs: '10px', sm: '12px' },
-                  px: { xs: 3, sm: 4 },
-                  fontWeight: 600,
-                }}
-              >
-                {loading ? <LoadingSpinner size={24} /> : 'Schedule Test'}
-              </Button>
-              <Button
-                variant="outlined"
-                size={isXs ? 'medium' : 'large'}
-                onClick={() => setFormData({ finalClassId: '', testDate: '', testTime: '', notes: '' })}
-                fullWidth={isXs}
-                sx={{
-                  borderRadius: { xs: '10px', sm: '12px' },
-                  px: { xs: 3, sm: 4 },
-                  fontWeight: 600,
-                }}
-              >
-                Clear Form
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {view === 'scheduled' && (
-        <Box>
-          {loading && (
-            <Box display="flex" justifyContent="center" py={8}>
-              <LoadingSpinner size={48} message="Loading scheduled tests..." />
-            </Box>
-          )}
-          
-          {!loading && scheduledTests.length === 0 && (
-            <EmptyState
-              icon={<CalendarTodayIcon />}
-              title="No Scheduled Tests"
-              description="You haven't scheduled any tests yet. Switch to the 'Schedule New Test' tab to create one."
-              action={{
-                label: 'Schedule Test',
-                onClick: () => setView('schedule'),
-              }}
-            />
-          )}
-          
-          {!loading && scheduledTests.length > 0 && (
-            <>
-              <Typography 
-                variant="h6" 
-                fontWeight={700} 
-                gutterBottom 
-                sx={{ 
-                  mb: { xs: 2, sm: 3 },
-                  fontSize: { xs: '1.125rem', sm: '1.25rem' },
-                }}
-              >
-                Scheduled Tests ({scheduledTests.length})
-              </Typography>
-              {scheduledTests.map((test) => (
-                <Card 
-                  key={test.id} 
-                  elevation={0}
-                  className="hover-lift"
-                  sx={{ 
-                    mb: { xs: 2, sm: 3 },
-                    border: '1px solid #E2E8F0',
-                    borderRadius: { xs: '12px', sm: '16px' },
-                  }}
-                >
-                  <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2} mb={2}>
-                      <Box display="flex" alignItems="center" gap={1.5}>
-                        <Box
-                          sx={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: '12px',
-                            background: alpha('#0F62FE', 0.1),
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <CalendarTodayIcon sx={{ color: 'primary.main' }} />
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={700}>
-                            {new Date(test.testDate).toLocaleDateString('en-US', { 
-                              weekday: 'short', 
-                              year: 'numeric', 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {test.testTime}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Chip 
-                        label={test.status} 
-                        size="small" 
-                        color={test.status === TEST_STATUS.SCHEDULED ? 'primary' : test.status === TEST_STATUS.COMPLETED ? 'warning' : 'default'}
-                        sx={{ fontWeight: 600, fontSize: '0.75rem', borderRadius: '8px', height: 28 }}
-                      />
-                    </Box>
-                    
-                    <Divider sx={{ my: 2 }} />
-                    
-                    <Grid2 container spacing={2}>
+                {selectedClass && (
+                  <Box
+                    sx={{
+                      mt: { xs: 3, sm: 4 },
+                      p: { xs: 2, sm: 2.5, md: 3 },
+                      borderRadius: { xs: '10px', sm: '12px' },
+                      background: alpha('#0F62FE', 0.04),
+                      border: '1px solid',
+                      borderColor: alpha('#0F62FE', 0.1),
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={700}
+                      gutterBottom
+                      sx={{
+                        mb: { xs: 1.5, sm: 2 },
+                        fontSize: { xs: '0.9375rem', sm: '1rem' },
+                      }}
+                    >
+                      Selected Class Details
+                    </Typography>
+                    <Grid2 container spacing={{ xs: 1.5, sm: 2 }}>
                       <Grid2 size={{ xs: 12, sm: 6 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                          Student
-                        </Typography>
-                        <Typography variant="body2" fontWeight={600}>
-                          {test.finalClass?.studentName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Grade {test.finalClass?.grade}
+                        <Box display="flex" alignItems="center" gap={1} mb={1}>
+                          <PersonIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                          <Typography variant="body2" fontWeight={600}>
+                            Student: {selectedClass.studentName}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                          Grade {selectedClass.grade} · {selectedClass.board}
                         </Typography>
                       </Grid2>
                       <Grid2 size={{ xs: 12, sm: 6 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                          Subject
-                        </Typography>
-                        <Typography variant="body2" fontWeight={600}>
-                          {test.finalClass?.subject?.join(', ')}
-                        </Typography>
-                      </Grid2>
-                      <Grid2 size={{ xs: 12 }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                          Tutor
-                        </Typography>
-                        <Typography variant="body2" fontWeight={600}>
-                          {test.tutor?.name}
+                        <Box display="flex" alignItems="center" gap={1} mb={1}>
+                          <SchoolIcon fontSize="small" sx={{ color: 'secondary.main' }} />
+                          <Typography variant="body2" fontWeight={600}>
+                            Subjects: {selectedClass.subject.join(', ')}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                          Mode: {selectedClass.mode}
                         </Typography>
                       </Grid2>
-                      {test.notes && (
+                      {selectedClass.schedule?.timeSlot && (
                         <Grid2 size={{ xs: 12 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                            Notes
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {test.notes}
-                          </Typography>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <AccessTimeIcon fontSize="small" sx={{ color: 'info.main' }} />
+                            <Typography variant="body2" fontWeight={600}>
+                              Class Time: {selectedClass.schedule.timeSlot}
+                            </Typography>
+                          </Box>
                         </Grid2>
                       )}
+                      <Grid2 size={{ xs: 12 }}>
+                        <Divider sx={{ my: 1 }} />
+                        <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                          Tutor Information
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedClass.tutor?.name} · {selectedClass.tutor?.email}
+                          {selectedClass.tutor?.phone && ` · ${selectedClass.tutor.phone}`}
+                        </Typography>
+                      </Grid2>
                     </Grid2>
-                  </CardContent>
-                  <CardActions sx={{ px: { xs: 2, sm: 2.5, md: 3 }, pb: { xs: 2, sm: 2.5, md: 3 }, gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
-                    {test.status === TEST_STATUS.SCHEDULED && (
-                      <Button 
-                        color="error" 
-                        variant="outlined"
-                        onClick={() => handleCancelTest(test.id)}
-                        sx={{ borderRadius: '10px', fontWeight: 600 }}
-                      >
-                        Cancel Test
-                      </Button>
-                    )}
-                    <Button 
-                      variant="outlined"
-                      onClick={() => navigate('/assigned-classes')}
-                      sx={{ borderRadius: '10px', fontWeight: 600 }}
+                  </Box>
+                )}
+
+                <Box
+                  mt={{ xs: 3, sm: 4 }}
+                  display="flex"
+                  flexDirection={{ xs: 'column', sm: 'row' }}
+                  gap={{ xs: 1.5, sm: 2 }}
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size={isXs ? 'medium' : 'large'}
+                    startIcon={<AddIcon />}
+                    onClick={handleSubmit}
+                    disabled={loading || !formData.finalClassId || !formData.testDate || !formData.testTime}
+                    fullWidth={isXs}
+                    sx={{
+                      borderRadius: { xs: '10px', sm: '12px' },
+                      px: { xs: 3, sm: 4 },
+                      fontWeight: 600,
+                    }}
+                  >
+                    {loading ? <LoadingSpinner size={24} /> : 'Schedule Test'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size={isXs ? 'medium' : 'large'}
+                    onClick={() => setFormData({ finalClassId: '', testDate: '', testTime: '', notes: '' })}
+                    fullWidth={isXs}
+                    sx={{
+                      borderRadius: { xs: '10px', sm: '12px' },
+                      px: { xs: 3, sm: 4 },
+                      fontWeight: 600,
+                    }}
+                  >
+                    Clear Form
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          )}
+
+          {view === 'scheduled' && (
+            <Box>
+              {loading && (
+                <Box display="flex" justifyContent="center" py={8}>
+                  <LoadingSpinner size={48} message="Loading scheduled tests..." />
+                </Box>
+              )}
+
+              {!loading && scheduledTests.length === 0 && (
+                <EmptyState
+                  icon={<CalendarTodayIcon />}
+                  title="No Scheduled Tests"
+                  description="You haven't scheduled any tests yet. Switch to the 'Schedule New Test' tab to create one."
+                  action={{
+                    label: 'Schedule Test',
+                    onClick: () => setView('schedule'),
+                  }}
+                />
+              )}
+
+              {!loading && scheduledTests.length > 0 && (
+                <>
+                  <Typography
+                    variant="h6"
+                    fontWeight={700}
+                    gutterBottom
+                    sx={{
+                      mb: { xs: 2, sm: 3 },
+                      fontSize: { xs: '1.125rem', sm: '1.25rem' },
+                    }}
+                  >
+                    Scheduled Tests ({scheduledTests.length})
+                  </Typography>
+                  {scheduledTests.map((test) => (
+                    <Card
+                      key={test.id}
+                      elevation={0}
+                      className="hover-lift"
+                      sx={{
+                        mb: { xs: 2, sm: 3 },
+                        border: '1px solid #E2E8F0',
+                        borderRadius: { xs: '12px', sm: '16px' },
+                      }}
                     >
-                      View Class
-                    </Button>
-                  </CardActions>
-                </Card>
-              ))}
-            </>
+                      <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+                        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2} mb={2}>
+                          <Box display="flex" alignItems="center" gap={1.5}>
+                            <Box
+                              sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: '12px',
+                                background: alpha('#0F62FE', 0.1),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <CalendarTodayIcon sx={{ color: 'primary.main' }} />
+                            </Box>
+                            <Box>
+                              <Typography variant="subtitle1" fontWeight={700}>
+                                {new Date(test.testDate).toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {test.testTime}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Chip
+                            label={test.status}
+                            size="small"
+                            color={test.status === TEST_STATUS.SCHEDULED ? 'primary' : test.status === TEST_STATUS.COMPLETED ? 'warning' : 'default'}
+                            sx={{ fontWeight: 600, fontSize: '0.75rem', borderRadius: '8px', height: 28 }}
+                          />
+                        </Box>
+
+                        <Divider sx={{ my: 2 }} />
+
+                        <Grid2 container spacing={2}>
+                          <Grid2 size={{ xs: 12, sm: 6 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                              Student
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                              {test.finalClass?.studentName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Grade {test.finalClass?.grade}
+                            </Typography>
+                          </Grid2>
+                          <Grid2 size={{ xs: 12, sm: 6 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                              Subject
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                              {test.finalClass?.subject?.join(', ')}
+                            </Typography>
+                          </Grid2>
+                          <Grid2 size={{ xs: 12 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                              Tutor
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                              {test.tutor?.name}
+                            </Typography>
+                          </Grid2>
+                          {test.notes && (
+                            <Grid2 size={{ xs: 12 }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                Notes
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {test.notes}
+                              </Typography>
+                            </Grid2>
+                          )}
+                        </Grid2>
+                      </CardContent>
+                      <CardActions sx={{ px: { xs: 2, sm: 2.5, md: 3 }, pb: { xs: 2, sm: 2.5, md: 3 }, gap: { xs: 1, sm: 1.5 }, flexWrap: 'wrap' }}>
+                        {test.status === TEST_STATUS.SCHEDULED && (
+                          <Button
+                            color="error"
+                            variant="outlined"
+                            onClick={() => handleCancelTest(test.id)}
+                            sx={{ borderRadius: '10px', fontWeight: 600 }}
+                          >
+                            Cancel Test
+                          </Button>
+                        )}
+                        <Button
+                          variant="outlined"
+                          onClick={() => navigate('/assigned-classes')}
+                          sx={{ borderRadius: '10px', fontWeight: 600 }}
+                        >
+                          View Class
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  ))}
+                </>
+              )}
+            </Box>
           )}
         </Box>
-      )}
+      </Fade>
 
       <SnackbarNotification
         open={snackbar.open}

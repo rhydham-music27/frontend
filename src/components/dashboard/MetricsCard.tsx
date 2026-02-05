@@ -11,9 +11,10 @@ type Props = {
   color?: string;
   trend?: number;
   loading?: boolean;
+  onClick?: () => void;
 };
 
-const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'primary.main', trend, loading = false }) => {
+const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'primary.main', trend, loading = false, onClick }) => {
   const theme = useTheme();
 
   const resolveColor = (c: string): string => {
@@ -56,21 +57,37 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
     <Card 
       elevation={0}
       className="hover-lift"
+      onClick={onClick}
       sx={{ 
         height: '100%',
         border: '1px solid #E2E8F0',
-        borderRadius: '16px',
+        borderRadius: '24px',
         position: 'relative',
-        overflow: 'hidden',
-        background: 'linear-gradient(135deg, #ffffff 0%, #fafbfc 100%)',
+        overflow: 'visible', // Changed to visible for potential glow effects
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+        '&:hover': onClick ? {
+          transform: 'translateY(-8px)',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        } : {},
         '&::before': {
           content: '""',
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: '4px',
-          background: resolvedColor,
+          height: '100%',
+          borderRadius: '24px',
+          padding: '2px', // border width
+          background: `linear-gradient(135deg, ${resolvedColor}, ${alpha(resolvedColor, 0.1)})`, 
+          mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          maskComposite: 'exclude',
+          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+          WebkitMaskComposite: 'xor',
+          pointerEvents: 'none',
         },
       }}
     >
@@ -78,12 +95,13 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={{ xs: 1.5, sm: 2 }}>
           <Avatar 
             sx={{ 
-              bgcolor: alpha(resolvedColor, 0.1),
+              bgcolor: alpha(resolvedColor, 0.08),
               color: resolvedColor,
-              width: { xs: 40, sm: 44, md: 48 },
-              height: { xs: 40, sm: 44, md: 48 },
+              width: { xs: 48, sm: 56, md: 64 },
+              height: { xs: 48, sm: 56, md: 64 },
+              borderRadius: '16px',
               '& svg': {
-                fontSize: { xs: 20, sm: 22, md: 24 },
+                fontSize: { xs: 24, sm: 28, md: 32 },
               },
             }}
           >
@@ -97,8 +115,8 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
               sx={{
                 px: { xs: 0.75, sm: 1 },
                 py: { xs: 0.375, sm: 0.5 },
-                borderRadius: '8px',
-                backgroundColor: trend > 0 ? alpha('#24A148', 0.1) : alpha('#DA1E28', 0.1),
+                borderRadius: '12px',
+                backgroundColor: trend > 0 ? alpha('#24A148', 0.12) : alpha('#DA1E28', 0.12),
               }}
             >
               {trend > 0 ? (

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Container, Box, Typography, Card, TextField, MenuItem, Button, Grid, Pagination, CircularProgress, Stack, Badge, IconButton } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import { Container, Box, Typography, Card, CardContent, TextField, MenuItem, Button, Grid, Pagination, CircularProgress, Stack, IconButton, Grow, Tabs, Tab, InputAdornment } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import ClassDetailCard from '../../components/coordinator/ClassDetailCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -11,6 +11,7 @@ import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { getAssignedClasses } from '../../services/coordinatorService';
 import api from '../../services/api';
+import { updateClassTestsPerMonth } from '../../services/finalClassService';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 
@@ -75,75 +76,158 @@ const AssignedClassesPage: React.FC = () => {
       setSnackbar({ open: true, message: msg, severity: 'error' });
     }
   };
+  const handleChangeTestsPerMonth = async (classId: string, value: number) => {
+    try {
+      setError(null);
+      await updateClassTestsPerMonth(classId, value);
+      setSnackbar({ open: true, message: 'Tests per month updated', severity: 'success' });
+      fetchClasses();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to update tests per month';
+      setError(msg);
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    }
+  };
   const handleToggleView = () => setViewMode((v) => (v === 'grid' ? 'list' : 'grid'));
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h4">My Assigned Classes</Typography>
-        <Box display="flex" alignItems="center" gap={1}>
-          <IconButton aria-label="refresh" onClick={handleRefresh} disabled={loading}>
-            <RefreshIcon />
-          </IconButton>
-          <IconButton aria-label="toggle-view" onClick={handleToggleView}>
-            {viewMode === 'grid' ? <ViewListIcon /> : <ViewModuleIcon />}
-          </IconButton>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* Hero Section */}
+      <Box 
+        sx={{ 
+          background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+          color: 'white',
+          py: { xs: 4, md: 5 },
+          px: { xs: 2, md: 4 },
+          borderRadius: { xs: 2, md: 3 },
+          mb: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        }}
+      >
+        <Box sx={{ position: 'relative', zIndex: 1, mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h4" fontWeight={800} gutterBottom>
+              My Assigned Classes
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
+              Track your student progress, manage schedules, and handle payments.
+            </Typography>
+          </Box>
+          <Box display="flex" gap={1}>
+            <IconButton 
+              onClick={handleRefresh} 
+              disabled={loading}
+              sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
+            >
+              <RefreshIcon />
+            </IconButton>
+            <IconButton 
+              onClick={handleToggleView}
+              sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
+            >
+              {viewMode === 'grid' ? <ViewListIcon /> : <ViewModuleIcon />}
+            </IconButton>
+          </Box>
         </Box>
+
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Tabs 
+            value={filters.status === FINAL_CLASS_STATUS.ACTIVE ? 1 : filters.status === FINAL_CLASS_STATUS.COMPLETED ? 2 : 0} 
+            onChange={(_, v) => {
+               const status = v === 1 ? FINAL_CLASS_STATUS.ACTIVE : v === 2 ? FINAL_CLASS_STATUS.COMPLETED : '';
+               handleStatusChange(status);
+            }}
+            sx={{
+              '& .MuiTab-root': { color: 'rgba(255,255,255,0.7)', fontWeight: 600, minHeight: 48 },
+              '& .Mui-selected': { color: '#fff !important' },
+              '& .MuiTabs-indicator': { backgroundColor: '#fff', height: 4 }
+            }}
+          >
+            <Tab label="All Classes" />
+            <Tab label="Active" />
+            <Tab label="Completed" />
+          </Tabs>
+        </Box>
+        
+        {/* Abstract shapes */}
+        <Box sx={{
+          position: 'absolute',
+          top: -30,
+          right: -30,
+          width: 250,
+          height: 250,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+        }} />
+        <Box sx={{
+          position: 'absolute',
+          bottom: -50,
+          left: 100,
+          width: 350,
+          height: 350,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%)',
+        }} />
       </Box>
 
-      <Card sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              select
-              fullWidth
-              label="Status"
-              size="small"
-              value={filters.status || ''}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value={FINAL_CLASS_STATUS.ACTIVE}>Active</MenuItem>
-              <MenuItem value={FINAL_CLASS_STATUS.COMPLETED}>Completed</MenuItem>
-              <MenuItem value={FINAL_CLASS_STATUS.PAUSED}>Paused</MenuItem>
-              <MenuItem value={FINAL_CLASS_STATUS.CANCELLED}>Cancelled</MenuItem>
-            </TextField>
+      {/* Filters & Actions */}
+      <Card elevation={0} sx={{ mb: 4, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+        <CardContent sx={{ py: 2 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={4}>
+              <TextField 
+                fullWidth 
+                placeholder="Filter by Subject..." 
+                size="small"
+                value={filters.subject || ''}
+                onChange={(e) => handleSubjectChange(e.target.value)}
+                InputProps={{ 
+                  startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>
+                }} 
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <TextField 
+                fullWidth 
+                label="Grade"
+                placeholder="e.g. 10th"
+                size="small"
+                value={filters.grade || ''}
+                onChange={(e) => handleGradeChange(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+               <TextField
+                select
+                fullWidth
+                label="Other Status"
+                size="small"
+                value={filters.status && filters.status !== FINAL_CLASS_STATUS.ACTIVE && filters.status !== FINAL_CLASS_STATUS.COMPLETED ? filters.status : ''}
+                onChange={(e) => handleStatusChange(e.target.value)}
+              >
+                <MenuItem value=""><em>None</em></MenuItem>
+                <MenuItem value={FINAL_CLASS_STATUS.PAUSED}>Paused</MenuItem>
+                <MenuItem value={FINAL_CLASS_STATUS.CANCELLED}>Cancelled</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} md={2} display="flex" justifyContent="flex-end">
+               {activeFilterCount > 0 && (
+                <Button onClick={handleClearFilters} color="inherit" size="small">
+                  Clear Filters
+                </Button>
+               )}
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              label="Subject"
-              placeholder="Filter by subject"
-              size="small"
-              value={filters.subject || ''}
-              onChange={(e) => handleSubjectChange(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              label="Grade"
-              placeholder="Filter by grade"
-              size="small"
-              value={filters.grade || ''}
-              onChange={(e) => handleGradeChange(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3} display="flex" alignItems="center" justifyContent="flex-end">
-            <Badge color="primary" badgeContent={activeFilterCount} invisible={activeFilterCount === 0}>
-              <Button variant="outlined" startIcon={<FilterListIcon />} onClick={handleClearFilters}>
-                Clear Filters
-              </Button>
-            </Badge>
-          </Grid>
-        </Grid>
+        </CardContent>
       </Card>
 
       <Box display="flex" alignItems="center" gap={1} mb={2}>
-        <Typography variant="body2" color="text.secondary">
-          Showing {classes.length} of {pagination.total} classes
+        <Typography variant="body2" color="text.secondary" fontWeight={500}>
+          Showing {classes.length} of {pagination.total} assigned classes
         </Typography>
-        {loading && classes.length > 0 ? <CircularProgress size={18} /> : null}
+        {loading && <CircularProgress size={16} thickness={5} />}
       </Box>
 
       {error ? <ErrorAlert error={error} onClose={() => setError(null)} /> : null}
@@ -151,45 +235,59 @@ const AssignedClassesPage: React.FC = () => {
       {loading && classes.length === 0 ? (
         <LoadingSpinner />
       ) : classes.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Typography variant="h6" color="text.secondary">No classes found</Typography>
-          <Typography variant="body2" color="text.secondary" mb={2}>Try adjusting your filters or check back later</Typography>
-          {activeFilterCount > 0 ? (
-            <Button variant="outlined" onClick={handleClearFilters} startIcon={<FilterListIcon />}>Clear Filters</Button>
-          ) : null}
+        <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
+          <Typography variant="h6" color="text.secondary" gutterBottom>No classes found</Typography>
+          <Typography variant="body2" color="text.secondary">Try adjusting your filters or check back later.</Typography>
         </Box>
       ) : (
         <>
-          {viewMode === 'grid' ? (
-            <Grid container spacing={2} mt={1}>
-              {classes.map((cls) => (
-                <Grid item xs={12} sm={6} md={4} key={cls.id}>
-                  <ClassDetailCard
-                    finalClass={cls}
-                    onViewDetails={handleViewDetails}
-                    onGenerateAdvancePayment={handleGenerateAdvancePayment}
-                  />
+          {viewMode === 'list' ? (
+            <Stack spacing={2}>
+              {classes.map((cls, index) => (
+                <Grow in={true} timeout={300 + index * 50} key={cls.id}>
+                  <div>
+                    <ClassDetailCard
+                      finalClass={cls}
+                      onViewDetails={handleViewDetails}
+                      onGenerateAdvancePayment={handleGenerateAdvancePayment}
+                      onChangeTestsPerMonth={handleChangeTestsPerMonth}
+                    />
+                  </div>
+                </Grow>
+              ))}
+            </Stack>
+          ) : (
+            <Grid container spacing={3}>
+              {classes.map((cls, index) => (
+                <Grid item xs={12} md={6} lg={4} key={cls.id}>
+                   <Grow in={true} timeout={300 + index * 50}>
+                    <Box height="100%">
+                      <ClassDetailCard
+                        finalClass={cls}
+                        onViewDetails={handleViewDetails}
+                        onGenerateAdvancePayment={handleGenerateAdvancePayment}
+                        onChangeTestsPerMonth={handleChangeTestsPerMonth}
+                        onUpdate={fetchClasses}
+                      />
+                    </Box>
+                  </Grow>
                 </Grid>
               ))}
             </Grid>
-          ) : (
-            <Box mt={1}>
-              {classes.map((cls) => (
-                <ClassDetailCard
-                  key={cls.id}
-                  finalClass={cls}
-                  onViewDetails={handleViewDetails}
-                  onGenerateAdvancePayment={handleGenerateAdvancePayment}
-                />
-              ))}
-            </Box>
           )}
 
-          {pagination.pages > 1 ? (
-            <Box display="flex" justifyContent="center" mt={3}>
-              <Pagination color="primary" count={pagination.pages} page={filters.page} onChange={handlePageChange} size="large" />
+          {pagination.pages > 1 && (
+            <Box display="flex" justifyContent="center" mt={4}>
+              <Pagination 
+                color="primary" 
+                count={pagination.pages} 
+                page={filters.page} 
+                onChange={handlePageChange} 
+                size="large" 
+                shape="rounded"
+              />
             </Box>
-          ) : null}
+          )}
         </>
       )}
 

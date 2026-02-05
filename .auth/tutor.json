@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTgwYTc0NWYxYzA1ODY4MDgwMjgxMTgiLCJlbWFpbCI6InR1dG9yQHRlc3QuY29tIiwicm9sZSI6IlRVVE9SIiwiaWF0IjoxNzcwMDQyNDY5LCJleHAiOjE3NzAwNDYwNjl9.DkWju5mn3irad7o2Tx9LwSyVUM4cSF0FPh7l4X0MaKg"
+        },
+        {
+          "name": "user",
+          "value": "{\"id\":\"6980a745f1c0586808028118\",\"name\":\"E2E Tutor\",\"email\":\"tutor@test.com\",\"role\":\"TUTOR\",\"isActive\":true,\"acceptedTerms\":true,\"isProfileComplete\":true,\"createdAt\":\"2026-02-02T13:31:49.139Z\",\"updatedAt\":\"2026-02-02T14:27:49.812Z\"}"
+        }
+      ]
+    }
+  ]
+}

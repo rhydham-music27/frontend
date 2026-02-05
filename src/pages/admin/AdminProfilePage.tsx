@@ -14,6 +14,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Button,
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PeopleIcon from '@mui/icons-material/People';
@@ -33,12 +34,15 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { subDays, format } from 'date-fns';
+import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 const AdminProfilePage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
 
   const [adminProfile, setAdminProfile] = useState<IAdmin | null>(null);
   const [profileMissing, setProfileMissing] = useState<boolean>(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ fromDate?: string; toDate?: string }>(() => {
     const to = new Date();
     const from = subDays(to, 30);
@@ -157,6 +161,16 @@ const AdminProfilePage: React.FC = () => {
                   <Typography variant="h5">{user?.name}</Typography>
                   <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
                   <Chip label={user?.role} color="primary" />
+                  
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    startIcon={<LockResetIcon />} 
+                    onClick={() => setChangePasswordOpen(true)}
+                    sx={{ mt: 1 }}
+                  >
+                    Change Password
+                  </Button>
                 </Box>
 
                 <Divider sx={{ width: '100%', my: 1 }} />
@@ -388,6 +402,8 @@ const AdminProfilePage: React.FC = () => {
           </Grid>
         </Grid>
       ) : null}
+
+      <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
 
       <SnackbarNotification
         open={snackbar.open}

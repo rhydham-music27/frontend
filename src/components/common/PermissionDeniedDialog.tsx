@@ -5,14 +5,23 @@ import { useNavigate } from 'react-router-dom';
 interface PermissionDeniedDialogProps {
   open: boolean;
   onClose: () => void;
+  message?: string;
+  navigateOnClose?: boolean;
 }
 
-const PermissionDeniedDialog: React.FC<PermissionDeniedDialogProps> = ({ open, onClose }) => {
+const PermissionDeniedDialog: React.FC<PermissionDeniedDialogProps> = ({ 
+  open, 
+  onClose, 
+  message = "You don't have permission to access this. If you think this is a mistake then contact the admin.",
+  navigateOnClose = false 
+}) => {
   const navigate = useNavigate();
 
   const handleOk = () => {
     onClose();
-    navigate('/');
+    if (navigateOnClose) {
+      navigate('/');
+    }
   };
 
   return (
@@ -20,7 +29,7 @@ const PermissionDeniedDialog: React.FC<PermissionDeniedDialogProps> = ({ open, o
       <DialogTitle>Access Denied</DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          You don&apos;t have permission to access this. If you think this is a mistake then contact the admin.
+          {message}
         </Typography>
       </DialogContent>
       <DialogActions>

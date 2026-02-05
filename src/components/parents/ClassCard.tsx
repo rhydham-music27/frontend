@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  Avatar,
   LinearProgress,
 } from '@mui/material';
 import { BookOpen } from 'lucide-react';
@@ -117,13 +116,21 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         },
       }}
     >
-      <CardContent sx={{ display: 'flex', gap: 2, alignItems: 'center', p: 2.5 }}>
+      <CardContent 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 2.5, sm: 2 }, 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          p: { xs: 2, sm: 2.5 } 
+        }}
+      >
         {/* Icon with gradient background */}
         <Box
           sx={{
             flexShrink: 0,
-            width: 56,
-            height: 56,
+            width: { xs: 48, sm: 56 },
+            height: { xs: 48, sm: 56 },
             borderRadius: '12px',
             background: config.gradient,
             display: 'flex',
@@ -132,21 +139,22 @@ export const ClassCard: React.FC<ClassCardProps> = ({
             boxShadow: `0 4px 12px ${config.color}40`,
           }}
         >
-          <BookOpen size={28} color="white" />
+          <BookOpen size={24} color="white" />
         </Box>
 
         {/* Content */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
           <Typography
             variant="subtitle2"
             sx={{
-              fontWeight: 700,
+              fontWeight: 800,
               color: config.textColor,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               mb: 0.5,
-              fontSize: '0.95rem',
+              fontSize: { xs: '0.9rem', sm: '0.95rem' },
+              letterSpacing: '0.01em'
             }}
           >
             {subject} - {grade}
@@ -159,7 +167,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               mb: 0.75,
-              fontWeight: 500,
+              fontWeight: 600,
+              fontSize: { xs: '0.8125rem', sm: '0.875rem' }
             }}
           >
             {studentName}
@@ -172,7 +181,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               display: 'block',
-              mb: 0.75,
+              mb: 1,
+              fontWeight: 500
             }}
           >
             {topic}
@@ -181,7 +191,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: 1.5,
               mb: 0.5,
             }}
           >
@@ -203,9 +213,10 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               variant="caption"
               sx={{
                 color: config.textColor,
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                minWidth: '35px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                minWidth: '40px',
+                textAlign: 'right'
               }}
             >
               {Math.round(progressPercentage)}%
@@ -214,32 +225,40 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           <Typography
             variant="caption"
             sx={{
-              color: '#64748B',
+              color: '#94a3b8',
               fontSize: '0.7rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em'
             }}
           >
-            {completedSessions}/{totalSessions} sessions
+            {completedSessions} / {totalSessions} sessions
           </Typography>
         </Box>
 
-        {/* Right Section */}
+        {/* Right Section / Footer on Mobile */}
         <Box
           sx={{
             flexShrink: 0,
-            textAlign: 'right',
+            width: { xs: '100%', sm: 'auto' },
             display: 'flex',
-            flexDirection: 'column',
-            gap: 1,
-            alignItems: 'flex-end',
+            flexDirection: { xs: 'row', sm: 'column' },
+            gap: 1.5,
+            alignItems: { xs: 'center', sm: 'flex-end' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' },
+            borderTop: { xs: '1px solid', sm: 'none' },
+            borderColor: 'grey.100',
+            pt: { xs: 1.5, sm: 0 },
+            mt: { xs: 0.5, sm: 0 }
           }}
         >
           <Box
             sx={{
               backgroundColor: config.lightBg,
-              border: `2px solid ${config.color}`,
+              border: `1.5px solid ${config.color}`,
               borderRadius: '8px',
-              px: 1.5,
-              py: 0.75,
+              px: { xs: 1.25, sm: 1.5 },
+              py: { xs: 0.5, sm: 0.75 },
             }}
           >
             <Typography
@@ -247,7 +266,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               sx={{
                 fontWeight: 700,
                 color: config.color,
-                fontSize: '0.8rem',
+                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                whiteSpace: 'nowrap'
               }}
             >
               {schedule || 'N/A'}
@@ -260,20 +280,21 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               background: config.gradient,
               color: 'white',
               textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.75rem',
-              py: 0.75,
-              px: 1.5,
+              fontWeight: 700,
+              fontSize: { xs: '0.75rem', sm: '0.75rem' },
+              py: { xs: 0.75, sm: 0.75 },
+              px: { xs: 2.5, sm: 2 },
+              borderRadius: '8px',
               boxShadow: `0 4px 12px ${config.color}40`,
               '&:hover': {
                 boxShadow: `0 6px 16px ${config.color}60`,
-                transform: 'scale(1.05)',
+                transform: 'scale(1.02)',
               },
             }}
             disabled={isCompleted}
             onClick={() => onMarkClick?.(classId)}
           >
-            {isCompleted ? 'Class completed' : 'Mark'}
+            {isCompleted ? 'Completed' : 'Mark'}
           </Button>
         </Box>
       </CardContent>

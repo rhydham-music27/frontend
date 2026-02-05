@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTgwYTc0NGYxYzA1ODY4MDgwMjgxMTUiLCJlbWFpbCI6ImNvb3JkaW5hdG9yQHRlc3QuY29tIiwicm9sZSI6IkNPT1JESU5BVE9SIiwiaWF0IjoxNzcwMDQyNDY5LCJleHAiOjE3NzAwNDYwNjl9.CJd_yN3U_rdW_5gD5Vi9qQck0gonMHzDYUcaTr5TeWc"
+        },
+        {
+          "name": "user",
+          "value": "{\"id\":\"6980a744f1c0586808028115\",\"name\":\"E2E Coordinator\",\"email\":\"coordinator@test.com\",\"role\":\"COORDINATOR\",\"isActive\":true,\"acceptedTerms\":true,\"isProfileComplete\":true,\"createdAt\":\"2026-02-02T13:31:48.974Z\",\"updatedAt\":\"2026-02-02T14:27:49.424Z\"}"
+        }
+      ]
+    }
+  ]
+}

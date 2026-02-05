@@ -14,19 +14,40 @@ import {
   Box,
   Autocomplete,
   Chip,
+  alpha,
+  useTheme,
+  InputAdornment,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
 import SchoolIcon from '@mui/icons-material/School';
 import LockIcon from '@mui/icons-material/Lock';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
+import EmailIcon from '@mui/icons-material/Email';
+import WorkIcon from '@mui/icons-material/Work';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import SettingsRemoteIcon from '@mui/icons-material/SettingsRemote';
+import SportsIcon from '@mui/icons-material/Sports';
+import TranslateIcon from '@mui/icons-material/Translate';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import type { TutorLeadFormData, TutorLeadFormProps } from '@/types/tutorLead';
-import { Gender } from '../../types/enums';
+import { Gender, TeachingMode } from '../../types/enums';
 import { validateEmail, validatePhone } from '@/utils/leadValidation';
 import { useOptions } from '@/hooks/useOptions';
+import { motion } from 'framer-motion';
 
-export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
-  const [formData, setFormData] = useState<TutorLeadFormData>({
+export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create' }: TutorLeadFormProps) => {
+  // Helper function to check if a field should be read-only
+  // Only lock fields that have actual meaningful data in initialData
+  const isFieldReadOnly = (fieldValue: any) => {
+    if (mode !== 'edit') return false;
+    if (Array.isArray(fieldValue)) return fieldValue.length > 0;
+    if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
+    return Boolean(fieldValue);
+  };
+  const theme = useTheme();
+  const [formData, setFormData] = useState<TutorLeadFormData>(initialData || {
     fullName: '',
     gender: Gender.MALE,
     phoneNumber: '',
@@ -39,14 +60,55 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
     confirmPassword: '',
     city: '',
     preferredAreas: [],
+    preferredMode: TeachingMode.OFFLINE,
+    permanentAddress: '',
+    residentialAddress: '',
+    alternatePhone: '',
+    bio: '',
+    languagesKnown: [],
+    skills: [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { options: subjectOptions } = useOptions('SUBJECT');
-  const subjectLabels = useMemo(() => subjectOptions.map((o) => o.label), [subjectOptions]);
+  // Local state for hierarchy selection
+  const [selectedBoard, setSelectedBoard] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
 
-  const { options: extracurricularOptions } = useOptions('EXTRACURRICULAR');
+  // Options Hooks
+  const { options: boardOptions } = useOptions('BOARD');
+  
+  // Dependent Options
+  const selectedBoardId = useMemo(() => boardOptions.find(b => b.value === selectedBoard)?._id, [boardOptions, selectedBoard]);
+  const { options: gradeOptions } = useOptions('GRADE', selectedBoardId ?? null);
+
+  const selectedGradeId = useMemo(() => gradeOptions.find(g => g.value === selectedGrade)?._id, [gradeOptions, selectedGrade]);
+  const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeId ?? null);
+  
+  const handleAddSubject = () => {
+     if (selectedSubject && !formData.subjects.includes(selectedSubject)) {
+        setFormData(prev => ({ ...prev, subjects: [...prev.subjects, selectedSubject] }));
+        setSelectedSubject('');
+     }
+  };
+
+  const handleRemoveSubject = (subjectToRemove: string) => {
+     setFormData(prev => ({ ...prev, subjects: prev.subjects.filter(s => s !== subjectToRemove) }));
+  };
+  
+  const formatSubjectLabel = (val: string) => {
+      const parts = val.split('_');
+      if (parts.length >= 3) {
+          const board = parts[0];
+          const grade = parts[1];
+          const subject = parts.slice(2).join(' ');
+          return `${board} • Class ${grade} • ${subject}`;
+      }
+      return val.replace(/_/g, ' ');
+  };
+
+  const { options: extracurricularOptions } = useOptions('EXTRACURRICULAR_ACTIVITY');
   const extracurricularLabels = useMemo(
     () => extracurricularOptions.map((o) => o.label),
     [extracurricularOptions]
@@ -61,10 +123,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
-
+    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.phoneNumber) {
       newErrors.phoneNumber = 'Phone number is required';
     } else if (!validatePhone(formData.phoneNumber)) {
@@ -77,41 +136,28 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
       newErrors.email = 'Invalid email format';
     }
 
-    if (!formData.qualification.trim()) {
-      newErrors.qualification = 'Qualification is required';
+    if (!formData.qualification.trim()) newErrors.qualification = 'Qualification is required';
+    if (!formData.experience.trim()) newErrors.experience = 'Experience is required';
+    if (formData.subjects.length === 0) newErrors.subjects = 'Please select at least one subject';
+    // Extracurricular activities are now optional for better UX
+
+    if (mode === 'create') {
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Password must be 6+ characters';
+      }
+
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
     }
 
-    if (!formData.experience.trim()) {
-      newErrors.experience = 'Experience is required';
-    }
-
-    if (formData.subjects.length === 0) {
-      newErrors.subjects = 'Please select at least one subject';
-    }
-
-    if (formData.extracurricularActivities.length === 0) {
-      newErrors.extracurricularActivities = 'Please select at least one extracurricular activity';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    if (!formData.city) {
-      newErrors.city = 'Please select a city';
-    }
-
-    if (formData.preferredAreas.length === 0) {
-      newErrors.preferredAreas = 'Please select at least one area';
-    }
+    if (!formData.city) newErrors.city = 'Please select a city';
+    if (formData.preferredAreas.length === 0) newErrors.preferredAreas = 'Select at least one area';
+    if (!formData.preferredMode) newErrors.preferredMode = 'Preferred mode is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -119,279 +165,631 @@ export const TutorLeadForm = ({ onSubmit, isLoading }: TutorLeadFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    await onSubmit(formData);
+    if (validateForm()) await onSubmit(formData);
   };
 
   const handleCityChange = (city: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      city,
-      preferredAreas: [], // Reset areas when city changes
-    }));
+    setFormData((prev) => ({ ...prev, city, preferredAreas: [] }));
   };
 
-  return (
-    <Card elevation={6}>
-      <CardContent>
-        <Box component="form" onSubmit={handleSubmit}>
-          <Box mb={3} display="flex" alignItems="center" gap={1}>
-            <PersonIcon fontSize="small" />
-            <Typography variant="h6">Personal Information</Typography>
-          </Box>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="fullName"
-                label="Full Name"
-                value={formData.fullName}
-                onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                error={Boolean(errors.fullName)}
-                helperText={errors.fullName}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Autocomplete
-                multiple
-                options={extracurricularLabels}
-                value={formData.extracurricularActivities}
-                onChange={(_, value) =>
-                  setFormData((prev) => ({ ...prev, extracurricularActivities: value }))
-                }
-                renderTags={(value: readonly string[], getTagProps) =>
-                  value.map((option: string, index: number) => (
-                    <Chip
-                      variant="outlined"
-                      label={option}
-                      {...getTagProps({ index })}
-                      key={option}
-                    />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Extracurricular activities you can teach/coach"
-                    placeholder="Select one or more activities"
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth error={Boolean(errors.gender)}>
-                <InputLabel id="gender-label">Gender</InputLabel>
-                <Select
-                  labelId="gender-label"
-                  id="gender"
-                  label="Gender"
-                  value={formData.gender}
-                  onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as typeof formData.gender }))}
-                >
-                  {Object.values(Gender).map((gender) => (
-                    <MenuItem key={gender} value={gender}>{gender}</MenuItem>
-                  ))}
-                </Select>
-                {errors.gender && <FormHelperText>{errors.gender}</FormHelperText>}
-              </FormControl>
-            </Grid>
-          </Grid>
-
-          <Box mt={4} mb={1} display="flex" alignItems="center" gap={1}>
-            <PhoneIcon fontSize="small" />
-            <Typography variant="h6">Contact Details</Typography>
-          </Box>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="phoneNumber"
-                label="Phone Number"
-                value={formData.phoneNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value.replace(/\D/g, '') }))}
-                inputProps={{ maxLength: 10 }}
-                error={Boolean(errors.phoneNumber)}
-                helperText={errors.phoneNumber}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="email"
-                label="Email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                error={Boolean(errors.email)}
-                helperText={errors.email}
-              />
-            </Grid>
-          </Grid>
-
-          <Box mt={4} mb={1} display="flex" alignItems="center" gap={1}>
-            <SchoolIcon fontSize="small" />
-            <Typography variant="h6">Qualifications & Experience</Typography>
-          </Box>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="qualification"
-                label="Qualification"
-                placeholder="e.g., B.Tech, M.Sc, B.Ed"
-                value={formData.qualification}
-                onChange={(e) => setFormData(prev => ({ ...prev, qualification: e.target.value }))}
-                error={Boolean(errors.qualification)}
-                helperText={errors.qualification}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="experience"
-                label="Experience"
-                placeholder="e.g., 2 years, Fresher"
-                value={formData.experience}
-                onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
-                error={Boolean(errors.experience)}
-                helperText={errors.experience}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Autocomplete<string, true, false, false>
-                multiple
-                options={subjectLabels}
-                value={formData.subjects}
-                onChange={(_, value: string[]) =>
-                  setFormData((prev) => ({ ...prev, subjects: value }))
-                }
-                renderTags={(value: readonly string[], getTagProps) =>
-                  value.map((option: string, index: number) => (
-                    <Chip
-                      variant="outlined"
-                      label={option}
-                      {...getTagProps({ index })}
-                      key={option}
-                    />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Subjects"
-                    error={Boolean(errors.subjects)}
-                    helperText={errors.subjects}
-                  />
-                )}
-              />
-            </Grid>
-          </Grid>
-
-          <Box mt={4} mb={1} display="flex" alignItems="center" gap={1}>
-            <LocationCityIcon fontSize="small" />
-            <Typography variant="h6">Location Preferences</Typography>
-          </Box>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth error={Boolean(errors.city)}>
-                <InputLabel id="city-label">City</InputLabel>
-                <Select
-                  labelId="city-label"
-                  id="city"
-                  label="City"
-                  value={formData.city}
-                  onChange={(e) => handleCityChange(e.target.value as string)}
-                >
-                  {cityOptions.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.label}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {errors.city && <FormHelperText>{errors.city}</FormHelperText>}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <Autocomplete
-                multiple
-                options={areaOptions.map((o) => o.label)}
-                value={formData.preferredAreas}
-                onChange={(_, value: string[]) =>
-                  setFormData((prev) => ({ ...prev, preferredAreas: value }))
-                }
-                disabled={!formData.city}
-                renderTags={(value: readonly string[], getTagProps) =>
-                  value.map((option: string, index: number) => (
-                    <Chip
-                      variant="outlined"
-                      label={option}
-                      {...getTagProps({ index })}
-                      key={option}
-                    />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Preferred Areas for Offline Classes"
-                    error={Boolean(errors.preferredAreas)}
-                    helperText={
-                      errors.preferredAreas ||
-                      (!formData.city ? 'Please select a city first' : '')
-                    }
-                  />
-                )}
-              />
-            </Grid>
-          </Grid>
-
-          <Box mt={4} mb={1} display="flex" alignItems="center" gap={1}>
-            <LockIcon fontSize="small" />
-            <Typography variant="h6">Account Security</Typography>
-          </Box>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="password"
-                type="password"
-                label="Password"
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                error={Boolean(errors.password)}
-                helperText={errors.password}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                id="confirmPassword"
-                type="password"
-                label="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                error={Boolean(errors.confirmPassword)}
-                helperText={errors.confirmPassword}
-              />
-            </Grid>
-          </Grid>
-
-          <Box pt={3}>
-            <Button type="submit" variant="contained" color="primary" fullWidth disabled={isLoading}>
-              {isLoading ? 'Registering...' : 'Register Now'}
-            </Button>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
+  const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 1.5, 
+        mb: 3, 
+        mt: title === 'Personal Information' ? 0 : 4,
+        pb: 1,
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+      }}
+    >
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          p: 1, 
+          borderRadius: 1.5, 
+          bgcolor: alpha(theme.palette.primary.main, 0.1), 
+          color: 'primary.main' 
+        }}
+      >
+        <Icon fontSize="small" />
+      </Box>
+      <Typography variant="h6" fontWeight={700} color="text.primary">
+        {title}
+      </Typography>
+    </Box>
   );
-}
-;
+
+  return (
+    <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+    >
+      <Card 
+        elevation={0} 
+        sx={{ 
+          borderRadius: 4, 
+          overflow: 'visible',
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
+          p: { xs: 1, md: 2 }
+        }}
+      >
+        <CardContent>
+          <Box component="form" onSubmit={handleSubmit}>
+            <SectionHeader icon={PersonIcon} title="Personal Information" />
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  placeholder="John Doe"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                  error={Boolean(errors.fullName)}
+                  helperText={errors.fullName || (isFieldReadOnly(initialData?.fullName) ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly(initialData?.fullName)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: isFieldReadOnly(initialData?.fullName),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={Boolean(errors.gender)}>
+                  <InputLabel id="gender-label">Gender</InputLabel>
+                  <Select
+                    labelId="gender-label"
+                    label="Gender"
+                    value={formData.gender}
+                    onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as any }))}
+                    disabled={isFieldReadOnly(initialData?.gender)}
+                  >
+                    <MenuItem value={Gender.MALE}>Male</MenuItem>
+                    <MenuItem value={Gender.FEMALE}>Female</MenuItem>
+                    <MenuItem value={Gender.OTHER}>Other</MenuItem>
+                  </Select>
+                  {errors.gender && <FormHelperText>{errors.gender}</FormHelperText>}
+                  {isFieldReadOnly(initialData?.gender) && !errors.gender && <FormHelperText>Cannot be changed</FormHelperText>}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  placeholder="9876543210"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value.replace(/\D/g, '') }))}
+                  inputProps={{ maxLength: 10 }}
+                  error={Boolean(errors.phoneNumber)}
+                  helperText={errors.phoneNumber || (isFieldReadOnly(initialData?.phoneNumber) ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly(initialData?.phoneNumber)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: isFieldReadOnly(initialData?.phoneNumber),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Alternate Phone Number"
+                  placeholder="9876543211"
+                  value={formData.alternatePhone || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, alternatePhone: e.target.value.replace(/\D/g, '') }))}
+                  inputProps={{ maxLength: 10 }}
+                  helperText={isFieldReadOnly(initialData?.alternatePhone) ? 'Cannot be changed' : 'Optional secondary contact'}
+                  disabled={isFieldReadOnly(initialData?.alternatePhone)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PhoneIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: isFieldReadOnly(initialData?.alternatePhone),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  placeholder="john@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  error={Boolean(errors.email)}
+                  helperText={errors.email || (mode === 'edit' ? 'Email cannot be changed' : '')}
+                  disabled={mode === 'edit'}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: mode === 'edit',
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Tutor Bio"
+                  placeholder="Tell us about yourself, your teaching philosophy, and accomplishments..."
+                  value={formData.bio || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  multiline
+                  rows={3}
+                  disabled={isFieldReadOnly(initialData?.bio)}
+                  helperText={isFieldReadOnly(initialData?.bio) ? 'Cannot be changed' : 'A brief description that will be shown on your profile.'}
+                  InputProps={{
+                    readOnly: isFieldReadOnly(initialData?.bio),
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <SectionHeader icon={SchoolIcon} title="Education & Expertise" />
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Highest Qualification"
+                  placeholder="e.g., M.Sc Mathematics, B.Tech"
+                  value={formData.qualification}
+                  onChange={(e) => setFormData(prev => ({ ...prev, qualification: e.target.value }))}
+                  error={Boolean(errors.qualification)}
+                  helperText={errors.qualification || (isFieldReadOnly(initialData?.qualification) ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly(initialData?.qualification)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SchoolIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: isFieldReadOnly(initialData?.qualification),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={Boolean(errors.experience)}>
+                  <InputLabel id="experience-label">Teaching Experience</InputLabel>
+                  <Select
+                    labelId="experience-label"
+                    label="Teaching Experience"
+                    value={formData.experience}
+                    onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
+                    disabled={isFieldReadOnly(initialData?.experience)}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <WorkIcon color="action" fontSize="small" sx={{ ml: 0.5, mr: 1 }} />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="Fresher">Fresher (less than 1 year)</MenuItem>
+                    <MenuItem value="1-2 Years">1-2 Years</MenuItem>
+                    <MenuItem value="3-5 Years">3-5 Years</MenuItem>
+                    <MenuItem value="5-10 Years">5-10 Years</MenuItem>
+                    <MenuItem value="10+ Years">10+ Years</MenuItem>
+                  </Select>
+                  {errors.experience && <FormHelperText>{errors.experience}</FormHelperText>}
+                  {isFieldReadOnly(initialData?.experience) && !errors.experience && <FormHelperText>Cannot be changed</FormHelperText>}
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.03), border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}` }}>
+                  <Typography variant="subtitle2" gutterBottom fontWeight={700} color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LibraryBooksIcon fontSize="inherit" /> Add Your Subjects
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+                    Select Board, Class, and Subject to add to your profile
+                  </Typography>
+                  
+                  <Grid container spacing={1.5}>
+                    <Grid item xs={12} sm={3.5}>
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Board</InputLabel>
+                        <Select
+                          value={selectedBoard}
+                          label="Board"
+                          onChange={(e) => { setSelectedBoard(e.target.value); setSelectedGrade(''); setSelectedSubject(''); }}
+                        >
+                          {boardOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={3.5}>
+                      <FormControl fullWidth size="small" disabled={!selectedBoard}>
+                        <InputLabel>Class</InputLabel>
+                        <Select
+                          value={selectedGrade}
+                          label="Class"
+                          onChange={(e) => { setSelectedGrade(e.target.value); setSelectedSubject(''); }}
+                        >
+                          {gradeOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={3.5}>
+                      <FormControl fullWidth size="small" disabled={!selectedGrade}>
+                        <InputLabel>Subject</InputLabel>
+                        <Select
+                          value={selectedSubject}
+                          label="Subject"
+                          onChange={(e) => setSelectedSubject(e.target.value)}
+                        >
+                          {subjectOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={1.5}>
+                      <Button 
+                        fullWidth 
+                        variant="contained" 
+                        disabled={!selectedSubject || isFieldReadOnly(initialData?.subjects)}
+                        onClick={handleAddSubject}
+                        sx={{ height: 40, borderRadius: 2 }}
+                      >
+                        <AddCircleOutlineIcon />
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  <Box mt={2.5} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {formData.subjects.map((sub) => (
+                      <Chip 
+                        key={sub} 
+                        label={formatSubjectLabel(sub)} 
+                        onDelete={isFieldReadOnly(initialData?.subjects) ? undefined : () => handleRemoveSubject(sub)}
+                        sx={{ borderRadius: 1.5, fontWeight: 600 }}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ))}
+                    {formData.subjects.length === 0 && (
+                      <Typography variant="caption" color="text.secondary" fontStyle="italic">No subjects added. Add at least one to continue.</Typography>
+                    )}
+                  </Box>
+                  {errors.subjects && <FormHelperText error sx={{ mt: 1 }}>{errors.subjects}</FormHelperText>}
+                  {isFieldReadOnly(initialData?.subjects) && <FormHelperText sx={{ mt: 1 }}>Cannot be changed</FormHelperText>}
+                </Box>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Autocomplete
+                  multiple
+                  options={extracurricularLabels.length > 0 ? ['Select All', ...extracurricularLabels] : []}
+                  value={formData.extracurricularActivities}
+                  onChange={(_, value) => {
+                    if (value.includes('Select All')) {
+                      if (formData.extracurricularActivities.length === extracurricularLabels.length) {
+                        setFormData((prev) => ({ ...prev, extracurricularActivities: [] }));
+                      } else {
+                        setFormData((prev) => ({ ...prev, extracurricularActivities: extracurricularLabels }));
+                      }
+                    } else {
+                      setFormData((prev) => ({ ...prev, extracurricularActivities: value.filter((v) => v !== 'Select All') }));
+                    }
+                  }}
+                  disabled={isFieldReadOnly(initialData?.extracurricularActivities)}
+                  renderTags={(value, getTagProps) =>
+                    value.filter(v => v !== 'Select All').map((option, index) => (
+                      <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} color="secondary" sx={{ borderRadius: 1.5 }} />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Extracurricular Activities (Optional)"
+                      placeholder="Select activities"
+                      helperText={isFieldReadOnly(initialData?.extracurricularActivities) ? 'Cannot be changed' : 'Select all activities you can teach or assist with'}
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <SportsIcon color="action" fontSize="small" />
+                            </InputAdornment>
+                            {params.InputProps.startAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Autocomplete
+                  multiple
+                  freeSolo
+                  options={['English', 'Hindi', 'Marathi', 'Bengali', 'Tamil', 'Telugu', 'Kannada', 'Gujarati', 'Punjabi']}
+                  value={formData.languagesKnown || []}
+                  onChange={(_, value) => setFormData(prev => ({ ...prev, languagesKnown: value }))}
+                  disabled={isFieldReadOnly(initialData?.languagesKnown)}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} size="small" />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Languages Known"
+                      placeholder="Type and press enter"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <TranslateIcon color="action" fontSize="small" />
+                            </InputAdornment>
+                            {params.InputProps.startAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Autocomplete
+                  multiple
+                  freeSolo
+                  options={['Teaching', 'Communication', 'Online Tutoring', 'Lesson Planning', 'Subject Expertise', 'Mentoring']}
+                  value={formData.skills || []}
+                  onChange={(_, value) => setFormData(prev => ({ ...prev, skills: value }))}
+                  disabled={isFieldReadOnly(initialData?.skills)}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} size="small" />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Core Skills"
+                      placeholder="Type and press enter"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <AutoAwesomeIcon color="action" fontSize="small" />
+                            </InputAdornment>
+                            {params.InputProps.startAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+
+            <SectionHeader icon={LocationCityIcon} title="Location Details" />
+            <Grid container spacing={3}>
+              {/* Preferred Mode - Always visible, comes first */}
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth error={Boolean(errors.preferredMode)}>
+                  <InputLabel id="mode-label">Preferred Mode</InputLabel>
+                  <Select
+                    labelId="mode-label"
+                    label="Preferred Mode"
+                    value={formData.preferredMode}
+                    onChange={(e) => setFormData(prev => ({ ...prev, preferredMode: e.target.value as any }))}
+                    disabled={isFieldReadOnly(initialData?.preferredMode)}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <SettingsRemoteIcon color="action" fontSize="small" sx={{ ml: 0.5, mr: 1 }} />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value={TeachingMode.OFFLINE}>Offline (Home Tuition)</MenuItem>
+                    <MenuItem value={TeachingMode.ONLINE}>Online (Video Classes)</MenuItem>
+                    <MenuItem value={TeachingMode.HYBRID}>Hybrid (Both)</MenuItem>
+                  </Select>
+                  {errors.preferredMode && <FormHelperText>{errors.preferredMode}</FormHelperText>}
+                  {isFieldReadOnly(initialData?.preferredMode) && !errors.preferredMode && <FormHelperText>Cannot be changed</FormHelperText>}
+                </FormControl>
+              </Grid>
+
+              {/* City - Only show for OFFLINE or HYBRID */}
+              {(formData.preferredMode === TeachingMode.OFFLINE || formData.preferredMode === TeachingMode.HYBRID) && (
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth error={Boolean(errors.city)} disabled={isFieldReadOnly(initialData?.city)}>
+                    <InputLabel id="city-label">Current City</InputLabel>
+                    <Select
+                      labelId="city-label"
+                      label="Current City"
+                      value={formData.city}
+                      onChange={(e) => handleCityChange(e.target.value as string)}
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <LocationCityIcon color="action" fontSize="small" sx={{ ml: 0.5, mr: 1 }} />
+                        </InputAdornment>
+                      }
+                    >
+                      {cityOptions.map((opt) => <MenuItem key={opt.value} value={opt.label}>{opt.label}</MenuItem>)}
+                    </Select>
+                    {errors.city && <FormHelperText>{errors.city}</FormHelperText>}
+                    {isFieldReadOnly(initialData?.city) && !errors.city && <FormHelperText>Cannot be changed</FormHelperText>}
+                  </FormControl>
+                </Grid>
+              )}
+
+              {/* Preferred Areas - Only show for OFFLINE or HYBRID */}
+              {(formData.preferredMode === TeachingMode.OFFLINE || formData.preferredMode === TeachingMode.HYBRID) && (
+                <Grid item xs={12}>
+                  <Autocomplete
+                    multiple
+                    options={areaOptions.length > 0 ? ['Select All', ...areaOptions.map((o) => o.label)] : []}
+                    value={formData.preferredAreas}
+                    onChange={(_, value) => {
+                      const allLabels = areaOptions.map((o) => o.label);
+                      if (value.includes('Select All')) {
+                        if (formData.preferredAreas.length === allLabels.length) {
+                          setFormData((prev) => ({ ...prev, preferredAreas: [] }));
+                        } else {
+                          setFormData((prev) => ({ ...prev, preferredAreas: allLabels }));
+                        }
+                      } else {
+                        setFormData((prev) => ({ ...prev, preferredAreas: value }));
+                      }
+                    }}
+                    disabled={!formData.city || isFieldReadOnly(initialData?.preferredAreas)}
+                    renderTags={(value, getTagProps) =>
+                      value.filter(v => v !== 'Select All').map((option, index) => (
+                        <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} color="primary" sx={{ borderRadius: 1.5 }} />
+                      ))
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Preferred Areas"
+                        placeholder={formData.city ? 'Select areas' : 'Select city first'}
+                        error={Boolean(errors.preferredAreas)}
+                        helperText={errors.preferredAreas || (isFieldReadOnly(initialData?.preferredAreas) ? 'Cannot be changed' : 'Select areas where you prefer to teach')}
+                      />
+                    )}
+                  />
+                </Grid>
+              )}
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Permanent Address"
+                  placeholder="Enter your permanent address"
+                  value={formData.permanentAddress || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, permanentAddress: e.target.value }))}
+                  disabled={isFieldReadOnly(initialData?.permanentAddress)}
+                  multiline
+                  rows={2}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LocationCityIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: isFieldReadOnly(initialData?.permanentAddress),
+                  }}
+                  helperText={isFieldReadOnly(initialData?.permanentAddress) ? 'Cannot be changed' : ''}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Residential Address (if different)"
+                  placeholder="Enter your current residential address"
+                  value={formData.residentialAddress || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
+                  disabled={isFieldReadOnly(initialData?.residentialAddress)}
+                  multiline
+                  rows={2}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LocationCityIcon color="action" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    readOnly: isFieldReadOnly(initialData?.residentialAddress),
+                  }}
+                  helperText={isFieldReadOnly(initialData?.residentialAddress) ? 'Cannot be changed' : 'Leave blank if same as permanent address'}
+                />
+              </Grid>
+            </Grid>
+
+            {mode === 'create' && (
+              <>
+                <SectionHeader icon={LockIcon} title="Account Security" />
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      type="password"
+                      label="Choose Password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      error={Boolean(errors.password)}
+                      helperText={errors.password}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon color="action" fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      type="password"
+                      label="Confirm Password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      error={Boolean(errors.confirmPassword)}
+                      helperText={errors.confirmPassword}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon color="action" fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </>
+            )}
+
+            <Box pt={5}>
+              <Button 
+                type="submit" 
+                variant="contained" 
+                color="primary" 
+                fullWidth 
+                size="large"
+                disabled={isLoading}
+                sx={{ 
+                  py: 1.8, 
+                  borderRadius: 3, 
+                  fontWeight: 800, 
+                  fontSize: '1.1rem',
+                  textTransform: 'none',
+                  boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  '&:hover': {
+                    boxShadow: `0 12px 32px ${alpha(theme.palette.primary.main, 0.5)}`,
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {isLoading 
+                  ? (mode === 'edit' ? 'Updating Profile...' : 'Creating Your Profile...') 
+                  : (mode === 'edit' ? 'Update Profile' : 'Complete Teacher Registration')}
+              </Button>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};

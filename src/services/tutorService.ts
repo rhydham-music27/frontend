@@ -6,6 +6,7 @@ import {
   ITutor,
   ITutorFeedback,
   ITutorPerformanceMetrics,
+  ITutorAdvancedAnalytics,
   ISubmitFeedbackFormData,
   IPublicTutorReview,
 } from '../types';
@@ -18,6 +19,13 @@ export type GetTutorsQuery = {
   subjects?: string[];
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  search?: string;
+  teacherId?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  preferredMode?: string;
+  verifiedBy?: string;
 };
 
 export const getTutors = async (
@@ -31,6 +39,13 @@ export const getTutors = async (
   if (query.subjects && query.subjects.length) params.append('subjects', query.subjects.join(','));
   if (query.sortBy) params.append('sortBy', query.sortBy);
   if (query.sortOrder) params.append('sortOrder', query.sortOrder);
+  if (query.search) params.append('search', query.search);
+  if (query.teacherId) params.append('teacherId', query.teacherId);
+  if (query.name) params.append('name', query.name);
+  if (query.email) params.append('email', query.email);
+  if (query.phone) params.append('phone', query.phone);
+  if (query.preferredMode) params.append('preferredMode', query.preferredMode);
+  if (query.verifiedBy) params.append('verifiedBy', query.verifiedBy);
   const url = `${API_ENDPOINTS.TUTORS}?${params.toString()}`;
   const { data } = await api.get(url);
   return data as PaginatedResponse<ITutor[]>;
@@ -105,11 +120,39 @@ export const deleteDocument = async (
 export const updateVerificationStatus = async (
   tutorId: string,
   status: string,
-  verificationNotes?: string
+  verificationNotes?: string,
+  whatsappCommunityJoined?: boolean
 ): Promise<ApiResponse<ITutor>> => {
   const { data } = await api.patch(
     `${API_ENDPOINTS.TUTORS_VERIFICATION_STATUS(tutorId)}`,
-    { status, verificationNotes }
+    { status, verificationNotes, whatsappCommunityJoined }
+  );
+  return data as ApiResponse<ITutor>;
+};
+
+export const updateVerificationFeeStatus = async (
+  tutorId: string,
+  feeStatus: string,
+  paymentProof?: File,
+  paymentDate?: Date
+): Promise<ApiResponse<ITutor>> => {
+  const formData = new FormData();
+  formData.append('verificationFeeStatus', feeStatus);
+  if (paymentDate) {
+    formData.append('verificationFeePaymentDate', paymentDate.toISOString());
+  }
+  if (paymentProof) {
+    formData.append('document', paymentProof);
+  }
+
+  const { data } = await api.patch(
+    `${API_ENDPOINTS.TUTORS}/${tutorId}/verification-fee`,
+    formData,
+    {
+       headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
   );
   return data as ApiResponse<ITutor>;
 };
@@ -117,6 +160,16 @@ export const updateVerificationStatus = async (
 export const getPendingVerifications = async (): Promise<ApiResponse<ITutor[]>> => {
   const { data } = await api.get(API_ENDPOINTS.TUTORS_PENDING_VERIFICATIONS);
   return data as ApiResponse<ITutor[]>;
+};
+
+export const getSubjects = async (): Promise<ApiResponse<string[]>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/subjects`);
+  return data as ApiResponse<string[]>;
+};
+
+export const getVerifiers = async (): Promise<ApiResponse<{ _id: string; name: string }[]>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/verifiers`);
+  return data as ApiResponse<{ _id: string; name: string }[]>;
 };
 
 export const getTutorsByStatus = async (
@@ -173,6 +226,13 @@ export const getTutorPerformanceMetrics = async (
   return data as ApiResponse<ITutorPerformanceMetrics>;
 };
 
+export const getTutorAdvancedAnalytics = async (
+  tutorId: string
+): Promise<ApiResponse<ITutorAdvancedAnalytics>> => {
+  const { data } = await api.get(API_ENDPOINTS.TUTORS_ADVANCED_ANALYTICS(tutorId));
+  return data as ApiResponse<ITutorAdvancedAnalytics>;
+};
+
 export const getPublicTutorReviews = async (
   teacherId: string,
   query: { page?: number; limit?: number } = {}
@@ -201,17 +261,40 @@ export const getCoordinatorTutors = async (
   return data as PaginatedResponse<ITutor[]>;
 };
 
+export const getPublicTutorProfile = async (teacherId: string): Promise<ApiResponse<ITutor>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/public/${teacherId}`);
+  return data as ApiResponse<ITutor>;
+};
+
+export const getTutorStats = async (tutorId: string): Promise<ApiResponse<any>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/${tutorId}/stats`);
+  return data as ApiResponse<any>;
+};
+
+export const getMyProfileForEdit = async (): Promise<ApiResponse<any>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS_MY_PROFILE}/for-edit`);
+  return data as ApiResponse<any>;
+};
+
+export const updateMyProfile = async (payload: any): Promise<ApiResponse<ITutor>> => {
+  const { data } = await api.put(API_ENDPOINTS.TUTORS_MY_PROFILE, payload);
+  return data as ApiResponse<ITutor>;
+};
+
 export default {
   getTutors,
   getTutorById,
   getTutorByUserId,
   getMyProfile,
+  getMyProfileForEdit,
+  updateMyProfile,
   createTutorProfile,
   updateTutorProfile,
   deleteTutorProfile,
   uploadDocument,
   deleteDocument,
   updateVerificationStatus,
+  updateVerificationFeeStatus,
   getPendingVerifications,
   getTutorsByStatus,
   requestTierChange,
@@ -219,6 +302,11 @@ export default {
   submitTutorFeedback,
   getTutorFeedback,
   getTutorPerformanceMetrics,
+  getTutorAdvancedAnalytics,
   getCoordinatorTutors,
   getPublicTutorReviews,
+  getPublicTutorProfile,
+  getTutorStats,
+  getSubjects,
+  getVerifiers,
 };

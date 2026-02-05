@@ -1,11 +1,13 @@
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, Alert } from '@mui/material';
+import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, useTheme, alpha, IconButton, Avatar } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PaymentIcon from '@mui/icons-material/Payment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import WarningIcon from '@mui/icons-material/Warning';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useNavigate } from 'react-router-dom';
 import { getTodaysTasks } from '../../services/coordinatorService';
 import { ICoordinatorTodaysTasks, IAttendance, IPaymentReminder, TaskPriority, ITaskWithPriority } from '../../types';
@@ -33,6 +35,7 @@ const sortTasksByPriority = <T,>(arr: ITaskWithPriority<T>[]): ITaskWithPriority
 };
 
 const TodayTasksPage: React.FC = () => {
+  const theme = useTheme();
   const [tasksData, setTasksData] = useState<ICoordinatorTodaysTasks | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,8 +74,8 @@ const TodayTasksPage: React.FC = () => {
       priorityDate: new Date(p.dueDate),
     })) || [];
 
-    const tests: ITaskWithPriority<any>[] = tasksData?.testsToSchedule?.map((x: any) => ({
-      task: x,
+    const tests: ITaskWithPriority<any>[] = tasksData?.testsToSchedule?.map((cls) => ({
+      task: cls,
       priority: 'upcoming' as TaskPriority,
       priorityDate: new Date(),
     })) || [];
@@ -113,176 +116,173 @@ const TodayTasksPage: React.FC = () => {
   };
 
   const handleTaskAction = (taskId: string, actionType: string) => {
-    // Placeholder for inline actions
     console.log('Task action', taskId, actionType);
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box 
-        display="flex" 
-        justifyContent="space-between" 
-        alignItems={{ xs: 'flex-start', sm: 'center' }} 
-        mb={2}
-        flexDirection={{ xs: 'column', sm: 'row' }}
-        gap={{ xs: 1.5, sm: 1 }}
+    <Container maxWidth="xl" sx={{ pb: 6 }}>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)', // Blue/Indigo
+          color: 'white',
+          pt: { xs: 4, md: 5 },
+          pb: { xs: 6, md: 8 },
+          px: { xs: 2, md: 4 },
+          borderRadius: { xs: 0, md: 3 },
+          mt: 3,
+          mb: -4,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          position: 'relative'
+        }}
       >
-        <Typography 
-          variant="h4" 
-          sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }}
-        >
-          Today's Tasks
-        </Typography>
-        <Box 
-          display="flex" 
-          alignItems="center" 
-          gap={1} 
-          flexWrap="wrap"
-          sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'flex-start', sm: 'flex-end' } }}
-        >
-          <Chip label="All" color={priorityFilter === 'all' ? 'primary' : 'default'} onClick={() => setPriorityFilter('all')} />
-          <Chip label="Overdue" color={priorityFilter === 'overdue' ? 'primary' : 'default'} onClick={() => setPriorityFilter('overdue')} />
-          <Chip label="Today" color={priorityFilter === 'today' ? 'primary' : 'default'} onClick={() => setPriorityFilter('today')} />
-          <Chip label="Upcoming" color={priorityFilter === 'upcoming' ? 'primary' : 'default'} onClick={() => setPriorityFilter('upcoming')} />
-          <Button 
-            variant="outlined" 
-            startIcon={<RefreshIcon />} 
-            onClick={handleRefresh} 
-            aria-label="Refresh tasks"
-            sx={{ ml: { sm: 1 }, width: { xs: '100%', sm: 'auto' } }}
-          >
-            Refresh
-          </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+            <Box>
+                <Typography variant="h4" fontWeight={800} gutterBottom>
+                  Today's Tasks
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                  Manage pending actions and urgent items.
+                </Typography>
+            </Box>
+            <Box display="flex" gap={1}>
+                <Button
+                    variant="contained"
+                    startIcon={<RefreshIcon />}
+                    onClick={handleRefresh}
+                    sx={{ 
+                        bgcolor: 'rgba(255,255,255,0.15)', 
+                        backdropFilter: 'blur(10px)', 
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' } 
+                    }}
+                >
+                    Refresh
+                </Button>
+            </Box>
+        </Box>
+        
+        {/* Priority Filter Chips in Hero */}
+        <Box display="flex" gap={1} flexWrap="wrap">
+            <Chip 
+              label="All Priorities" 
+              onClick={() => setPriorityFilter('all')} 
+              sx={{ bgcolor: priorityFilter === 'all' ? 'white' : 'rgba(255,255,255,0.2)', color: priorityFilter === 'all' ? 'primary.main' : 'white', fontWeight: 600, '&:hover': { bgcolor: 'white', color: 'primary.main' } }} 
+            />
+            <Chip 
+              label="Overdue" 
+              onClick={() => setPriorityFilter('overdue')} 
+              sx={{ bgcolor: priorityFilter === 'overdue' ? '#EF4444' : 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600, border: priorityFilter === 'overdue' ? '2px solid white' : 'none' }} 
+            />
+            <Chip 
+              label="Today" 
+              onClick={() => setPriorityFilter('today')} 
+              sx={{ bgcolor: priorityFilter === 'today' ? '#F59E0B' : 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600, border: priorityFilter === 'today' ? '2px solid white' : 'none' }} 
+            />
+            <Chip 
+              label="Upcoming" 
+              onClick={() => setPriorityFilter('upcoming')} 
+              sx={{ bgcolor: priorityFilter === 'upcoming' ? '#10B981' : 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600, border: priorityFilter === 'upcoming' ? '2px solid white' : 'none' }} 
+            />
         </Box>
       </Box>
 
-      {error && (
-        <Box mb={2}>
-          <ErrorAlert error={error} />
-        </Box>
+      {error && <Box mt={6}><ErrorAlert error={error} /></Box>}
+
+      {/* Summary Cards (Filter Tabs) */}
+      <Box mt={6} mb={4}>
+         <Typography variant="h6" fontWeight={700} mb={2} sx={{ display: 'none' }}>Categories</Typography>
+         <Grid container spacing={2}>
+            {[
+                { key: 'attendance', label: 'Attendance', count: counts.attendance, icon: <CheckCircleIcon />, color: theme.palette.primary.main },
+                { key: 'payments', label: 'Payments', count: counts.payments, icon: <PaymentIcon />, color: theme.palette.error.main },
+                { key: 'tests', label: 'Tests', count: counts.tests, icon: <AssignmentIcon />, color: theme.palette.info.main },
+                { key: 'complaints', label: 'Complaints', count: counts.complaints, icon: <WarningIcon />, color: theme.palette.warning.main }
+            ].map((cat) => (
+               <Grid item xs={6} sm={6} md={3} key={cat.key}>
+                   <Card 
+                     onClick={() => setActiveTab(cat.key as any)}
+                     sx={{ 
+                         cursor: 'pointer',
+                         borderRadius: 3,
+                         border: activeTab === cat.key ? `2px solid ${cat.color}` : '1px solid transparent',
+                         boxShadow: activeTab === cat.key ? 4 : 1,
+                         transition: 'all 0.2s',
+                         '&:hover': { transform: 'translateY(-2px)', boxShadow: 3 }
+                     }}
+                   >
+                       <CardContent sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', '&:last-child': { pb: 2 } }}>
+                           <Box>
+                               <Typography variant="body2" color="text.secondary" fontWeight={600}>{cat.label}</Typography>
+                               <Typography variant="h4" fontWeight={800} color={cat.count > 0 ? 'text.primary' : 'text.disabled'}>
+                                   {cat.count}
+                               </Typography>
+                           </Box>
+                           <Avatar sx={{ bgcolor: alpha(cat.color, 0.1), color: cat.color }}>
+                               {cat.icon}
+                           </Avatar>
+                       </CardContent>
+                   </Card>
+               </Grid>
+            ))}
+         </Grid>
+      </Box>
+
+      {/* Helper Tabs (Hidden primarily, but can keep for 'All' reset if needed, or just rely on cards) */}
+      {/* We are using cards as tabs now, but let's add a "View All" chip if a category is selected */}
+      {activeTab !== 'all' && (
+          <Box mb={3} display="flex" alignItems="center" gap={1}>
+              <Typography variant="body2">Filtered by: <strong>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</strong></Typography>
+              <Button size="small" onClick={() => setActiveTab('all')} startIcon={<FilterListIcon />}>Show All Categories</Button>
+          </Box>
       )}
 
-      {/* Summary Cards */}
-      <Grid container spacing={2} mb={3}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card onClick={() => setActiveTab('attendance')} sx={{ cursor: 'pointer' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <CheckCircleIcon color={counts.attendance > 0 ? 'warning' : 'disabled'} />
-                <Typography variant="subtitle1">Attendance</Typography>
-              </Box>
-              <Typography variant="h4">{tasksData?.counts?.pendingAttendance ?? counts.attendance}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card onClick={() => setActiveTab('payments')} sx={{ cursor: 'pointer' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <PaymentIcon color={counts.payments > 0 ? 'error' : 'disabled'} />
-                <Typography variant="subtitle1">Payments</Typography>
-              </Box>
-              <Typography variant="h4">{tasksData?.counts?.paymentReminders ?? counts.payments}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card onClick={() => setActiveTab('tests')} sx={{ cursor: 'pointer' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <AssignmentIcon color={counts.tests > 0 ? 'info' : 'disabled'} />
-                <Typography variant="subtitle1">Tests</Typography>
-              </Box>
-              <Typography variant="h4">{tasksData?.counts?.testsToSchedule ?? counts.tests}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card onClick={() => setActiveTab('complaints')} sx={{ cursor: 'pointer' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <WarningIcon color={counts.complaints > 0 ? 'error' : 'disabled'} />
-                <Typography variant="subtitle1">Complaints</Typography>
-              </Box>
-              <Typography variant="h4">{tasksData?.counts?.parentComplaints ?? counts.complaints}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Tabs */}
-      <Card sx={{ mb: 2 }}>
-        <Tabs
-          value={activeTab}
-          onChange={(_, v) => setActiveTab(v)}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab value="all" label={<Badge color="primary" badgeContent={counts.total}>All Tasks</Badge>} />
-          <Tab value="attendance" label={<Badge color="warning" badgeContent={counts.attendance}>Attendance</Badge>} />
-          <Tab value="payments" label={<Badge color="error" badgeContent={counts.payments}>Payments</Badge>} />
-          <Tab value="tests" label={<Badge color="info" badgeContent={counts.tests}>Tests</Badge>} />
-          <Tab value="complaints" label={<Badge color="error" badgeContent={counts.complaints}>Complaints</Badge>} />
-        </Tabs>
-      </Card>
-
       {loading && !tasksData && (
-        <Box mt={4} display="flex" justifyContent="center">
+        <Box display="flex" justifyContent="center" py={8}>
           <LoadingSpinner />
         </Box>
       )}
 
       {!loading && filteredTasks.length === 0 && (
-        <Box textAlign="center" py={6}>
-          <Typography variant="h6" color="text.secondary">No tasks found</Typography>
-          <Typography variant="body2">Great job! You're all caught up.</Typography>
-          {priorityFilter !== 'all' && (
-            <Box mt={2}>
-              <Button onClick={() => setPriorityFilter('all')} variant="outlined" startIcon={<FilterListIcon />}>Clear Filter</Button>
-            </Box>
-          )}
+        <Box textAlign="center" py={8} bgcolor={alpha(theme.palette.success.main, 0.05)} borderRadius={4}>
+          <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2, opacity: 0.8 }} />
+          <Typography variant="h5" fontWeight={700} gutterBottom>No tasks found</Typography>
+          <Typography variant="body1" color="text.secondary">
+             Category: <strong>{activeTab}</strong> | Priority: <strong>{priorityFilter}</strong>
+          </Typography>
+          <Button onClick={() => { setActiveTab('all'); setPriorityFilter('all'); }} sx={{ mt: 2 }}>
+             Reset Filters
+          </Button>
         </Box>
       )}
 
       {!loading && filteredTasks.length > 0 && (
-        <>
-          <Typography variant="subtitle2" color="text.secondary" mb={1}>Showing {filteredTasks.length} tasks</Typography>
-          <Grid container spacing={3}>
-            {filteredTasks.map((item, idx) => (
-              <Grid item xs={12} sm={6} md={4} key={idx}>
-                <TaskCard
-                  taskType={(activeTab === 'all' ? (item.task.status && (item.task as any).sessionDate ? 'attendance' : (item.task as any).dueDate ? 'payment' : (item.task as any).summary ? 'complaint' : 'test') : (activeTab === 'payments' ? 'payment' : activeTab === 'attendance' ? 'attendance' : activeTab === 'complaints' ? 'complaint' : 'test')) as any}
-                  task={item.task}
-                  priority={item.priority}
-                  loading={loading}
-                  onAction={handleTaskAction}
-                />
-              </Grid>
-            ))}
-          </Grid>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* Quick Actions */}
-          <Card>
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button fullWidth variant="contained" color="success" onClick={() => navigate('/attendance-approvals')}>View All Attendance</Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button fullWidth variant="contained" color="primary" onClick={() => navigate('/payments')}>Manage Payments</Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button fullWidth variant="contained" color="primary" onClick={() => navigate('/test-scheduling')}>Schedule Tests</Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button fullWidth variant="outlined" onClick={() => navigate('/assigned-classes')}>View Classes</Button>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </>
+        <Grid container spacing={3}>
+          {filteredTasks.map((item, idx) => (
+            <Grid item xs={12} sm={6} md={4} key={idx}>
+              <TaskCard
+                taskType={(activeTab === 'all'
+                  ? (item.task && (item.task as any).sessionDate
+                    ? 'attendance'
+                    : (item.task as any).dueDate
+                      ? 'payment'
+                      : (item.task as any).summary
+                        ? 'complaint'
+                        : 'test')
+                  : activeTab === 'payments'
+                    ? 'payment'
+                    : activeTab === 'attendance'
+                      ? 'attendance'
+                      : activeTab === 'complaints'
+                        ? 'complaint'
+                        : 'test') as any}
+                task={item.task}
+                priority={item.priority}
+                loading={loading}
+                onAction={handleTaskAction}
+              />
+            </Grid>
+          ))}
+        </Grid>
       )}
 
       <SnackbarNotification

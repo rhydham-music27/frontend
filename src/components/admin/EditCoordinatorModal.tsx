@@ -10,7 +10,14 @@ import {
   MenuItem,
   Alert,
   Autocomplete,
+  Checkbox,
+  Chip,
 } from '@mui/material';
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -116,9 +123,39 @@ const EditCoordinatorModal: React.FC<EditCoordinatorModalProps> = ({ open, onClo
               <Autocomplete
                 multiple
                 freeSolo
-                options={COMMON_SUBJECTS}
+                options={['Select All', ...COMMON_SUBJECTS]}
                 value={field.value || []}
-                onChange={(_e, val) => field.onChange(val)}
+                onChange={(_e, val) => {
+                  if (val.includes('Select All')) {
+                    if (field.value?.length === COMMON_SUBJECTS.length) {
+                      field.onChange([]);
+                    } else {
+                      field.onChange(COMMON_SUBJECTS);
+                    }
+                  } else {
+                    field.onChange(val);
+                  }
+                }}
+                renderOption={(props, option, { selected }) => {
+                  const isSelectAll = option === 'Select All';
+                  const allSelected = field.value?.length === COMMON_SUBJECTS.length && COMMON_SUBJECTS.length > 0;
+                  return (
+                    <li {...props}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={isSelectAll ? allSelected : selected}
+                      />
+                      {option}
+                    </li>
+                  );
+                }}
+                renderTags={(value, getTagProps) =>
+                  value.filter(v => v !== 'Select All').map((option, index) => (
+                    <Chip variant="outlined" size="small" label={option} {...getTagProps({ index })} />
+                  ))
+                }
                 renderInput={(params) => (
                   <TextField
                     {...params}

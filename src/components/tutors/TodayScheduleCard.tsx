@@ -3,6 +3,7 @@ import { Box, Typography, Card, CardContent, Button, Chip, CircularProgress } fr
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ClassIcon from '@mui/icons-material/Class';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { getMyClasses } from '../../services/finalClassService';
@@ -13,6 +14,7 @@ import ClassCard from '../parents/ClassCard';
 
 const TodayScheduleCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
+  const navigate = useNavigate();
   const [classes, setClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -165,18 +167,36 @@ const TodayScheduleCard: React.FC = () => {
               const timeSlot = (cls as any)?.schedule?.timeSlot || '';
 
               return (
-                <ClassCard
-                  key={cls.id}
-                  classId={cls.id}
-                  subject={subjects}
-                  grade={cls.grade || 'N/A'}
-                  studentName={cls.studentName}
-                  topic={cls.topic || 'N/A'}
-                  schedule={timeSlot}
-                  completedSessions={cls.completedSessions}
-                  totalSessions={cls.totalSessions}
-                  onMarkClick={() => handleMarkClick(cls)}
-                />
+                <Box key={cls.id}>
+                  <ClassCard
+                    classId={cls.id}
+                    subject={subjects}
+                    grade={cls.grade || 'N/A'}
+                    studentName={cls.studentName}
+                    topic={(cls as any).topic || 'N/A'}
+                    schedule={timeSlot}
+                    completedSessions={cls.completedSessions}
+                    totalSessions={cls.totalSessions}
+                    onMarkClick={() => handleMarkClick(cls)}
+                  />
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Button 
+                      size="small" 
+                      variant="outlined" 
+                      startIcon={<ClassIcon />}
+                      onClick={() => navigate(`/tutor-tests?classId=${cls.id}`)}
+                    >
+                      Record Test
+                    </Button>
+                    <Button 
+                      size="small" 
+                      variant="outlined" 
+                      onClick={() => navigate(`/tutor-attendance?classId=${cls.id}`)}
+                    >
+                      Upload Report
+                    </Button>
+                  </Box>
+                </Box>
               );
             })}
           </Box>

@@ -6,17 +6,35 @@ import ClassLeadForm from '../../components/classLeads/ClassLeadForm';
 import { IClassLeadFormData } from '../../types';
 import leadService from '../../services/leadService';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
+import { usePermissionCheck } from '../../hooks/useManagerPermissions';
+import PermissionDeniedDialog from '../../components/common/PermissionDeniedDialog';
+import ErrorDialog from '../../components/common/ErrorDialog';
+import { useEffect } from 'react';
+import { useErrorDialog } from '../../hooks/useErrorDialog';
 
 export default function CreateClassLeadPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, showError, clearError, handleError } = useErrorDialog();
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+
+  const { isAuthorized, errorMessage } = usePermissionCheck('canCreateLeads');
+
+  useEffect(() => {
+    if (!isAuthorized) {
+      setShowPermissionDialog(true);
+    }
+  }, [isAuthorized]);
 
   const handleSubmit = async (data: IClassLeadFormData) => {
+    if (!isAuthorized) {
+      setShowPermissionDialog(true);
+      return;
+    }
+
     try {
       setLoading(true);
-      setError(null);
       const res = await leadService.createClassLead(data);
       setSnack({ open: true, message: 'Lead created successfully', severity: 'success' });
       const createdId = (res as any)?.data?.id || (res as any)?.data?._id;
@@ -26,7 +44,7 @@ export default function CreateClassLeadPage() {
         navigate('/class-leads');
       }
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Failed to create lead');
+      handleError(e);
     } finally {
       setLoading(false);
     }
@@ -40,10 +58,22 @@ export default function CreateClassLeadPage() {
       </Box>
       <Card elevation={2}>
         <CardContent>
-          <ClassLeadForm onSubmit={handleSubmit} loading={loading} error={error} submitButtonText="Create Lead" />
+          <ClassLeadForm onSubmit={handleSubmit} loading={loading} submitButtonText="Create Lead" />
         </CardContent>
       </Card>
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />
+      <ErrorDialog
+        open={showError}
+        onClose={clearError}
+        error={error}
+        title="Unable to Create Lead"
+      />
+      <PermissionDeniedDialog 
+        open={showPermissionDialog} 
+        onClose={() => setShowPermissionDialog(false)}
+        message={errorMessage || 'You do not have permission to create leads.'}
+        navigateOnClose={true}
+      />
     </Container>
   );
 }

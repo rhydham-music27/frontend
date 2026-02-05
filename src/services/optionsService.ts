@@ -5,6 +5,14 @@ export interface OptionItem {
     type: string;
     label: string;
     value: string;
+    sortOrder?: number;
+    parent?: {
+        _id: string;
+        label: string;
+        value: string;
+        type: string;
+    } | string;
+    metadata?: Record<string, any>;
 }
 
 export interface OptionTypeItem {
@@ -12,14 +20,21 @@ export interface OptionTypeItem {
     label: string;
 }
 
-export const getOptions = async (type: string): Promise<OptionItem[]> => {
-    const res = await api.get(`/api/options/${encodeURIComponent(type)}`);
+export const getOptions = async (type: string, parentId?: string): Promise<OptionItem[]> => {
+    const url = parentId 
+        ? `/api/options/${encodeURIComponent(type)}?parent=${encodeURIComponent(parentId)}` 
+        : `/api/options/${encodeURIComponent(type)}`;
+    
+    const res = await api.get(url);
     const data = (res.data?.data || []) as any[];
     return data.map((o) => ({
         _id: String(o._id),
         type: String(o.type),
         label: String(o.label),
         value: String(o.value),
+        sortOrder: o.sortOrder,
+        parent: o.parent,
+        metadata: o.metadata
     }));
 };
 
@@ -31,11 +46,14 @@ export const getOptionTypes = async (): Promise<OptionTypeItem[]> => {
         label: String(t),
     }));
 };
+
 export interface OptionPayload {
     type: string;
     label: string;
     value?: string;
     sortOrder?: number;
+    parent?: string;
+    metadata?: Record<string, any>;
 }
 
 // If id is provided → update, else create
@@ -51,6 +69,9 @@ export const createOrUpdateOption = async (
             type: String(o.type),
             label: String(o.label),
             value: String(o.value),
+            sortOrder: o.sortOrder,
+            parent: o.parent,
+            metadata: o.metadata
         };
     } else {
         const res = await api.post('/api/options', payload);
@@ -60,6 +81,9 @@ export const createOrUpdateOption = async (
             type: String(o.type),
             label: String(o.label),
             value: String(o.value),
+            sortOrder: o.sortOrder,
+            parent: o.parent,
+            metadata: o.metadata
         };
     }
 };

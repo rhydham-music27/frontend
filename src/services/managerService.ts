@@ -91,6 +91,27 @@ export const getManagerPerformanceHistory = async (
   return data as ApiResponse<IManagerPerformanceHistory[]>;
 };
 
+export const getManagerActivityLog = async (
+  managerId: string,
+  page: number,
+  limit: number,
+  actionType?: string,
+  fromDate?: string,
+  toDate?: string,
+  entityType?: string
+): Promise<PaginatedResponse<any[]>> => {
+  const params = new URLSearchParams();
+  params.append('page', String(page));
+  params.append('limit', String(limit));
+  if (actionType) params.append('actionType', actionType);
+  if (fromDate) params.append('fromDate', fromDate);
+  if (toDate) params.append('toDate', toDate);
+  if (entityType) params.append('entityType', entityType);
+  const url = `${API_ENDPOINTS.MANAGERS_ACTIVITY_LOG(managerId)}?${params.toString()}`;
+  const { data } = await api.get(url);
+  return data as PaginatedResponse<any[]>;
+};
+
 export const getManagerContribution = async (
   managerId: string,
   fromDate?: string,
@@ -114,6 +135,12 @@ export const updateManagerProfile = async (
       canCreateLeads?: boolean;
       canManagePayments?: boolean;
     };
+    bio?: string;
+    languagesKnown?: string[];
+    skills?: string[];
+    permanentAddress?: string;
+    residentialAddress?: string;
+    documents?: any[];
   }>
 ): Promise<ApiResponse<IManager>> => {
   const { data } = await api.put(`${API_ENDPOINTS.MANAGERS}/${managerId}`, updateData);
@@ -150,6 +177,21 @@ export const deleteManagerProfile = async (
   return data as ApiResponse<boolean>;
 };
 
+export const uploadDocuments = async (documents: any[]): Promise<ApiResponse<IManager>> => {
+  const { data } = await api.post(`${API_ENDPOINTS.MANAGERS}/upload-documents`, { documents });
+  return data as ApiResponse<IManager>;
+};
+
+export const uploadDocument = async (documentType: string, file: File): Promise<ApiResponse<IManager>> => {
+  const formData = new FormData();
+  formData.append('document', file);
+  formData.append('documentType', documentType);
+  const { data } = await api.post(`${API_ENDPOINTS.MANAGERS}/upload-document`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return data as ApiResponse<IManager>;
+};
+
 export default {
   createManagerProfile,
   deleteManagerProfile,
@@ -161,6 +203,9 @@ export default {
   getManagerById,
   getManagerMetrics,
   getManagerPerformanceHistory,
+  getManagerActivityLog,
   getManagerContribution,
   updateManagerProfile,
+  uploadDocuments,
+  uploadDocument,
 };

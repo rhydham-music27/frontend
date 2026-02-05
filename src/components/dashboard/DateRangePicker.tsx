@@ -78,11 +78,23 @@ const DateRangePicker: React.FC<Props> = ({ fromDate, toDate, onDateChange, pres
       <TextField label="To Date" type="date" size="small" value={to || ''} onChange={handleToDateChange} InputLabelProps={{ shrink: true }} inputProps={{ min: from }} />
       {presets && (
         <Box display="flex" gap={1} flexWrap="wrap">
-          <Button size="small" variant="outlined" onClick={() => handlePreset('today')}>Today</Button>
-          <Button size="small" variant="outlined" onClick={() => handlePreset('last7')}>Last 7 Days</Button>
-          <Button size="small" variant="outlined" onClick={() => handlePreset('last30')}>Last 30 Days</Button>
-          <Button size="small" variant="outlined" onClick={() => handlePreset('thisMonth')}>This Month</Button>
-          <Button size="small" variant="outlined" onClick={() => handlePreset('lastMonth')}>Last Month</Button>
+          {[
+            { label: 'Today', type: 'today', getRange: () => ({ f: today, t: today }) },
+            { label: 'Last 7 Days', type: 'last7', getRange: () => ({ f: format(subDays(new Date(), 7), 'yyyy-MM-dd'), t: today }) },
+            { label: 'Last 30 Days', type: 'last30', getRange: () => ({ f: format(subDays(new Date(), 30), 'yyyy-MM-dd'), t: today }) },
+            { label: 'This Month', type: 'thisMonth', getRange: () => ({ f: format(startOfMonth(new Date()), 'yyyy-MM-dd'), t: format(endOfMonth(new Date()), 'yyyy-MM-dd') }) },
+            { label: 'Last Month', type: 'lastMonth', getRange: () => { const d = subDays(startOfMonth(new Date()), 1); return { f: format(startOfMonth(d), 'yyyy-MM-dd'), t: format(endOfMonth(d), 'yyyy-MM-dd') }; } },
+          ].map((preset) => (
+            <Button
+              key={preset.type}
+              size="small"
+              variant={from === preset.getRange().f && to === preset.getRange().t ? 'contained' : 'outlined'}
+              color={from === preset.getRange().f && to === preset.getRange().t ? 'primary' : 'inherit'}
+              onClick={() => handlePreset(preset.type as any)}
+            >
+              {preset.label}
+            </Button>
+          ))}
           <Button size="small" onClick={() => handlePreset('clear')}>Clear</Button>
         </Box>
       )}

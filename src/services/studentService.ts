@@ -107,6 +107,11 @@ export const getParentAnnouncements = async (
   return data as PaginatedResponse<any[]>;
 };
 
+export const getStudentProfile = async (id: string): Promise<ApiResponse<any>> => {
+  const { data } = await api.get(`/api/students/${id}`);
+  return data as ApiResponse<any>;
+};
+
 export default {
   getStudentDashboardStats,
   getStudentClasses,
@@ -117,4 +122,5 @@ export default {
   getParentDashboardStats,
   getParentClasses,
   getParentAnnouncements,
+  getStudentProfile,
 };

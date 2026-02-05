@@ -44,10 +44,36 @@ const authSlice = createSlice({
       localStorage.removeItem('user');
       localStorage.removeItem('token');
     },
+    setAcceptedTerms: (state) => {
+      if (state.user) {
+        state.user.acceptedTerms = true;
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
+    },
+    setProfileComplete: (state) => {
+      if (state.user) {
+        state.user.isProfileComplete = true;
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
+    },
+    updateUser: (state, action: PayloadAction<Partial<IUser>>) => {
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload };
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
+    },
   },
 });
 
-export const { setCredentials, setLoading, setError, logout } = authSlice.actions;
+export const { 
+  setCredentials, 
+  setLoading, 
+  setError, 
+  logout, 
+  setAcceptedTerms, 
+  setProfileComplete,
+  updateUser
+} = authSlice.actions;
 
 export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;

@@ -53,14 +53,22 @@ export const getPaymentSummary = async (
 
 export const getProfileMetrics = async (
   fromDate?: string,
-  toDate?: string
+  toDate?: string,
+  userId?: string
 ): Promise<ApiResponse<ICoordinatorProfileMetrics>> => {
   const params = new URLSearchParams();
   if (fromDate) params.append('fromDate', fromDate);
   if (toDate) params.append('toDate', toDate);
+  if (userId) params.append('userId', userId);
   const url = `${API_ENDPOINTS.COORDINATOR_PROFILE_METRICS}${params.toString() ? `?${params.toString()}` : ''}`;
   const { data } = await api.get(url);
   return data as ApiResponse<ICoordinatorProfileMetrics>;
+};
+
+export const getCoordinatorById = async (id: string): Promise<ApiResponse<any>> => {
+  const url = `${API_ENDPOINTS.COORDINATORS}/${id}`;
+  const { data } = await api.get(url);
+  return data as ApiResponse<any>;
 };
 
 export const getCoordinatorByUserId = async (userId: string): Promise<ApiResponse<any>> => {
@@ -87,7 +95,12 @@ export const getCoordinators = async (
   isActive?: boolean,
   hasCapacity?: boolean,
   sortBy?: string,
-  sortOrder?: 'asc' | 'desc'
+  sortOrder?: 'asc' | 'desc',
+  name?: string,
+  email?: string,
+  phone?: string,
+  specialization?: string,
+  search?: string
 ): Promise<PaginatedResponse<any[]>> => {
   const params = new URLSearchParams();
   params.append('page', String(page));
@@ -96,6 +109,11 @@ export const getCoordinators = async (
   if (typeof hasCapacity === 'boolean') params.append('hasCapacity', String(hasCapacity));
   if (sortBy) params.append('sortBy', sortBy);
   if (sortOrder) params.append('sortOrder', sortOrder);
+  if (name) params.append('name', name);
+  if (email) params.append('email', email);
+  if (phone) params.append('phone', phone);
+  if (specialization) params.append('specialization', specialization);
+  if (search) params.append('search', search);
   const url = `${API_ENDPOINTS.COORDINATORS}?${params.toString()}`;
   const { data } = await api.get(url);
   return data as PaginatedResponse<any[]>;

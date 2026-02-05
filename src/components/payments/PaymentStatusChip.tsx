@@ -1,6 +1,5 @@
-import React from 'react';
 import { Chip } from '@mui/material';
-import { PAYMENT_STATUS } from '../../constants';
+import { PAYMENT_STATUS, PAYMENT_TYPE } from '../../constants';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 
 const labelMap: Record<string, string> = {
@@ -15,8 +14,18 @@ const colorMap: Record<string, 'default' | 'primary' | 'secondary' | 'error' | '
   [PAYMENT_STATUS.OVERDUE]: 'error',
 };
 
-export default function PaymentStatusChip({ status }: { status: string }) {
-  const label = labelMap[status] || status;
+export default function PaymentStatusChip({ status, paymentType }: { status: string; paymentType?: string }) {
+  let label = labelMap[status] || status;
+  const isPayout = paymentType === PAYMENT_TYPE.TUTOR_PAYOUT;
+  
+  if (status === PAYMENT_STATUS.PAID) {
+    label = isPayout ? 'Payout Sent' : 'Fees Received';
+  } else if (status === PAYMENT_STATUS.PENDING) {
+    label = isPayout ? 'Pending Payout' : 'Pending Fee';
+  } else if (status === PAYMENT_STATUS.OVERDUE) {
+    label = isPayout ? 'Payout Overdue' : 'Fee Overdue';
+  }
+
   const color = colorMap[status] || 'default';
   
   return (

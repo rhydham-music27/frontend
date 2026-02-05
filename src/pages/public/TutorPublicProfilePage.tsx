@@ -23,7 +23,7 @@ const TutorPublicProfilePage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await tutorService.getTutorById(teacherId);
+        const res = await tutorService.getPublicTutorProfile(teacherId);
         setTutor(res.data);
         try {
           const reviewRes: PaginatedResponse<IPublicTutorReview[]> = await getPublicTutorReviews(teacherId, {

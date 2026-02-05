@@ -1,66 +1,109 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Box, Typography, Grid } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Box, Typography, Grid, Select, MenuItem, FormControl, InputLabel, SelectChangeEvent, Paper } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ClassIcon from '@mui/icons-material/Class';
 import PeopleIcon from '@mui/icons-material/People';
 import PaymentIcon from '@mui/icons-material/Payment';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
-import SchoolIcon from '@mui/icons-material/School';
+import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { subDays, format } from 'date-fns';
 
 // Placeholder hook import; will be implemented in a later phase
 import useAdmin from '../../hooks/useAdmin';
+import { getLeadFilterOptions } from '../../services/leadService'; // Import service to fetch cities
 
 import MetricsCard from '../../components/dashboard/MetricsCard';
-import DateRangePicker from '../../components/dashboard/DateRangePicker';
+import DateRangePicker from '../../components/dashboard/DateRangePicker'; 
 import ExportButtons from '../../components/dashboard/ExportButtons';
 import RefreshButton from '../../components/dashboard/RefreshButton';
-import CumulativeGrowthChart from '../../components/dashboard/CumulativeGrowthChart';
+// import CumulativeGrowthChart from '../../components/dashboard/CumulativeGrowthChart'; // Removed
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
-import UserGrowthChart from '../../components/dashboard/UserGrowthChart';
-import RoleDistributionChart from '../../components/dashboard/RoleDistributionChart';
-import FinancialSummaryChart from '../../components/dashboard/FinancialSummaryChart';
+// import FinancialSummaryChart from '../../components/dashboard/FinancialSummaryChart'; // Removed as per request
 import SystemHealthCard from '../../components/dashboard/SystemHealthCard';
 import RolePerformanceTable from '../../components/dashboard/RolePerformanceTable';
-import { IAdminAnalytics } from '../../types';
+import TeacherGrowthChart from '../../components/dashboard/TeacherGrowthChart';
+import ClassGrowthChart from '../../components/dashboard/ClassGrowthChart';
+import ClassLeadsChart from '../../components/dashboard/ClassLeadsChart';
+import RevenueTrendsChart from '../../components/dashboard/RevenueTrendsChart';
+// import { IAdminAnalytics } from '../../types'; // Removed
 
 const AdminDashboardPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
+  const navigate = useNavigate();
 
-  const defaultFrom = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+  // Default to last 365 days so user can see yearly/monthly trends
+  const defaultFrom = format(subDays(new Date(), 365), 'yyyy-MM-dd');
   const defaultTo = format(new Date(), 'yyyy-MM-dd');
-  const [dateRange, setDateRange] = useState<{ fromDate?: string; toDate?: string }>({ fromDate: defaultFrom, toDate: defaultTo });
+  
+  // State for Filters
+  const [dateRange, setDateRange] = useState<{ fromDate: string; toDate: string; city?: string }>({
+    fromDate: defaultFrom, toDate: defaultTo
+  });
+  const [cities, setCities] = useState<string[]>([]);
+  
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>(
     { open: false, message: '', severity: 'success' }
   );
 
+  // Fetch cities for filter
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const res = await getLeadFilterOptions();
+        if (res.data?.cities) {
+          setCities(res.data.cities);
+        }
+      } catch (err) {
+        console.error('Failed to fetch city filters', err);
+      }
+    };
+    fetchCities();
+  }, []);
+
   const {
-    analytics,
-    loading,
-    error,
-    refetch,
-    exportCSV,
-    exportPDF,
-  }: {
-    analytics: IAdminAnalytics | null;
-    loading: boolean;
-    error: string | null;
-    refetch: () => Promise<void>;
-    exportCSV: (reportType: string) => Promise<void>;
-    exportPDF: (reportType: string) => Promise<void>;
+    analytics: kpiAnalytics,
+    loading: kpiLoading,
+    error: kpiError,
+    refetch: refetchKpi,
   } = useAdmin(dateRange, autoRefresh, 30000);
 
-  const handleDateChange = (range: { fromDate?: string; toDate?: string }) => setDateRange(range);
-  const handleAutoRefreshToggle = (enabled: boolean) => { setAutoRefresh(enabled); setLastRefreshed(new Date()); };
-  const handleManualRefresh = async () => { await refetch(); setLastRefreshed(new Date()); };
+  // Separate hook for Charts/Graphs to keep them independent of top-level KPI filters
+  // Using defaultFrom (365 days) and defaultTo (today) with NO city filter
+  const {
+    analytics: chartAnalytics,
+    loading: chartLoading,
+    error: chartError,
+    refetch: refetchCharts,
+    exportCSV,
+    exportPDF,
+  } = useAdmin({ fromDate: defaultFrom, toDate: defaultTo }, autoRefresh, 30000);
+
+  const handleDateChange = (range: { fromDate?: string; toDate?: string }) => {
+    setDateRange(prev => ({ ...prev, ...range }));
+  };
+
+  const handleCityChange = (event: SelectChangeEvent) => {
+    const city = event.target.value;
+    setDateRange(prev => ({ ...prev, city: city === 'all' ? undefined : city }));
+  };
+
+  const handleAutoRefreshToggle = (enabled: boolean) => { 
+    setAutoRefresh(enabled); 
+    setLastRefreshed(new Date()); 
+  };
+  
+  const handleManualRefresh = async () => { 
+    await Promise.all([refetchKpi(), refetchCharts()]); 
+    setLastRefreshed(new Date()); 
+  };
 
   const handleExportCSV = async (reportType: string) => {
     await exportCSV(reportType);
@@ -80,76 +123,102 @@ const AdminDashboardPage: React.FC = () => {
     { value: 'health', label: 'System Health' },
   ];
 
-  const calcHealthScore = () => {
-    const pa = analytics?.health.pendingApprovals.totalPending ?? analytics?.health.pendingApprovals.attendance?.total ?? 0;
-    const op = analytics?.health.overduePayments ?? 0;
-    const cr = analytics?.finance.collectionRate ?? 0;
-    const inactive = Object.values(analytics?.health.inactiveUsersByRole || {}).reduce((s, v) => s + (v || 0), 0);
-
-    let score = 0;
-    // Pending approvals (lower is better)
-    score += pa <= 5 ? 25 : pa <= 15 ? 15 : 5;
-    // Overdue payments (lower is better)
-    score += op <= 5 ? 25 : op <= 15 ? 15 : 5;
-    // Collection rate (higher is better)
-    score += cr >= 90 ? 25 : cr >= 75 ? 15 : 5;
-    // Inactive users (lower is better)
-    score += inactive <= 10 ? 25 : inactive <= 30 ? 15 : 5;
-
-    return Math.min(100, Math.max(0, score));
-  };
-
-  const healthScore = analytics ? calcHealthScore() : 0;
-  const healthColor = healthScore > 80 ? 'success.main' : healthScore > 60 ? 'warning.main' : 'error.main';
-
   return (
     <Container maxWidth="xl" disableGutters sx={{ px: { xs: 0, sm: 0 } }}>
+      {/* Hero Section */}
       <Box 
-        display="flex" 
-        justifyContent="space-between" 
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
-        flexDirection={{ xs: 'column', sm: 'row' }}
-        gap={{ xs: 2, sm: 2 }}
-        mb={{ xs: 3, sm: 4 }}
+        sx={{ 
+          background: 'linear-gradient(135deg, #1A237E 0%, #0D47A1 100%)',
+          color: 'white',
+          py: { xs: 4, md: 5 },
+          px: { xs: 2, md: 4 },
+          borderRadius: { xs: 0, md: 3 },
+          mb: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        }}
       >
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography 
-            sx={{ 
-              typography: { xs: 'h5', sm: 'h4' },
-              fontWeight: 700,
-              mb: 0.5,
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-            }}
-          >
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography variant="h4" fontWeight={800} gutterBottom>
             Admin Dashboard
           </Typography>
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
-          >
-            Welcome back, {user?.name || 'Admin'}! System-wide overview.
+          <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
+            Welcome back, {user?.name || 'Admin'}! Here's your system-wide overview and performance metrics.
           </Typography>
         </Box>
-        <Box 
-          display="flex" 
-          alignItems="center" 
-          gap={{ xs: 1, sm: 1.5, md: 2 }} 
-          flexWrap="wrap"
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
-        >
-          <RefreshButton onRefresh={handleManualRefresh} autoRefresh={autoRefresh} onAutoRefreshToggle={handleAutoRefreshToggle} loading={loading} lastRefreshed={lastRefreshed} />
-          <ExportButtons onExportCSV={handleExportCSV} onExportPDF={handleExportPDF} reportTypes={reportTypes as any} />
-        </Box>
+        
+        {/* Abstract shapes for visual interest */}
+        <Box sx={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+        }} />
+        <Box sx={{
+          position: 'absolute',
+          bottom: -40,
+          right: 40,
+          width: 300,
+          height: 300,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)',
+        }} />
       </Box>
 
-      {error && <ErrorAlert error={error} />}
+      {/* Action Toolbar */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 4,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          bgcolor: 'background.paper',
+        }}
+      >
+         {/* Filters Group */}
+         <Box display="flex" gap={2} flexWrap="wrap" alignItems="center" flex={1}>
+            <Box sx={{ minWidth: { xs: '100%', sm: 240 } }}>
+              <DateRangePicker fromDate={dateRange.fromDate} toDate={dateRange.toDate} onDateChange={handleDateChange} presets />
+            </Box>
+            <Box sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="city-select-label">Filter by City</InputLabel>
+                  <Select
+                    labelId="city-select-label"
+                    value={dateRange.city || 'all'}
+                    label="Filter by City"
+                    onChange={handleCityChange}
+                  >
+                  <MenuItem value="all">All Cities</MenuItem>
+                  {cities.map((city) => (
+                    <MenuItem key={city} value={city}>{city}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+         </Box>
 
-      <Box mb={{ xs: 2, sm: 3 }}>
-        <DateRangePicker fromDate={dateRange.fromDate} toDate={dateRange.toDate} onDateChange={handleDateChange} presets />
-      </Box>
+         {/* Actions Group */}
+         <Box display="flex" gap={1.5} alignItems="center" flexWrap="wrap">
+            <RefreshButton onRefresh={handleManualRefresh} autoRefresh={autoRefresh} onAutoRefreshToggle={handleAutoRefreshToggle} loading={kpiLoading || chartLoading} lastRefreshed={lastRefreshed} />
+            <ExportButtons onExportCSV={handleExportCSV} onExportPDF={handleExportPDF} reportTypes={reportTypes as any} />
+         </Box>
+      </Paper>
 
-      {/* Key Metrics */}
+      {(kpiError || chartError) && <ErrorAlert error={kpiError || chartError} />}
+
+      {/* Key Metrics - Uses kpiAnalytics (Filtered) */}
       <Box mb={{ xs: 3, sm: 4 }}>
         <Typography 
           variant="h5" 
@@ -162,88 +231,95 @@ const AdminDashboardPage: React.FC = () => {
         <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
           <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
             <MetricsCard
-              title="Total Users"
-              value={analytics?.users.totals.totalUsers?.toLocaleString() ?? '-'}
-              subtitle={`${analytics?.users.totals.totalActiveUsers?.toLocaleString() ?? 0} active`}
+              title="Total Class Leads"
+              value={kpiAnalytics?.base.kpi?.totalClassLeads?.toLocaleString() ?? '-'}
+              subtitle="All time"
+              icon={<ContactPhoneIcon />}
+              color="secondary.main"
+              loading={kpiLoading && !kpiAnalytics}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <MetricsCard
+              title="Total Tutors"
+              value={kpiAnalytics?.base.kpi?.totalTeachers?.toLocaleString() ?? '-'}
+              subtitle={`${kpiAnalytics?.base.kpi?.verifiedTeachers?.toLocaleString() ?? 0} Verified • ${kpiAnalytics?.base.kpi?.activeTeachers?.toLocaleString() ?? 0} Active`}
               icon={<PeopleIcon />}
               color="primary.main"
-              loading={loading && !analytics}
+              loading={kpiLoading && !kpiAnalytics}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
             <MetricsCard
-              title="Active Managers"
-              value={analytics?.managers.activeManagers?.toLocaleString() ?? '-'}
-              subtitle={`${analytics?.managers.totals.totalLeads?.toLocaleString() ?? 0} leads created`}
-              icon={<SupervisorAccountIcon />}
-              color="info.main"
-              loading={loading && !analytics}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-            <MetricsCard
-              title="Active Coordinators"
-              value={analytics?.coordinators?.activeCoordinators?.toLocaleString() ?? '-'}
-              subtitle={`${analytics?.coordinators?.totalClasses?.toLocaleString() ?? 0} classes handled`}
-              icon={<AdminPanelSettingsIcon />}
-              color="secondary.main"
-              loading={loading && !analytics}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-            <MetricsCard
-              title="Verified Tutors"
-              value={analytics?.tutors?.VERIFIED?.count?.toLocaleString() ?? '-'}
-              subtitle={`${analytics?.tutors?.PENDING?.count?.toLocaleString() ?? 0} pending verification`}
-              icon={<SchoolIcon />}
-              color="success.main"
-              loading={loading && !analytics}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-            <MetricsCard
-              title="Total Classes"
-              value={analytics?.base.finalClasses.total?.toLocaleString() ?? '-'}
-              subtitle={`${analytics?.base.finalClasses.active?.toLocaleString() ?? 0} active`}
+              title="Total Active Classes"
+              value={kpiAnalytics?.base.kpi?.activeClasses?.toLocaleString() ?? '-'}
+              subtitle="Currently running"
               icon={<ClassIcon />}
-              color="primary.main"
-              loading={loading && !analytics}
+              color="info.main"
+              loading={kpiLoading && !kpiAnalytics}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <MetricsCard
+              title="Monthly Revenue"
+              value={`₹${kpiAnalytics?.base.kpi?.monthlyRevenue?.toLocaleString() ?? '-'}`}
+              subtitle="Current Month"
+              icon={<TrendingUpIcon />}
+              color="success.main"
+              loading={kpiLoading && !kpiAnalytics}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
             <MetricsCard
               title="Gross Revenue"
-              value={`₹${Number(analytics?.finance.grossRevenue || 0).toLocaleString()}`}
-              subtitle={`${(analytics?.finance.collectionRate ?? 0).toFixed(1)}% collected`}
+              value={`₹${kpiAnalytics?.base.kpi?.grossRevenue?.toLocaleString() ?? '-'}`}
+              subtitle="Revenue in period"
               icon={<PaymentIcon />}
-              color="success.main"
-              loading={loading && !analytics}
+              color="success.dark"
+              loading={kpiLoading && !kpiAnalytics}
             />
           </Grid>
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+            <MetricsCard
+              title="Student Churn"
+              value={`${kpiAnalytics?.base.kpi?.studentChurn ?? 0}%`}
+              subtitle="Cancelled Classes"
+              icon={<TrendingDownIcon />}
+              color="error.main"
+              loading={kpiLoading && !kpiAnalytics}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
+             <MetricsCard
+               title="Teacher Churn"
+               value={`${kpiAnalytics?.base.kpi?.teacherChurn ?? 0}%`}
+               subtitle="Inactive Teachers"
+               icon={<TrendingDownIcon />}
+               color="error.main"
+               loading={kpiLoading && !kpiAnalytics}
+             />
+           </Grid>
+
           <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
             <MetricsCard
               title="Pending Approvals"
-              value={analytics?.health.pendingApprovals.totalPending ?? analytics?.health.pendingApprovals.attendance?.total ?? '-'}
-              subtitle="Requires attention"
-              icon={<PendingActionsIcon />}
+              value={
+                chartAnalytics?.health 
+                  ? ((chartAnalytics.health.pendingApprovals?.totalPending || 0) + (chartAnalytics.health.pendingTutorVerifications || 0)).toLocaleString() 
+                  : '-'
+              }
+              subtitle={`${chartAnalytics?.health?.pendingApprovals?.attendance?.total || 0} Attendance • ${chartAnalytics?.health?.pendingTutorVerifications || 0} Tutors`}
+              icon={<AssignmentIndIcon />}
               color="warning.main"
-              loading={loading && !analytics}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-            <MetricsCard
-              title="System Health Score"
-              value={analytics ? `${healthScore}` : '-'}
-              subtitle="Overall system status"
-              icon={<TrendingUpIcon />}
-              color={healthColor}
-              loading={loading && !analytics}
+              loading={chartLoading && !chartAnalytics}
+              onClick={() => navigate('/admin/approvals')}
             />
           </Grid>
         </Grid>
       </Box>
 
-      {/* Analytics & Charts */}
+      {/* Analytics & Charts - Uses chartAnalytics (Unfiltered / Default Range) */}
+      {/* Analytics & Charts - Uses chartAnalytics (Unfiltered / Default Range) */}
       <Box mb={{ xs: 3, sm: 4 }}>
         <Typography 
           variant="h5" 
@@ -253,39 +329,48 @@ const AdminDashboardPage: React.FC = () => {
         >
           Analytics & Insights
         </Typography>
-        <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-          <Grid item xs={12} md={6} sx={{ minWidth: 0 }}>
-            <UserGrowthChart data={analytics?.users.growth} loading={loading} />
+
+        {/* Charts Grid: 2 per row */}
+        <Box mb={3}>
+           <Grid container spacing={3}>
+               <Grid item xs={12} md={6}>
+                   <TeacherGrowthChart data={chartAnalytics?.tutors.growth || []} />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                   <ClassGrowthChart 
+                     data={chartAnalytics?.classes.growth || []} 
+                   />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                   <ClassLeadsChart data={chartAnalytics?.classes.leadsGrowth || []} />
+               </Grid>
+               <Grid item xs={12} md={6}>
+                   <RevenueTrendsChart data={chartAnalytics?.finance?.revenueTrends || []} loading={chartLoading && !chartAnalytics} />
+               </Grid>
+           </Grid>
+        </Box>
+
+        <Grid container spacing={3}>
+          {/* Growth & Health */}
+          
+          <Grid item xs={12} md={6} lg={4}>
+             <SystemHealthCard data={chartAnalytics?.health} />
           </Grid>
-          <Grid item xs={12} md={6} sx={{ minWidth: 0 }}>
-            <RoleDistributionChart data={analytics?.users.byRole} loading={loading} />
-          </Grid>
-          <Grid item xs={12} sx={{ minWidth: 0 }}>
-            <FinancialSummaryChart data={analytics?.finance} loading={loading} />
-          </Grid>
-          <Grid item xs={12} md={8} sx={{ minWidth: 0 }}>
-            <CumulativeGrowthChart data={analytics?.classes.growth || []} loading={loading} title="Cumulative Class Growth" />
-          </Grid>
-          <Grid item xs={12} md={4} sx={{ minWidth: 0 }}>
-            <SystemHealthCard data={analytics?.health} loading={loading} />
+
+          {/* Role Performance */}
+          <Grid item xs={12}>
+            <RolePerformanceTable 
+              managerData={chartAnalytics?.managers} 
+              coordinatorData={chartAnalytics?.coordinators} 
+              loading={chartLoading && !chartAnalytics}
+            />
           </Grid>
         </Grid>
       </Box>
 
-      {/* Role Performance */}
-      <Box>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
-          mb={{ xs: 2, sm: 2.5, md: 3 }}
-          sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
-        >
-          Role Performance Summary
-        </Typography>
-        <RolePerformanceTable managerData={analytics?.managers} coordinatorData={analytics?.coordinators} loading={loading} />
-      </Box>
-
-      {loading && !analytics && <LoadingSpinner message="Loading admin dashboard..." />}
+      {((kpiLoading && !kpiAnalytics) || (chartLoading && !chartAnalytics)) && (
+        <LoadingSpinner message="Loading admin dashboard..." />
+      )}
 
       <SnackbarNotification open={snackbar.open} message={snackbar.message} severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} />
     </Container>

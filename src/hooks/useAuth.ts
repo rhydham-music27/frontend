@@ -35,7 +35,17 @@ export const useAuth = () => {
         dispatch(setCredentials({ user, token: accessToken }));
         navigate('/');
       } catch (e: any) {
-        const message = e?.response?.data?.message || 'Login failed. Please try again.';
+        const backendError = e?.response?.data;
+        let message: string;
+        if (backendError?.error && backendError?.message && backendError.error !== backendError.message) {
+          message = `${backendError.error}: ${backendError.message}`;
+        } else if (backendError?.error) {
+          message = backendError.error;
+        } else if (backendError?.message) {
+          message = backendError.message;
+        } else {
+          message = 'Login failed. Please check your credentials and try again.';
+        }
         dispatch(setError(message));
       }
     },
@@ -43,15 +53,37 @@ export const useAuth = () => {
   );
 
   const register = useCallback(
-    async (name: string, email: string, password: string, phone?: string, role?: string) => {
+    async (
+      name: string, 
+      email: string, 
+      password: string, 
+      phone?: string, 
+      role?: string, 
+      skipAuth?: boolean,
+      permissions?: {
+        canViewSiteLeads?: boolean;
+        canVerifyTutors?: boolean;
+        canCreateLeads?: boolean;
+        canManagePayments?: boolean;
+      }
+    ) => {
       try {
         dispatch(setLoading(true));
-        const resp = await authService.register(name, email, password, phone, role);
-        const { user, accessToken } = resp.data as { user: IUser; accessToken: string };
-        dispatch(setCredentials({ user, token: accessToken }));
-        navigate('/');
+        const resp = await authService.register(name, email, password, phone, role, skipAuth, permissions);
+        
+        if (!skipAuth) {
+          const { user, accessToken } = resp.data as { user: IUser; accessToken: string };
+          dispatch(setCredentials({ user, token: accessToken }));
+          navigate('/');
+        } else {
+          dispatch(setLoading(false));
+        }
       } catch (e: any) {
-        const message = e?.response?.data?.message || 'Registration failed. Please try again.';
+        const backendError = e?.response?.data;
+        const message =
+          backendError?.error ||
+          backendError?.message ||
+          'Registration failed. Please check your details and try again.';
         dispatch(setError(message));
       }
     },

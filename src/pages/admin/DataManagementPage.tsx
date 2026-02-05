@@ -19,13 +19,13 @@ import {
   Tooltip,
   Alert,
 } from '@mui/material';
-import { DataGrid, GridColDef, GridRowSelectionModel, GridRenderCellParams, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowSelectionModel, GridRenderCellParams } from '@mui/x-data-grid';
 import { useTheme, useMediaQuery } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import ClearIcon from '@mui/icons-material/Clear';
+import { useNavigate } from 'react-router-dom';
 
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -35,6 +35,7 @@ import PaymentUpdateModal from '../../components/payments/PaymentUpdateModal';
 import ClassLeadStatusChip from '../../components/classLeads/ClassLeadStatusChip';
 import PaymentStatusChip from '../../components/payments/PaymentStatusChip';
 import AttendanceStatusChip from '../../components/attendance/AttendanceStatusChip';
+import GroupStudentsModal from '../../components/classLeads/GroupStudentsModal';
 
 import { getClassLeads, deleteClassLead } from '../../services/leadService';
 import { getPayments, deletePayment } from '../../services/paymentService';
@@ -42,20 +43,11 @@ import { getAttendances, deleteAttendance } from '../../services/attendanceServi
 import { getTutors, deleteTutorProfile } from '../../services/tutorService';
 
 import {
-  IClassLead,
-  IPayment,
-  IAttendance,
-  ITutor,
-  IFinalClass,
-  PaginatedResponse,
-} from '../../types';
-import {
   CLASS_LEAD_STATUS,
   PAYMENT_STATUS,
   ATTENDANCE_STATUS,
   VERIFICATION_STATUS,
 } from '../../constants';
-
 
 type EntityType = 'ClassLead' | 'Payment' | 'Attendance' | 'Tutor' | 'FinalClass';
 
@@ -108,6 +100,28 @@ const DataManagementPage: React.FC = () => {
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
+  const [selectedLeadStudents, setSelectedLeadStudents] = useState<any[]>([]);
+  const [selectedLeadName, setSelectedLeadName] = useState('');
+
+  const navigate = useNavigate();
+
+  const handleStudentNameClick = useCallback((row: any) => {
+    const studentType = row.studentType || row.classLead?.studentType;
+    if (studentType === 'GROUP') {
+      setSelectedLeadStudents(row.associatedStudents || row.studentDetails || row.classLead?.associatedStudents || row.classLead?.studentDetails || []);
+      setSelectedLeadName(row.studentName || row.classLead?.studentName || 'Group Lead');
+      setGroupModalOpen(true);
+    } else {
+      const studentId = row.associatedStudents?.[0]?.studentId || row.studentId || row.classLead?.associatedStudents?.[0]?.studentId || row.classLead?.studentId;
+      if (studentId) {
+        navigate(`/admin/student-profile/${studentId}`);
+      } else {
+        setSnackbar({ open: true, message: 'No student profile associated with this record', severity: 'info' });
+      }
+    }
+  }, [navigate]);
+
   const bulkDeleteRecords = async (_entity: EntityType, _payload: { ids: string[] }) => {
     throw new Error('Bulk delete is not available yet');
   };
@@ -155,7 +169,16 @@ const DataManagementPage: React.FC = () => {
   }), []);
 
   const classLeadColumns: GridColDef[] = useMemo(() => [
-    { field: 'studentName', headerName: 'Student', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.studentName || (p as any).row?.student?.name },
+    { field: 'studentName', headerName: 'Student', width: 220, renderCell: (p: GridRenderCellParams) => (
+      <Typography 
+        color="primary" 
+        sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+        onClick={() => handleStudentNameClick((p as any).row)}
+      >
+        {(p as any).row?.studentName || (p as any).row?.student?.name}
+        {(p as any).row?.studentType === 'GROUP' && ` (${(p as any).row?.numberOfStudents || (p as any).row?.studentDetails?.length || 0} students)`}
+      </Typography>
+    )},
     { field: 'grade', headerName: 'Grade', width: 100 },
     { field: 'subject', headerName: 'Subjects', width: 200, renderCell: (p: GridRenderCellParams) => (
       <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
@@ -164,10 +187,10 @@ const DataManagementPage: React.FC = () => {
         ))}
       </Stack>
     ) },
-    { field: 'board', headerName: 'Board', width: 120, valueGetter: (p: GridValueGetterParams) => (p as any).row?.board || (p as any).row?.student?.board },
+    { field: 'board', headerName: 'Board', width: 120, valueGetter: (p: any) => p.row?.board || p.row?.student?.board },
     { field: 'mode', headerName: 'Mode', width: 100 },
-    { field: 'status', headerName: 'Status', width: 150, renderCell: (p: GridRenderCellParams) => <ClassLeadStatusChip status={(p as any).value} /> },
-    { field: 'createdAt', headerName: 'Created', width: 140, valueGetter: (p: GridValueGetterParams) => formatDate((p as any).row?.createdAt) },
+    { field: 'status', headerName: 'Status', width: 150, renderCell: (p: any) => <ClassLeadStatusChip status={p.value} /> },
+    { field: 'createdAt', headerName: 'Created', width: 140, valueGetter: (p: any) => formatDate(p.row?.createdAt) },
     {
       field: 'actions', headerName: 'Actions', width: 120, sortable: false, filterable: false,
       renderCell: (p: GridRenderCellParams) => (
@@ -180,13 +203,13 @@ const DataManagementPage: React.FC = () => {
   ], []);
 
   const paymentColumns: GridColDef[] = useMemo(() => [
-    { field: 'paymentDate', headerName: 'Date', width: 140, valueGetter: (p: GridValueGetterParams) => formatDate((p as any).row?.paymentDate) },
-    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.tutor?.name || (p as any).row?.tutorName },
-    { field: 'finalClass', headerName: 'Class', width: 220, valueGetter: (p: GridValueGetterParams) => `${(p as any).row?.student?.name || (p as any).row?.studentName || ''} • ${formatSubjects((p as any).row?.subject).join('/')}` },
-    { field: 'amount', headerName: 'Amount', width: 140, valueGetter: (p: GridValueGetterParams) => (p as any).row?.currency ? `${(p as any).row.currency} ${(p as any).row.amount}` : (p as any).row?.amount },
-    { field: 'status', headerName: 'Status', width: 140, renderCell: (p: GridRenderCellParams) => <PaymentStatusChip status={(p as any).value} /> },
+    { field: 'paymentDate', headerName: 'Date', width: 140, valueGetter: (p: any) => formatDate(p.row?.paymentDate) },
+    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: any) => p.row?.tutor?.name || p.row?.tutorName },
+    { field: 'finalClass', headerName: 'Class', width: 220, valueGetter: (p: any) => `${p.row?.student?.name || p.row?.studentName || ''} • ${formatSubjects(p.row?.subject).join('/')}` },
+    { field: 'amount', headerName: 'Amount', width: 140, valueGetter: (p: any) => p.row?.currency ? `${p.row.currency} ${p.row.amount}` : p.row?.amount },
+    { field: 'status', headerName: 'Status', width: 140, renderCell: (p: any) => <PaymentStatusChip status={p.value} /> },
     { field: 'paymentMethod', headerName: 'Method', width: 140 },
-    { field: 'dueDate', headerName: 'Due', width: 140, valueGetter: (p: GridValueGetterParams) => formatDate((p as any).row?.dueDate) },
+    { field: 'dueDate', headerName: 'Due', width: 140, valueGetter: (p: any) => formatDate(p.row?.dueDate) },
     {
       field: 'actions', headerName: 'Actions', width: 120, sortable: false, filterable: false,
       renderCell: (p: GridRenderCellParams) => (
@@ -199,12 +222,12 @@ const DataManagementPage: React.FC = () => {
   ], []);
 
   const attendanceColumns: GridColDef[] = useMemo(() => [
-    { field: 'sessionDate', headerName: 'Date', width: 140, valueGetter: (p: GridValueGetterParams) => formatDate((p as any).row?.sessionDate) },
-    { field: 'finalClass', headerName: 'Class', width: 220, valueGetter: (p: GridValueGetterParams) => `${(p as any).row?.student?.name || ''} • ${formatSubjects((p as any).row?.subject).join('/')}` },
-    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.tutor?.name },
-    { field: 'status', headerName: 'Status', width: 150, renderCell: (p: GridRenderCellParams) => <AttendanceStatusChip status={(p as any).value} /> },
-    { field: 'submittedBy', headerName: 'Submitted By', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.submittedBy?.name },
-    { field: 'submittedAt', headerName: 'Submitted At', width: 140, valueGetter: (p: GridValueGetterParams) => formatDate((p as any).row?.submittedAt) },
+    { field: 'sessionDate', headerName: 'Date', width: 140, valueGetter: (p: any) => formatDate(p.row?.sessionDate) },
+    { field: 'finalClass', headerName: 'Class', width: 220, valueGetter: (p: any) => `${p.row?.student?.name || ''} • ${formatSubjects(p.row?.subject).join('/')}` },
+    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: any) => p.row?.tutor?.name },
+    { field: 'status', headerName: 'Status', width: 150, renderCell: (p: any) => <AttendanceStatusChip status={p.value} /> },
+    { field: 'submittedBy', headerName: 'Submitted By', width: 180, valueGetter: (p: any) => p.row?.submittedBy?.name },
+    { field: 'submittedAt', headerName: 'Submitted At', width: 140, valueGetter: (p: any) => formatDate(p.row?.submittedAt) },
     {
       field: 'actions', headerName: 'Actions', width: 120, sortable: false, filterable: false,
       renderCell: (p: GridRenderCellParams) => (
@@ -217,19 +240,19 @@ const DataManagementPage: React.FC = () => {
   ], []);
 
   const tutorColumns: GridColDef[] = useMemo(() => [
-    { field: 'name', headerName: 'Name', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.user?.name || (p as any).row?.name },
-    { field: 'email', headerName: 'Email', width: 200, valueGetter: (p: GridValueGetterParams) => (p as any).row?.user?.email || (p as any).row?.email },
-    { field: 'subjects', headerName: 'Subjects', width: 200, renderCell: (p: GridRenderCellParams) => (
+    { field: 'name', headerName: 'Name', width: 180, valueGetter: (p: any) => p.row?.user?.name || p.row?.name },
+    { field: 'email', headerName: 'Email', width: 200, valueGetter: (p: any) => p.row?.user?.email || p.row?.email },
+    { field: 'subjects', headerName: 'Subjects', width: 200, renderCell: (p: any) => (
       <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
-        {formatSubjects((p as any).row?.subjects).slice(0, 3).map((s, i) => (
-          <Chip key={`${(p as any).id}-t-sub-${i}`} size="small" label={s} />
+        {formatSubjects(p.row?.subjects).slice(0, 3).map((s, i) => (
+          <Chip key={`${p.id}-t-sub-${i}`} size="small" label={s} />
         ))}
       </Stack>
     ) },
     { field: 'experienceHours', headerName: 'Hours', width: 120 },
-    { field: 'verificationStatus', headerName: 'Verification', width: 150, renderCell: (p: GridRenderCellParams) => <Chip size="small" color={(p as any).value === 'VERIFIED' ? 'success' as any : (p as any).value === 'REJECTED' ? 'error' as any : 'warning' as any} label={(p as any).value} /> },
-    { field: 'classesAssigned', headerName: 'Classes', width: 120, valueGetter: (p: GridValueGetterParams) => (p as any).row?.classesAssigned ?? (p as any).row?.classesCount },
-    { field: 'ratings', headerName: 'Ratings', width: 100, valueGetter: (p: GridValueGetterParams) => (p as any).row?.ratings ?? (p as any).row?.rating },
+    { field: 'verificationStatus', headerName: 'Verification', width: 150, renderCell: (p: any) => <Chip size="small" color={p.value === 'VERIFIED' ? 'success' as any : p.value === 'REJECTED' ? 'error' as any : 'warning' as any} label={p.value} /> },
+    { field: 'classesAssigned', headerName: 'Classes', width: 120, valueGetter: (p: any) => p.row?.classesAssigned ?? p.row?.classesCount },
+    { field: 'ratings', headerName: 'Ratings', width: 100, valueGetter: (p: any) => p.row?.ratings ?? p.row?.rating },
     {
       field: 'actions', headerName: 'Actions', width: 120, sortable: false, filterable: false,
       renderCell: () => (
@@ -241,19 +264,27 @@ const DataManagementPage: React.FC = () => {
   ], []);
 
   const finalClassColumns: GridColDef[] = useMemo(() => [
-    { field: 'studentName', headerName: 'Student', width: 180 },
-    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.tutor?.name },
-    { field: 'coordinator', headerName: 'Coordinator', width: 180, valueGetter: (p: GridValueGetterParams) => (p as any).row?.coordinator?.name },
-    { field: 'subject', headerName: 'Subject', width: 200, renderCell: (p: GridRenderCellParams) => (
+    { field: 'studentName', headerName: 'Student', width: 220, renderCell: (p: any) => (
+      <Typography 
+        color="primary" 
+        sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+        onClick={() => handleStudentNameClick(p.row)}
+      >
+        {p.row?.studentName}
+      </Typography>
+    )},
+    { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: any) => p.row?.tutor?.name },
+    { field: 'coordinator', headerName: 'Coordinator', width: 180, valueGetter: (p: any) => p.row?.coordinator?.name },
+    { field: 'subject', headerName: 'Subject', width: 200, renderCell: (p: any) => (
       <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
-        {formatSubjects((p as any).row?.subject).slice(0, 3).map((s, i) => (
-          <Chip key={`${(p as any).id}-fc-sub-${i}`} size="small" label={s} />
+        {formatSubjects(p.row?.subject).slice(0, 3).map((s, i) => (
+          <Chip key={`${p.id}-fc-sub-${i}`} size="small" label={s} />
         ))}
       </Stack>
     ) },
-    { field: 'status', headerName: 'Status', width: 120, renderCell: (p: GridRenderCellParams) => <Chip size="small" label={(p as any).value} /> },
-    { field: 'startDate', headerName: 'Start', width: 140, valueGetter: (p: GridValueGetterParams) => formatDate((p as any).row?.startDate) },
-    { field: 'sessions', headerName: 'Sessions', width: 120, valueGetter: (p: GridValueGetterParams) => `${(p as any).row?.completedSessions ?? 0}/${(p as any).row?.totalSessions ?? 0}` },
+    { field: 'status', headerName: 'Status', width: 120, renderCell: (p: any) => <Chip size="small" label={p.value} /> },
+    { field: 'startDate', headerName: 'Start', width: 140, valueGetter: (p: any) => formatDate(p.row?.startDate) },
+    { field: 'sessions', headerName: 'Sessions', width: 120, valueGetter: (p: any) => `${p.row?.completedSessions ?? 0}/${p.row?.totalSessions ?? 0}` },
     {
       field: 'actions', headerName: 'Actions', width: 120, sortable: false, filterable: false,
       renderCell: () => (
@@ -291,7 +322,7 @@ const DataManagementPage: React.FC = () => {
         setTotal(0);
         return;
       }
-      const res: PaginatedResponse<any> = await cfg.service.list(page, limit, filters);
+      const res: any = await cfg.service.list(page, limit, filters);
       setEntities((res as any)?.data || (res as any)?.items || []);
       setTotal((res as any)?.total || (res as any)?.count || 0);
     } catch (e: any) {
@@ -340,11 +371,7 @@ const DataManagementPage: React.FC = () => {
     setSelectedIds(selectionModel as string[]);
   }, []);
 
-  const handleSelectAll = useCallback(() => {
-    const visibleIds = entities.map((e) => String(e.id || e._id));
-    if (selectedIds.length === visibleIds.length) setSelectedIds([]);
-    else setSelectedIds(visibleIds);
-  }, [entities, selectedIds]);
+
 
   const handleDeleteSingle = useCallback((id: string) => {
     setDeleteTargetId(id);
@@ -653,7 +680,12 @@ const DataManagementPage: React.FC = () => {
                   <CardContent>
                     <Stack spacing={1}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="subtitle1">
+                        <Typography 
+                          variant="subtitle1" 
+                          color="primary" 
+                          sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+                          onClick={() => handleStudentNameClick(item)}
+                        >
                           {entityType === 'ClassLead' && (item.studentName || item?.student?.name)}
                           {entityType === 'Payment' && `${formatDate(item.paymentDate)} • ${item.currency ? item.currency + ' ' : ''}${item.amount}`}
                           {entityType === 'Attendance' && `${formatDate(item.sessionDate)}`}
@@ -730,6 +762,13 @@ const DataManagementPage: React.FC = () => {
         message={snackbar.message}
         severity={snackbar.severity}
         onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+      />
+
+      <GroupStudentsModal
+        open={groupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        students={selectedLeadStudents}
+        leadName={selectedLeadName}
       />
     </Container>
   );

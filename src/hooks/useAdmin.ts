@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { getMyProfile, getSystemWideAnalytics, exportAnalyticsCSV, exportAnalyticsPDF } from '../services/adminService';
 import { IAdmin, IAdminAnalytics as AdminAnalyticsType } from '../types';
 
-export type AdminDateRange = { fromDate?: string; toDate?: string };
+export type AdminDateRange = { fromDate?: string; toDate?: string; city?: string };
 
 const useAdmin = (
   dateRange?: AdminDateRange,
@@ -43,14 +43,15 @@ const useAdmin = (
       setError(null);
       const from = dateRange?.fromDate;
       const to = dateRange?.toDate;
-      const res = await getSystemWideAnalytics(from, to);
+      const city = dateRange?.city;
+      const res = await getSystemWideAnalytics(from, to, city);
       setAnalytics(res.data);
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load admin analytics');
     } finally {
       setLoading(false);
     }
-  }, [dateRange?.fromDate, dateRange?.toDate]);
+  }, [dateRange?.fromDate, dateRange?.toDate, dateRange?.city]);
 
   // Initial load effects
   useEffect(() => {
@@ -87,7 +88,13 @@ const useAdmin = (
   const exportCSV = useCallback(async (reportType: string) => {
     const from = dateRange?.fromDate;
     const to = dateRange?.toDate;
-    const blob = await exportAnalyticsCSV(reportType, from, to);
+    const city = dateRange?.city;
+    const blob = await exportAnalyticsCSV(reportType, from, to, city); // Assumes generic export function handles updating params or receives object
+    // Note: The service function `exportAnalyticsCSV` in frontend might need updating too, 
+    // or we pass city as 3rd arg if supported. 
+    // Checking previous steps, the backed accepts queries. Frontend service needs to forward it.
+    // Let's assume standard params order or object.
+    // I will check frontend `adminService.ts` next to be sure.
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -96,12 +103,13 @@ const useAdmin = (
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-  }, [dateRange?.fromDate, dateRange?.toDate]);
+  }, [dateRange?.fromDate, dateRange?.toDate, dateRange?.city]);
 
   const exportPDF = useCallback(async (reportType: string) => {
     const from = dateRange?.fromDate;
     const to = dateRange?.toDate;
-    const blob = await exportAnalyticsPDF(reportType, from, to);
+    const city = dateRange?.city;
+    const blob = await exportAnalyticsPDF(reportType, from, to, city);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

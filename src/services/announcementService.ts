@@ -60,6 +60,15 @@ export const getInterestedTutors = async (
   return data as ApiResponse<ITutorComparison[]>;
 };
 
+export const getRecommendedTutors = async (
+  announcementId: string
+): Promise<ApiResponse<ITutorComparison[]>> => {
+  const { data } = await api.get(
+    API_ENDPOINTS.ANNOUNCEMENTS_RECOMMENDED_TUTORS(announcementId)
+  );
+  return data as ApiResponse<ITutorComparison[]>;
+};
+
 export const expressInterest = async (
   announcementId: string,
   notes?: string
@@ -114,6 +123,7 @@ export default {
   getTutorAvailableAnnouncements,
   getAnnouncementByLeadId,
   getInterestedTutors,
+  getRecommendedTutors,
   expressInterest,
   sendCoordinatorAnnouncement,
   getCoordinatorAnnouncements,

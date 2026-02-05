@@ -14,6 +14,15 @@ export type TutorsFilters = {
   verificationStatus?: string;
   isAvailable?: boolean;
   subjects?: string[];
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  search?: string;
+  teacherId?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  preferredMode?: string;
+  verifiedBy?: string;
 };
 
 const useTutors = (filters: TutorsFilters = {}) => {
@@ -32,6 +41,15 @@ const useTutors = (filters: TutorsFilters = {}) => {
         verificationStatus: filters.verificationStatus,
         isAvailable: filters.isAvailable,
         subjects: filters.subjects,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        search: filters.search,
+        teacherId: filters.teacherId,
+        name: filters.name,
+        email: filters.email,
+        phone: filters.phone,
+        preferredMode: filters.preferredMode,
+        verifiedBy: filters.verifiedBy,
       });
       setTutors(res.data);
       setPagination(res.pagination);
@@ -40,7 +58,22 @@ const useTutors = (filters: TutorsFilters = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [filters.page, filters.limit, filters.verificationStatus, filters.isAvailable, JSON.stringify(filters.subjects || [])]);
+  }, [
+    filters.page, 
+    filters.limit, 
+    filters.verificationStatus, 
+    filters.isAvailable, 
+    filters.sortBy,
+    filters.sortOrder,
+    filters.search,
+    filters.teacherId,
+    filters.name,
+    filters.email,
+    filters.phone,
+    filters.preferredMode,
+    filters.verifiedBy,
+    JSON.stringify(filters.subjects || [])
+  ]);
 
   useEffect(() => {
     fetchTutors();

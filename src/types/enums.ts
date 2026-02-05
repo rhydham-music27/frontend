@@ -10,9 +10,9 @@ export enum OAuthProvider {
 
 // Gender options
 export enum Gender {
-  MALE = 'Male',
-  FEMALE = 'Female',
-  OTHER = 'Other'
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER'
 }
 
 // Available cities for home tutoring
@@ -32,4 +32,10 @@ export enum Subject {
   SOCIAL_STUDIES = 'Social Studies',
   ECONOMICS = 'Economics',
   COMMERCE = 'Commerce'
+}
+
+export enum TeachingMode {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
+  HYBRID = 'HYBRID'
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Box, Typography, Grid2, LinearProgress, CircularProgress } from '@mui/material';
+import { Card, CardContent, Box, Typography,  CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, LinearProgress } from '@mui/material';
 import ClassIcon from '@mui/icons-material/Class';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useSelector } from 'react-redux';
@@ -45,7 +45,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
 
   if (loading) {
     return (
-      <Card>
+      <Card sx={{ borderRadius: 4 }}>
         <CardContent>
           <Box display="flex" alignItems="center" justifyContent="center" py={4}>
             <CircularProgress size={24} />
@@ -57,7 +57,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
 
   if (error) {
     return (
-      <Card>
+      <Card sx={{ borderRadius: 4 }}>
         <CardContent>
           <Box display="flex" alignItems="center" gap={1}>
             <ErrorOutlineIcon color="error" />
@@ -70,102 +70,151 @@ const ActiveClassesOverviewCard: React.FC = () => {
     );
   }
 
-  if (!classes.length) {
-    return (
-      <Card>
-        <CardContent>
-          <Box textAlign="center" py={4}>
-            <ClassIcon sx={{ fontSize: 36, color: 'text.disabled', mb: 1 }} />
-            <Typography variant="body2" color="text.secondary">
-              No active classes at the moment.
+  return (
+    <Card sx={{ borderRadius: 4, boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)' }}>
+      <CardContent>
+        <Box mb={3} display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <ClassIcon color="primary" />
+            <Typography variant="h6" fontWeight={700}>
+              Active Classes Breakdown
             </Typography>
           </Box>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardContent>
-        <Box mb={2} display="flex" alignItems="center" gap={1.5}>
-          <ClassIcon color="primary" />
-          <Typography variant="subtitle1" fontWeight={600}>
-            Active Classes Overview
-          </Typography>
+          <Chip label={`${classes.length} Active`} color="primary" variant="outlined" size="small" />
         </Box>
 
-        <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
-          {classes.map((cls) => {
-            const progress = getProgress(cls);
-            const subjects = Array.isArray(cls.subject) ? cls.subject.join(', ') : (cls.subject as any) || '';
-
-            return (
-              <Grid2 key={cls.id} size={{ xs: 12, sm: 6, md: 3 }}>
-                <Box
-                  sx={{
-                    borderRadius: 2,
-                    p: 2,
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                    background: 'linear-gradient(135deg, #0f172a, #020617)',
-                    color: 'common.white',
+        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+          {classes.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Typography variant="body2" color="text.secondary">No active classes found.</Typography>
+            </Box>
+          ) : (
+            classes.map((cls) => {
+              const progress = getProgress(cls);
+              const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
+              const subjects = (cls.subject || []).join(', ');
+              return (
+                <Box 
+                  key={cls.id} 
+                  sx={{ 
+                    p: 2, 
+                    mb: 2, 
+                    borderRadius: 3, 
+                    border: '1px solid', 
+                    borderColor: 'grey.100',
+                    bgcolor: 'grey.50'
                   }}
                 >
-                  <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1.5,
-                        bgcolor: 'rgba(255,255,255,0.12)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <ClassIcon sx={{ fontSize: 20 }} />
-                    </Box>
-                    <Box minWidth={0}>
-                      <Typography variant="subtitle2" fontWeight={600} noWrap>
-                        {cls.studentName}
-                      </Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.8 }} noWrap>
-                        {subjects} • {cls.grade}
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={700}>{cls.studentName}</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        {subjects} • Grade {cls.grade}
                       </Typography>
                     </Box>
+                    <Chip 
+                        label={cls.status} 
+                        size="small" 
+                        color="success" 
+                        variant="filled"
+                        sx={{ textTransform: 'capitalize', fontSize: '0.65rem', height: 20 }}
+                    />
+                  </Box>
+                  
+                  <Box mb={1.5}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>Progress</Typography>
+                      <Typography variant="caption" fontWeight={700}>{progress}%</Typography>
+                    </Box>
+                    <LinearProgress 
+                        variant="determinate" 
+                        value={progress} 
+                        sx={{ height: 6, borderRadius: 3, bgcolor: 'grey.200' }}
+                    />
                   </Box>
 
-                  <Box mb={1} display="flex" justifyContent="space-between">
-                    <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                      Progress
-                    </Typography>
-                    <Typography variant="caption" fontWeight={600}>
-                      {progress}%
-                    </Typography>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Coordinator</Typography>
+                      <Typography variant="body2" fontWeight={600}>{coordinatorName}</Typography>
+                    </Box>
+                    <Box textAlign="right">
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Sessions</Typography>
+                      <Typography variant="body2" fontWeight={700}>{cls.completedSessions} / {cls.totalSessions}</Typography>
+                    </Box>
                   </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{
-                      height: 6,
-                      borderRadius: 999,
-                      backgroundColor: 'rgba(148,163,184,0.4)',
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: 999,
-                        backgroundColor: '#4ade80',
-                      },
-                    }}
-                  />
-
-                  <Typography variant="caption" sx={{ opacity: 0.8, display: 'block', mt: 0.75 }}>
-                    {cls.completedSessions}/{cls.totalSessions} sessions
-                  </Typography>
                 </Box>
-              </Grid2>
-            );
-          })}
-        </Grid2>
+              );
+            })
+          )}
+        </Box>
+
+        <TableContainer sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700 }}>Student & Class</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Progress</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Coordinator</TableCell>
+                <TableCell sx={{ fontWeight: 700 }} align="right">Sessions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {classes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body2" color="text.secondary">No active classes found.</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                classes.map((cls) => {
+                  const progress = getProgress(cls);
+                  const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
+                  return (
+                    <TableRow key={cls.id} hover>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>{cls.studentName}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {(cls.subject || []).join(', ')} • Grade {cls.grade}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                            label={cls.status} 
+                            size="small" 
+                            color="success" 
+                            variant="outlined"
+                            sx={{ textTransform: 'capitalize' }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ width: 200 }}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Box sx={{ flex: 1 }}>
+                            <LinearProgress 
+                                variant="determinate" 
+                                value={progress} 
+                                sx={{ height: 6, borderRadius: 3 }}
+                            />
+                          </Box>
+                          <Typography variant="caption" fontWeight={600}>{progress}%</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{coordinatorName}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" fontWeight={600}>
+                          {cls.completedSessions} / {cls.totalSessions}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </CardContent>
     </Card>
   );

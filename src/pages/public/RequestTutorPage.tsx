@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Box, Typography, Card, CardContent, TextField, MenuItem, Button, Alert, Grid, SelectChangeEvent } from '@mui/material';
+import { Container, Box, Typography, Card, CardContent, TextField, MenuItem, Button, Alert, Grid, SelectChangeEvent, Checkbox, ListItemText } from '@mui/material';
 import { useOptions } from '@/hooks/useOptions';
 
 interface FormState {
@@ -42,21 +42,38 @@ export default function RequestTutorPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { options: subjectOptions } = useOptions('SUBJECT');
+  // Fetch root options
+  const { options: boardOptions } = useOptions('BOARD');
+  const { options: modeOptions } = useOptions('TEACHING_MODE');
+  const { options: genderOptions } = useOptions('GENDER');
+  
+  // Find board ID to fetch dependent grades
+  const selectedBoardOption = boardOptions.find(b => b.value === form.board);
+  const { options: gradeOptions } = useOptions('GRADE', selectedBoardOption ? selectedBoardOption._id : null);
+
+  // Find grade ID to fetch dependent subjects
+  const selectedGradeOption = gradeOptions.find(g => g.value === form.grade);
+  const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeOption ? selectedGradeOption._id : null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-// existing import is fine:
-// import { ... , SelectChangeEvent } from '@mui/material';
-
-const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
-  const value = event.target.value;
-  const values = Array.isArray(value) ? (value as string[]) : String(value).split(',');
-  setForm((prev) => ({ ...prev, subjects: values }));
-};
+  const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
+    const value = event.target.value;
+    const values = Array.isArray(value) ? (value as string[]) : String(value).split(',');
+    
+    if (values.includes('SELECT_ALL')) {
+      if (form.subjects.length === subjectOptions.length) {
+        setForm((prev) => ({ ...prev, subjects: [] }));
+      } else {
+        setForm((prev) => ({ ...prev, subjects: subjectOptions.map((opt) => opt.value) }));
+      }
+    } else {
+      setForm((prev) => ({ ...prev, subjects: values }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +120,8 @@ const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
         parentPhone: '',
         grade: '',
         subjects: [],
-        board: 'CBSE',
-        mode: 'OFFLINE',
+        board: '',
+        mode: '',
         city: '',
         area: '',
         address: '',
@@ -204,61 +221,7 @@ const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Grade / Class"
-                  name="grade"
-                  value={form.grade}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g. 6th, 10th, 12th"
-                  fullWidth
-                  size="small"
-                />
-              </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  SelectProps={{
-                    multiple: true,
-                    value: form.subjects,
-                    onChange: handleSubjectsChange,
-                    renderValue: (selected) =>
-                      (selected as string[]).join(', '),
-                  }}
-                  label="Subjects"
-                  name="subjects"
-                  required
-                  fullWidth
-                  size="small"
-                >
-                  {subjectOptions.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  select
-                  label="Board"
-                  name="board"
-                  value={form.board}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  size="small"
-                >
-                  <MenuItem value="CBSE">CBSE</MenuItem>
-                  <MenuItem value="ICSE">ICSE</MenuItem>
-                  <MenuItem value="STATE_BOARD">State Board</MenuItem>
-                  <MenuItem value="IB">IB</MenuItem>
-                  <MenuItem value="IGCSE">IGCSE</MenuItem>
-                </TextField>
-              </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
                   select
@@ -270,11 +233,117 @@ const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
                   fullWidth
                   size="small"
                 >
-                  <MenuItem value="OFFLINE">Offline (Home Tutor)</MenuItem>
-                  <MenuItem value="ONLINE">Online</MenuItem>
-                  <MenuItem value="HYBRID">Hybrid</MenuItem>
+                  {modeOptions.length > 0 ? (
+                      modeOptions.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))
+                  ) : (
+                      <MenuItem value="OFFLINE">Offline</MenuItem>
+                  )}
                 </TextField>
               </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Board"
+                  name="board"
+                  value={form.board}
+                  onChange={(e) => {
+                    const newBoard = e.target.value;
+                    setForm(prev => ({ 
+                      ...prev, 
+                      board: newBoard, 
+                      grade: '', // Reset grade when board changes
+                      subjects: [] // Reset subjects when board (and thus grade keys) changes
+                    }));
+                  }}
+                  required
+                  fullWidth
+                  size="small"
+                >
+                  {boardOptions.length > 0 ? (
+                    boardOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value="CBSE">CBSE</MenuItem>
+                  )}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                 <TextField
+                  select
+                  label="Grade / Class"
+                  name="grade"
+                  value={form.grade}
+                  onChange={(e) => {
+                    const newGrade = e.target.value;
+                    setForm(prev => ({ 
+                      ...prev, 
+                      grade: newGrade,
+                      subjects: [] // Reset subjects when grade changes
+                    }));
+                  }}
+                  required
+                  fullWidth
+                  size="small"
+                  disabled={!form.board}
+                >
+                   {/* We need to fetch grades based on board. 
+                       Since useOptions hook is rigid in this scope (declared at top), 
+                       we might need a cleaner way or just use a new hook instance here. 
+                       BUT hooks can't be conditional. 
+                       So we will declare the hooks at the top level with dynamic dependency. */}
+                   {gradeOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                   ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  select
+                  SelectProps={{
+                    multiple: true,
+                    value: form.subjects,
+                    onChange: handleSubjectsChange,
+                    renderValue: (selected) => {
+                        const selectedLabels = (selected as string[])
+                            .filter(val => val !== 'SELECT_ALL')
+                            .map(val => 
+                                subjectOptions.find(opt => opt.value === val)?.label || val
+                            );
+                        return selectedLabels.join(', ');
+                    }
+                  }}
+                  label="Subjects"
+                  name="subjects"
+                  required
+                  fullWidth
+                  size="small"
+                  disabled={!form.grade}
+                >
+                  {subjectOptions.length > 0 && (
+                    <MenuItem value="SELECT_ALL">
+                      <Checkbox checked={form.subjects.length === subjectOptions.length && subjectOptions.length > 0} />
+                      <ListItemText primary={form.subjects.length === subjectOptions.length ? 'Unselect All' : 'Select All'} />
+                    </MenuItem>
+                  )}
+                  {subjectOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      <Checkbox checked={form.subjects.indexOf(opt.value) > -1} />
+                      <ListItemText primary={opt.label} />
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+
 
               <Grid item xs={12} md={6}>
                 <TextField
@@ -332,9 +401,14 @@ const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
                   fullWidth
                   size="small"
                 >
-                  <MenuItem value="">No preference</MenuItem>
-                  <MenuItem value="MALE">Male</MenuItem>
-                  <MenuItem value="FEMALE">Female</MenuItem>
+                    <MenuItem value="">No preference</MenuItem>
+                    {genderOptions
+                        .filter(opt => opt.value !== 'NO_PREFERENCE') // Already have explicit option above if needed, or mapping
+                        .map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                        </MenuItem>
+                    ))}
                 </TextField>
               </Grid>
 

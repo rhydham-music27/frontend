@@ -17,7 +17,14 @@ export const register = async (
   email: string,
   password: string,
   phone?: string,
-  role?: string
+  role?: string,
+  skipAuth?: boolean,
+  permissions?: {
+    canViewSiteLeads?: boolean;
+    canVerifyTutors?: boolean;
+    canCreateLeads?: boolean;
+    canManagePayments?: boolean;
+  }
 ) => {
   const res = await api.post<AuthResponse>(API_ENDPOINTS.AUTH_REGISTER, {
     name,
@@ -25,11 +32,12 @@ export const register = async (
     password,
     phone,
     role,
+    permissions,
   });
   const raw = res.data.data as any;
   const user = raw.user;
   const accessToken = raw?.tokens?.accessToken ?? raw?.accessToken;
-  if (accessToken) setAuthToken(accessToken);
+  if (accessToken && !skipAuth) setAuthToken(accessToken);
   return { ...res.data, data: { user, accessToken } } as any;
 };
 
@@ -67,6 +75,11 @@ export const sendLoginOtp = async (email: string) => {
   return res.data;
 };
 
+export const resendLoginOtp = async (email: string) => {
+  const res = await api.post<ApiResponse<any>>(API_ENDPOINTS.AUTH_LOGIN_OTP_RESEND, { email });
+  return res.data;
+};
+
 export const verifyLoginOtp = async (email: string, otp: string) => {
   const res = await api.post<AuthResponse>(API_ENDPOINTS.AUTH_LOGIN_OTP_VERIFY, { email, otp });
   const raw = res.data.data as any;
@@ -74,4 +87,9 @@ export const verifyLoginOtp = async (email: string, otp: string) => {
   const accessToken = raw?.tokens?.accessToken ?? raw?.accessToken;
   if (accessToken) setAuthToken(accessToken);
   return { ...res.data, data: { user, accessToken } } as any;
+};
+
+export const acceptTerms = async () => {
+  const res = await api.post<ApiResponse<{ success: boolean; acceptedTerms: boolean }>>(API_ENDPOINTS.AUTH_ACCEPT_TERMS);
+  return res.data;
 };

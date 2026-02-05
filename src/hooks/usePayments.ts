@@ -12,6 +12,7 @@ export type PaymentsFilters = {
   page?: number;
   limit?: number;
   status?: string;
+  paymentType?: string;
   tutorId?: string;
   finalClassId?: string;
   fromDate?: string;
@@ -33,6 +34,7 @@ const usePayments = (filters: PaymentsFilters = {}) => {
         page: filters.page,
         limit: filters.limit,
         status: filters.status,
+        paymentType: filters.paymentType,
         tutorId: filters.tutorId,
         finalClassId: filters.finalClassId,
         fromDate: filters.fromDate,
@@ -45,7 +47,7 @@ const usePayments = (filters: PaymentsFilters = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [filters.page, filters.limit, filters.status, filters.tutorId, filters.finalClassId, filters.fromDate, filters.toDate]);
+  }, [filters.page, filters.limit, filters.status, filters.paymentType, filters.tutorId, filters.finalClassId, filters.fromDate, filters.toDate]);
 
   useEffect(() => {
     fetchPayments();

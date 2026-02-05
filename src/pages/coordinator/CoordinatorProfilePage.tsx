@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Box, Typography, Grid, Card, CardContent, Avatar, Divider, Chip, Tabs, Tab } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Container, Box, Typography, Grid, Card, CardContent, Avatar, Divider, Chip, Tabs, Tab, Button } from '@mui/material';
+import LockResetIcon from '@mui/icons-material/LockReset';
+import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import WorkIcon from '@mui/icons-material/Work';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -11,6 +14,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { ICoordinator, ICoordinatorProfileMetrics } from '../../types';
 import { getCoordinatorByUserId, getProfileMetrics } from '../../services/coordinatorService';
+import * as coordinatorService from '../../services/coordinatorService';
 import MetricsCard from '../../components/dashboard/MetricsCard';
 import DateRangePicker from '../../components/dashboard/DateRangePicker';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -19,10 +23,12 @@ import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { subDays, format } from 'date-fns';
 
 const CoordinatorProfilePage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const user = useSelector(selectCurrentUser);
   const [coordinatorProfile, setCoordinatorProfile] = useState<ICoordinator | null>(null);
   const [profileMetrics, setProfileMetrics] = useState<ICoordinatorProfileMetrics | null>(null);
   const [profileMissing, setProfileMissing] = useState<boolean>(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ fromDate?: string; toDate?: string}>({
     fromDate: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
     toDate: format(new Date(), 'yyyy-MM-dd'),
@@ -37,12 +43,27 @@ const CoordinatorProfilePage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        if (user?.id) {
+        let profile: ICoordinator | null = null;
+        let userIdForMetrics: string | undefined = undefined;
+
+        if (id) {
+          const profileRes = await coordinatorService.getCoordinatorById(id);
+          profile = profileRes.data as unknown as ICoordinator;
+          userIdForMetrics = profile.user?.toString() || (profile as any).user?._id;
+        } else if (user?.id) {
           const profileRes = await getCoordinatorByUserId(user.id);
-          setCoordinatorProfile(profileRes.data as unknown as ICoordinator);
+          profile = profileRes.data as unknown as ICoordinator;
+          userIdForMetrics = user.id;
+        }
+
+        if (profile) {
+          setCoordinatorProfile(profile);
           setProfileMissing(false);
-          const metricsRes = await getProfileMetrics(dateRange.fromDate, dateRange.toDate);
-          setProfileMetrics(metricsRes.data as ICoordinatorProfileMetrics);
+          // Only fetch metrics if we have a userId to fetch for
+          if (userIdForMetrics) {
+             const metricsRes = await getProfileMetrics(dateRange.fromDate, dateRange.toDate, userIdForMetrics);
+             setProfileMetrics(metricsRes.data as ICoordinatorProfileMetrics);
+          }
         }
       } catch (err: any) {
         if (err?.response?.status === 404) {
@@ -56,13 +77,13 @@ const CoordinatorProfilePage: React.FC = () => {
       }
     };
     fetchData();
-  }, [user?.id, dateRange.fromDate, dateRange.toDate]);
+  }, [id, user?.id, dateRange.fromDate, dateRange.toDate]);
 
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '';
 
   return (
     <Container maxWidth="lg" sx={{ p: 3 }}>
-      <Typography variant="h4" mb={3}>My Profile</Typography>
+      <Typography variant="h4" mb={3}>{id ? 'Coordinator Profile' : 'My Profile'}</Typography>
 
       {loading && !coordinatorProfile && <LoadingSpinner />}
       {error && <ErrorAlert error={error} />}
@@ -86,9 +107,20 @@ const CoordinatorProfilePage: React.FC = () => {
                   <Avatar sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}>
                     {initials || <AccountCircleIcon fontSize="large" />}
                   </Avatar>
-                  <Typography variant="h5">{user?.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">{user?.email}</Typography>
-                  <Chip label={user?.role} color="primary" />
+                  <Typography variant="h5">{coordinatorProfile.user?.name || user?.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{coordinatorProfile.user?.email || user?.email}</Typography>
+                  <Chip label={coordinatorProfile.user?.role || user?.role} color="primary" />
+                  {!id && (
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={() => setChangePasswordOpen(true)}
+                      sx={{ mt: 1 }}
+                      startIcon={<LockResetIcon />}
+                    >
+                      Change Password
+                    </Button>
+                  )}
                   <Divider sx={{ width: '100%', my: 2 }} />
                   <Typography variant="body2">Joined: {new Date(coordinatorProfile.joiningDate).toLocaleDateString()}</Typography>
                   <Typography variant="body2">Max Capacity: {coordinatorProfile.maxClassCapacity}</Typography>
@@ -187,6 +219,8 @@ const CoordinatorProfilePage: React.FC = () => {
         </Grid>
       )}
 
+      <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+      
       <SnackbarNotification open={snackbar.open} message={snackbar.message} severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} />
     </Container>
   );

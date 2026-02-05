@@ -60,7 +60,17 @@ const StudentLoginPage: React.FC = () => {
         navigate('/student-dashboard');
       }
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || 'Failed to login';
+      const backendError = e?.response?.data;
+      let msg: string;
+      if (backendError?.error && backendError?.message && backendError.error !== backendError.message) {
+        msg = `${backendError.error}: ${backendError.message}`;
+      } else if (backendError?.error) {
+        msg = backendError.error;
+      } else if (backendError?.message) {
+        msg = backendError.message;
+      } else {
+        msg = e?.message || 'Failed to login';
+      }
       setLocalError(msg);
       dispatch(setError(msg));
     } finally {
@@ -110,7 +120,17 @@ const StudentLoginPage: React.FC = () => {
       dispatch(setError(null));
       navigate('/student-dashboard');
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || 'Failed to change password';
+      const backendError = e?.response?.data;
+      let msg: string;
+      if (backendError?.error && backendError?.message && backendError.error !== backendError.message) {
+        msg = `${backendError.error}: ${backendError.message}`;
+      } else if (backendError?.error) {
+        msg = backendError.error;
+      } else if (backendError?.message) {
+        msg = backendError.message;
+      } else {
+        msg = e?.message || 'Failed to change password';
+      }
       setLocalError(msg);
       dispatch(setError(msg));
     } finally {

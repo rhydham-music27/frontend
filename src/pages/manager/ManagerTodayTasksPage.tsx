@@ -1,341 +1,331 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import {
-  Container,
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  Chip,
-  Button,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Box, Typography, Grid, Paper, Tabs, Tab, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import TodaysTasks from '../../components/dashboard/TodaysTasks';
+import useDashboard from '../../hooks/useDashboard';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { useNavigate } from 'react-router-dom';
-import leadService from '../../services/leadService';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { format } from 'date-fns';
 import finalClassService from '../../services/finalClassService';
 import coordinatorService from '../../services/coordinatorService';
-import { CLASS_LEAD_STATUS } from '../../constants';
-import { IClassLead, IFinalClass } from '../../types';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ErrorAlert from '../../components/common/ErrorAlert';
+import { IFinalClass } from '../../types';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { alpha } from '@mui/material/styles';
 
 const ManagerTodayTasksPage: React.FC = () => {
-  const [leads, setLeads] = useState<IClassLead[]>([]);
-  const [unassignedClasses, setUnassignedClasses] = useState<IFinalClass[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
-  const [coordinators, setCoordinators] = useState<any[]>([]);
-  const [selectedCoordinatorUserId, setSelectedCoordinatorUserId] = useState<string>('');
-  const [assigning, setAssigning] = useState(false);
-  const navigate = useNavigate();
+    const { overallStats, loading, refetch } = useDashboard({ fromDate: format(new Date(), 'yyyy-MM-dd'), toDate: format(new Date(), 'yyyy-MM-dd') }, false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // Initialize tab from search params if present
+    const initialTab = searchParams.get('tab') === 'unassigned' ? 1 : 0;
+    const [tabValue, setTabValue] = useState(initialTab);
+    const [unassignedClasses, setUnassignedClasses] = useState<IFinalClass[]>([]);
+    const [loadingClasses, setLoadingClasses] = useState(false);
+    
+    // Assignment Modal State
+    const [assignModalOpen, setAssignModalOpen] = useState(false);
+    const [selectedClassForAssignment, setSelectedClassForAssignment] = useState<IFinalClass | null>(null);
+    const [coordinators, setCoordinators] = useState<any[]>([]);
+    const [selectedCoordinatorId, setSelectedCoordinatorId] = useState('');
+    const [loadingCoordinators, setLoadingCoordinators] = useState(false);
+    const [assigning, setAssigning] = useState(false);
 
-  const fetchLeads = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Fetch recent leads and then filter on the client to anything not CONVERTED
-      const res = await leadService.getClassLeads({ page: 1, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
-      const all = res.data || [];
-      const openLeads = all.filter((l) => l.status !== CLASS_LEAD_STATUS.CONVERTED);
-      setLeads(openLeads);
-    } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || 'Failed to load leads for today\'s tasks';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    const navigate = useNavigate();
 
-  const fetchUnassignedClasses = useCallback(async () => {
-    try {
-      const res = await finalClassService.getUnassignedClasses();
-      setUnassignedClasses(res.data || []);
-    } catch (e: any) {
-      // Do not override main error; show inline later if needed
-      // eslint-disable-next-line no-console
-      console.error('Failed to load unassigned classes', e?.response?.data || e?.message || e);
-    }
-  }, []);
+    useEffect(() => {
+        if (tabValue === 1) {
+            loadUnassignedClasses();
+        }
+    }, [tabValue]);
 
-  const openAssignModal = useCallback(
-    async (cls: IFinalClass) => {
-      setSelectedClass(cls);
-      setAssignModalOpen(true);
-      setSelectedCoordinatorUserId('');
-      try {
-        const res = await coordinatorService.getCoordinators(1, 50, true, true, 'createdAt', 'desc');
-        setCoordinators(res.data || []);
-      } catch (e: any) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to load coordinators', e?.response?.data || e?.message || e);
-      }
-    },
-    []
-  );
+    const loadUnassignedClasses = async () => {
+        setLoadingClasses(true);
+        try {
+            const res = await finalClassService.getFinalClasses(1, 20, { noCoordinator: true, status: 'ACTIVE' });
+            setUnassignedClasses(res.data);
+        } catch (error) {
+            console.error("Failed to load unassigned classes", error);
+        } finally {
+            setLoadingClasses(false);
+        }
+    };
 
-  const handleAssignCoordinator = useCallback(async () => {
-    if (!selectedClass || !selectedCoordinatorUserId) return;
-    try {
-      setAssigning(true);
-      await finalClassService.assignCoordinatorToClass(selectedClass.id || (selectedClass as any)._id, selectedCoordinatorUserId);
-      setAssignModalOpen(false);
-      setSelectedClass(null);
-      await fetchUnassignedClasses();
-    } catch (e: any) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to assign coordinator', e?.response?.data || e?.message || e);
-    } finally {
-      setAssigning(false);
-    }
-  }, [selectedClass, selectedCoordinatorUserId, fetchUnassignedClasses]);
+    const loadCoordinators = async () => {
+        if (coordinators.length > 0) return; // Already loaded
+        setLoadingCoordinators(true);
+        try {
+            const res = await coordinatorService.getCoordinators(1, 100, true); // Fetch active coordinators
+            setCoordinators(res.data);
+        } catch (error) {
+            console.error("Failed to load coordinators", error);
+        } finally {
+            setLoadingCoordinators(false);
+        }
+    };
 
-  useEffect(() => {
-    void fetchLeads();
-    void fetchUnassignedClasses();
-  }, [fetchLeads, fetchUnassignedClasses]);
+    const openAssignModal = async (cls: IFinalClass) => {
+        setSelectedClassForAssignment(cls);
+        setSelectedCoordinatorId('');
+        setAssignModalOpen(true);
+        await loadCoordinators();
+    };
 
-  const countsByStatus = useMemo(() => {
-    const counts: Record<string, number> = {};
-    leads.forEach((l) => {
-      counts[l.status] = (counts[l.status] || 0) + 1;
-    });
-    return counts;
-  }, [leads]);
+    const handleAssignCoordinator = async () => {
+        if (!selectedClassForAssignment || !selectedCoordinatorId) return;
+        
+        setAssigning(true);
+        try {
+            await finalClassService.assignCoordinatorToClass(selectedClassForAssignment.id, selectedCoordinatorId);
+            setAssignModalOpen(false);
+            // Refresh list and stats
+            await loadUnassignedClasses();
+            refetch();
+            // Optional: Show success message/snackbar
+        } catch (error) {
+            console.error("Failed to assign coordinator", error);
+            // Optional: Show error
+        } finally {
+            setAssigning(false);
+        }
+    };
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} mb={2} flexDirection={{ xs: 'column', sm: 'row' }} gap={{ xs: 1.5, sm: 1 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} gutterBottom>
-            Today&apos;s Tasks
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Review and follow up on all leads that have not yet been converted.
-          </Typography>
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={fetchLeads}
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
-        >
-          Refresh
-        </Button>
-      </Box>
+    const handleViewAction = (actionId: string) => {
+        if (actionId === 'unassigned_coordinators') {
+            setTabValue(1);
+        }
+    };
 
-      {error && (
-        <Box mb={2}>
-          <ErrorAlert error={error} onClose={() => setError(null)} />
-        </Box>
-      )}
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+        setTabValue(newValue);
+        // Sync search param
+        if (newValue === 1) {
+            setSearchParams({ tab: 'unassigned' });
+        } else {
+            setSearchParams({});
+        }
+    };
 
-      {/* Assign Coordinator Modal */}
-      <Dialog open={assignModalOpen} onClose={() => !assigning && setAssignModalOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Assign Coordinator</DialogTitle>
-        <DialogContent>
-          <Box mt={1} mb={2}>
-            <Typography variant="body2" color="text.secondary">
-              {selectedClass
-                ? `Assign a coordinator for ${selectedClass.studentName} (${selectedClass.grade || 'N/A'})`
-                : 'Select a coordinator for this class.'}
-            </Typography>
-          </Box>
-          <FormControl fullWidth size="small">
-            <InputLabel id="coordinator-select-label">Coordinator</InputLabel>
-            <Select
-              labelId="coordinator-select-label"
-              value={selectedCoordinatorUserId}
-              label="Coordinator"
-              onChange={(e) => setSelectedCoordinatorUserId(e.target.value)}
+    return (
+        <Container maxWidth="xl" sx={{ pb: 6 }}>
+            {/* Hero Section */}
+            <Box 
+                sx={{ 
+                    background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+                    color: 'white',
+                    pt: { xs: 4, md: 6 },
+                    pb: { xs: 8, md: 10 },
+                    px: { xs: 3, md: 5 },
+                    borderRadius: { xs: 0, md: 4 },
+                    mt: 3,
+                    mb: -6,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    position: 'relative',
+                }}
             >
-              {coordinators.map((c) => {
-                const user = (c as any).user || {};
-                return (
-                  <MenuItem key={(user as any).id || (user as any)._id} value={(user as any).id || (user as any)._id}>
-                    {(user as any).name || 'Unnamed'}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => !assigning && setAssignModalOpen(false)} disabled={assigning}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAssignCoordinator}
-            disabled={assigning || !selectedCoordinatorUserId}
-          >
-            {assigning ? 'Assigning...' : 'Assign Coordinator'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {loading && !leads.length && (
-        <Box mt={4} display="flex" justifyContent="center">
-          <LoadingSpinner />
-        </Box>
-      )}
-
-      {!loading && (
-        <Grid container spacing={3} mb={3}>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <AssignmentIcon color="primary" />
-                    <Typography variant="subtitle1">Open Leads</Typography>
-                  </Box>
-                  <Chip label={leads.length} color="primary" size="small" />
+                <Box sx={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                        <Typography variant="h3" fontWeight={800} gutterBottom>
+                            Today's Priorities
+                        </Typography>
+                        <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 400 }}>
+                            Focus on what matters most for today.
+                        </Typography>
+                    </Box>
+                    <Button 
+                        variant="contained" 
+                        startIcon={<RefreshIcon />}
+                        onClick={() => refetch()}
+                        sx={{ 
+                            bgcolor: 'rgba(255,255,255,0.1)', 
+                            backdropFilter: 'blur(10px)',
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+                        }}
+                    >
+                        Refresh
+                    </Button>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
-                  All leads that have not reached the CONVERTED status.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+            </Box>
 
-          <Grid item xs={12} sm={6} md={8}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <WarningAmberIcon color="warning" />
-                    <Typography variant="subtitle1">By Status</Typography>
-                  </Box>
-                </Box>
-                {Object.keys(countsByStatus).length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">
-                    No open leads by status.
-                  </Typography>
-                ) : (
-                  <Box display="flex" flexWrap="wrap" gap={1}>
-                    {Object.entries(countsByStatus).map(([status, count]) => (
-                      <Chip key={status} label={`${status}: ${count}`} size="small" />
-                    ))}
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
+            {/* Main Content */}
+            <Box sx={{ mt: 5 }}>
+                <Grid container spacing={4}>
+                    {/* Widget Side (or Top on mobile) */}
+                    <Grid item xs={12} md={4}>
+                        <TodaysTasks stats={overallStats} loading={loading} onViewAction={handleViewAction} />
+                    </Grid>
 
-      {/* Unassigned Classes Section */}
-      {!loading && (
-        <Box mb={3} mt={2}>
-          <Typography variant="h6" gutterBottom>
-            Classes Without Coordinator
-          </Typography>
-          {unassignedClasses.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              All classes currently have a coordinator assigned.
-            </Typography>
-          ) : (
-            <Card>
-              <CardContent>
-                <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                  {unassignedClasses.length} classes need coordinator assignment
-                </Typography>
-                <List dense>
-                  {unassignedClasses.map((cls) => {
-                    const classId = (cls as any).id || (cls as any)._id;
-                    const studentName = (cls as any).studentName || 'Unnamed Class';
-                    return (
-                      <ListItem key={classId} secondaryAction={
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => openAssignModal(cls)}
+                    {/* CRM Metrics Grid - 6 columns */}
+                    <Grid item xs={12}>
+                        <Typography variant="h6" fontWeight={700} mb={2} color="text.primary">Lead Funnel Tracker</Typography>
+                        <Grid container spacing={2}>
+                            {[
+                                { key: 'new', label: 'New', color: '#3B82F6' },
+                                { key: 'announced', label: 'Announced', color: '#F59E0B' },
+                                { key: 'interested', label: 'Interested', color: '#8B5CF6' },
+                                { key: 'demoScheduled', label: 'Demo Scheduled', color: '#10B981' },
+                                { key: 'demoPending', label: 'Demo Pending', color: '#EC4899' },
+                                { key: 'won', label: 'Won', color: '#059669' },
+                            ].map((col) => (
+                                <Grid item xs={6} sm={4} md={2} key={col.key}>
+                                    <Paper 
+                                        elevation={0}
+                                        onClick={() => navigate(`/manager/leads-crm?column=${col.key}`)}
+                                        sx={{ 
+                                            p: 2, 
+                                            borderRadius: 3, 
+                                            border: '1px solid', 
+                                            borderColor: 'divider',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            '&:hover': {
+                                                borderColor: col.color,
+                                                bgcolor: alpha(col.color, 0.05),
+                                                transform: 'translateY(-3px)',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                                            }
+                                        }}
+                                    >
+                                        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'block', mb: 1 }}>{col.label}</Typography>
+                                        <Typography variant="h4" fontWeight={800} sx={{ color: col.color }}>
+                                            {(overallStats as any)?.crmCounts?.[col.key] || 0}
+                                        </Typography>
+                                    </Paper>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    </Grid>
+
+                    {/* Detailed View Side */}
+                    <Grid item xs={12} md={8}>
+                        <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden', minHeight: 600 }}>
+                           <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#FAFAFA' }}>
+                                <Tabs value={tabValue} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
+                                    <Tab label="Website Leads" />
+                                    <Tab label="Unassigned Classes" />
+                                    <Tab label="Pending Verifications" />
+                                    <Tab label="Open Leads" />
+                                    <Tab label="Requests" />
+                                </Tabs>
+                           </Box>
+                           
+                           <Box p={3}>
+                                {tabValue === 0 && (
+                                    <Box>
+                                        <Typography variant="h6" fontWeight={700} gutterBottom>New Website Leads</Typography>
+                                        <Typography color="text.secondary">
+                                            List of leads from website that are marked as NEW. 
+                                            <br/>
+                                            <i>(Detailed table view coming soon - please use the "View leads" button in the widget to manage them for now)</i>
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {tabValue === 1 && (
+                                    <Box>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                            <Typography variant="h6" fontWeight={700}>Classes without Coordinator</Typography>
+                                            <Button size="small" onClick={loadUnassignedClasses} startIcon={<RefreshIcon />}>Refresh</Button>
+                                        </Box>
+                                        
+                                        {loadingClasses ? (
+                                            <Typography>Loading...</Typography>
+                                        ) : unassignedClasses.length === 0 ? (
+                                            <Typography color="text.secondary">No unassigned active classes found.</Typography>
+                                        ) : (
+                                            <TableContainer>
+                                                <Table size="small">
+                                                    <TableHead>
+                                                        <TableRow>
+                                                            <TableCell>Class</TableCell>
+                                                            <TableCell>Student</TableCell>
+                                                            <TableCell>Subject</TableCell>
+                                                            <TableCell>Action</TableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {unassignedClasses.map((cls) => (
+                                                            <TableRow key={cls.id}>
+                                                                <TableCell>{cls.className}</TableCell>
+                                                                <TableCell>{cls.studentName}</TableCell>
+                                                                <TableCell>{cls.subject.join(', ')}</TableCell>
+                                                                <TableCell>
+                                                                    <Button 
+                                                                        size="small" 
+                                                                        variant="outlined" 
+                                                                        endIcon={<ArrowForwardIcon />}
+                                                                        onClick={() => openAssignModal(cls)}
+                                                                    >
+                                                                        Assign
+                                                                    </Button>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                        )}
+                                        <Box mt={2} />
+                                    </Box>
+                                )}
+                                {tabValue === 2 && (
+                                    <Box>
+                                        <Typography variant="h6" fontWeight={700} gutterBottom>Tutors Pending Verification</Typography>
+                                        <Typography color="text.secondary">Tutors waiting for document approval.</Typography>
+                                    </Box>
+                                )}
+                                {tabValue === 3 && (
+                                    <Box>
+                                        <Typography variant="h6" fontWeight={700} gutterBottom>Open Leads Tracking</Typography>
+                                        <Typography color="text.secondary">Leads that are open and need follow-up.</Typography>
+                                    </Box>
+                                )}
+                                {tabValue === 4 && (
+                                    <Box>
+                                        <Typography variant="h6" fontWeight={700} gutterBottom>Coordinator Requests</Typography>
+                                        <Typography color="text.secondary">No pending requests.</Typography>
+                                    </Box>
+                                )}
+                           </Box>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            {/* Assign Coordinator Modal */}
+            <Dialog open={assignModalOpen} onClose={() => setAssignModalOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Assign Coordinator</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Assigning coordinator for class: <b>{selectedClassForAssignment?.className}</b>
+                    </Typography>
+                    <Box mt={2}>
+                        <TextField
+                            select
+                            label="Select Coordinator"
+                            fullWidth
+                            value={selectedCoordinatorId}
+                            onChange={(e) => setSelectedCoordinatorId(e.target.value)}
+                            disabled={loadingCoordinators}
                         >
-                          Assign Coordinator
-                        </Button>
-                      }>
-                        <ListItemText
-                          primary={studentName}
-                          secondary={`${cls.grade || 'N/A'} · ${Array.isArray(cls.subject) ? cls.subject.join(', ') : cls.subject || 'N/A'} · Tutor: ${(cls.tutor as any)?.name || 'N/A'}`}
-                        />
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </CardContent>
-            </Card>
-          )}
-        </Box>
-      )}
-
-      {!loading && leads.length === 0 && !error && (
-        <Box textAlign="center" py={6}>
-          <Typography variant="h6" color="text.secondary">
-            No open leads
-          </Typography>
-          <Typography variant="body2">
-            Great job! All leads have been converted or closed.
-          </Typography>
-        </Box>
-      )}
-
-      {!loading && leads.length > 0 && (
-        <Card>
-          <CardContent>
-            <Typography variant="subtitle2" color="text.secondary" mb={1}>
-              Showing {leads.length} open leads
-            </Typography>
-            <List dense>
-              {leads.map((lead) => {
-                const leadId = (lead as any).id || (lead as any)._id;
-                // Get student display name based on student type
-                const getStudentDisplayName = () => {
-                  const studentType = (lead as any).studentType;
-                  if (studentType === 'GROUP') {
-                    const studentDetails = (lead as any).studentDetails || [];
-                    const studentNames = studentDetails
-                      .map((student: any) => student.name)
-                      .filter(Boolean)
-                      .join(', ');
-                    return studentNames || `${(lead as any).numberOfStudents || 0} students`;
-                  } else {
-                    return lead.studentName || 'Unnamed Lead';
-                  }
-                };
-                
-                return (
-                  <ListItem key={leadId} disablePadding>
-                    <ListItemButton onClick={() => navigate(`/class-leads/${leadId}`)}>
-                      <ListItemText
-                        primary={getStudentDisplayName()}
-                        secondary={`${lead.grade || 'N/A'} · ${Array.isArray(lead.subject) ? lead.subject.join(', ') : lead.subject || 'N/A'} · Status: ${lead.status}${lead.parentEmail ? ` · Parent: ${lead.parentEmail}` : ''}`}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
-            </List>
-          </CardContent>
-        </Card>
-      )}
-    </Container>
-  );
+                            {coordinators.map((coord) => (
+                                <MenuItem key={coord.id} value={coord.user?.id || coord.user?._id || coord.userId}>
+                                    {coord.user?.name || coord.name || 'Unknown'} ({coord.specialization?.join(', ') || 'General'})
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAssignModalOpen(false)}>Cancel</Button>
+                    <Button 
+                        onClick={handleAssignCoordinator} 
+                        variant="contained" 
+                        disabled={!selectedCoordinatorId || assigning}
+                    >
+                        {assigning ? 'Assigning...' : 'Assign'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Container>
+    );
 };
 
 export default ManagerTodayTasksPage;

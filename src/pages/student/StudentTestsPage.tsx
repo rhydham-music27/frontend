@@ -3,7 +3,6 @@ import { Container, Box, Card, CardContent, Typography, Grid, Chip, Button, Circ
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -28,6 +27,9 @@ const StudentTestsPage: React.FC = () => {
       totalMarks?: number;
       obtainedMarks?: number;
       description?: string;
+      paperUrl?: string;
+      topicName?: string;
+      answerSheetUrl?: string;
     }>
   >([]);
 
@@ -196,7 +198,7 @@ const StudentTestsPage: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     <strong>Marks:</strong> {test.obtainedMarks ? `${test.obtainedMarks}/${test.totalMarks}` : `${test.totalMarks} marks`}
                   </Typography>
-                  {test.obtainedMarks && (
+                  {typeof test.obtainedMarks === 'number' && typeof test.totalMarks === 'number' && (
                     <Typography variant="body2" color="success.main" sx={{ mt: 0.5 }}>
                       Score: {Math.round((test.obtainedMarks / test.totalMarks) * 100)}%
                     </Typography>
@@ -207,19 +209,14 @@ const StudentTestsPage: React.FC = () => {
                   <Button
                     variant="contained"
                     size="small"
-                    onClick={() => navigate(`/student-test/${test.id}`)}
+                    onClick={() => navigate(`/student-tests/${test.id}`, { state: { test } })}
                   >
-                    {test.status === 'submitted' ? 'View Result' : test.status === 'pending' ? 'Start Assignment' : 'View Details'}
+                    {test.status === 'submitted'
+                      ? 'View Result'
+                      : test.status === 'pending'
+                      ? 'Start Assignment'
+                      : 'View Details'}
                   </Button>
-                  {test.status === 'pending' && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => navigate(`/student-test/${test.id}/instructions`)}
-                    >
-                      Instructions
-                    </Button>
-                  )}
                 </Box>
               </CardContent>
             </Card>

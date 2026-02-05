@@ -1,7 +1,7 @@
 import React from 'react';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Box, Typography, alpha } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { NAVIGATION_ITEMS, USER_ROLES } from '../../constants';
+import { NAVIGATION_ITEMS, USER_ROLES, VERIFICATION_STATUS } from '../../constants';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import PeopleIcon from '@mui/icons-material/People';
@@ -24,13 +24,21 @@ import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import FolderIcon from '@mui/icons-material/Folder';
+import EventIcon from '@mui/icons-material/Event';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import InsightsIcon from '@mui/icons-material/Insights';
+import PersonIcon from '@mui/icons-material/Person';
+import RecentActorsIcon from '@mui/icons-material/RecentActors';
+import CastForEducationIcon from '@mui/icons-material/CastForEducation';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 
-interface SidebarProps {
+export interface SidebarProps {
   open: boolean;
   onClose: () => void;
   drawerWidth?: number;
+  onResizeStart?: () => void;
 }
 
 const iconForLabel = (label: string) => {
@@ -46,7 +54,7 @@ const iconForLabel = (label: string) => {
     case 'Class Leads':
       return <AssignmentIcon />;
     case 'Test Scheduling':
-      return <AssignmentIcon />;
+      return <EventIcon />;
     case 'Tutors':
       return <PeopleIcon />;
     case 'Coordinators':
@@ -55,6 +63,10 @@ const iconForLabel = (label: string) => {
       return <SupervisorAccountIcon />;
     case 'Coordinators Management':
       return <ManageAccountsIcon />;
+    case 'Final Classes':
+      return <CastForEducationIcon />;
+    case 'Lead CRM':
+      return <RecentActorsIcon />;
     case 'Data Management':
       return <StorageIcon />;
     case 'Register New Member':
@@ -69,20 +81,24 @@ const iconForLabel = (label: string) => {
       return <ClassIcon />;
     case 'Analytics':
       return <AnalyticsIcon />;
+    case 'Business Analytics':
+      return <TrendingUpIcon />;
     case 'Profile':
       return <AccountCircleIcon />;
     case 'My Profile':
-      return <AccountCircleIcon />;
+      return <PersonIcon />;
     case 'Admin Profile':
       return <AccountBoxIcon />;
     case "Today's Tasks":
       return <TodayIcon />;
     case 'Announcements':
       return <CampaignIcon />;
-    case 'Test Reports':
+    case 'Tests':
       return <AssessmentIcon />;
+    case 'Test Reports':
+      return <SummarizeIcon />;
     case 'Tutor Performance':
-      return <PeopleIcon />;
+      return <InsightsIcon />;
     case 'Payment Tracking':
       return <AccountBalanceWalletIcon />;
     case 'Notes':
@@ -92,11 +108,12 @@ const iconForLabel = (label: string) => {
   }
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) => {
+const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onResizeStart }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector(selectCurrentUser);
   const userRole = (user?.role as string) || '';
+  const isCollapsed = drawerWidth < 180;
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -104,12 +121,21 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
   };
 
   const drawer = (
-    <Box sx={{ width: drawerWidth, height: '100%', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+    <Box sx={{ 
+      width: drawerWidth, 
+      height: '100%', 
+      maxHeight: '100vh',
+      display: 'flex', 
+      flexDirection: 'column', 
+      overflowX: 'hidden',
+      position: 'relative'
+    }}>
       <Box 
         sx={{ 
-          p: { xs: 2, sm: 2.5, md: 3 }, 
+          p: isCollapsed ? 1 : { xs: 2, sm: 2.5, md: 3 }, 
           display: 'flex', 
           alignItems: 'center', 
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
           gap: { xs: 1, sm: 1.5 },
           borderBottom: '1px solid #E2E8F0',
           minHeight: { xs: 56, sm: 64, md: 70 },
@@ -126,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
             border: '2px solid #E2E8F0',
           }} 
         />
-        <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Box sx={{ minWidth: 0, flex: 1, display: isCollapsed ? 'none' : 'block' }}>
           <Typography 
             variant="h6" 
             sx={{ 
@@ -157,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
         </Box>
       </Box>
 
-      <List sx={{ flexGrow: 1, py: { xs: 1, sm: 1.5, md: 2 }, px: { xs: 0.5, sm: 1 } }}>
+      <List sx={{ flexGrow: 1, py: { xs: 1, sm: 1.5, md: 2 }, px: isCollapsed ? 1 : { xs: 0.5, sm: 1 } }}>
         {NAVIGATION_ITEMS.filter((item: any) => !item.allowedRoles || item.allowedRoles.includes(userRole)).map((item) => {
           let resolvedPath = item.path;
           if (item.label === 'Dashboard') {
@@ -168,16 +194,23 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
             }
           }
 
+          if (item.label === 'Analytics' && userRole === USER_ROLES.ADMIN) {
+            resolvedPath = '/admin/analytics';
+          }
+
           if (item.label === 'Profile' && userRole === USER_ROLES.TUTOR) {
             resolvedPath = '/tutor-profile';
           }
 
           const selected = location.pathname === resolvedPath || location.pathname.startsWith(resolvedPath + '/');
+          const isUnverifiedManager = userRole === USER_ROLES.MANAGER && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED;
+          const isItemDisabled = isUnverifiedManager && !['Dashboard', 'Profile', 'My Profile'].includes(item.label);
           
           return (
-            <ListItem key={item.path} disablePadding sx={{ mb: { xs: 0.25, sm: 0.5 } }}>
+            <ListItem key={item.path} disablePadding sx={{ mb: { xs: 0.25, sm: 0.5 }, display: 'block' }}>
               <ListItemButton 
                 selected={selected} 
+                disabled={isItemDisabled}
                 onClick={() => handleNavigation(resolvedPath)}
                 sx={{
                   borderRadius: { xs: '8px', sm: '10px' },
@@ -185,6 +218,15 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
                   py: { xs: 1, sm: 1.25 },
                   px: { xs: 1, sm: 1.5 },
                   transition: 'all 0.2s ease-in-out',
+                  opacity: isItemDisabled ? 0.6 : 1,
+                  filter: isItemDisabled ? 'grayscale(1)' : 'none',
+                  '&.Mui-disabled': {
+                    cursor: 'not-allowed',
+                    pointerEvents: 'auto',
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                    }
+                  },
                   '&.Mui-selected': {
                     backgroundColor: alpha('#0F62FE', 0.08),
                     color: 'primary.main',
@@ -212,11 +254,12 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: { xs: 36, sm: 40 } }}>
+                <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 2, justifyContent: 'center' }}>
                   {iconForLabel(item.label)}
                 </ListItemIcon>
                 <ListItemText 
                   primary={item.label}
+                  sx={{ opacity: isCollapsed ? 0 : 1 }}
                   primaryTypographyProps={{
                     fontSize: { xs: '0.8125rem', sm: '0.875rem' },
                     fontWeight: selected ? 600 : 500,
@@ -231,7 +274,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
 
       <Divider />
       
-      <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
+      <Box sx={{ p: { xs: 1.5, sm: 2 }, display: isCollapsed ? 'none' : 'block' }}>
         <Typography 
           variant="caption" 
           color="text.secondary" 
@@ -244,6 +287,23 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 240 }) =
           © 2024 Your Shikshak
         </Typography>
       </Box>
+      {/* Resize Handle */}
+      <Box
+        onMouseDown={onResizeStart}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '5px',
+          height: '100%',
+          cursor: 'col-resize',
+          zIndex: 1200, // Above content
+          '&:hover': {
+            backgroundColor: 'primary.main',
+            opacity: 0.5,
+          },
+        }}
+      />
     </Box>
   );
 
