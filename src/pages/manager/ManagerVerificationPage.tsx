@@ -37,7 +37,7 @@ const ManagerVerificationPage: React.FC = () => {
           
           // If already verified, redirect to dashboard
           if (resp.data.verificationStatus === 'VERIFIED') {
-            navigate('/manager-dashboard');
+            navigate('/');
           }
         }
       } catch (error) {
@@ -57,7 +57,7 @@ const ManagerVerificationPage: React.FC = () => {
             verificationStatus: updatedManager.verificationStatus as any
         }));
     }
-    navigate('/manager-dashboard');
+    navigate('/');
   };
 
   if (loading) {
