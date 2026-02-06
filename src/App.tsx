@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from './store/slices/authSlice';
 import { USER_ROLES } from './constants';
@@ -182,35 +182,151 @@ const App: React.FC = () => {
               }
             >
               <Route index element={<RoleBasedDashboard />} />
-              <Route path="coordinator-dashboard" element={<CoordinatorDashboardPage />} />
-              <Route path="tutor-dashboard" element={<TutorDashboardPage />} />
-              <Route path="tutor-classes" element={<TutorClassesPage />} />
-              <Route path="tutor-timetable" element={<TutorTimetablePage />} />
-              <Route path="tutor-payments" element={<TutorPaymentsPage />} />
-              <Route path="tutor-attendance" element={<TutorAttendancePage />} />
-              <Route path="tutor-tests" element={<TutorTestsPage />} />
-              <Route path="tutor-leads" element={<TutorLeadsPage />} />
-              <Route path="tutor-notes" element={<TutorNotesPage />} />
-              <Route path="notes" element={<NotesDrivePage />} />
-              <Route path="today-tasks" element={<TodayTasksPage />} />
-              <Route path="assigned-classes" element={<AssignedClassesPage />} />
-              <Route path="attendance-approvals" element={<AttendanceApprovalPage />} />
-              <Route path="test-scheduling" element={<TestSchedulingPage />} />
-              <Route path="announcements" element={<SendAnnouncementPage />} />
-              <Route path="test-reports" element={<TestReportAnalysisPage />} />
-              <Route path="tutor-performance" element={<TutorPerformancePage />} />
-              <Route path="payment-tracking" element={<PaymentTrackingPage />} />
-              <Route path="coordinator-settings" element={<CoordinatorSettingsPage />} />
-              <Route path="coordinator-profile" element={<CoordinatorProfilePage />} />
-              <Route path="admin-dashboard" element={<AdminDashboardPage />} />
-              <Route path="admin-profile" element={<AdminProfilePage />} />
-              <Route path="manager-today-tasks" element={<ManagerTodayTasksPage />} />
-              <Route path="parent-dashboard" element={<ParentDashboardPage />} />
-              <Route path="parent-attendance" element={<ParentAttendancePage />} />
-              <Route path="parent-payments" element={<ParentPaymentsPage />} />
-              <Route path="parent-test" element={<ParentTestsPage />} />
-              <Route path="parent-notes" element={<ParentNotesPage />} />
-              <Route path="admin">
+              <Route path="coordinator-dashboard" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <CoordinatorDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-dashboard" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-classes" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorClassesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-timetable" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorTimetablePage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-payments" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorPaymentsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-attendance" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorAttendancePage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-tests" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorTestsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-leads" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorLeadsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-notes" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                  <TutorNotesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="notes" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR, USER_ROLES.STUDENT, USER_ROLES.PARENT]}>
+                  <NotesDrivePage />
+                </ProtectedRoute>
+              } />
+              <Route path="today-tasks" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <TodayTasksPage />
+                </ProtectedRoute>
+              } />
+              <Route path="assigned-classes" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <AssignedClassesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="attendance-approvals" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <AttendanceApprovalPage />
+                </ProtectedRoute>
+              } />
+              <Route path="test-scheduling" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <TestSchedulingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="announcements" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <SendAnnouncementPage />
+                </ProtectedRoute>
+              } />
+              <Route path="test-reports" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <TestReportAnalysisPage />
+                </ProtectedRoute>
+              } />
+              <Route path="tutor-performance" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <TutorPerformancePage />
+                </ProtectedRoute>
+              } />
+              <Route path="payment-tracking" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <PaymentTrackingPage />
+                </ProtectedRoute>
+              } />
+              <Route path="coordinator-settings" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <CoordinatorSettingsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="coordinator-profile" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <CoordinatorProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin-dashboard" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin-profile" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                  <AdminProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="manager-today-tasks" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <ManagerTodayTasksPage />
+                </ProtectedRoute>
+              } />
+              <Route path="parent-dashboard" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+                  <ParentDashboardPage />
+                </ProtectedRoute>
+              } />
+              <Route path="parent-attendance" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+                  <ParentAttendancePage />
+                </ProtectedRoute>
+              } />
+              <Route path="parent-payments" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+                  <ParentPaymentsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="parent-test" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+                  <ParentTestsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="parent-notes" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.PARENT]}>
+                  <ParentNotesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                  <Outlet />
+                </ProtectedRoute>
+              }>
                 <Route path="managers" element={<ManagersManagementPage />} />
                 <Route path="coordinators" element={<CoordinatorsManagementPage />} />
                 <Route path="final-classes" element={<FinalClassesManagementPage />} />
@@ -220,22 +336,54 @@ const App: React.FC = () => {
                 <Route path="approvals" element={<ApprovalsManagementPage />} />
                 <Route path="analytics" element={<AdvancedAnalyticsPage />} />
               </Route>
-              <Route path="class-leads">
+              <Route path="class-leads" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <Outlet />
+                </ProtectedRoute>
+              }>
                 <Route index element={<ClassLeadsListPage />} />
                 <Route path="new" element={<CreateClassLeadPage />} />
                 <Route path=":id" element={<ClassLeadDetailPage />} />
                 <Route path=":id/edit" element={<EditClassLeadPage />} />
               </Route>
-              <Route path="tutors" element={<TutorVerificationPage />} />
-              <Route path="coordinators" element={<CoordinatorsPage />} />
-              <Route path="attendance" element={<AttendanceListPage />} />
-              <Route path="payments">
+              <Route path="tutors" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <TutorVerificationPage />
+                </ProtectedRoute>
+              } />
+              <Route path="coordinators" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <CoordinatorsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="attendance" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <AttendanceListPage />
+                </ProtectedRoute>
+              } />
+              <Route path="payments" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <Outlet />
+                </ProtectedRoute>
+              }>
                 <Route index element={<PaymentsListPage />} />
                 <Route path=":id" element={<PaymentDetailPage />} />
               </Route>
-              <Route path="analytics" element={<ManagerAnalyticsPage />} />
-              <Route path="manager/leads-crm" element={<ManagerLeadCRMPage />} />
-              <Route path="manager-verification" element={<ManagerVerificationPage />} />
+              <Route path="analytics" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <ManagerAnalyticsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="manager/leads-crm" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}>
+                  <ManagerLeadCRMPage />
+                </ProtectedRoute>
+              } />
+              <Route path="manager-verification" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.MANAGER]}>
+                  <ManagerVerificationPage />
+                </ProtectedRoute>
+              } />
 
               <Route path="profile" element={<RoleBasedProfile />} />
               <Route path="tutor-profile/:id?" element={<TutorProfilePage />} />
