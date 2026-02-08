@@ -31,12 +31,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import CreateManagerModal from '../../components/admin/CreateManagerModal';
 import EditManagerModal from '../../components/admin/EditManagerModal';
+import ManagerVerificationModal from '../../components/admin/ManagerVerificationModal';
 import managerService from '../../services/managerService';
 import { IManager, IUser } from '../../types';
 
@@ -59,6 +61,8 @@ const ManagersManagementPage: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [managerToVerify, setManagerToVerify] = useState<IManager | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [page, setPage] = useState(0);
@@ -381,6 +385,7 @@ const ManagersManagementPage: React.FC = () => {
                   <TableCell align="right" sx={{ color: 'inherit' }}>Classes Converted</TableCell>
                   <TableCell align="right" sx={{ color: 'inherit' }}>Revenue Generated</TableCell>
                   <TableCell sx={{ color: 'inherit' }}>Status</TableCell>
+                  <TableCell sx={{ color: 'inherit' }}>Verification</TableCell>
                   <TableCell sx={{ color: 'inherit' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -410,6 +415,25 @@ const ManagersManagementPage: React.FC = () => {
                       <TableCell align="right">₹{Number(m.revenueGenerated || 0).toLocaleString()}</TableCell>
                       <TableCell>
                         <Chip label={m.isActive ? 'Active' : 'Inactive'} color={m.isActive ? 'success' : 'default'} size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Chip 
+                            label={m.verificationStatus || 'PENDING'} 
+                            color={m.verificationStatus === 'VERIFIED' ? 'success' : m.verificationStatus === 'REJECTED' ? 'error' : 'warning'}
+                            size="small" 
+                          />
+                          {m.verificationStatus !== 'VERIFIED' && (
+                            <Button 
+                              size="small"
+                              variant="outlined"
+                              startIcon={<VerifiedIcon />}
+                              onClick={() => { setManagerToVerify(m); setVerificationModalOpen(true); }}
+                            >
+                              Verify
+                            </Button>
+                          )}
+                        </Box>
                       </TableCell>
                       <TableCell>
                         <IconButton onClick={() => { setSelectedManager(m); setEditModalOpen(true); }} aria-label="Edit manager"><EditIcon /></IconButton>
@@ -454,6 +478,30 @@ const ManagersManagementPage: React.FC = () => {
                 <Divider sx={{ my: 1 }} />
                 <Grid container spacing={1}>
                   <Grid item xs={6}><Chip label={m.isActive ? 'Active' : 'Inactive'} color={m.isActive ? 'success' : 'default'} size="small" /></Grid>
+                  <Grid item xs={6}>
+                    <Chip 
+                      label={m.verificationStatus || 'PENDING'} 
+                      color={m.verificationStatus === 'VERIFIED' ? 'success' : m.verificationStatus === 'REJECTED' ? 'error' : 'warning'}
+                      size="small"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box display="flex" gap={1}>
+                      {m.verificationStatus !== 'VERIFIED' && (
+                        <Button 
+                          size="small"
+                          variant="outlined"
+                          fullWidth
+                          startIcon={<VerifiedIcon />}
+                          onClick={() => { setManagerToVerify(m); setVerificationModalOpen(true); }}
+                        >
+                          Verify
+                        </Button>
+                      )}
+                      <IconButton onClick={() => { setSelectedManager(m); setEditModalOpen(true); }}><EditIcon /></IconButton>
+                      <IconButton color="error" onClick={() => { setManagerToDelete(m); setDeleteDialogOpen(true); }}><DeleteIcon /></IconButton>
+                    </Box>
+                  </Grid>
                   <Grid item xs={4}><Typography variant="body2">Leads: {m.classLeadsCreated}</Typography></Grid>
                   <Grid item xs={4}><Typography variant="body2">Converted: {m.classesConverted}</Typography></Grid>
                   <Grid item xs={4}><Typography variant="body2">Revenue: ₹{Number(m.revenueGenerated || 0).toLocaleString()}</Typography></Grid>
@@ -480,6 +528,13 @@ const ManagersManagementPage: React.FC = () => {
         onClose={() => { setEditModalOpen(false); setSelectedManager(null); }}
         manager={selectedManager}
         onUpdate={handleEditManager}
+      />
+
+      <ManagerVerificationModal
+        open={verificationModalOpen}
+        manager={managerToVerify}
+        onClose={() => { setVerificationModalOpen(false); setManagerToVerify(null); }}
+        onVerificationComplete={() => { loadManagers(page, rowsPerPage); }}
       />
 
       <ConfirmDialog

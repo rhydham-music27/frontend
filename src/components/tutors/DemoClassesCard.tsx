@@ -111,6 +111,13 @@ const DemoClassesCard: React.FC = () => {
     return null;
   }
 
+  // Filter out completed demos from the dashboard view
+  const activeDemos = demos.filter((demo) => demo.status !== DEMO_STATUS.COMPLETED);
+
+  if (!loading && activeDemos.length === 0) {
+    return null;
+  }
+
   const onPrev = () => {
     if (pagination.page > 1) fetchDemos(pagination.page - 1);
   };
@@ -151,7 +158,7 @@ const DemoClassesCard: React.FC = () => {
             <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
             <Typography variant="h6" fontWeight={600}>My Demo Sessions</Typography>
           </Box>
-          <Chip size="small" color="primary" variant="outlined" label={`${pagination.total} demo(s)`} />
+          <Chip size="small" color="primary" variant="outlined" label={`${activeDemos.length} active demo(s)`} />
         </Box>
 
         <Box 
@@ -164,7 +171,7 @@ const DemoClassesCard: React.FC = () => {
             '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' },
           }}
         >
-          {demos.map((demo, index) => {
+          {activeDemos.map((demo, index) => {
             const studentName = demo.classLead?.studentName || '-';
             const subjectVal: any = (demo.classLead as any)?.subject;
             const subject = Array.isArray(subjectVal) ? subjectVal.join(', ') : subjectVal || '-';

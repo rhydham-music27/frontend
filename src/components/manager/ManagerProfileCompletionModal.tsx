@@ -13,6 +13,10 @@ import {
   Autocomplete,
   Paper,
   Checkbox,
+  Box,
+  Card,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCurrentUser, setProfileComplete } from '../../store/slices/authSlice';
@@ -21,6 +25,7 @@ import { toast } from 'sonner';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+// Aadhaar upload removed from this modal
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -34,7 +39,9 @@ interface ManagerProfileCompletionModalProps {
 const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps> = ({ open }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
+  // Aadhaar upload removed from this modal
   const [managerProfileId, setManagerProfileId] = useState<string | null>(null);
 
   // Form state
@@ -43,7 +50,7 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
   const [residentialAddress, setResidentialAddress] = useState('');
   const [languagesKnown, setLanguagesKnown] = useState<string[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
-  const [aadhaarUrl, setAadhaarUrl] = useState('');
+  // Aadhaar handled via verification flow; not collected here
 
   useEffect(() => {
     const fetchManagerProfile = async () => {
@@ -58,8 +65,7 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
           setLanguagesKnown(res.data.languagesKnown || []);
           setSkills(res.data.skills || []);
           
-          const aadhaar = res.data.documents?.find(d => d.documentType === 'AADHAAR');
-          if (aadhaar) setAadhaarUrl(aadhaar.documentUrl);
+          // Aadhaar/documents are handled in the verification modal; skip here
         }
       } catch (err) {
         console.error('Failed to fetch manager profile for completion', err);
@@ -67,6 +73,8 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
     };
     fetchManagerProfile();
   }, [open, user]);
+
+  // Aadhaar upload handler removed from this modal
 
   const handleSubmit = async () => {
     if (!managerProfileId) return;
@@ -81,10 +89,7 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
       return;
     }
 
-    if (!aadhaarUrl) {
-      toast.error('Aadhaar card URL/proof is required for verification.');
-      return;
-    }
+    // Aadhaar/document verification happens in admin verification flow
 
     setLoading(true);
     try {
@@ -94,13 +99,6 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
         residentialAddress,
         languagesKnown,
         skills,
-        documents: [
-          {
-            documentType: 'AADHAAR',
-            documentUrl: aadhaarUrl,
-            uploadedAt: new Date(),
-          },
-        ],
       };
 
       const res = await managerService.updateManagerProfile(managerProfileId, updateData);
@@ -255,42 +253,21 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
           </Grid>
 
           <Grid item xs={12}>
-            <Typography variant="subtitle2" gutterBottom fontWeight={600}>Identity Proof (Aadhaar Card)</Typography>
-            <Paper 
-              variant="outlined" 
-              sx={{ 
-                p: 2, 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
-                borderColor: aadhaarUrl ? 'success.main' : 'divider',
-                bgcolor: aadhaarUrl ? 'rgba(16, 185, 129, 0.04)' : 'transparent'
-              }}
-            >
-              <TextField 
-                size="small" 
-                label="Document URL / Proof Link" 
-                fullWidth 
-                value={aadhaarUrl}
-                onChange={(e) => setAadhaarUrl(e.target.value)}
-                placeholder="Google Drive / Cloud Link to your Aadhaar copy"
-              />
-              {aadhaarUrl && <CheckCircleIcon color="success" />}
-            </Paper>
-            <Typography variant="caption" color="text.secondary">
-              Upload your document to a secure cloud storage and provide the link here.
+            <Typography variant="subtitle2" gutterBottom fontWeight={600}>Identity Verification</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Aadhaar and identity documents are collected during the verification step and reviewed by our team. You can complete your professional profile now — upload/verify documents in the verification flow.
             </Typography>
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
         <Typography variant="caption" color="text.secondary" sx={{ flexGrow: 1 }}>
-          * All fields marked with address and identity proof are mandatory.
+          * All fields marked with address are mandatory.
         </Typography>
         <Button 
           variant="contained" 
           onClick={handleSubmit} 
-          disabled={loading || bio.length < 20 || !residentialAddress || !aadhaarUrl}
+          disabled={loading || bio.length < 20 || !residentialAddress}
           startIcon={loading ? <CircularProgress size={20} /> : <CheckCircleIcon />}
           sx={{ borderRadius: 2, px: 4 }}
         >

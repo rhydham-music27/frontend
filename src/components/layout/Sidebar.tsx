@@ -211,21 +211,19 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
               <ListItemButton 
                 selected={selected} 
                 disabled={isItemDisabled}
-                onClick={() => handleNavigation(resolvedPath)}
+                onClick={() => !isItemDisabled && handleNavigation(resolvedPath)}
                 sx={{
                   borderRadius: { xs: '8px', sm: '10px' },
                   mx: { xs: 0.5, sm: 1 },
                   py: { xs: 1, sm: 1.25 },
                   px: { xs: 1, sm: 1.5 },
                   transition: 'all 0.2s ease-in-out',
-                  opacity: isItemDisabled ? 0.6 : 1,
+                  opacity: isItemDisabled ? 0.5 : 1,
                   filter: isItemDisabled ? 'grayscale(1)' : 'none',
                   '&.Mui-disabled': {
                     cursor: 'not-allowed',
-                    pointerEvents: 'auto',
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                    }
+                    pointerEvents: 'none',
+                    backgroundColor: isItemDisabled ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
                   },
                   '&.Mui-selected': {
                     backgroundColor: alpha('#0F62FE', 0.08),

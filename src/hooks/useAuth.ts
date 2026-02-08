@@ -66,7 +66,7 @@ export const useAuth = () => {
         canCreateLeads?: boolean;
         canManagePayments?: boolean;
       }
-    ) => {
+    ): Promise<boolean> => {
       try {
         dispatch(setLoading(true));
         const resp = await authService.register(name, email, password, phone, role, skipAuth, permissions);
@@ -78,6 +78,7 @@ export const useAuth = () => {
         } else {
           dispatch(setLoading(false));
         }
+        return true;
       } catch (e: any) {
         const backendError = e?.response?.data;
         const message =
@@ -85,6 +86,7 @@ export const useAuth = () => {
           backendError?.message ||
           'Registration failed. Please check your details and try again.';
         dispatch(setError(message));
+        return false;
       }
     },
     [dispatch, navigate]

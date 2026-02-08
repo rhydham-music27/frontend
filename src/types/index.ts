@@ -10,6 +10,12 @@ export interface IUser {
   gender?: 'MALE' | 'FEMALE' | 'OTHER';
   city?: string;
   verificationStatus?: string;
+  permissions?: {
+    canViewSiteLeads?: boolean;
+    canVerifyTutors?: boolean;
+    canCreateLeads?: boolean;
+    canManagePayments?: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

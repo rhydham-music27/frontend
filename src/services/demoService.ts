@@ -22,12 +22,14 @@ export const updateDemoStatus = async (
   classLeadId: string,
   status: string,
   feedback?: string,
-  rejectionReason?: string
+  rejectionReason?: string,
+  coordinatorUserId?: string
 ): Promise<ApiResponse<IClassLead>> => {
   const { data } = await api.patch(API_ENDPOINTS.DEMOS_STATUS(classLeadId), {
     status,
     feedback,
     rejectionReason,
+    coordinatorUserId,
   });
   return data as ApiResponse<IClassLead>;
 };
@@ -65,9 +67,13 @@ export const getDemoHistory = async (
 
 export const getMyDemos = async (
   page = 1,
-  limit = 10
+  limit = 10,
+  status?: string
 ): Promise<PaginatedResponse<IDemoHistory[]>> => {
-  const url = `${API_ENDPOINTS.DEMOS_MY_DEMOS}?page=${page}&limit=${limit}`;
+  let url = `${API_ENDPOINTS.DEMOS_MY_DEMOS}?page=${page}&limit=${limit}`;
+  if (status) {
+    url += `&status=${encodeURIComponent(status)}`;
+  }
   const { data } = await api.get(url);
   return data as PaginatedResponse<IDemoHistory[]>;
 };

@@ -40,6 +40,7 @@ const areasByCity: Record<string, string[]> = {
   ],
 };
 
+
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
@@ -58,6 +59,18 @@ const TutorProfilePage: React.FC = () => {
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
   const [experienceInput, setExperienceInput] = useState('');
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (tutorProfile) {
+      const rawCity =
+        ((tutorProfile as any).city as string) ||
+        ((tutorProfile as any).user?.city as string) ||
+        'Bhopal';
+      const city = (rawCity || 'Bhopal').trim() || 'Bhopal';
+      const areas = areasByCity[city] || areasByCity.Bhopal || [];
+      setAvailableAreas(areas);
+    }
+  }, [tutorProfile]);
 
   const { options: subjectOptions } = useOptions('SUBJECT');
   const subjectLabels = useMemo(() => subjectOptions.map((o) => o.label), [subjectOptions]);
@@ -87,22 +100,7 @@ const TutorProfilePage: React.FC = () => {
         const tutor = (data as ITutor) || null;
         setTutorProfile(tutor);
 
-        if (tutor && !id) { // Only show complete modal for self
-          const hasSubjects = Array.isArray(tutor.subjects) && tutor.subjects.length > 0;
-          const hasQualifications =
-            Array.isArray(tutor.qualifications) && tutor.qualifications.length > 0;
-          const hasLocations =
-            Array.isArray(tutor.preferredLocations) && tutor.preferredLocations.length > 0;
-          const hasExtracurriculars =
-            Array.isArray((tutor as any).extracurricularActivities) &&
-            (tutor as any).extracurricularActivities.length > 0;
-
-          const isIncomplete =
-            !hasSubjects || !hasQualifications || !hasLocations || !hasExtracurriculars;
-          if (isIncomplete) {
-            openCompleteModal();
-          }
-        }
+        // Automatic modal opening removed as per user request
 
         // Fetch detailed data for Admin view
         if (id && tutor && tutor.user) {
@@ -146,27 +144,7 @@ const TutorProfilePage: React.FC = () => {
     loadProfile();
   }, [id]);
 
-  const openCompleteModal = () => {
-    if (tutorProfile) {
-      setSelectedSubjects(tutorProfile.subjects || []);
-      setQualificationsInput((tutorProfile.qualifications || []).join(', '));
-      const rawCity =
-        ((tutorProfile as any).city as string) ||
-        ((tutorProfile as any).user?.city as string) ||
-        'Bhopal';
-      const city = (rawCity || 'Bhopal').trim() || 'Bhopal';
-      const currentAreas = (tutorProfile.preferredLocations || []).filter(
-        (area) => area && area !== city
-      );
-      setPreferredAreas(currentAreas);
-      setExperienceInput(((tutorProfile as any).experience as string) || '');
-      const extracurricular = ((tutorProfile as any).extracurricularActivities as string[]) || [];
-      setSelectedExtracurriculars(extracurricular);
-      const areas = areasByCity[city] || areasByCity.Bhopal || [];
-      setAvailableAreas(areas);
-    }
-    setCompleteModalOpen(true);
-  };
+
 
   const handleSaveCompleteProfile = async () => {
     if (!tutorProfile) {

@@ -14,6 +14,11 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -21,7 +26,6 @@ import * as yup from 'yup';
 import { Link, useSearchParams } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ErrorAlert from '../../components/common/ErrorAlert';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import BadgeIcon from '@mui/icons-material/Badge';
 import EmailIcon from '@mui/icons-material/Email';
@@ -94,6 +98,8 @@ const RegisterPage: React.FC = () => {
 
   const onSubmit = async ({ confirmPassword, ...data }: RegisterFormValues) => {
     try {
+      clearError(); // Clear any previous errors
+      
       // Clean up permissions if role is not MANAGER
       const submitData = { ...data };
       if (data.role !== USER_ROLES.MANAGER) {
@@ -101,8 +107,12 @@ const RegisterPage: React.FC = () => {
       }
       
       // If user is already authenticated (Admin), skip auto-login for new user
-      await registerUser(submitData.name, submitData.email, submitData.password, submitData.phone, submitData.role, isAuthenticated, submitData.permissions);
-      setIsRegisteredSuccessfully(true);
+      const success = await registerUser(submitData.name, submitData.email, submitData.password, submitData.phone, submitData.role, isAuthenticated, submitData.permissions);
+      
+      // Only set success if registration succeeded
+      if (success) {
+        setIsRegisteredSuccessfully(true);
+      }
     } catch (e) {
       // Error handled by hook state 'error'
     }
@@ -234,8 +244,6 @@ const RegisterPage: React.FC = () => {
                     <Typography variant="body2" color="text.secondary">Enter the new member's information.</Typography>
                   </Box>
                 </Box>
-
-                <ErrorAlert error={error} onClose={clearError} />
 
                 <Box component="form" onSubmit={handleSubmit(onSubmit)}>
                   <Grid container spacing={3}>
@@ -400,6 +408,23 @@ const RegisterPage: React.FC = () => {
           </CardContent>
         </Card>
       </Container>
+
+      {/* Error Dialog */}
+      <Dialog open={!!error} onClose={clearError} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: 'error.main' }}>
+          Registration Error
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mt: 2, color: '#333' }}>
+            {error}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={clearError} variant="contained" autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

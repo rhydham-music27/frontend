@@ -12,6 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import useClassLeads from '../../hooks/useClassLeads';
+import { usePermissionCheck } from '../../hooks/useManagerPermissions';
 import { getLeadFilterOptions } from '../../services/leadService';
 import ClassLeadStatusChip from '../../components/classLeads/ClassLeadStatusChip';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -26,6 +27,7 @@ export default function ClassLeadsListPage() {
   const isXs = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  const { isAuthorized: canCreateLeads } = usePermissionCheck('canCreateLeads');
   
   const [filters, setFilters] = useState({
     studentName: '',
@@ -238,23 +240,36 @@ export default function ClassLeadsListPage() {
         </Box>
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />} 
-            onClick={() => navigate('/class-leads/new')}
-            sx={{
-              bgcolor: 'white',
-              color: '#1B5E20',
-              fontWeight: 700,
-              px: 3,
-              py: 1,
-              '&:hover': {
-                bgcolor: 'rgba(255,255,255,0.9)',
-              },
-            }}
+          <Tooltip 
+            title={user?.role === 'MANAGER' && !canCreateLeads ? 'You do not have permission to create class leads' : ''}
+            arrow
           >
-            Create New Lead
-          </Button>
+            <span>
+              <Button 
+                variant="contained" 
+                startIcon={<AddIcon />} 
+                onClick={() => navigate('/class-leads/new')}
+                disabled={user?.role === 'MANAGER' && !canCreateLeads}
+                sx={{
+                  bgcolor: 'white',
+                  color: '#1B5E20',
+                  fontWeight: 700,
+                  px: 3,
+                  py: 1,
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                  },
+                  '&:disabled': {
+                    bgcolor: 'rgba(255,255,255,0.5)',
+                    color: 'rgba(27,94,32,0.5)',
+                    cursor: 'not-allowed',
+                  }
+                }}
+              >
+                Create New Lead
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
         
         {/* Abstract shapes */}

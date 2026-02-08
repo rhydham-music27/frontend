@@ -22,8 +22,11 @@ import LanguageIcon from '@mui/icons-material/Language';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import InfoIcon from '@mui/icons-material/Info';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import { toast } from 'sonner';
 import { IManager, IManagerMetrics } from '../../types';
 import managerService from '../../services/managerService';
 import DateRangePicker from '../../components/dashboard/DateRangePicker';
@@ -43,7 +46,9 @@ const ManagerProfilePage: React.FC = () => {
   const [profileMissing, setProfileMissing] = useState<boolean>(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
+  const [profilePhotoModalOpen, setProfilePhotoModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingProfilePhoto, setUploadingProfilePhoto] = useState(false);
   
   // Form state for complete profile
   const [bioInput, setBioInput] = useState('');
@@ -168,9 +173,43 @@ const ManagerProfilePage: React.FC = () => {
     }
   };
 
+  const handleProfilePhotoUpload = async (file: File) => {
+    if (!file) return;
+
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large. Max 5MB allowed.');
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Only image files (JPEG, PNG) are allowed.');
+      return;
+    }
+
+    setUploadingProfilePhoto(true);
+    try {
+      const resp = await managerService.uploadDocument('PROFILE_PHOTO', file);
+      if (resp.success && resp.data) {
+        setManagerProfile(resp.data);
+        toast.success('Profile photo updated successfully!');
+        setProfilePhotoModalOpen(false);
+      }
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      toast.error(error.response?.data?.message || 'Failed to update profile photo');
+    } finally {
+      setUploadingProfilePhoto(false);
+    }
+  };
+
   const initials = managerProfile?.user?.name 
     ? managerProfile.user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() 
     : user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '';
+
+  const profilePhotoUrl = managerProfile?.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl;
 
   if (loading && !managerProfile) return <LoadingSpinner />;
 
@@ -267,19 +306,55 @@ const ManagerProfilePage: React.FC = () => {
             >
               <Grid container spacing={4} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
                 <Grid item>
-                  <Avatar
+                  <Box
+                    onClick={() => !id && setProfilePhotoModalOpen(true)}
                     sx={{
-                      width: 120,
-                      height: 120,
-                      bgcolor: 'primary.main',
-                      fontSize: '3rem',
-                      fontWeight: 700,
-                      border: '4px solid rgba(255,255,255,0.1)',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                      cursor: !id ? 'pointer' : 'default',
+                      position: 'relative',
+                      display: 'inline-block',
+                      '&:hover': !id ? {
+                        '& .photo-overlay': {
+                          opacity: 1,
+                        }
+                      } : {}
                     }}
                   >
-                    {initials}
-                  </Avatar>
+                    <Avatar
+                      src={profilePhotoUrl}
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        bgcolor: 'primary.main',
+                        fontSize: '3rem',
+                        fontWeight: 700,
+                        border: '4px solid rgba(255,255,255,0.1)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                      }}
+                    >
+                      {initials}
+                    </Avatar>
+                    {!id && (
+                      <Box
+                        className="photo-overlay"
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          borderRadius: '50%',
+                          bgcolor: 'rgba(0,0,0,0.5)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: 0,
+                          transition: 'opacity 0.3s ease'
+                        }}
+                      >
+                        <PhotoCameraIcon sx={{ color: 'white', fontSize: 40 }} />
+                      </Box>
+                    )}
+                  </Box>
                 </Grid>
                 <Grid item xs={12} sm>
                   <Box>
@@ -599,6 +674,78 @@ const ManagerProfilePage: React.FC = () => {
       </Dialog>
 
       <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+      
+      {/* Profile Photo Modal */}
+      <Dialog 
+        open={profilePhotoModalOpen} 
+        onClose={() => setProfilePhotoModalOpen(false)} 
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+          Update Profile Photo
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, py: 2 }}>
+            {profilePhotoUrl && (
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom fontWeight={600}>
+                  Current Photo
+                </Typography>
+                <Avatar
+                  src={profilePhotoUrl}
+                  sx={{
+                    width: 150,
+                    height: 150,
+                    bgcolor: 'primary.main',
+                    border: `3px solid ${theme.palette.primary.main}`,
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  {initials}
+                </Avatar>
+              </Box>
+            )}
+            <Box sx={{ textAlign: 'center', width: '100%' }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom fontWeight={600}>
+                {profilePhotoUrl ? 'Upload New Photo' : 'Upload Profile Photo'}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+                Supported formats: JPEG, PNG (Max 5MB)
+              </Typography>
+              <label htmlFor="profile-photo-input" style={{ display: 'block' }}>
+                <input
+                  id="profile-photo-input"
+                  accept="image/jpeg,image/jpg,image/png"
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      handleProfilePhotoUpload(e.target.files[0]);
+                    }
+                  }}
+                  disabled={uploadingProfilePhoto}
+                />
+                <Button
+                  component="span"
+                  variant="contained"
+                  color="primary"
+                  startIcon={uploadingProfilePhoto ? <CircularProgress size={20} color="inherit" /> : <CloudUploadIcon />}
+                  disabled={uploadingProfilePhoto}
+                  fullWidth
+                  sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                >
+                  {uploadingProfilePhoto ? 'Uploading...' : 'Choose File'}
+                </Button>
+              </label>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setProfilePhotoModalOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
       <SnackbarNotification 
         open={snackbar.open} 
         message={snackbar.message} 

@@ -8,6 +8,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { listNotes, createFolder, uploadNoteFile } from '../../services/notesService';
+import { USER_ROLES } from '../../constants';
 
 interface NoteItem {
   id: string;
@@ -108,24 +109,26 @@ const NotesDrivePage: React.FC = () => {
             Drive-style storage for notes and documents for Admin, Manager, and Coordinator.
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
-          <Button
-            variant="outlined"
-            startIcon={<CreateNewFolderIcon />}
-            onClick={() => setNewFolderOpen(true)}
-          >
-            New Folder
-          </Button>
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={<UploadFileIcon />}
-            disabled={uploading}
-          >
-            {uploading ? 'Uploading…' : 'Upload'}
-            <input hidden type="file" onChange={handleUpload} />
-          </Button>
-        </Stack>
+        {user?.role !== USER_ROLES.COORDINATOR && (
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<CreateNewFolderIcon />}
+              onClick={() => setNewFolderOpen(true)}
+            >
+              New Folder
+            </Button>
+            <Button
+              variant="contained"
+              component="label"
+              startIcon={<UploadFileIcon />}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading…' : 'Upload'}
+              <input hidden type="file" onChange={handleUpload} />
+            </Button>
+          </Stack>
+        )}
       </Stack>
 
       <Stack direction="row" alignItems="center" spacing={1} mb={2}>

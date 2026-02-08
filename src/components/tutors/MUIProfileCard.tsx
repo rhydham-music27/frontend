@@ -3,10 +3,10 @@ import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Bu
 import { 
   User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock, 
   FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles, 
-  BarChart2, ShieldCheck, Info, Heart, ExternalLink
+  BarChart2, ShieldCheck, Info, Heart, ExternalLink, CreditCard, Wallet, Handshake
 } from 'lucide-react';
 import { ITutor } from '../../types';
-import { getMyProfile, uploadDocument, getTutorById } from '../../services/tutorService';
+import { getMyProfile, uploadDocument, getTutorById, updateVerificationFeeStatus } from '../../services/tutorService';
 
 interface MUIProfileCardProps {
   tutorId?: string;
@@ -27,6 +27,13 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [documentUploadError, setDocumentUploadError] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+
+  // --- Verification Fee Logic ---
+  const [feeModalOpen, setFeeModalOpen] = useState(false);
+  const [feeAction, setFeeAction] = useState<'PAY_NOW' | 'DEDUCT' | null>(null);
+  const [feeFile, setFeeFile] = useState<File | null>(null);
+  const [submittingFee, setSubmittingFee] = useState(false);
+  const [feeError, setFeeError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -114,7 +121,12 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       setAvatarModalOpen(false);
       setSelectedFile(null);
     } catch (e: any) {
-      setUploadError(e?.response?.data?.message || e?.message || 'Failed to upload profile image.');
+      setUploadError(
+        e?.response?.data?.error || 
+        e?.response?.data?.message || 
+        e?.message || 
+        'Failed to upload profile image.'
+      );
     } finally {
       setUploadingAvatar(false);
     }
@@ -132,16 +144,10 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   const docLabels = {
     'PROFILE_PHOTO': 'Profile Photo',
     'EXPERIENCE_PROOF': 'Experience Proof',
-    'AADHAR': 'Aadhar Card',
-    'QUALIFICATION_CERT': 'Qualification Certificate',
-    'DEGREE': 'Degree Document',
+    'AADHAAR': 'Aadhar Card',
+    'CERTIFICATE': 'Qualification Certificate',
+    // 'DEGREE': 'Degree Document', // Removed
   };
-
-  const docStatusItems = Object.entries(docLabels).map(([type, label]) => ({
-    type,
-    label,
-    status: computeStatusForType(type)
-  }));
 
   const handleOpenDocumentModal = (type: string) => {
     setSelectedDocumentType(type);
@@ -153,19 +159,63 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   const handleCloseDocumentModal = () => {
     if (uploadingDocument) return;
     setDocumentModalOpen(false);
+    setSelectedDocumentFile(null);
   };
 
   const handleUploadDocumentFile = async () => {
-    if (!selectedDocumentType || !selectedDocumentFile) return;
+    if (!selectedDocumentFile || !selectedDocumentType) {
+        setDocumentUploadError('Please select a file.');
+        return;
+    }
     try {
-      setUploadingDocument(true);
-      const res = await uploadDocument((tutor as any).id || tutor._id, selectedDocumentType, selectedDocumentFile);
-      setTutor(res.data);
-      setDocumentModalOpen(false);
+        setUploadingDocument(true);
+        setDocumentUploadError(null);
+        // Map frontend types to backend types if needed, or ensure they match
+        // In this case, 'DEGREE' was removed, others match enum in backend if consistent
+        const res = await uploadDocument((tutor as any).id || tutor._id, selectedDocumentType, selectedDocumentFile);
+        setTutor(res.data);
+        handleCloseDocumentModal();
     } catch (e: any) {
-      setDocumentUploadError(e?.response?.data?.message || 'Failed to upload document.');
+        setDocumentUploadError(e?.response?.data?.message || 'Failed to upload document.');
     } finally {
-      setUploadingDocument(false);
+        setUploadingDocument(false);
+    }
+  };
+
+  // --- Verification Fee Logic ---
+
+
+  const handleOpenFeeModal = () => {
+    setFeeModalOpen(true);
+    setFeeAction(null);
+    setFeeFile(null);
+    setFeeError(null);
+  };
+
+
+
+  const handleFeeSubmit = async () => {
+    if (!tutor) return;
+    try {
+        setSubmittingFee(true);
+        setFeeError(null);
+        
+        if (feeAction === 'PAY_NOW') {
+            if (!feeFile) {
+                setFeeError('Please upload the payment screenshot.');
+                return;
+            }
+            const res = await updateVerificationFeeStatus(tutor._id, 'PAID', feeFile);
+            setTutor(res.data);
+        } else if (feeAction === 'DEDUCT') {
+            const res = await updateVerificationFeeStatus(tutor._id, 'DEDUCT_FROM_FIRST_MONTH');
+            setTutor(res.data);
+        }
+        setFeeModalOpen(false);
+    } catch (e: any) {
+        setFeeError(e?.response?.data?.message || 'Failed to update verification fee status');
+    } finally {
+        setSubmittingFee(false);
     }
   };
 
@@ -273,7 +323,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             <div className="bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10 min-w-[200px]">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Status</span>
-                <div className={`w-3 h-3 rounded-full animate-pulse ${tutor.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
+                <div className={`w-3 h-3 rounded-full animate-pulse ${tutor.isAvailable ? 'bg-green-50' : 'bg-red-50'}`} />
               </div>
               <div className="text-center space-y-2">
                 <p className={`text-xl font-black ${tutor.isAvailable ? 'text-green-400' : 'text-red-400'}`}>
@@ -503,8 +553,8 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             </div>
           </section>
         </Grid>
-
-        {/* 5. DOCUMENTS SECTION - FULL WIDTH GRID */}
+      
+      {/* 5. DOCUMENTS SECTION + Verification Fees */}
         <Grid item xs={12}>
            <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
              <div className="flex items-center justify-between mb-8">
@@ -514,42 +564,68 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                {tutor.verificationFeeStatus === 'PAID' && (
                  <Chip icon={<CheckCircle size={14} />} label="Verification Fee Paid" color="success" size="small" />
                )}
+               {tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' && (
+                 <Chip icon={<CheckCircle size={14} />} label="Fee: Deduct from Class" color="info" size="small" />
+               )}
              </div>
              
              <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
-               {docStatusItems.map((item, idx) => (
+               {Object.entries(docLabels).map(([type, label], idx) => {
+                 const status = computeStatusForType(type);
+                 return (
                  <div 
                   key={idx} 
-                  onClick={() => handleOpenDocumentModal(item.type)}
+                  onClick={() => handleOpenDocumentModal(type)}
                   className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${
-                    item.status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
-                    item.status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
+                    status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
+                    status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
                     'bg-slate-50 border-slate-100 hover:border-slate-300'
                   }`}
                  >
                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
-                     item.status === 'approved' ? 'bg-green-500 text-white' :
-                     item.status === 'pending' ? 'bg-amber-500 text-white' :
+                     status === 'approved' ? 'bg-green-500 text-white' :
+                     status === 'pending' ? 'bg-amber-500 text-white' :
                      'bg-slate-400 text-white'
                    }`}>
-                     {item.status === 'approved' ? <ShieldCheck size={28} /> : <FileText size={28} />}
+                     {status === 'approved' ? <ShieldCheck size={28} /> : <FileText size={28} />}
                    </div>
-                   <p className="text-xs font-black text-slate-800 uppercase mb-1">{item.label}</p>
+                   <p className="text-xs font-black text-slate-800 uppercase mb-1">{label}</p>
                    <p className={`text-[10px] font-bold ${
-                     item.status === 'approved' ? 'text-green-600' :
-                     item.status === 'pending' ? 'text-amber-600' :
+                     status === 'approved' ? 'text-green-600' :
+                     status === 'pending' ? 'text-amber-600' :
                      'text-slate-500'
                    }`}>
-                     {item.status.replace('_', ' ').toUpperCase()}
+                     {status.replace('_', ' ').toUpperCase()}
                    </p>
                  </div>
-               ))}
+               )})}
+
+               {/* Verification Fee Card */}
+               <div 
+                  onClick={handleOpenFeeModal}
+                  className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${
+                    tutor.verificationFeeStatus && tutor.verificationFeeStatus !== 'PENDING' ? 'bg-blue-50/50 border-blue-100 hover:border-blue-300' : 'bg-slate-50 border-slate-100 hover:border-slate-300'
+                  }`}
+                 >
+                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
+                     tutor.verificationFeeStatus && tutor.verificationFeeStatus !== 'PENDING' ? 'bg-blue-500 text-white' : 'bg-slate-400 text-white'
+                   }`}>
+                     <Award size={28} />
+                   </div>
+                   <p className="text-xs font-black text-slate-800 uppercase mb-1">Verification Fee</p>
+                   <p className={`text-[10px] font-bold ${
+                     tutor.verificationFeeStatus && tutor.verificationFeeStatus !== 'PENDING' ? 'text-blue-600' : 'text-slate-500'
+                   }`}>
+                     {tutor.verificationFeeStatus === 'PENDING' ? 'PAY NOW' : tutor.verificationFeeStatus?.replace(/_/g, ' ')}
+                   </p>
+                 </div>
              </Box>
            </section>
         </Grid>
       </Grid>
 
-      {/* MODALS (Simplified for brevity but fully functional) */}
+      {/* MODALS */}
+      {/* ... Avatar Dialog ... */}
       <Dialog open={avatarModalOpen} onClose={handleCloseAvatarModal} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: '32px', p: 1 } }}>
         <DialogTitle className="font-black text-center text-slate-800">Refresh Identity</DialogTitle>
         <DialogContent className="text-center">
@@ -568,13 +644,14 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
         </DialogActions>
       </Dialog>
 
+      {/* ... Document Dialog ... */}
       <Dialog open={documentModalOpen} onClose={handleCloseDocumentModal} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: '32px', p: 1 } }}>
         <DialogTitle className="font-black text-slate-800">Compliance Upload</DialogTitle>
         <DialogContent className="space-y-4">
           <div className="p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 text-center">
             <p className="text-sm font-bold text-slate-600 mb-2">Target: {docLabels[selectedDocumentType as keyof typeof docLabels]}</p>
             <Button variant="contained" component="label" size="small" sx={{ borderRadius: '12px' }}>
-              CHOOSE FILE <input hidden type="file" onChange={(e) => setSelectedDocumentFile(e.target.files?.[0] || null)} />
+              CHOOSE FILE <input hidden type="file" accept="image/jpeg,image/png,application/pdf" onChange={(e) => setSelectedDocumentFile(e.target.files?.[0] || null)} />
             </Button>
             {selectedDocumentFile && <p className="text-xs mt-2 font-mono">{selectedDocumentFile.name}</p>}
           </div>
@@ -585,6 +662,86 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
           <Button variant="contained" color="secondary" disabled={!selectedDocumentFile || uploadingDocument} onClick={handleUploadDocumentFile} sx={{ borderRadius: '16px' }}>
              {uploadingDocument ? 'UPLOADING...' : 'UPLOAD NOW'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Verification Fee Modal */}
+      <Dialog open={feeModalOpen} onClose={() => setFeeModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '32px', p: 2 } }}>
+        <DialogTitle className="font-black text-center text-slate-800 text-2xl">Verification Fees</DialogTitle>
+        <DialogContent className="space-y-6 pt-4">
+             {!feeAction ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div 
+                        onClick={() => setFeeAction('PAY_NOW')}
+                        className="p-6 rounded-3xl bg-blue-50 border-2 border-blue-100 hover:border-blue-400 cursor-pointer transition-all hover:scale-105 flex flex-col items-center text-center gap-4 group"
+                     >
+                         <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center group-hover:rotate-12 transition-transform">
+                             <CreditCard size={32} />
+                         </div>
+                         <div>
+                            <h4 className="font-black text-slate-800 text-lg">Pay Now</h4>
+                            <p className="text-xs text-slate-500 font-medium mt-1">Scan QR & Upload Screenshot</p>
+                         </div>
+                     </div>
+                     <div 
+                        onClick={() => setFeeAction('DEDUCT')}
+                        className="p-6 rounded-3xl bg-amber-50 border-2 border-amber-100 hover:border-amber-400 cursor-pointer transition-all hover:scale-105 flex flex-col items-center text-center gap-4 group"
+                     >
+                         <div className="w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center group-hover:-rotate-12 transition-transform">
+                             <Wallet size={32} />
+                         </div>
+                         <div>
+                            <h4 className="font-black text-slate-800 text-lg">Pay Later</h4>
+                            <p className="text-xs text-slate-500 font-medium mt-1">Deduct from 1st Month Salary</p>
+                         </div>
+                     </div>
+                 </div>
+             ) : feeAction === 'PAY_NOW' ? (
+                 <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                     <div className="p-4 bg-white rounded-2xl border border-slate-200 inline-block shadow-lg">
+                        {/* Placeholder QR */}
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=example@upi&pn=YourShikshak" alt="Payment QR" className="w-40 h-40 mx-auto" />
+                     </div>
+                     <p className="text-sm text-slate-500 font-bold">Scan to Pay Subscription Fee</p>
+                     
+                     <div className="p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                        <Button variant="outlined" component="label" fullWidth sx={{ borderRadius: '12px', height: '50px', borderStyle: 'dashed' }}>
+                            {feeFile ? 'CHANGE SCREENSHOT' : 'UPLOAD PAYMENT SCREENSHOT'} 
+                            <input hidden type="file" accept="image/*" onChange={(e) => setFeeFile(e.target.files?.[0] || null)} />
+                        </Button>
+                        {feeFile && <p className="mt-2 text-sm font-bold text-green-600 flex items-center justify-center gap-2"><CheckCircle size={14}/> {feeFile.name}</p>}
+                     </div>
+                 </div>
+             ) : (
+                 <div className="text-center space-y-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                     <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                         <Handshake size={40} />
+                     </div>
+                     <h4 className="text-xl font-bold text-slate-800">Confirm Deduction?</h4>
+                     <p className="text-slate-500 max-w-xs mx-auto">
+                        We will verify your documents and deduct the verification fee automatically from your first payout.
+                     </p>
+                 </div>
+             )}
+
+             {feeError && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold text-center">{feeError}</div>}
+        </DialogContent>
+        <DialogActions sx={{ px: 4, pb: 4, justifyContent: 'center', gap: 2 }}>
+          {feeAction ? (
+              <>
+                <Button onClick={() => setFeeAction(null)} sx={{ borderRadius: '12px', px: 3, color: 'slate.500' }}>Back</Button>
+                <Button 
+                    variant="contained" 
+                    onClick={handleFeeSubmit} 
+                    disabled={submittingFee || (feeAction === 'PAY_NOW' && !feeFile)}
+                    sx={{ borderRadius: '12px', px: 6, py: 1.5, fontWeight: 800, bgcolor: feeAction === 'PAY_NOW' ? 'primary.main' : 'warning.main' }}
+                >
+                    {submittingFee ? <CircularProgress size={20} color="inherit" /> : 'CONFIRM CHOICE'}
+                </Button>
+              </>
+          ) : (
+            <Button onClick={() => setFeeModalOpen(false)} sx={{ borderRadius: '12px', px: 4, color: 'slate.400' }}>Cancel</Button>
+          )}
         </DialogActions>
       </Dialog>
     </div>

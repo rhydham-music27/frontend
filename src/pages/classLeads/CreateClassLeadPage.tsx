@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, Box, Typography, Card, CardContent, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
@@ -7,13 +7,14 @@ import { IClassLeadFormData } from '../../types';
 import leadService from '../../services/leadService';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { usePermissionCheck } from '../../hooks/useManagerPermissions';
+import useAuth from '../../hooks/useAuth';
 import PermissionDeniedDialog from '../../components/common/PermissionDeniedDialog';
 import ErrorDialog from '../../components/common/ErrorDialog';
-import { useEffect } from 'react';
 import { useErrorDialog } from '../../hooks/useErrorDialog';
 
 export default function CreateClassLeadPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const { error, showError, clearError, handleError } = useErrorDialog();
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
@@ -22,10 +23,11 @@ export default function CreateClassLeadPage() {
   const { isAuthorized, errorMessage } = usePermissionCheck('canCreateLeads');
 
   useEffect(() => {
-    if (!isAuthorized) {
+    // Show permission dialog on page load if manager doesn't have permission
+    if (user?.role === 'MANAGER' && !isAuthorized) {
       setShowPermissionDialog(true);
     }
-  }, [isAuthorized]);
+  }, [user?.role, isAuthorized]);
 
   const handleSubmit = async (data: IClassLeadFormData) => {
     if (!isAuthorized) {

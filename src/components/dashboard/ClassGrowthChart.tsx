@@ -94,7 +94,19 @@ const ClassGrowthChart: React.FC<ClassGrowthChartProps> = ({ data, loading }) =>
 
   if (loading) {
     return (
-      <Paper sx={{ p: 3, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Paper 
+        elevation={0}
+        sx={{ 
+          p: 3, 
+          height: 400, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          borderRadius: '16px',
+          border: '1px solid #E2E8F0',
+          background: 'linear-gradient(135deg, #ffffff 0%, #fafbfc 100%)',
+        }}
+      >
         <Typography color="text.secondary">Loading chart...</Typography>
       </Paper>
     );
@@ -122,7 +134,7 @@ const ClassGrowthChart: React.FC<ClassGrowthChartProps> = ({ data, loading }) =>
           name={name}
           fill={color}
           barSize={20}
-          radius={[4, 4, 0, 0]}
+          radius={[8, 8, 0, 0]}
         />
       );
     }
@@ -135,22 +147,38 @@ const ClassGrowthChart: React.FC<ClassGrowthChartProps> = ({ data, loading }) =>
         name={name}
         stroke={color}
         fill={color}
-        strokeWidth={2}
-        dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: color }}
-        activeDot={{ r: 6 }}
+        strokeWidth={3}
+        dot={{ r: 5, strokeWidth: 2, fill: '#fff', stroke: color }}
+        activeDot={{ r: 7, strokeWidth: 2 }}
       />
     );
   };
 
   return (
-    <Paper sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={2}>
+    <Paper 
+      elevation={0}
+      sx={{ 
+        p: 3, 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        background: '#ffffff',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.08), 0px 16px 32px rgba(0, 0, 0, 0.08)',
+          borderColor: 'rgba(45, 104, 196, 0.2)',
+        },
+      }}
+    >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
         <Box>
-          <Typography variant="h6" fontWeight={600}>
-            Class Growth vs Time
+          <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
+            Class Growth Over Time
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Daily New, Ended, and Active Classes
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            Track new, active, and ended classes
           </Typography>
         </Box>
         
@@ -185,23 +213,76 @@ const ClassGrowthChart: React.FC<ClassGrowthChartProps> = ({ data, loading }) =>
 
       <Box 
         ref={scrollContainerRef}
-        sx={{ width: '100%', flexGrow: 1, minHeight: 300, overflowX: 'auto', overflowY: 'hidden' }}
+        sx={{ 
+          width: '100%', 
+          flexGrow: 1, 
+          minHeight: 300, 
+          overflowX: 'auto', 
+          overflowY: 'hidden',
+          '&::-webkit-scrollbar': {
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#F1F5F9',
+            borderRadius: '10px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'linear-gradient(135deg, #2D68C4 0%, #00B7EB 100%)',
+            borderRadius: '10px',
+          },
+        }}
       >
         <Box sx={{ width: chartWidth, minWidth: '100%', height: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tickFormatter={formatXAxis} stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" />
+              <defs>
+                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2D68C4" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#2D68C4" stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorInactive" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={formatXAxis} 
+                stroke="#94A3B8"
+                style={{ fontSize: '0.75rem', fontWeight: 500 }}
+                tickLine={false}
+              />
+              <YAxis 
+                stroke="#94A3B8"
+                style={{ fontSize: '0.75rem', fontWeight: 500 }}
+                tickLine={false}
+                axisLine={false}
+              />
               <Tooltip
-                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ 
+                  borderRadius: '12px', 
+                  border: 'none', 
+                  boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.12)',
+                  padding: '12px 16px',
+                  backgroundColor: '#ffffff',
+                }}
+                labelStyle={{ fontWeight: 600, marginBottom: '8px', color: '#1E293B' }}
+                itemStyle={{ fontSize: '0.875rem', fontWeight: 500 }}
                 labelFormatter={formatXAxis}
               />
-              <Legend />
+              <Legend 
+                wrapperStyle={{ paddingTop: '16px' }}
+                iconType="circle"
+              />
 
-              {renderSeries('total', 'New Classes', '#8884d8')}
-              {renderSeries('active', 'Active Classes', '#82ca9d')}
-              {renderSeries('inactive', 'Ended Classes', '#ef4444')}
+              {renderSeries('total', 'New Classes', '#2D68C4')}
+              {renderSeries('active', 'Active Classes', '#10B981')}
+              {renderSeries('inactive', 'Ended Classes', '#EF4444')}
             </ComposedChart>
           </ResponsiveContainer>
         </Box>

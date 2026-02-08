@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
+import ErrorIcon from '@mui/icons-material/Error';
 import { createAttendance } from '../../services/attendanceService';
 import { STUDENT_ATTENDANCE_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
@@ -37,6 +38,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showErrorDialog, setShowErrorDialog] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
 
   // Determine if today is a scheduled class day for this final class
@@ -55,6 +57,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     setStudentAttendanceStatus(STUDENT_ATTENDANCE_STATUS.PRESENT);
     setLoading(false);
     setError(null);
+    setShowErrorDialog(false);
     setSuccess(false);
   };
 
@@ -67,6 +70,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     try {
       setLoading(true);
       setError(null);
+      setShowErrorDialog(false);
       setSuccess(false);
 
       // Always submit attendance for today's date to align with backend rules
@@ -87,111 +91,173 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
         handleClose();
       }, 2000);
     } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Failed to submit attendance';
-      setError(msg);
+      // Extract error message - prioritize specific field errors
+      let errorMsg = 'An unexpected error occurred';
+      
+      if (e?.response?.data?.error) {
+        errorMsg = e.response.data.error;
+      } else if (e?.response?.data?.message) {
+        errorMsg = e.response.data.message;
+      } else if (e?.message) {
+        errorMsg = e.message;
+      } else if (typeof e === 'string') {
+        errorMsg = e;
+      }
+      
+      setError(errorMsg);
+      setShowErrorDialog(true);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        Submit Attendance
-        <IconButton aria-label="Close" onClick={handleClose} size="small">
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
-        
-        {!isTodayClassDay && (
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            Today is not a scheduled day for this class. You cannot submit attendance today.
-          </Alert>
-        )}
+    <>
+      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          Submit Attendance
+          <IconButton aria-label="Close" onClick={handleClose} size="small">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          
+          {!isTodayClassDay && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              Today is not a scheduled day for this class. You cannot submit attendance today.
+            </Alert>
+          )}
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2">Class: {finalClass.studentName}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Subject: {Array.isArray(finalClass.subject) ? finalClass.subject.join(', ') : finalClass.subject}
-            {' '}• Grade: {finalClass.grade}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Progress: {finalClass.completedSessions}/{finalClass.totalSessions} sessions completed
-          </Typography>
-        </Box>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2">Class: {finalClass.studentName}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Subject: {Array.isArray(finalClass.subject) ? finalClass.subject.join(', ') : finalClass.subject}
+              {' '}• Grade: {finalClass.grade}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Progress: {finalClass.completedSessions}/{finalClass.totalSessions} sessions completed
+            </Typography>
+          </Box>
 
-        <TextField
-          type="date"
-          label="Session Date"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          value={sessionDate}
-          disabled
-          sx={{ mb: 2 }}
-        />
+          <TextField
+            type="date"
+            label="Session Date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={sessionDate}
+            disabled
+            sx={{ mb: 2 }}
+          />
 
-        <TextField
-          label="Topic Covered"
-          fullWidth
-          placeholder="e.g., Trigonometry - Heights and Distances"
-          helperText="Briefly describe what was taught in this session"
-          value={topicCovered}
-          onChange={(e) => { setTopicCovered(e.target.value); setError(null); }}
-          sx={{ mb: 2 }}
-        />
+          <TextField
+            label="Topic Covered"
+            fullWidth
+            placeholder="e.g., Trigonometry - Heights and Distances"
+            helperText="Briefly describe what was taught in this session"
+            value={topicCovered}
+            onChange={(e) => { setTopicCovered(e.target.value); setError(null); }}
+            sx={{ mb: 2 }}
+          />
 
-        <TextField
-          select
-          label="Student Attendance Status"
-          required
-          fullWidth
-          value={studentAttendanceStatus}
-          onChange={(e) => { setStudentAttendanceStatus(e.target.value); setError(null); }}
-          helperText="Mark whether the student attended this session"
-          sx={{ mb: 2 }}
-        >
-          <MenuItem value={STUDENT_ATTENDANCE_STATUS.PRESENT}>Present</MenuItem>
-          <MenuItem value={STUDENT_ATTENDANCE_STATUS.ABSENT}>Absent</MenuItem>
-          <MenuItem value={STUDENT_ATTENDANCE_STATUS.LATE}>Late</MenuItem>
-        </TextField>
+          <TextField
+            select
+            label="Student Attendance Status"
+            required
+            fullWidth
+            value={studentAttendanceStatus}
+            onChange={(e) => { setStudentAttendanceStatus(e.target.value); setError(null); }}
+            helperText="Mark whether the student attended this session"
+            sx={{ mb: 2 }}
+          >
+            <MenuItem value={STUDENT_ATTENDANCE_STATUS.PRESENT}>Present</MenuItem>
+            <MenuItem value={STUDENT_ATTENDANCE_STATUS.ABSENT}>Absent</MenuItem>
+            <MenuItem value={STUDENT_ATTENDANCE_STATUS.LATE}>Late</MenuItem>
+          </TextField>
 
-        <TextField
-          multiline
-          rows={3}
-          label="Notes (Optional)"
-          fullWidth
-          placeholder="Any additional information about this session"
-          value={notes}
-          onChange={(e) => { setNotes(e.target.value); setError(null); }}
-        />
+          <TextField
+            multiline
+            rows={3}
+            label="Notes (Optional)"
+            fullWidth
+            placeholder="Any additional information about this session"
+            value={notes}
+            onChange={(e) => { setNotes(e.target.value); }}
+          />
 
-        {error && (
-          <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
+          {success && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              Attendance submitted successfully!
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={handleClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loading || !sessionDate || !isTodayClassDay}
+            startIcon={loading ? <CircularProgress size={18} /> : <CheckCircleIcon />}
+          >
+            {loading ? 'Submitting...' : 'Submit Attendance'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {success && (
-          <Alert severity="success" sx={{ mt: 2 }}>
-            Attendance submitted successfully!
-          </Alert>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" onClick={handleClose} disabled={loading}>
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={loading || !sessionDate || !isTodayClassDay}
-          startIcon={loading ? <CircularProgress size={18} /> : <CheckCircleIcon />}
-        >
-          {loading ? 'Submitting...' : 'Submit Attendance'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {/* Error Dialog */}
+      <Dialog 
+        open={showErrorDialog} 
+        onClose={() => setShowErrorDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#d32f2f' }}>
+          <ErrorIcon />
+          Error Submitting Attendance
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              <strong>Error Details:</strong>
+            </Typography>
+            <Box
+              sx={{
+                backgroundColor: '#ffebee',
+                border: '1px solid #ef5350',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '16px',
+              }}
+            >
+              <Typography variant="body2" color="#c62828" sx={{ fontFamily: 'monospace' }}>
+                {error}
+              </Typography>
+            </Box>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <strong>What to do:</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              If you think this is a mistake, please contact your{' '}
+              <strong>Coordinator or Manager</strong> to resolve this issue.
+            </Typography>
+
+            <Typography variant="caption" color="text.secondary">
+              Please share the error details above when contacting support.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setShowErrorDialog(false)}
+            variant="contained"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

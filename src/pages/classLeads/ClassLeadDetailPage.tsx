@@ -44,11 +44,16 @@ export default function ClassLeadDetailPage() {
   const [reassignModalOpen, setReassignModalOpen] = useState(false);
   const [selectedManagerId, setSelectedManagerId] = useState<string>('');
   const [reassigning, setReassigning] = useState(false);
+  const [coordinators, setCoordinators] = useState<{ id: string, name: string }[]>([]);
+  const [approveWithCoordinatorOpen, setApproveWithCoordinatorOpen] = useState(false);
+  const [selectedCoordinatorId, setSelectedCoordinatorId] = useState<string>('');
+  const [approvingDemo, setApprovingDemo] = useState(false);
 
   const fetchFilters = async () => {
     try {
       const res = await leadService.getLeadFilterOptions();
       setManagers(res.data.managers || []);
+      setCoordinators(res.data.coordinators || []);
     } catch (err) {
       console.error('Failed to fetch filters', err);
     }
@@ -128,15 +133,29 @@ export default function ClassLeadDetailPage() {
   };
 
   const handleApproveDemo = async () => {
+    setApproveWithCoordinatorOpen(true);
+  };
+
+  const handleApproveDemoWithCoordinator = async () => {
     if (!id) return;
+    setApprovingDemo(true);
     try {
-      await demoService.updateDemoStatus(id as string, DEMO_STATUS.APPROVED);
+      await demoService.updateDemoStatus(id as string, DEMO_STATUS.APPROVED, undefined, undefined, selectedCoordinatorId);
       await refetchAll();
-      setSnack({ open: true, message: 'Demo approved and lead converted', severity: 'success' });
+      setApproveWithCoordinatorOpen(false);
+      setSelectedCoordinatorId('');
+      setSnack({ open: true, message: 'Demo approved and lead converted successfully', severity: 'success' });
     } catch (e: any) {
       const msg = e?.response?.data?.message || 'Failed to approve demo';
       setSnack({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setApprovingDemo(false);
     }
+  };
+
+  const handleApproveDemoCancel = () => {
+    setApproveWithCoordinatorOpen(false);
+    setSelectedCoordinatorId('');
   };
 
   const handleRejectDemo = async () => {
@@ -495,6 +514,55 @@ export default function ClassLeadDetailPage() {
       {selectedTutor && (
         <DemoAssignmentModal open={openDemoAssign} onClose={() => setOpenDemoAssign(false)} classLead={classLead} selectedTutor={selectedTutor} onSuccess={handleDemoAssignSuccess} />
       )}
+
+      {/* Approve Demo with Coordinator Selection Modal */}
+      <Menu
+        anchorEl={null}
+        open={approveWithCoordinatorOpen}
+        onClose={handleApproveDemoCancel}
+        PaperProps={{
+          sx: { p: 2, minWidth: 350, borderRadius: 3 }
+        }}
+        anchorReference="anchorPosition"
+        anchorPosition={{ top: window.innerHeight / 2, left: window.innerWidth / 2 }}
+        transformOrigin={{ vertical: 'center', horizontal: 'center' }}
+      >
+        <Typography variant="subtitle1" fontWeight={700} mb={2}>Approve Demo & Convert to Final Class</Typography>
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          Optionally assign a coordinator to manage this class:
+        </Typography>
+        <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+          <InputLabel>Assign Coordinator (Optional)</InputLabel>
+          <Select
+            value={selectedCoordinatorId}
+            label="Assign Coordinator (Optional)"
+            onChange={(e) => setSelectedCoordinatorId(e.target.value)}
+          >
+            <MenuItem value="">None</MenuItem>
+            {coordinators.map((coord) => (
+              <MenuItem key={coord.id} value={coord.id}>
+                {coord.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+          <Button 
+            variant="outlined" 
+            onClick={handleApproveDemoCancel}
+            disabled={approvingDemo}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={handleApproveDemoWithCoordinator}
+            disabled={approvingDemo}
+          >
+            {approvingDemo ? 'Processing...' : 'Approve & Convert'}
+          </Button>
+        </Box>
+      </Menu>
 
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />
     </Container>
