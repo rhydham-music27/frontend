@@ -55,6 +55,7 @@ import DataManagementPage from "./pages/admin/DataManagementPage";
 import TutorDashboardPage from "./pages/tutors/TutorDashboardPage";
 import TutorClassesPage from "./pages/tutors/TutorClassesPage";
 import TutorRegistrationPage from "./pages/tutors/TutorRegistrationPage";
+import TutorVerificationDetailsPage from "./pages/tutors/TutorVerificationDetailsPage";
 import TutorTimetablePage from "./pages/tutors/TutorTimetablePage";
 import TutorPaymentsPage from "./pages/tutors/TutorPaymentsPage";
 import TutorProfilePage from "./pages/tutors/TutorProfilePage";
@@ -478,6 +479,7 @@ const App: React.FC = () => {
                 />
                 <Route path="approvals" element={<ApprovalsManagementPage />} />
                 <Route path="analytics" element={<AdvancedAnalyticsPage />} />
+                <Route path="verify-manager/:id" element={<ManagerVerificationPage />} />
               </Route>
               <Route
                 path="class-leads"
@@ -501,6 +503,16 @@ const App: React.FC = () => {
                     allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}
                   >
                     <TutorVerificationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="tutors/verify/:id"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}
+                  >
+                    <TutorVerificationDetailsPage />
                   </ProtectedRoute>
                 }
               />

@@ -374,13 +374,13 @@ const TutorProfilePage: React.FC = () => {
                 <BarChart2 className="text-blue-500" size={24} />
                 Internal Performance Metrics
               </Typography>
-              <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
+                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
                  {[
-                   { label: 'Assigned', value: tutorProfile?.classesAssigned || 0, color: 'primary.main', bg: alpha(theme.palette.primary.main, 0.05) },
-                   { label: 'Reschedules', value: (tutorProfile as any)?.internalStats?.oneTimeReschedules || 0, color: 'warning.main', bg: alpha(theme.palette.warning.main, 0.05) },
-                   { label: 'Total Payout', value: `₹${((tutorProfile as any)?.internalStats?.totalPayouts || 0).toLocaleString()}`, color: 'success.main', bg: alpha(theme.palette.success.main, 0.05) },
-                   { label: 'Attendance', value: (tutorProfile as any)?.internalStats?.attendanceSheetsSubmitted || 0, color: 'info.main', bg: alpha(theme.palette.info.main, 0.05) },
-                   { label: 'Demos', value: (tutorProfile as any)?.internalStats?.demosScheduled || 0, color: 'secondary.main', bg: alpha(theme.palette.secondary.main, 0.05) }
+                   { label: 'Assigned', value: tutorProfile?.classesAssigned || 0, color: theme.palette.primary.main, bg: alpha(theme.palette.primary.main, 0.05) },
+                   { label: 'Reschedules', value: (tutorProfile as any)?.internalStats?.oneTimeReschedules || 0, color: theme.palette.warning.main, bg: alpha(theme.palette.warning.main, 0.05) },
+                   { label: 'Total Payout', value: `₹${((tutorProfile as any)?.internalStats?.totalPayouts || 0).toLocaleString()}`, color: theme.palette.success.main, bg: alpha(theme.palette.success.main, 0.05) },
+                   { label: 'Attendance', value: (tutorProfile as any)?.internalStats?.attendanceSheetsSubmitted || 0, color: theme.palette.info.main, bg: alpha(theme.palette.info.main, 0.05) },
+                   { label: 'Demos', value: (tutorProfile as any)?.internalStats?.demosScheduled || 0, color: theme.palette.secondary.main, bg: alpha(theme.palette.secondary.main, 0.05) }
                  ].map((stat, index) => (
                    <Paper 
                     key={index} 
@@ -390,7 +390,7 @@ const TutorProfilePage: React.FC = () => {
                       borderRadius: 4, 
                       bgcolor: stat.bg,
                       border: '1px solid',
-                      borderColor: alpha(stat.color as string, 0.1),
+                      borderColor: alpha(stat.color, 0.1),
                       textAlign: 'center',
                       transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                       '&:hover': { transform: 'scale(1.05)' }

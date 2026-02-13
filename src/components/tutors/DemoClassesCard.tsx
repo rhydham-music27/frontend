@@ -111,11 +111,26 @@ const DemoClassesCard: React.FC = () => {
     return null;
   }
 
-  // Filter out completed demos from the dashboard view
-  const activeDemos = demos.filter((demo) => demo.status !== DEMO_STATUS.COMPLETED);
+  // Filter to show only upcoming (SCHEDULED) demos
+  const activeDemos = demos.filter((demo) => demo.status === DEMO_STATUS.SCHEDULED);
 
   if (!loading && activeDemos.length === 0) {
-    return null;
+    return (
+        <StyledCard>
+          <CardContent>
+             <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+               <Box display="flex" alignItems="center" gap={1.5}>
+                 <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
+                 <Typography variant="h6" fontWeight={600}>My Demo Sessions</Typography>
+               </Box>
+             </Box>
+            <EmptyState
+              title="No Upcoming Demos"
+              description="You don't have any upcoming demo sessions scheduled."
+            />
+          </CardContent>
+        </StyledCard>
+    );
   }
 
   const onPrev = () => {

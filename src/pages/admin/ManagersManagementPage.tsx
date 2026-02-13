@@ -38,7 +38,6 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import CreateManagerModal from '../../components/admin/CreateManagerModal';
 import EditManagerModal from '../../components/admin/EditManagerModal';
-import ManagerVerificationModal from '../../components/admin/ManagerVerificationModal';
 import managerService from '../../services/managerService';
 import { IManager, IUser } from '../../types';
 
@@ -61,8 +60,7 @@ const ManagersManagementPage: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
-  const [managerToVerify, setManagerToVerify] = useState<IManager | null>(null);
+  // managerToVerify and verificationModalOpen removed
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   const [page, setPage] = useState(0);
@@ -428,7 +426,8 @@ const ManagersManagementPage: React.FC = () => {
                               size="small"
                               variant="outlined"
                               startIcon={<VerifiedIcon />}
-                              onClick={() => { setManagerToVerify(m); setVerificationModalOpen(true); }}
+                              component={RouterLink}
+                              to={`/admin/verify-manager/${m.id}`}
                             >
                               Verify
                             </Button>
@@ -487,13 +486,14 @@ const ManagersManagementPage: React.FC = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <Box display="flex" gap={1}>
-                      {m.verificationStatus !== 'VERIFIED' && (
+                        {m.verificationStatus !== 'VERIFIED' && (
                         <Button 
                           size="small"
                           variant="outlined"
                           fullWidth
                           startIcon={<VerifiedIcon />}
-                          onClick={() => { setManagerToVerify(m); setVerificationModalOpen(true); }}
+                          component={RouterLink}
+                          to={`/admin/verify-manager/${m.id}`}
                         >
                           Verify
                         </Button>
@@ -530,12 +530,7 @@ const ManagersManagementPage: React.FC = () => {
         onUpdate={handleEditManager}
       />
 
-      <ManagerVerificationModal
-        open={verificationModalOpen}
-        manager={managerToVerify}
-        onClose={() => { setVerificationModalOpen(false); setManagerToVerify(null); }}
-        onVerificationComplete={() => { loadManagers(page, rowsPerPage); }}
-      />
+
 
       <ConfirmDialog
         open={deleteDialogOpen}

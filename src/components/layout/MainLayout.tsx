@@ -5,12 +5,13 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import PermissionDeniedDialog from '../common/PermissionDeniedDialog';
 import { useSelector, useDispatch } from 'react-redux';
-import { hidePermissionDenied, selectPermissionDeniedOpen } from '../../store/slices/uiSlice';
+import { hidePermissionDenied, selectPermissionDeniedOpen, selectSidebarWidth, setSidebarWidth } from '../../store/slices/uiSlice';
 import { selectCurrentUser, setAcceptedTerms } from '../../store/slices/authSlice';
 import TermsAndConditionsModal from '../common/TermsAndConditionsModal';
 import WhatsAppCommunityModal from '../common/WhatsAppCommunityModal';
 import ManagerProfileCompletionModal from '../manager/ManagerProfileCompletionModal';
-import { acceptTerms } from '../../services/authService';
+import { acceptTerms, } from '../../services/authService';
+import { expressInterest } from '../../services/announcementService';
 import { useOptions } from '../../hooks/useOptions';
 import { toast } from 'sonner';
 import { USER_ROLES, TEACHING_MODE } from '../../constants';
@@ -22,14 +23,49 @@ const MainLayout: React.FC = () => {
   // const theme = useTheme();
   // const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
+  // const [sidebarWidth, setSidebarWidth] = useState(280); // Moved to Redux
+  const dispatch = useDispatch();
+  const sidebarWidth = useSelector(selectSidebarWidth);
   const [isResizing, setIsResizing] = useState(false);
   const [termsLoading, setTermsLoading] = useState(false);
-  const dispatch = useDispatch();
   const permissionDeniedOpen = useSelector(selectPermissionDeniedOpen);
   const user = useSelector(selectCurrentUser);
   const [whatsappConfirmed, setWhatsappConfirmed] = useState(false);
   const { options: cityOptions } = useOptions('CITY');
+
+  // Handle pending interest from public page
+  React.useEffect(() => {
+    const handlePendingInterest = async () => {
+      const pendingAnnouncementId = localStorage.getItem('pendingInterestAnnouncementId');
+      if (pendingAnnouncementId && user) {
+        // Clear immediately to prevent multiple attempts
+        localStorage.removeItem('pendingInterestAnnouncementId');
+
+        try {
+          toast.info('Processing your interest...', { duration: 2000 });
+          const response = await expressInterest(pendingAnnouncementId);
+          if (response.success) {
+            toast.success('Interest expressed successfully for the lead!');
+          }
+        } catch (error: any) {
+          console.error("Failed to express interest automatically", error);
+
+          // If error is "Target already interested", show a friendly message
+          if (error.response?.status === 400 && error.response?.data?.message?.includes('already expressed interest')) {
+            toast.info('You have already expressed interest in this lead.');
+          } else if (error.response?.status === 403) {
+            toast.error('You are not authorized to express interest. Only Tutors can do this.');
+          } else {
+            toast.error(error.response?.data?.message || 'Failed to express interest. Please try via the dashboard.');
+          }
+        }
+      }
+    };
+
+    if (user) {
+      handlePendingInterest();
+    }
+  }, [user]);
 
   const communityLink = React.useMemo(() => {
     if (!user?.city || !cityOptions.length) return undefined;
@@ -61,11 +97,11 @@ const MainLayout: React.FC = () => {
         if (newWidth > 480) newWidth = 480; // Max width
         // Snap to icon mode only when very small to prevent "stuck" feeling during expansion
         if (newWidth < 110) newWidth = 80;
-        
-        setSidebarWidth(newWidth);
+
+        dispatch(setSidebarWidth(newWidth));
       }
     },
-    [isResizing]
+    [isResizing, dispatch]
   );
 
   React.useEffect(() => {
@@ -80,10 +116,10 @@ const MainLayout: React.FC = () => {
   return (
     <Box display="flex" sx={{ position: 'relative' }}>
       <Header onMenuClick={handleDrawerToggle} />
-      <Sidebar 
-        open={mobileOpen} 
-        onClose={handleDrawerToggle} 
-        drawerWidth={sidebarWidth} 
+      <Sidebar
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        drawerWidth={sidebarWidth}
         onResizeStart={startResizing}
       />
       <Box
@@ -110,13 +146,13 @@ const MainLayout: React.FC = () => {
         open={permissionDeniedOpen}
         onClose={() => dispatch(hidePermissionDenied())}
       />
-      <WhatsAppCommunityModal 
-        open={showWhatsapp} 
-        onConfirm={() => setWhatsappConfirmed(true)} 
+      <WhatsAppCommunityModal
+        open={showWhatsapp}
+        onConfirm={() => setWhatsappConfirmed(true)}
         link={communityLink}
       />
-      <TermsAndConditionsModal 
-        open={showTerms} 
+      <TermsAndConditionsModal
+        open={showTerms}
         loading={termsLoading}
         onAccept={async () => {
           try {
@@ -131,7 +167,7 @@ const MainLayout: React.FC = () => {
           } finally {
             setTermsLoading(false);
           }
-        }} 
+        }}
       />
       <ManagerProfileCompletionModal open={showManagerProfileGate} />
     </Box>

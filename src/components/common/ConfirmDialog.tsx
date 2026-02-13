@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -15,7 +16,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   confirmColor?: 'primary' | 'error' | 'warning' | 'success' | 'info'; // deprecated in favor of severity
-  severity?: 'warning' | 'error' | 'info';
+  severity?: 'warning' | 'error' | 'info' | 'success';
   loading?: boolean;
 }
 
@@ -39,6 +40,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         return 'error';
       case 'warning':
         return 'warning';
+      case 'success':
+        return 'success';
       case 'info':
       default:
         return 'primary';
@@ -53,6 +56,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         return <ErrorOutlineIcon sx={{ fontSize: 48, color: 'error.main' }} />;
       case 'warning':
         return <WarningAmberIcon sx={{ fontSize: 48, color: 'warning.main' }} />;
+      case 'success':
+        return <CheckCircleIcon sx={{ fontSize: 48, color: 'success.main' }} />;
       default:
         return <InfoOutlinedIcon sx={{ fontSize: 48, color: 'primary.main' }} />;
     }

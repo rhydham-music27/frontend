@@ -11,12 +11,7 @@ import {
   CircularProgress,
   Chip,
   Autocomplete,
-  Paper,
   Checkbox,
-  Box,
-  Card,
-  alpha,
-  useTheme,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCurrentUser, setProfileComplete } from '../../store/slices/authSlice';
@@ -39,7 +34,6 @@ interface ManagerProfileCompletionModalProps {
 const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps> = ({ open }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
-  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   // Aadhaar upload removed from this modal
   const [managerProfileId, setManagerProfileId] = useState<string | null>(null);
@@ -124,7 +118,7 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
       }}
     >
       <DialogTitle>
-        <Typography variant="h5" fontWeight={700}>Complete Your Professional Profile</Typography>
+        <Typography variant="h6" fontWeight={700} component="div">Complete Your Professional Profile</Typography>
         <Typography variant="body2" color="text.secondary">
           Help us know you better. These details are required for identification and role-matching.
         </Typography>
@@ -188,8 +182,9 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
                 const isSelectAll = option === 'Select All';
                 const allLanguages = ['English', 'Hindi', 'Marathi', 'Gujarati', 'Bengali', 'Tamil', 'Telugu', 'Kannada'];
                 const allSelected = languagesKnown.length === allLanguages.length && allLanguages.length > 0;
+                const { key, ...otherProps } = props;
                 return (
-                  <li {...props}>
+                  <li key={key} {...otherProps}>
                     <Checkbox
                       icon={icon}
                       checkedIcon={checkedIcon}
@@ -201,9 +196,10 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
                 );
               }}
               renderTags={(value, getTagProps) =>
-                value.filter(v => v !== 'Select All').map((option, index) => (
-                  <Chip variant="outlined" label={option} {...getTagProps({ index })} />
-                ))
+                value.filter(v => v !== 'Select All').map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+                  return <Chip key={key} variant="outlined" label={option} {...tagProps} />;
+                })
               }
               renderInput={(params) => <TextField {...params} label="Languages Known" placeholder="Add languages" />}
             />
@@ -231,8 +227,9 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
                 const isSelectAll = option === 'Select All';
                 const allSkills = ['Team Management', 'Operations', 'Sales', 'CRM', 'Communication', 'Problem Solving'];
                 const allSelected = skills.length === allSkills.length && allSkills.length > 0;
+                const { key, ...otherProps } = props;
                 return (
-                  <li {...props}>
+                  <li key={key} {...otherProps}>
                     <Checkbox
                       icon={icon}
                       checkedIcon={checkedIcon}
@@ -244,9 +241,10 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
                 );
               }}
               renderTags={(value, getTagProps) =>
-                value.filter(v => v !== 'Select All').map((option, index) => (
-                  <Chip variant="outlined" label={option} {...getTagProps({ index })} />
-                ))
+                value.filter(v => v !== 'Select All').map((option, index) => {
+                  const { key, ...tagProps } = getTagProps({ index });
+                  return <Chip key={key} variant="outlined" label={option} {...tagProps} />;
+                })
               }
               renderInput={(params) => <TextField {...params} label="Professional Skills" placeholder="Add skills" />}
             />

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Box,
@@ -12,16 +12,16 @@ import {
   Chip,
   Button,
   Stack,
-  Divider,
   CircularProgress,
   Alert
 } from '@mui/material';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SchoolIcon from '@mui/icons-material/School';
 import PersonIcon from '@mui/icons-material/Person';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import { getAnnouncementByLeadId } from '../../services/announcementService';
 
 interface PublicLead {
   _id: string;
@@ -57,17 +57,29 @@ interface PublicLead {
 
 const PublicLeadDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  // ... (state and useEffect remain same) ...
+  const navigate = useNavigate();
   const [lead, setLead] = useState<PublicLead | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [announcementId, setAnnouncementId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLead = async () => {
+    const fetchLeadAndAnnouncement = async () => {
       try {
         const response = await axios.get(`/api/public/leads/${id}`);
         if (response.data && response.data.success) {
             setLead(response.data.data);
+            
+            // Try to fetch associated announcement
+            try {
+                const annRes = await getAnnouncementByLeadId(response.data.data._id);
+                if (annRes.success && annRes.data) {
+                    setAnnouncementId((annRes.data as any).id || (annRes.data as any)._id);
+                }
+            } catch (err) {
+                console.error("Failed to fetch announcement", err);
+                // Not blocking, just won't be able to express interest if no announcement exists yet
+            }
         } else {
             setError('Failed to load lead details.');
         }
@@ -77,31 +89,18 @@ const PublicLeadDetails: React.FC = () => {
         setLoading(false);
       }
     };
-    if (id) fetchLead();
+    if (id) fetchLeadAndAnnouncement();
   }, [id]);
 
-  const handleShareWhatsApp = () => {
-    if (!lead) return;
-    const subjects = Array.isArray(lead.subject) ? lead.subject.join(', ') : lead.subject;
-    const loc = lead.location || (lead.city ? `${lead.area}, ${lead.city}` : 'Online');
-    const link = window.location.href;
-
-    const text = `*New Tuition Opportunity!* 🎓
-    
-*Details:* ${subjects} for ${lead.grade} (${lead.board})
-*Mode:* ${lead.mode}
-${lead.studentType === 'GROUP' ? `*Group:* ${lead.numberOfStudents} Students` : ''}
-*Location:* ${loc}
-*Timing:* ${lead.timing || 'Flexible'}
-${lead.tutorFees ? `*Payout:* ₹${lead.tutorFees}/month` : ''}
-
-Check full details here: ${link}`;
-
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+  const handleExpressInterest = () => {
+    if (announcementId) {
+        localStorage.setItem('pendingInterestAnnouncementId', announcementId);
+        navigate('/login');
+    } else {
+        // Fallback or error if no announcement exists (e.g. freshly created public lead not yet processed into announcement)
+         window.location.href = '/login';
+    }
   };
-
-  // ... (loading/error states remain same) ...
 
   if (loading) return <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f5f5f5"><CircularProgress /></Box>;
   if (error || !lead) return <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f5f5f5"><Alert severity="error">{error || 'Lead not found'}</Alert></Box>;
@@ -140,13 +139,11 @@ Check full details here: ${link}`;
                              {lead.studentType === 'GROUP' ? (
                                 <Stack spacing={1}>
                                     <ViewRow label="Type">Group of {lead.numberOfStudents} Students</ViewRow>
-                                    {lead.studentDetails?.map((s, i) => (
-                                        <Typography key={i} variant="body2" color="text.secondary">• {s.name} ({s.gender === 'M' ? 'Male' : 'Female'})</Typography>
-                                    ))}
+                                    <Typography variant="body2" color="text.secondary">Student names hidden for privacy</Typography>
                                 </Stack>
                              ) : (
                                 <Stack spacing={1}>
-                                    <ViewRow label="Name">{lead.studentName || 'Student'}</ViewRow>
+                                    <ViewRow label="Student">Single Student</ViewRow>
                                     <ViewRow label="Gender">{lead.studentGender === 'M' ? 'Male' : 'Female'}</ViewRow>
                                 </Stack>
                              )}
@@ -230,9 +227,23 @@ Check full details here: ${link}`;
                 </Grid>
 
                 <Box mt={4}>
-                    <Button variant="contained" color="success" size="large" fullWidth startIcon={<WhatsAppIcon />} onClick={handleShareWhatsApp} sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 700, borderRadius: 2, textTransform: 'none' }}>
-                        Share via WhatsApp
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        size="large" 
+                        fullWidth 
+                        startIcon={<ThumbUpIcon />} 
+                        onClick={handleExpressInterest} 
+                        sx={{ py: 1.5, fontSize: '1.1rem', fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+                        disabled={!announcementId}
+                    >
+                        Express Interest
                     </Button>
+                    {!announcementId && (
+                        <Typography variant="caption" color="text.secondary" align="center" display="block" mt={1}>
+                            This lead is currently under review and not yet available for immediate interest.
+                        </Typography>
+                    )}
                 </Box>
             </CardContent>
          </Card>

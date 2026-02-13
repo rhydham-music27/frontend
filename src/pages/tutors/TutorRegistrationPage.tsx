@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { tutorLeadAPI } from '@/api/client';
 import { tutorLeadRegistrationSchema } from '@/schemas/applicationschema';
 import generateTeacherId from '@/utils/generateTeacherId';
-import { Box, Container, Typography, alpha, useTheme } from '@mui/material';
+import { Box, Container, Typography, alpha, useTheme, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { getMyProfileForEdit, updateMyProfile } from '@/services/tutorService';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -16,12 +16,14 @@ const TutorLeadRegistration = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialData, setInitialData] = useState<TutorLeadFormData | null>(null);
+  const [errorPopupOpen, setErrorPopupOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
   const theme = useTheme();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') === 'edit' ? 'edit' : 'create';
 
-  // Fetch profile data in edit mode
+  // ... (useEffect for edit mode remains same) ...
   useEffect(() => {
     if (mode === 'edit') {
       const fetchProfileData = async () => {
@@ -61,9 +63,22 @@ const TutorLeadRegistration = () => {
         toast.success(`Registration successful! Your Teacher ID: ${returnedTeacherId}`);
         navigate(`/login?email=${encodeURIComponent(data.email)}&teacherId=${encodeURIComponent(returnedTeacherId)}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Operation failed:', error);
-      toast.error(mode === 'edit' ? 'Failed to update profile' : 'Registration failed. Please try again.');
+      // const msg = error.response?.data?.message || error.message || 'Registration failed';
+      // If axios error, try to extract message. api client might put it in a specific place or throw it.
+      // Based on client.ts, the interceptor throws the original error BUT might show toast.
+      // We want to capture the text for the popup.
+      let msg = 'Registration failed. Please try again.';
+      if (error.response?.data?.message) {
+        msg = error.response.data.message;
+      } else if (error.message) {
+        msg = error.message;
+      }
+      
+      setErrorMessage(msg);
+      setErrorPopupOpen(true);
+      // Note: toast.error might still fire from client.ts interceptor. 
     } finally {
       setSubmitting(false);
     }
@@ -204,6 +219,28 @@ const TutorLeadRegistration = () => {
           </Box>
         )}
       </Container>
+      
+      {/* Error Popup Dialog */}
+      <Dialog
+        open={errorPopupOpen}
+        onClose={() => setErrorPopupOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title" sx={{ color: 'error.main', fontWeight: 600 }}>
+          {"Registration Error"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description" sx={{ color: 'text.primary' }}>
+            {errorMessage}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErrorPopupOpen(false)} autoFocus variant="contained" color="primary">
+            Okay, Got it
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

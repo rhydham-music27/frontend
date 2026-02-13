@@ -512,15 +512,22 @@ export default function TutorVerificationPage() {
                              </MuiLink>
                            ) : '-'}
                       </TableCell>
-                      <TableCell align="right">
-                        <Box display="flex" justifyContent="flex-end" gap={1}>
-                          <Button size="small" variant="outlined" onClick={() => handleViewDocs(t)}>Docs</Button>
-                          <Button size="small" variant="contained" onClick={() => handleReview(t)}>Verify</Button>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                        <TableCell align="right">
+                          <Box display="flex" justifyContent="flex-end" gap={1}>
+                            <Button 
+                              size="small" 
+                              variant="outlined" 
+                              component={RouterLink}
+                              to={`/tutors/verify/${t.id}`}
+                            >
+                              Details
+                            </Button>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )
+                }
               </>
             )}
 
@@ -543,7 +550,7 @@ export default function TutorVerificationPage() {
                     <MuiLink
                       variant="subtitle2"
                       component={RouterLink}
-                      to={`/tutor-profile/${t.id || (t as any)._id}`}
+                      to={`/tutors/verify/${t.id}`}
                       sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                     >
                       {t.user?.name || 'Unknown Tutor'}
@@ -579,7 +586,14 @@ export default function TutorVerificationPage() {
                              ) : '-'}
                         </TableCell>
                         <TableCell align="right">
-                           <Button size="small" variant="outlined" onClick={() => handleReview(t)}>View</Button>
+                           <Button 
+                             size="small" 
+                             variant="outlined" 
+                             component={RouterLink}
+                             to={`/tutors/verify/${t.id}`}
+                           >
+                              View
+                           </Button>
                         </TableCell>
                       </TableRow>
                     ))}

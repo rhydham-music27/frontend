@@ -140,55 +140,6 @@ const schema = yup.object({
   notes: yup.string().max(500).optional(),
 });
 
-export default function ClassLeadForm({ initialData, onSubmit, loading, error, submitButtonText = 'Create Lead' }: Props) {
-  // Compute default values BEFORE useForm
-  const defaultValues: IClassLeadFormData = useMemo(() => {
-    const initialStudentType = (initialData as any)?.studentType || 'SINGLE';
-    return {
-      studentType: initialStudentType,
-      studentName: initialData?.studentName || '',
-      studentGender: (initialData as any)?.studentGender || 'M',
-      parentName: (initialData as any)?.parentName || '',
-      parentEmail: (initialData as any)?.parentEmail || '',
-      parentPhone: (initialData as any)?.parentPhone || '',
-      grade: initialData?.grade || '',
-      subject: Array.isArray(initialData?.subject)
-        ? (initialData?.subject as unknown as string[])
-        : initialData?.subject
-          ? String(initialData.subject).split(',').map((s: string) => s.trim()).filter(Boolean)
-          : [],
-      board: initialData?.board || '',
-      mode: initialData?.mode || TEACHING_MODE.ONLINE,
-      location: initialData?.location || '',
-      city: (initialData as any)?.city || '',
-      area: (initialData as any)?.area || '',
-      address: (initialData as any)?.address || '',
-      timing: initialData?.timing || '',
-      paymentAmount: initialStudentType === 'SINGLE' ? ((initialData as any)?.paymentAmount ?? undefined) : undefined,
-      tutorFees: initialStudentType === 'SINGLE' ? ((initialData as any)?.tutorFees ?? undefined) : undefined,
-      classesPerMonth: (initialData as any)?.classesPerMonth ?? undefined,
-      classDurationHours: (initialData as any)?.classDurationHours ?? undefined,
-      leadSource: (initialData as any)?.leadSource || '',
-      notes: (initialData as any)?.notes || '',
-      numberOfStudents: (initialData as any)?.numberOfStudents ?? 1,
-      studentDetails: (initialData as any)?.studentDetails || [
-        { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0 }
-      ],
-    };
-  }, [initialData]);
-
-  const { 
-    control,
-    register, 
-    handleSubmit, 
-    setValue, 
-    watch, 
-    formState: { errors },
-    reset
-  } = useForm<IClassLeadFormData>({
-    resolver: yupResolver(schema as any),
-    defaultValues: defaultValues,
-  });
 
 function GroupStudentRow({ index, control, register, setValue, watch, errors, remove, numberOfStudents }: any) {
   const selectedBoard = watch(`studentDetails.${index}.board`);
@@ -384,6 +335,58 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
     </Paper>
   );
 }
+
+export default function ClassLeadForm({ initialData, onSubmit, loading, error, submitButtonText = 'Create Lead' }: Props) {
+  // Compute default values BEFORE useForm
+  const defaultValues: IClassLeadFormData = useMemo(() => {
+    const initialStudentType = (initialData as any)?.studentType || 'SINGLE';
+    return {
+      studentType: initialStudentType,
+      studentName: initialData?.studentName || '',
+      studentGender: (initialData as any)?.studentGender || 'M',
+      parentName: (initialData as any)?.parentName || '',
+      parentEmail: (initialData as any)?.parentEmail || '',
+      parentPhone: (initialData as any)?.parentPhone || '',
+      grade: initialData?.grade || '',
+      subject: Array.isArray(initialData?.subject)
+        ? (initialData?.subject as unknown as string[])
+        : initialData?.subject
+          ? String(initialData.subject).split(',').map((s: string) => s.trim()).filter(Boolean)
+          : [],
+      board: initialData?.board || '',
+      mode: initialData?.mode || TEACHING_MODE.ONLINE,
+      location: initialData?.location || '',
+      city: (initialData as any)?.city || '',
+      area: (initialData as any)?.area || '',
+      address: (initialData as any)?.address || '',
+      timing: initialData?.timing || '',
+      paymentAmount: initialStudentType === 'SINGLE' ? ((initialData as any)?.paymentAmount ?? undefined) : undefined,
+      tutorFees: initialStudentType === 'SINGLE' ? ((initialData as any)?.tutorFees ?? undefined) : undefined,
+      classesPerMonth: (initialData as any)?.classesPerMonth ?? undefined,
+      classDurationHours: (initialData as any)?.classDurationHours ?? undefined,
+      leadSource: (initialData as any)?.leadSource || '',
+      notes: (initialData as any)?.notes || '',
+      numberOfStudents: (initialData as any)?.numberOfStudents ?? 1,
+      studentDetails: (initialData as any)?.studentDetails || [
+        { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0 }
+      ],
+    };
+  }, [initialData]);
+
+  const { 
+    control,
+    register, 
+    handleSubmit, 
+    setValue, 
+    watch, 
+    formState: { errors },
+    reset
+  } = useForm<IClassLeadFormData>({
+    resolver: yupResolver(schema as any),
+    defaultValues: defaultValues,
+  });
+
+
 
   // Watch values for hierarchy
   const selectedBoard = watch('board');
