@@ -41,6 +41,7 @@ export const getPaymentSummary = async (
   if (typeof filters.page !== 'undefined') params.append('page', String(filters.page));
   if (typeof filters.limit !== 'undefined') params.append('limit', String(filters.limit));
   if (filters.status) params.append('status', filters.status);
+  if (filters.paymentType) params.append('paymentType', filters.paymentType);
   if (filters.classId) params.append('classId', filters.classId);
   if (filters.fromDate) params.append('fromDate', filters.fromDate);
   if (filters.toDate) params.append('toDate', filters.toDate);

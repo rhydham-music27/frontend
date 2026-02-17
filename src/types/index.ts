@@ -14,7 +14,6 @@ export interface IUser {
     canViewSiteLeads?: boolean;
     canVerifyTutors?: boolean;
     canCreateLeads?: boolean;
-    canManagePayments?: boolean;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -335,6 +334,7 @@ export interface IPayment {
   dueDate: Date;
   paidBy?: IUser;
   notes?: string;
+  paymentProof?: string;
   paymentType?: string;
   createdBy: IUser;
   createdAt: Date;

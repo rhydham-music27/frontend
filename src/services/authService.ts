@@ -23,7 +23,6 @@ export const register = async (
     canViewSiteLeads?: boolean;
     canVerifyTutors?: boolean;
     canCreateLeads?: boolean;
-    canManagePayments?: boolean;
   }
 ) => {
   const res = await api.post<AuthResponse>(API_ENDPOINTS.AUTH_REGISTER, {

@@ -55,7 +55,9 @@ export type CreateAttendancePayload = {
 export const createAttendance = async (
   payload: CreateAttendancePayload
 ): Promise<ApiResponse<IAttendance>> => {
-  const { data } = await api.post(API_ENDPOINTS.ATTENDANCE, payload);
+  // Use the new attendance-sheet endpoint
+  // The backend expects: finalClassId, sessionDate, durationHours, topicCovered, studentAttendanceStatus, notes
+  const { data } = await api.post(`${API_ENDPOINTS.ATTENDANCE_SHEETS}`, payload);
   return data as ApiResponse<IAttendance>;
 };
 
@@ -114,12 +116,42 @@ export const getAttendanceByClass = async (
   classId: string,
   status?: string
 ): Promise<ApiResponse<IAttendance[]>> => {
+  // Fetch sheets instead of individual attendances
   const params = new URLSearchParams();
-  if (status) params.append('status', status);
+  if (status) params.append('status', status); // Note: filtering by record status might need client-side or backend update
+  
   const { data } = await api.get(
-    `${API_ENDPOINTS.ATTENDANCE_CLASS(classId)}?${params.toString()}`
+    `${API_ENDPOINTS.ATTENDANCE_SHEETS}/class/${classId}?${params.toString()}`
   );
-  return data as ApiResponse<IAttendance[]>;
+  
+  // Transform sheets[].records[] -> IAttendance[]
+  // Backend returns sheets with populated finalClass
+  const sheets: any[] = data.data || [];
+  const allRecords: IAttendance[] = [];
+
+  sheets.forEach((sheet) => {
+      if (sheet.records && Array.isArray(sheet.records)) {
+          sheet.records.forEach((record: any) => {
+             // Map record to IAttendance
+             allRecords.push({
+                 id: record._id,
+                 ...record,
+                 finalClass: sheet.finalClass, // Inject finalClass from sheet
+                 coordinator: sheet.coordinator,
+                 // Ensure dates are Dates if needed, though usually string from JSON
+             });
+          });
+      }
+  });
+
+  // Sort by sessionDate desc
+  allRecords.sort((a, b) => new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime());
+
+  return {
+      success: true,
+      data: allRecords,
+      message: 'Attendances fetched successfully'
+  };
 };
 
 export const getAttendanceHistory = async (

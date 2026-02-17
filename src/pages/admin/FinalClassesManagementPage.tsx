@@ -52,6 +52,7 @@ import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import TutorSelectionModal from '../../components/common/TutorSelectionModal';
 import { changeTutor, recordTutorLeaving, repostAsLead } from '../../services/finalClassService';
+import ClassPlanModal from '../../components/classes/ClassPlanModal';
 
 const FinalClassesManagementPage: React.FC = () => {
   const theme = useTheme();
@@ -75,11 +76,11 @@ const FinalClassesManagementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [notification, setNotification] = useState<{ message: string; severity: 'success' | 'error' | 'info' } | null>(null);
-  
+
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [selectedLeadStudents, setSelectedLeadStudents] = useState<any[]>([]);
   const [selectedLeadName, setSelectedLeadName] = useState('');
-  
+
   const [confirmConfig, setConfirmConfig] = useState<{
     open: boolean;
     title: string;
@@ -90,9 +91,9 @@ const FinalClassesManagementPage: React.FC = () => {
     open: false,
     title: '',
     message: '',
-    action: () => {},
+    action: () => { },
   });
-  
+
   const navigate = useNavigate();
 
   const debouncedSearch = useMemo(() => {
@@ -124,10 +125,11 @@ const FinalClassesManagementPage: React.FC = () => {
   }, [page, rowsPerPage, statusFilter, searchQuery, coordinatorFilter]);
 
   const [tutorModalOpen, setTutorModalOpen] = useState(false);
+  const [planModalOpen, setPlanModalOpen] = useState(false);
 
   const handleChangeTutor = async (newTutorId: string, tutorName: string) => {
     if (!selectedClass) return;
-    
+
     setConfirmConfig({
       open: true,
       title: 'Change Tutor',
@@ -156,7 +158,7 @@ const FinalClassesManagementPage: React.FC = () => {
 
   const handleTutorLeavingAction = async () => {
     if (!selectedClass) return;
-    
+
     setConfirmConfig({
       open: true,
       title: 'Tutor Left',
@@ -235,7 +237,7 @@ const FinalClassesManagementPage: React.FC = () => {
 
   const handleStatusChange = async (newStatus: string) => {
     if (!selectedClass) return;
-    
+
     setConfirmConfig({
       open: true,
       title: `${newStatus === FINAL_CLASS_STATUS.PAUSED ? 'Pause' : 'Resume'} Class`,
@@ -290,7 +292,7 @@ const FinalClassesManagementPage: React.FC = () => {
 
   const handleRenewMonthlyClass = async () => {
     if (!selectedClass) return;
-    
+
     setConfirmConfig({
       open: true,
       title: 'Renew Monthly Class',
@@ -330,8 +332,8 @@ const FinalClassesManagementPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ p: 3 }}>
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #4A148C 0%, #311B92 100%)',
           color: 'white',
           py: { xs: 4, md: 5 },
@@ -348,22 +350,22 @@ const FinalClassesManagementPage: React.FC = () => {
             Final Classes Management
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
-             Monitor ongoing classes, track progress, and manage student-tutor assignments.
+            Monitor ongoing classes, track progress, and manage student-tutor assignments.
           </Typography>
         </Box>
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Tabs 
-            value={statusFilter === 'all' ? 0 : statusFilter === FINAL_CLASS_STATUS.ACTIVE ? 1 : statusFilter === FINAL_CLASS_STATUS.PAUSED ? 2 : statusFilter === FINAL_CLASS_STATUS.COMPLETED ? 3 : 4} 
+          <Tabs
+            value={statusFilter === 'all' ? 0 : statusFilter === FINAL_CLASS_STATUS.ACTIVE ? 1 : statusFilter === FINAL_CLASS_STATUS.PAUSED ? 2 : statusFilter === FINAL_CLASS_STATUS.COMPLETED ? 3 : 4}
             onChange={(_, v) => {
-               const map = [
-                 'all', 
-                 FINAL_CLASS_STATUS.ACTIVE, 
-                 FINAL_CLASS_STATUS.PAUSED, 
-                 FINAL_CLASS_STATUS.COMPLETED,
-                 FINAL_CLASS_STATUS.CANCELLED
-               ];
-               setStatusFilter(map[v]);
+              const map = [
+                'all',
+                FINAL_CLASS_STATUS.ACTIVE,
+                FINAL_CLASS_STATUS.PAUSED,
+                FINAL_CLASS_STATUS.COMPLETED,
+                FINAL_CLASS_STATUS.CANCELLED
+              ];
+              setStatusFilter(map[v]);
             }}
             variant="scrollable"
             scrollButtons="auto"
@@ -380,7 +382,7 @@ const FinalClassesManagementPage: React.FC = () => {
             <Tab label="Cancelled" />
           </Tabs>
         </Box>
-        
+
         {/* Abstract shapes */}
         <Box sx={{
           position: 'absolute',
@@ -435,11 +437,11 @@ const FinalClassesManagementPage: React.FC = () => {
       {/* Active Filter Chips */}
       {coordinatorFilter === 'unassigned' && (
         <Box mb={2}>
-           <Chip 
-             label="Filter: Unassigned Coordinator" 
-             onDelete={() => setCoordinatorFilter('all')} 
-             color="secondary" 
-           />
+          <Chip
+            label="Filter: Unassigned Coordinator"
+            onDelete={() => setCoordinatorFilter('all')}
+            color="secondary"
+          />
         </Box>
       )}
 
@@ -474,17 +476,17 @@ const FinalClassesManagementPage: React.FC = () => {
                       <TableCell sx={{ fontWeight: 600 }}>{cls.className}</TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1.5}>
-                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', bgcolor: 'primary.light' }}>
-                                {(cls.studentName || 'S').charAt(0).toUpperCase()}
-                            </Avatar>
-                            <Typography 
-                            color="primary" 
+                          <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', bgcolor: 'primary.light' }}>
+                            {(cls.studentName || 'S').charAt(0).toUpperCase()}
+                          </Avatar>
+                          <Typography
+                            color="primary"
                             sx={{ cursor: 'pointer', fontWeight: 500, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                             onClick={() => handleStudentNameClick(cls)}
                             variant="body2"
-                            >
+                          >
                             {cls.studentName}
-                            </Typography>
+                          </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -547,9 +549,9 @@ const FinalClassesManagementPage: React.FC = () => {
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
                   <Box>
                     <Typography variant="subtitle1" fontWeight={600}>{cls.className}</Typography>
-                    <Typography 
-                      variant="body2" 
-                      color="primary" 
+                    <Typography
+                      variant="body2"
+                      color="primary"
                       sx={{ cursor: 'pointer', textDecoration: 'underline' }}
                       onClick={() => handleStudentNameClick(cls)}
                     >
@@ -558,9 +560,9 @@ const FinalClassesManagementPage: React.FC = () => {
                   </Box>
                   <Box display="flex" flexDirection="column" alignItems="flex-end" gap={0.5}>
                     <Chip label={cls.status} color={getStatusColor(cls.status) as any} size="small" />
-                    <Button 
-                      size="small" 
-                      startIcon={<EditIcon />} 
+                    <Button
+                      size="small"
+                      startIcon={<EditIcon />}
                       variant="outlined"
                       onClick={() => handleEditClick(cls)}
                     >
@@ -611,8 +613,8 @@ const FinalClassesManagementPage: React.FC = () => {
       />
 
       {/* Edit Class Modal */}
-      <Dialog 
-        open={isModalOpen} 
+      <Dialog
+        open={isModalOpen}
         onClose={() => !actionLoading && setIsModalOpen(false)}
         maxWidth="sm"
         fullWidth
@@ -632,13 +634,13 @@ const FinalClassesManagementPage: React.FC = () => {
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>Session Progress</Typography>
                 <Box display="flex" alignItems="center" gap={2}>
                   <Box sx={{ flexGrow: 1, bgcolor: 'action.hover', height: 10, borderRadius: 5, overflow: 'hidden' }}>
-                    <Box 
-                      sx={{ 
-                        width: `${selectedClass.progressPercentage}%`, 
-                        height: '100%', 
+                    <Box
+                      sx={{
+                        width: `${selectedClass.progressPercentage}%`,
+                        height: '100%',
                         bgcolor: getStatusColor(selectedClass.status) + '.main',
                         transition: 'width 0.5s ease-in-out'
-                      }} 
+                      }}
                     />
                   </Box>
                   <Typography variant="body2" fontWeight={600}>
@@ -745,9 +747,9 @@ const FinalClassesManagementPage: React.FC = () => {
                     />
                   </Grid>
                   <Grid item xs={4}>
-                    <Button 
-                      fullWidth 
-                      variant="contained" 
+                    <Button
+                      fullWidth
+                      variant="contained"
                       onClick={handleUpdateWindow}
                       disabled={actionLoading || windowValue === selectedClass.attendanceSubmissionWindow}
                     >
@@ -756,13 +758,28 @@ const FinalClassesManagementPage: React.FC = () => {
                   </Grid>
                 </Grid>
               </Box>
-              
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Financial Plan</Typography>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="info"
+                  onClick={() => setPlanModalOpen(true)}
+                  disabled={actionLoading}
+                >
+                  Manage Class Plan
+                </Button>
+              </Box>
+
               {selectedClass.status === FINAL_CLASS_STATUS.ACTIVE && (
                 <Box>
                   <Typography variant="subtitle2" gutterBottom>Tutor Management</Typography>
                   <Grid container spacing={1}>
                     <Grid item xs={12} sm={4}>
-                       <Button
+                      <Button
                         fullWidth
                         variant="outlined"
                         size="small"
@@ -773,7 +790,7 @@ const FinalClassesManagementPage: React.FC = () => {
                       </Button>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                       <Button
+                      <Button
                         fullWidth
                         variant="outlined"
                         size="small"
@@ -785,7 +802,7 @@ const FinalClassesManagementPage: React.FC = () => {
                       </Button>
                     </Grid>
                     <Grid item xs={12} sm={4}>
-                       <Button
+                      <Button
                         fullWidth
                         variant="outlined"
                         size="small"
@@ -808,7 +825,14 @@ const FinalClassesManagementPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
+      <ClassPlanModal
+        open={planModalOpen}
+        onClose={() => setPlanModalOpen(false)}
+        classId={selectedClass?.id || ''}
+        className={selectedClass?.className || ''}
+      />
+
       <GroupStudentsModal
         open={groupModalOpen}
         onClose={() => setGroupModalOpen(false)}

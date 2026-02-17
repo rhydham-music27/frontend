@@ -23,13 +23,13 @@ export default function TutorVerificationPage() {
   const [docsOpen, setDocsOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<IDocument | null>(null);
   const [verifyOpen, setVerifyOpen] = useState(false);
-  const [confirmConfig, setConfirmConfig] = useState<{ open: boolean; title: string; message: string; action: () => void; severity: 'info' | 'error' | 'warning' }>({ open: false, title: '', message: '', action: () => {}, severity: 'info' });
+  const [confirmConfig, setConfirmConfig] = useState<{ open: boolean; title: string; message: string; action: () => void; severity: 'info' | 'error' | 'warning' }>({ open: false, title: '', message: '', action: () => { }, severity: 'info' });
   const [actionLoading, setActionLoading] = useState(false);
   const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ open: false, message: '', severity: 'success' });
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
-  
+
   const [filters, setFilters] = useState({
     teacherId: '',
     name: '',
@@ -55,7 +55,7 @@ export default function TutorVerificationPage() {
       // Check cache first
       const cached = localStorage.getItem('tutor_subjects_cache');
       const cacheTimestamp = localStorage.getItem('tutor_subjects_ts');
-      
+
       const now = Date.now();
       if (cached && cacheTimestamp && (now - parseInt(cacheTimestamp) < 24 * 60 * 60 * 1000)) {
         setSubjectsList(JSON.parse(cached));
@@ -77,7 +77,7 @@ export default function TutorVerificationPage() {
       // Check cache first
       const cached = localStorage.getItem('tutor_verifiers_cache');
       const cacheTimestamp = localStorage.getItem('tutor_verifiers_ts');
-      
+
       const now = Date.now();
       if (cached && cacheTimestamp && (now - parseInt(cacheTimestamp) < 24 * 60 * 60 * 1000)) {
         setVerifiersList(JSON.parse(cached));
@@ -107,8 +107,8 @@ export default function TutorVerificationPage() {
   }, [filters]);
 
   // Note: API is 1-indexed for page, Material UI is 0-indexed
-  const { tutors, loading: loadingTutors, error: tutorsError, pagination, refetch } = useTutors({ 
-    page: page + 1, 
+  const { tutors, loading: loadingTutors, error: tutorsError, pagination, refetch } = useTutors({
+    page: page + 1,
     limit: rowsPerPage,
     verificationStatus: debouncedFilters.status || undefined,
     teacherId: debouncedFilters.teacherId || undefined,
@@ -167,19 +167,13 @@ export default function TutorVerificationPage() {
     setViewerOpen(true);
   };
 
-  const handleViewDocs = (t: ITutor) => {
-    setSelectedTutor(t);
-    setDocsOpen(true);
-  };
-
-  const handleReview = (t: ITutor) => {
-    setSelectedTutor(t);
-    setVerifyOpen(true);
-  };
+  // Unused handlers removed
+  // const handleViewDocs = (t: ITutor) => { ... }
+  // const handleReview = (t: ITutor) => { ... }
 
   const handleVerifySubmit = (payload: { status: string; verificationNotes?: string; whatsappCommunityJoined?: boolean }) => {
     if (!selectedTutor) return;
-    
+
     setConfirmConfig({
       open: true,
       title: payload.status === 'VERIFIED' ? 'Approve Tutor' : 'Reject Tutor',
@@ -207,8 +201,8 @@ export default function TutorVerificationPage() {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #4A148C 0%, #311B92 100%)', // Deep Purple theme
           color: 'white',
           py: { xs: 4, md: 5 },
@@ -225,13 +219,13 @@ export default function TutorVerificationPage() {
             Tutor Management
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
-             Oversee tutor verifications, track performance stats, and manage tutor profiles.
+            Oversee tutor verifications, track performance stats, and manage tutor profiles.
           </Typography>
         </Box>
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Tabs 
-            value={tab} 
+          <Tabs
+            value={tab}
             onChange={(_, v) => setTab(v)}
             sx={{
               '& .MuiTab-root': { color: 'rgba(255,255,255,0.7)', fontWeight: 600 },
@@ -243,7 +237,7 @@ export default function TutorVerificationPage() {
             <Tab label="All Tutors" />
           </Tabs>
         </Box>
-        
+
         {/* Abstract shapes */}
         <Box sx={{
           position: 'absolute',
@@ -265,11 +259,11 @@ export default function TutorVerificationPage() {
         }} />
       </Box>
 
-      <TableContainer 
-        component={Paper} 
-        elevation={0} 
-        sx={{ 
-          width: '100%', 
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          width: '100%',
           overflowX: 'auto',
           mb: 3,
           borderRadius: 3,
@@ -285,7 +279,7 @@ export default function TutorVerificationPage() {
                   active={sort.sortBy === 'teacherId'}
                   direction={sort.sortBy === 'teacherId' ? sort.sortOrder : 'asc'}
                   onClick={() => handleSort('teacherId')}
-                  sx={{ 
+                  sx={{
                     '&.MuiTableSortLabel-root': { color: 'inherit' },
                     '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                     '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -299,7 +293,7 @@ export default function TutorVerificationPage() {
                   active={sort.sortBy === 'name'}
                   direction={sort.sortBy === 'name' ? sort.sortOrder : 'asc'}
                   onClick={() => handleSort('name')}
-                  sx={{ 
+                  sx={{
                     '&.MuiTableSortLabel-root': { color: 'inherit' },
                     '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                     '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -311,11 +305,11 @@ export default function TutorVerificationPage() {
               <TableCell sx={{ color: 'inherit' }}>Contact Info</TableCell>
               <TableCell sx={{ color: 'inherit' }}>Mode/Locs</TableCell>
               <TableCell sx={{ color: 'inherit' }}>
-                 <TableSortLabel
+                <TableSortLabel
                   active={sort.sortBy === 'classesAssigned'}
                   direction={sort.sortBy === 'classesAssigned' ? sort.sortOrder : 'asc'}
                   onClick={() => handleSort('classesAssigned')}
-                  sx={{ 
+                  sx={{
                     '&.MuiTableSortLabel-root': { color: 'inherit' },
                     '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                     '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -329,7 +323,7 @@ export default function TutorVerificationPage() {
                   active={sort.sortBy === 'experienceHours'}
                   direction={sort.sortBy === 'experienceHours' ? sort.sortOrder : 'asc'}
                   onClick={() => handleSort('experienceHours')}
-                  sx={{ 
+                  sx={{
                     '&.MuiTableSortLabel-root': { color: 'inherit' },
                     '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                     '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -473,15 +467,15 @@ export default function TutorVerificationPage() {
                       </TableCell>
                       <TableCell>
                         <Box>
-                           <Typography 
-                             variant="subtitle2" 
-                             component={RouterLink} 
-                             to={`/tutor-profile/${t.id || (t as any)._id}`}
-                             sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                           >
-                             {t.user.name}
-                           </Typography>
-                           <Typography variant="caption" color="text.secondary">DOCS: {t.documents?.length || 0}</Typography>
+                          <Typography
+                            variant="subtitle2"
+                            component={RouterLink}
+                            to={`/tutor-profile/${t.id || (t as any)._id}`}
+                            sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                          >
+                            {t.user.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">DOCS: {t.documents?.length || 0}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -489,14 +483,14 @@ export default function TutorVerificationPage() {
                         <Typography variant="caption" color="text.secondary">{t.user.phone || '-'}</Typography>
                       </TableCell>
                       <TableCell>
-                         <Typography variant="body2">{t.preferredMode || '-'}</Typography>
-                         <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).join(', ')}>
-                            {(t.preferredLocations || []).join(', ')}
-                         </Typography>
+                        <Typography variant="body2">{t.preferredMode || '-'}</Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).join(', ')}>
+                          {(t.preferredLocations || []).join(', ')}
+                        </Typography>
                       </TableCell>
                       <TableCell>
-                         <Typography variant="body2">{t.classesAssigned} Classes</Typography>
-                         <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
+                        <Typography variant="body2">{t.classesAssigned} Classes</Typography>
+                        <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
                       </TableCell>
                       <TableCell>{t.experienceHours} hrs</TableCell>
                       <TableCell sx={{ maxWidth: 120 }}>
@@ -506,27 +500,27 @@ export default function TutorVerificationPage() {
                       </TableCell>
                       <TableCell><VerificationStatusChip status={t.verificationStatus} /></TableCell>
                       <TableCell>
-                           {t.verifiedBy ? (
-                             <MuiLink component={RouterLink} to={`/manager-profile/${(t.verifiedBy as any).id || (t.verifiedBy as any)._id}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>
-                                {t.verifiedBy.name}
-                             </MuiLink>
-                           ) : '-'}
+                        {t.verifiedBy ? (
+                          <MuiLink component={RouterLink} to={`/manager-profile/${(t.verifiedBy as any).id || (t.verifiedBy as any)._id}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                            {t.verifiedBy.name}
+                          </MuiLink>
+                        ) : '-'}
                       </TableCell>
-                        <TableCell align="right">
-                          <Box display="flex" justifyContent="flex-end" gap={1}>
-                            <Button 
-                              size="small" 
-                              variant="outlined" 
-                              component={RouterLink}
-                              to={`/tutors/verify/${t.id}`}
-                            >
-                              Details
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )
+                      <TableCell align="right">
+                        <Box display="flex" justifyContent="flex-end" gap={1}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            component={RouterLink}
+                            to={`/tutors/verify/${t.id}`}
+                          >
+                            Details
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )
                 }
               </>
             )}
@@ -540,65 +534,65 @@ export default function TutorVerificationPage() {
                     {tutors.map((t) => (
                       <TableRow key={t.id} hover>
                         <TableCell>
-                           <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{t.teacherId || '-'}</Typography>
-                        </TableCell>
-                <TableCell>
-                  <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl}>
-                      {(t.user?.name || 'T').charAt(0).toUpperCase()}
-                    </Avatar>
-                    <MuiLink
-                      variant="subtitle2"
-                      component={RouterLink}
-                      to={`/tutors/verify/${t.id}`}
-                      sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                    >
-                      {t.user?.name || 'Unknown Tutor'}
-                    </MuiLink>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">{t.user?.email}</Typography>
-                  <Typography variant="caption" color="text.secondary">{t.user?.phone || '-'}</Typography>
-                </TableCell>
-                        <TableCell>
-                           <Typography variant="body2">{t.preferredMode || '-'}</Typography>
-                           <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).join(', ')}>
-                              {(t.preferredLocations || []).join(', ')}
-                           </Typography>
+                          <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{t.teacherId || '-'}</Typography>
                         </TableCell>
                         <TableCell>
-                           <Typography variant="body2">{t.classesAssigned} Classes</Typography>
-                           <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
+                          <Box display="flex" alignItems="center" gap={2}>
+                            <Avatar src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl}>
+                              {(t.user?.name || 'T').charAt(0).toUpperCase()}
+                            </Avatar>
+                            <MuiLink
+                              variant="subtitle2"
+                              component={RouterLink}
+                              to={`/tutors/verify/${t.id}`}
+                              sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                            >
+                              {t.user?.name || 'Unknown Tutor'}
+                            </MuiLink>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{t.user?.email}</Typography>
+                          <Typography variant="caption" color="text.secondary">{t.user?.phone || '-'}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{t.preferredMode || '-'}</Typography>
+                          <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).join(', ')}>
+                            {(t.preferredLocations || []).join(', ')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{t.classesAssigned} Classes</Typography>
+                          <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
                         </TableCell>
                         <TableCell>{t.experienceHours} hrs</TableCell>
                         <TableCell sx={{ maxWidth: 120 }}>
-                           <Typography variant="body2" noWrap title={(t.subjects || []).join(', ')}>
-                              {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
-                           </Typography>
+                          <Typography variant="body2" noWrap title={(t.subjects || []).join(', ')}>
+                            {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+                          </Typography>
                         </TableCell>
                         <TableCell><VerificationStatusChip status={t.verificationStatus} /></TableCell>
                         <TableCell>
-                             {t.verifiedBy ? (
-                               <MuiLink component={RouterLink} to={`/manager-profile/${(t.verifiedBy as any).id || (t.verifiedBy as any)._id}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>
-                                  {t.verifiedBy.name}
-                               </MuiLink>
-                             ) : '-'}
+                          {t.verifiedBy ? (
+                            <MuiLink component={RouterLink} to={`/manager-profile/${(t.verifiedBy as any).id || (t.verifiedBy as any)._id}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                              {t.verifiedBy.name}
+                            </MuiLink>
+                          ) : '-'}
                         </TableCell>
                         <TableCell align="right">
-                           <Button 
-                             size="small" 
-                             variant="outlined" 
-                             component={RouterLink}
-                             to={`/tutors/verify/${t.id}`}
-                           >
-                              View
-                           </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            component={RouterLink}
+                            to={`/tutors/verify/${t.id}`}
+                          >
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                     {tutorsError && (
-                       <TableRow><TableCell colSpan={10} align="center"><ErrorAlert error={tutorsError} /></TableCell></TableRow>
+                      <TableRow><TableCell colSpan={10} align="center"><ErrorAlert error={tutorsError} /></TableCell></TableRow>
                     )}
                   </>
                 )}
@@ -607,7 +601,7 @@ export default function TutorVerificationPage() {
           </TableBody>
         </Table>
       </TableContainer>
-      
+
       {tab === 1 && (
         <TablePagination
           rowsPerPageOptions={[10, 25, 50, 100]}
@@ -645,7 +639,7 @@ export default function TutorVerificationPage() {
 
       <VerificationModal open={verifyOpen} onClose={() => setVerifyOpen(false)} tutor={selectedTutor} onSubmit={handleVerifySubmit} />
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />
-      
+
       <ConfirmDialog
         open={confirmConfig.open}
         onClose={() => setConfirmConfig(c => ({ ...c, open: false }))}

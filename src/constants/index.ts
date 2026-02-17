@@ -222,6 +222,7 @@ export const API_ENDPOINTS = {
   DEMOS_HISTORY: (leadId: string) => `/api/demos/history/${leadId}`,
   DEMOS_MY_DEMOS: '/api/demos/tutor/my-demos',
   // Attendance extended endpoints
+  ATTENDANCE_SHEETS: '/api/attendance-sheets',
   ATTENDANCE_COORDINATOR_PENDING: '/api/attendance/coordinator/pending',
   ATTENDANCE_PARENT_PENDING: '/api/attendance/parent/pending',
   ATTENDANCE_TUTOR_SUMMARY: '/api/attendance/tutor/summary',

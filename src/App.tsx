@@ -63,6 +63,7 @@ import TutorAttendancePage from "./pages/tutors/TutorAttendancePage";
 import TutorLeadsPage from "./pages/tutors/TutorLeadsPage";
 import TutorNotesPage from "./pages/tutors/TutorNotesPage";
 import TutorTestsPage from "./pages/tutors/TutorTestsPage";
+import ClassAttendanceSheetPage from "./pages/tutors/ClassAttendanceSheetPage";
 import NotesDrivePage from "./pages/notes/NotesDrivePage";
 import TutorPublicProfilePage from "./pages/public/TutorPublicProfilePage";
 import RequestTutorPage from "./pages/public/RequestTutorPage";
@@ -219,6 +220,14 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
                     <TutorClassesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="tutor-classes/:classId/attendance"
+                element={
+                  <ProtectedRoute allowedRoles={[USER_ROLES.TUTOR]}>
+                    <ClassAttendanceSheetPage />
                   </ProtectedRoute>
                 }
               />

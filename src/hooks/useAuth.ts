@@ -64,7 +64,6 @@ export const useAuth = () => {
         canViewSiteLeads?: boolean;
         canVerifyTutors?: boolean;
         canCreateLeads?: boolean;
-        canManagePayments?: boolean;
       }
     ): Promise<boolean> => {
       try {

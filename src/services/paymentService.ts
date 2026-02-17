@@ -69,14 +69,20 @@ export const updatePayment = async (
 
 export const updatePaymentStatus = async (
   paymentId: string,
-  payload: { status: string; paymentMethod?: string; transactionId?: string; notes?: string }
+  payload: { status: string; paymentMethod?: string; transactionId?: string; notes?: string; paymentProof?: File }
 ): Promise<ApiResponse<IPayment>> => {
+  const formData = new FormData();
+  formData.append('status', payload.status);
+  if (payload.paymentMethod) formData.append('paymentMethod', payload.paymentMethod);
+  if (payload.transactionId) formData.append('transactionId', payload.transactionId);
+  if (payload.notes) formData.append('notes', payload.notes);
+  if (payload.paymentProof) formData.append('paymentProof', payload.paymentProof);
+
   // Use the correct endpoint for updating payment status
-  const { data } = await api.patch(`${API_ENDPOINTS.PAYMENTS}/${paymentId}/status`, {
-    status: payload.status,
-    paymentMethod: payload.paymentMethod,
-    transactionId: payload.transactionId,
-    notes: payload.notes
+  const { data } = await api.patch(`${API_ENDPOINTS.PAYMENTS}/${paymentId}/status`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
   });
   return data as ApiResponse<IPayment>;
 };

@@ -57,86 +57,15 @@ const MyClassesCard: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
   const [attendanceModalOpen, setAttendanceModalOpen] = useState<boolean>(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  
+
   // State for client-side AttendanceSheet PDF generation
-  const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
-  const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
-  const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
-  const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>();
-  const [downloadingClassId, setDownloadingClassId] = useState<string | null>(null);
   const [sheetGeneratingClassId, setSheetGeneratingClassId] = useState<string | null>(null);
   const [sheetSubmittingClassId, setSheetSubmittingClassId] = useState<string | null>(null);
 
 
-  const handleViewAttendanceSheet = async (cls: IFinalClass) => {
+  const handleViewAttendanceSheet = (cls: IFinalClass) => {
     const classIdStr = String((cls as any).id || (cls as any)._id || '');
-    try {
-      setDownloadingClassId(classIdStr);
-      const res = await getAttendanceByClass(classIdStr);
-      const attendances = res.data || [];
-      if (!attendances.length) {
-        setDownloadingClassId(null);
-        return;
-      }
-
-      const mapped: AttendanceRecord[] = attendances
-        .map((a: any) => {
-          const dateObj = a.sessionDate ? new Date(a.sessionDate as any) : null;
-          const yyyyMmDd = dateObj
-            ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(
-                dateObj.getDate()
-              ).padStart(2, '0')}`
-            : '';
-
-          let durationHours =
-            typeof a.durationHours === 'number'
-              ? a.durationHours
-              : (a.finalClass as any)?.classLead?.classDurationHours ?? 1;
-
-          return {
-            classId: classIdStr,
-            date: yyyyMmDd,
-            status: (a as any).studentAttendanceStatus || a.status || '',
-            duration: durationHours,
-            topicsCovered: a.topicCovered || undefined,
-            markedAt: a.submittedAt
-              ? String(a.submittedAt)
-              : a.createdAt
-              ? String(a.createdAt)
-              : '',
-          } as AttendanceRecord;
-        })
-        .filter((r) => r.date);
-
-      if (!mapped.length) {
-        setDownloadingClassId(null);
-        return;
-      }
-
-      const dates = mapped.map((r) => r.date).sort();
-      const start = dates[0];
-      const end = dates[dates.length - 1];
-
-      setSheetTutorData({ attendanceRecords: mapped } as TutorProfile);
-      setSheetClassInfo({
-        classId: (cls as any).className || classIdStr,
-        studentName: cls.studentName,
-        subject: Array.isArray(cls.subject) ? cls.subject.join(', ') : (cls.subject as any),
-        tutorName: user?.name || 'Tutor',
-      } as AssignedClass);
-      setSheetRange({ start, end });
-
-      setTimeout(async () => {
-        try {
-          await sheetRef.current?.exportPdf();
-        } finally {
-          setDownloadingClassId(null);
-        }
-      }, 0);
-    } catch (e) {
-      setDownloadingClassId(null);
-      console.error('Failed to generate attendance sheet', e);
-    }
+    navigate(`/tutor-classes/${classIdStr}/attendance`);
   };
 
   const fetchClasses = async () => {
@@ -145,9 +74,9 @@ const MyClassesCard: React.FC = () => {
       setError(null);
       const tutorId = (user as any).id || (user as any)._id;
       if (!tutorId) {
-          setClasses([]);
-          setLoading(false);
-          return;
+        setClasses([]);
+        setLoading(false);
+        return;
       }
       const res = await getMyClasses(tutorId, FINAL_CLASS_STATUS.ACTIVE);
       setClasses(res.data);
@@ -301,7 +230,7 @@ const MyClassesCard: React.FC = () => {
                 const progress = calculateProgress(cls);
                 const isSelected = selectedClass?.id === cls.id;
                 const classIdStr = String((cls as any).id || (cls as any)._id || '');
-                
+
                 return (
                   <Box
                     key={cls.id}
@@ -323,9 +252,9 @@ const MyClassesCard: React.FC = () => {
                   >
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                       <Box display="flex" alignItems="center" gap={1}>
-                        <Box 
-                          sx={{ 
-                            width: 40, height: 40, borderRadius: '50%', 
+                        <Box
+                          sx={{
+                            width: 40, height: 40, borderRadius: '50%',
                             bgcolor: isSelected ? 'primary.main' : 'primary.light',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
                           }}
@@ -383,14 +312,13 @@ const MyClassesCard: React.FC = () => {
                         </IconButton>
                       </Box>
                       <Box display="flex" alignItems="center" gap={1}>
-                        <Button 
-                          variant="text" 
-                          size="small" 
-                          onClick={(e) => { e.stopPropagation(); handleViewAttendanceSheet(cls); }} 
-                          disabled={downloadingClassId === classIdStr}
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); handleViewAttendanceSheet(cls); }}
                           sx={{ textTransform: 'none', fontWeight: 600 }}
                         >
-                          {downloadingClassId === classIdStr ? 'Loading...' : 'View Sheet'}
+                          View Sheet
                         </Button>
                         <Button
                           variant="contained"
@@ -399,8 +327,8 @@ const MyClassesCard: React.FC = () => {
                           onClick={(e) => { e.stopPropagation(); handleSubmitMonthlySheet(cls); }}
                           disabled={sheetSubmittingClassId === classIdStr}
                           startIcon={<SendIcon fontSize="small" />}
-                          sx={{ 
-                            textTransform: 'none', 
+                          sx={{
+                            textTransform: 'none',
                             fontWeight: 600,
                             boxShadow: 'none',
                             px: 2
@@ -408,10 +336,10 @@ const MyClassesCard: React.FC = () => {
                         >
                           {sheetSubmittingClassId === classIdStr ? 'Submitting...' : 'Submit'}
                         </Button>
-                         <Tooltip title={`Call Coordinator: ${cls.coordinator?.name || 'Assigned'}`}>
-                          <IconButton 
-                            size="small" 
-                            color="info" 
+                        <Tooltip title={`Call Coordinator: ${cls.coordinator?.name || 'Assigned'}`}>
+                          <IconButton
+                            size="small"
+                            color="info"
                             onClick={(e) => { e.stopPropagation(); handleCallCoordinator(cls); }}
                             sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), '&:hover': { bgcolor: alpha(theme.palette.info.main, 0.2) } }}
                           >
@@ -471,12 +399,6 @@ const MyClassesCard: React.FC = () => {
             finalClass={selectedClass}
             onSuccess={handleActionSuccess}
           />
-        )}
-
-        {sheetTutorData && sheetClassInfo && (
-          <Box sx={{ position: 'absolute', left: -9999, top: -9999 }}>
-            <AttendanceSheet ref={sheetRef} tutorData={sheetTutorData} classInfo={sheetClassInfo} range={sheetRange} sheetNo={1} />
-          </Box>
         )}
       </CardContent>
     </StyledCard>

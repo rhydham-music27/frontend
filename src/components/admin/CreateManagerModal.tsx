@@ -32,7 +32,7 @@ interface CreateManagerModalProps {
       canViewSiteLeads?: boolean;
       canVerifyTutors?: boolean;
       canCreateLeads?: boolean;
-      canManagePayments?: boolean;
+
     };
   }) => Promise<void>;
 }
@@ -43,7 +43,6 @@ interface FormValues {
     canViewSiteLeads: boolean;
     canVerifyTutors: boolean;
     canCreateLeads: boolean;
-    canManagePayments: boolean;
   };
 }
 
@@ -53,7 +52,6 @@ const schema = yup.object({
     canViewSiteLeads: yup.boolean().required(),
     canVerifyTutors: yup.boolean().required(),
     canCreateLeads: yup.boolean().required(),
-    canManagePayments: yup.boolean().required(),
   }),
 });
 
@@ -70,7 +68,6 @@ const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ open, onClose, 
         canViewSiteLeads: true,
         canVerifyTutors: true,
         canCreateLeads: true,
-        canManagePayments: true,
       },
     },
   });
@@ -176,21 +173,7 @@ const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ open, onClose, 
                   />
                 )}
               />
-              <Controller
-                name="permissions.canManagePayments"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                      />
-                    }
-                    label="Can check and validate payments"
-                  />
-                )}
-              />
+
             </FormGroup>
           </Box>
         </Box>

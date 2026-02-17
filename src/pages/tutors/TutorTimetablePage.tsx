@@ -1,15 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
-import { 
-  Container, 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Grid, 
-  IconButton, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
+import {
+  Container,
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   DialogActions,
   Chip,
   Stack,
@@ -79,18 +79,18 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
         borderColor: isToday
           ? 'primary.main'
           : isRescheduledDay
-          ? 'warning.light'
-          : hasClasses
-          ? 'grey.300'
-          : 'grey.200',
+            ? 'warning.light'
+            : hasClasses
+              ? 'grey.300'
+              : 'grey.200',
         borderLeftWidth: hasClasses ? 4 : 1,
         borderLeftColor: isRescheduledDay
           ? 'warning.main'
           : hasClasses
-          ? 'primary.main'
-          : isToday
-          ? 'primary.light'
-          : 'grey.200',
+            ? 'primary.main'
+            : isToday
+              ? 'primary.light'
+              : 'grey.200',
         borderRadius: { xs: '8px', sm: '10px', md: '12px' },
         display: 'flex',
         flexDirection: 'column',
@@ -169,12 +169,12 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
                       >
                         {first.studentName?.charAt(0) || 'S'}
                       </Avatar>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         fontWeight={600}
                         noWrap
-                        sx={{ 
-                          flex: 1, 
+                        sx={{
+                          flex: 1,
                           color: 'text.primary',
                           fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.875rem' },
                         }}
@@ -182,11 +182,11 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
                         {first.studentName}
                       </Typography>
                     </Stack>
-                    
+
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <AccessTimeIcon sx={{ fontSize: { xs: 10, sm: 11, md: 12 }, color: 'primary.main' }} />
-                      <Typography 
-                        variant="caption" 
+                      <Typography
+                        variant="caption"
                         color="text.secondary"
                         fontWeight={500}
                         noWrap
@@ -197,9 +197,9 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
                     </Stack>
 
                     {extraCount > 0 && (
-                      <Typography 
-                        variant="caption" 
-                        color="text.secondary" 
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
                         fontWeight={500}
                         sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.75rem' } }}
                       >
@@ -209,8 +209,8 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
                   </>
                 ) : (
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       color="primary.main"
                       fontWeight={700}
                       sx={{ fontSize: '0.7rem' }}
@@ -561,27 +561,27 @@ const TutorTimetablePage: React.FC = () => {
   return (
     <Container maxWidth="xl" disableGutters>
       {/* Header Section */}
-      <Box 
-        display="flex" 
+      <Box
+        display="flex"
         alignItems={{ xs: 'flex-start', sm: 'center' }}
-        justifyContent="space-between" 
-        mb={{ xs: 3, sm: 4 }} 
+        justifyContent="space-between"
+        mb={{ xs: 3, sm: 4 }}
         flexDirection={{ xs: 'column', sm: 'row' }}
         gap={{ xs: 2, sm: 2 }}
       >
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography 
-            variant="h4" 
+          <Typography
+            variant="h4"
             fontWeight={700}
-            sx={{ 
+            sx={{
               mb: 0.5,
               fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
             }}
           >
             My Timetable
           </Typography>
-          <Typography 
-            variant="body2" 
+          <Typography
+            variant="body2"
             color="text.secondary"
             sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
           >
@@ -680,7 +680,7 @@ const TutorTimetablePage: React.FC = () => {
           borderRadius: { xs: '10px', sm: '12px' },
         }}
       >
-        <IconButton 
+        <IconButton
           onClick={handlePrevMonth}
           size="small"
           sx={{
@@ -689,16 +689,16 @@ const TutorTimetablePage: React.FC = () => {
         >
           <ChevronLeftIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
         </IconButton>
-        
-        <Typography 
-          variant="h6" 
+
+        <Typography
+          variant="h6"
           fontWeight={700}
           sx={{ fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}
         >
           {formatMonthYear(currentMonth)}
         </Typography>
 
-        <IconButton 
+        <IconButton
           onClick={handleNextMonth}
           size="small"
           sx={{
@@ -710,7 +710,7 @@ const TutorTimetablePage: React.FC = () => {
       </Box>
 
       {/* Calendar Grid */}
-      <Card 
+      <Card
         elevation={0}
         sx={{
           border: '1px solid',
@@ -764,10 +764,10 @@ const TutorTimetablePage: React.FC = () => {
       </Card>
 
       {/* Class Details Dialog */}
-      <Dialog 
-        open={!!selectedDate} 
-        onClose={handleCloseDialog} 
-        fullWidth 
+      <Dialog
+        open={!!selectedDate}
+        onClose={handleCloseDialog}
+        fullWidth
         maxWidth="md"
         fullScreen={isDialogFullScreen}
         PaperProps={{
@@ -783,26 +783,26 @@ const TutorTimetablePage: React.FC = () => {
             <Box>
               <Typography
                 variant="h6"
-                component="span"
+                component="div"
                 fontWeight={700}
                 sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}
               >
                 Classes Schedule
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>
+              <Typography variant="body2" component="div" color="text.secondary" sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}>
                 {selectedDate
                   ? selectedDate.toLocaleDateString(undefined, {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })
                   : 'Select a date'}
               </Typography>
             </Box>
           </Stack>
         </DialogTitle>
-        
+
         <Divider />
 
         <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
@@ -814,10 +814,10 @@ const TutorTimetablePage: React.FC = () => {
               }}
             >
               <CalendarTodayIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: 'grey.300', mb: 2 }} />
-              <Typography 
-                variant="h6" 
-                color="text.primary" 
-                gutterBottom 
+              <Typography
+                variant="h6"
+                color="text.primary"
+                gutterBottom
                 fontWeight={600}
                 sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}
               >
@@ -835,7 +835,7 @@ const TutorTimetablePage: React.FC = () => {
                 const className: string = (cls as any).className || '-';
                 const address: string = (cls as any).location || (sched.address as string) || '-';
                 const isRescheduled = Boolean((cls as any).__isRescheduledForDate);
-                
+
                 return (
                   <Card
                     key={cls.id}
@@ -854,9 +854,9 @@ const TutorTimetablePage: React.FC = () => {
                   >
                     <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
                       <Stack spacing={{ xs: 1.5, sm: 2 }}>
-                        <Stack 
-                          direction={{ xs: 'column', sm: 'row' }} 
-                          alignItems={{ xs: 'flex-start', sm: 'center' }} 
+                        <Stack
+                          direction={{ xs: 'column', sm: 'row' }}
+                          alignItems={{ xs: 'flex-start', sm: 'center' }}
                           justifyContent="space-between"
                           spacing={{ xs: 1, sm: 0 }}
                         >
@@ -873,15 +873,15 @@ const TutorTimetablePage: React.FC = () => {
                               {cls.studentName?.charAt(0) || 'S'}
                             </Avatar>
                             <Box>
-                              <Typography 
-                                variant="subtitle1" 
+                              <Typography
+                                variant="subtitle1"
                                 fontWeight={700}
                                 sx={{ fontSize: { xs: '0.9375rem', sm: '1rem' } }}
                               >
                                 {cls.studentName}
                               </Typography>
-                              <Typography 
-                                variant="body2" 
+                              <Typography
+                                variant="body2"
                                 color="text.secondary"
                                 sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
                               >
@@ -894,7 +894,7 @@ const TutorTimetablePage: React.FC = () => {
                               label={`Class ${index + 1}`}
                               color={isRescheduled ? 'warning' : 'primary'}
                               size="small"
-                              sx={{ 
+                              sx={{
                                 fontWeight: 600,
                                 fontSize: { xs: '0.7rem', sm: '0.75rem' },
                               }}
@@ -933,15 +933,15 @@ const TutorTimetablePage: React.FC = () => {
                             <Stack direction="row" alignItems="center" spacing={1}>
                               <AccessTimeIcon color="primary" sx={{ fontSize: { xs: 18, sm: 20 } }} />
                               <Box>
-                                <Typography 
-                                  variant="caption" 
+                                <Typography
+                                  variant="caption"
                                   color="text.secondary"
                                   sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                                 >
                                   Time
                                 </Typography>
-                                <Typography 
-                                  variant="body2" 
+                                <Typography
+                                  variant="body2"
                                   fontWeight={600}
                                   sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
                                 >
@@ -954,17 +954,17 @@ const TutorTimetablePage: React.FC = () => {
                             <Stack direction="row" alignItems="center" spacing={1}>
                               <LocationOnIcon color="primary" sx={{ fontSize: { xs: 18, sm: 20 } }} />
                               <Box sx={{ flex: 1, minWidth: 0 }}>
-                                <Typography 
-                                  variant="caption" 
+                                <Typography
+                                  variant="caption"
                                   color="text.secondary"
                                   sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                                 >
                                   Location
                                 </Typography>
-                                <Typography 
-                                  variant="body2" 
+                                <Typography
+                                  variant="body2"
                                   fontWeight={600}
-                                  sx={{ 
+                                  sx={{
                                     fontSize: { xs: '0.8125rem', sm: '0.875rem' },
                                     wordBreak: 'break-word',
                                   }}
@@ -985,94 +985,6 @@ const TutorTimetablePage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Set Timetable Dialog for Unscheduled Classes */}
-      <Dialog
-        open={scheduleModalOpen}
-        onClose={scheduleSaving ? undefined : closeScheduleModal}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          <Typography variant="h6" fontWeight={700}>
-            Set Timetable
-          </Typography>
-          {scheduleModalClass && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {scheduleModalClass.studentName}
-            </Typography>
-          )}
-        </DialogTitle>
-        <DialogContent sx={{ pt: 1.5 }}>
-          {(scheduleError || scheduleSuccess) && (
-            <Box mb={1.5}>
-              {scheduleError && (
-                <Typography variant="caption" color="error.main">
-                  {scheduleError}
-                </Typography>
-              )}
-              {scheduleSuccess && (
-                <Typography variant="caption" color="success.main">
-                  {scheduleSuccess}
-                </Typography>
-              )}
-            </Box>
-          )}
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Days of week
-          </Typography>
-          <FormGroup row sx={{ mb: 2 }}>
-            {DAYS_ORDER.map((day) => (
-              <FormControlLabel
-                key={day}
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={scheduleDays.includes(day)}
-                    onChange={() => toggleDay(day)}
-                  />
-                }
-                label={day.charAt(0) + day.slice(1).toLowerCase()}
-              />
-            ))}
-          </FormGroup>
-
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Time slot
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Start time"
-                type="time"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 300 }}
-                value={scheduleStartTime}
-                onChange={(e) => setScheduleStartTime(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="End time"
-                type="time"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 300 }}
-                value={scheduleEndTime}
-                onChange={(e) => setScheduleEndTime(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
-          <Button onClick={handleCloseDialog} variant="outlined">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {testModalClass && (
         <ScheduleTestModal
           open={testModalOpen}
@@ -1088,11 +1000,11 @@ const TutorTimetablePage: React.FC = () => {
         maxWidth="sm"
       >
         <DialogTitle>
-          <Typography variant="h6" fontWeight={700}>
+          <Typography variant="h6" component="div" fontWeight={700}>
             Set Timetable
           </Typography>
           {scheduleModalClass && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography variant="body2" component="div" color="text.secondary" sx={{ mt: 0.5 }}>
               {scheduleModalClass.studentName}
             </Typography>
           )}

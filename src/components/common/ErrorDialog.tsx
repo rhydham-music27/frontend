@@ -33,7 +33,7 @@ const ErrorDialog: React.FC<ErrorDialogProps> = ({
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={1}>
           <ErrorOutlineIcon color="error" />
-          <Typography variant="h6" fontWeight={700}>
+          <Typography variant="h6" component="span" fontWeight={700}>
             {title}
           </Typography>
         </Box>

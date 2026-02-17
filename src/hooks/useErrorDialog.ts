@@ -50,12 +50,16 @@ export const useErrorDialog = (): UseErrorDialogReturn => {
     if (lowerError.includes('server error') || lowerError.includes('500')) {
       return 'We\'re experiencing technical difficulties. Please try again later.';
     }
-    if (lowerError.includes('validation') || lowerError.includes('invalid')) {
-      return errorMessage; // Keep validation messages as they're usually user-friendly
+    if (lowerError.includes('validation') || lowerError.includes('invalid') || lowerError.includes('scheduled time') || lowerError.includes('demo')) {
+      return errorMessage; // Keep validation and demo messages as they're usually user-friendly
     }
     
     // If it's already a user-friendly message (no technical jargon), keep it
-    if (!lowerError.includes('error') && !lowerError.includes('failed') && errorMessage.length < 100) {
+    if (!lowerError.includes('failed') && errorMessage.length < 150) {
+      // Allow "An error occurred" only if it's the only message. 
+      // But if it contains "error", we usually check if it looks technical.
+      if (lowerError === 'an error occurred') return 'We encountered an unexpected issue. Please try again.';
+      
       return errorMessage;
     }
     
@@ -64,11 +68,22 @@ export const useErrorDialog = (): UseErrorDialogReturn => {
   };
 
   const handleError = useCallback((err: any) => {
-    let errorMessage = 
-      err?.response?.data?.message || 
-      err?.response?.data?.error ||
-      err?.message || 
-      'An unexpected error occurred';
+    const data = err?.response?.data;
+    
+    // Prioritize specific error detail over generic message
+    let errorMessage = 'An unexpected error occurred';
+    
+    if (data?.error && data?.error !== 'An error occurred') {
+      errorMessage = data.error;
+    } else if (data?.message && data?.message !== 'An error occurred') {
+      errorMessage = data.message;
+    } else if (data?.error) {
+      errorMessage = data.error;
+    } else if (data?.message) {
+      errorMessage = data.message;
+    } else if (err?.message) {
+      errorMessage = err.message;
+    }
     
     // Convert to user-friendly message
     const friendlyMessage = getUserFriendlyMessage(errorMessage);

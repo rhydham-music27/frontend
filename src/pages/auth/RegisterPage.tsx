@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  Container, 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
-  TextField, 
-  Button, 
-  Link as MLink, 
+import {
+  Container,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Link as MLink,
   MenuItem,
   InputAdornment,
   Grid,
@@ -47,7 +47,6 @@ interface RegisterFormValues {
     canViewSiteLeads?: boolean;
     canVerifyTutors?: boolean;
     canCreateLeads?: boolean;
-    canManagePayments?: boolean;
   };
 }
 
@@ -65,7 +64,6 @@ const schema = yup.object({
     canViewSiteLeads: yup.boolean().optional(),
     canVerifyTutors: yup.boolean().optional(),
     canCreateLeads: yup.boolean().optional(),
-    canManagePayments: yup.boolean().optional(),
   }).optional(),
 });
 
@@ -73,7 +71,7 @@ const RegisterPage: React.FC = () => {
   const { register: registerUser, loading, error, isAuthenticated, clearError } = useAuth();
   const [searchParams] = useSearchParams();
   const [isRegisteredSuccessfully, setIsRegisteredSuccessfully] = useState(false);
-  
+
   // Detect if there's a specific role requested (e.g. from Admin Manager page)
   const queryRole = searchParams.get('role')?.toUpperCase();
   const isRoleLocked = !!queryRole && (Object.values(USER_ROLES) as string[]).includes(queryRole);
@@ -83,7 +81,7 @@ const RegisterPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormValues>({ 
+  } = useForm<RegisterFormValues>({
     resolver: yupResolver(schema),
     defaultValues: {
       role: initialRole,
@@ -91,7 +89,6 @@ const RegisterPage: React.FC = () => {
         canViewSiteLeads: true,
         canVerifyTutors: true,
         canCreateLeads: true,
-        canManagePayments: true,
       },
     }
   });
@@ -99,16 +96,16 @@ const RegisterPage: React.FC = () => {
   const onSubmit = async ({ confirmPassword, ...data }: RegisterFormValues) => {
     try {
       clearError(); // Clear any previous errors
-      
+
       // Clean up permissions if role is not MANAGER
       const submitData = { ...data };
       if (data.role !== USER_ROLES.MANAGER) {
         delete submitData.permissions;
       }
-      
+
       // If user is already authenticated (Admin), skip auto-login for new user
       const success = await registerUser(submitData.name, submitData.email, submitData.password, submitData.phone, submitData.role, isAuthenticated, submitData.permissions);
-      
+
       // Only set success if registration succeeded
       if (success) {
         setIsRegisteredSuccessfully(true);
@@ -155,47 +152,47 @@ const RegisterPage: React.FC = () => {
 
       <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
         <Box textAlign="center" mb={4}>
-           {/* Logo / Brand Area */}
-           <Box 
-             display="inline-flex" 
-             alignItems="center" 
-             gap={2}
-             sx={{ 
-               p: 1.5, 
-               pr: 3,
-               borderRadius: 10,
-               bgcolor: 'rgba(255,255,255,0.1)',
-               backdropFilter: 'blur(10px)',
-               border: '1px solid rgba(255,255,255,0.2)',
-               boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-             }}
-           >
-              <Box 
-                component="img" 
-                src="/1.jpg" 
-                alt="Logo" 
-                sx={{ 
-                  width: 40, 
-                  height: 40, 
-                  borderRadius: '50%', 
-                  border: '2px solid white' 
-                }} 
-              />
-              <Typography variant="h5" fontWeight={700} color="white" sx={{ letterSpacing: 0.5 }}>
-                Your Shikshak
-              </Typography>
-           </Box>
-           <Typography variant="h4" fontWeight={800} color="white" mt={3}>
-             {isRoleLocked ? `Register ${queryRole.charAt(0) + queryRole.slice(1).toLowerCase()}` : 'Register New Member'}
-           </Typography>
-           <Typography variant="body1" color="rgba(255,255,255,0.8)" mt={1}>
-             Create accounts for Managers, Tutors, Parents, or other Admins.
-           </Typography>
+          {/* Logo / Brand Area */}
+          <Box
+            display="inline-flex"
+            alignItems="center"
+            gap={2}
+            sx={{
+              p: 1.5,
+              pr: 3,
+              borderRadius: 10,
+              bgcolor: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+            }}
+          >
+            <Box
+              component="img"
+              src="/1.jpg"
+              alt="Logo"
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                border: '2px solid white'
+              }}
+            />
+            <Typography variant="h5" fontWeight={700} color="white" sx={{ letterSpacing: 0.5 }}>
+              Your Shikshak
+            </Typography>
+          </Box>
+          <Typography variant="h4" fontWeight={800} color="white" mt={3}>
+            {isRoleLocked ? `Register ${queryRole.charAt(0) + queryRole.slice(1).toLowerCase()}` : 'Register New Member'}
+          </Typography>
+          <Typography variant="body1" color="rgba(255,255,255,0.8)" mt={1}>
+            Create accounts for Managers, Tutors, Parents, or other Admins.
+          </Typography>
         </Box>
 
-        <Card 
+        <Card
           elevation={24}
-          sx={{ 
+          sx={{
             borderRadius: 4,
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
@@ -204,7 +201,7 @@ const RegisterPage: React.FC = () => {
           }}
         >
           <CardContent sx={{ p: { xs: 3, md: 5 } }}>
-            
+
             {isRegisteredSuccessfully ? (
               <Box textAlign="center" py={4}>
                 <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
@@ -214,8 +211,8 @@ const RegisterPage: React.FC = () => {
                 <Typography variant="body1" color="text.secondary" mb={4}>
                   A confirmation email has been sent to the registered email address.
                 </Typography>
-                <Button 
-                  variant="contained" 
+                <Button
+                  variant="contained"
                   onClick={() => setIsRegisteredSuccessfully(false)}
                   sx={{ borderRadius: 2, px: 4 }}
                 >
@@ -225,14 +222,14 @@ const RegisterPage: React.FC = () => {
             ) : (
               <>
                 <Box display="flex" alignItems="center" gap={2} mb={4} sx={{ borderBottom: '1px solid', borderColor: 'divider', pb: 2 }}>
-                  <Box 
-                    sx={{ 
-                      width: 48, 
-                      height: 48, 
-                      borderRadius: 2, 
-                      bgcolor: 'primary.main', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      bgcolor: 'primary.main',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                     }}
@@ -437,7 +434,7 @@ interface ManagerPermissionsSectionProps {
 
 const ManagerPermissionsSection: React.FC<ManagerPermissionsSectionProps> = ({ register }) => {
   const [selectedRole, setSelectedRole] = React.useState<string>('');
-  
+
   React.useEffect(() => {
     // Watch for role changes using a simple workaround
     const subscription = setInterval(() => {
@@ -453,10 +450,10 @@ const ManagerPermissionsSection: React.FC<ManagerPermissionsSectionProps> = ({ r
 
   return (
     <Grid item xs={12}>
-      <Box 
-        sx={{ 
-          p: 3, 
-          bgcolor: 'primary.light', 
+      <Box
+        sx={{
+          p: 3,
+          bgcolor: 'primary.light',
           borderRadius: 2,
           border: '1px solid',
           borderColor: 'primary.main'
@@ -495,15 +492,6 @@ const ManagerPermissionsSection: React.FC<ManagerPermissionsSectionProps> = ({ r
               />
             }
             label="Can create their own leads"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                defaultChecked
-                {...register('permissions.canManagePayments')}
-              />
-            }
-            label="Can check and validate payments"
           />
         </FormGroup>
       </Box>

@@ -2,15 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Container, Box, Typography, Tabs, Tab, Card, CardContent, Grid, Button, Divider, Chip, TextField, Grow, MenuItem, Alert } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AttendanceApprovalCard from '../../components/attendance/AttendanceApprovalCard';
-import RejectAttendanceModal from '../../components/attendance/RejectAttendanceModal';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import {
-  getCoordinatorPendingApprovals,
-  getAttendanceByClass,
-  getAttendanceHistory,
-  coordinatorApprove,
   rejectAttendance,
   getAttendances,
 } from '../../services/attendanceService';
@@ -32,8 +27,7 @@ import useAuth from '../../hooks/useAuth';
 const AttendanceApprovalPage: React.FC = () => {
   const { user } = useAuth();
 
-  const [view, setView] = useState<'pending' | 'all' | 'history' | 'sheets'>('sheets');
-  const [pendingAttendances, setPendingAttendances] = useState<IAttendance[]>([]);
+  const [view, setView] = useState<'all' | 'history' | 'sheets'>('sheets');
   const [allAttendances, setAllAttendances] = useState<IAttendance[]>([]);
   const [historyData, setHistoryData] = useState<{
     attendances: IAttendance[];
@@ -48,8 +42,6 @@ const AttendanceApprovalPage: React.FC = () => {
     toDate?: string;
     classId?: string;
   }>({});
-  const [selectedAttendance, setSelectedAttendance] = useState<IAttendance | null>(null);
-  const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -76,22 +68,7 @@ const AttendanceApprovalPage: React.FC = () => {
     }
   }, []);
 
-  const fetchPendingApprovals = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await getCoordinatorPendingApprovals();
-      const list: IAttendance[] = (res?.data || []).slice().sort((a: any, b: any) => {
-        return new Date(a.sessionDate).getTime() - new Date(b.sessionDate).getTime();
-      });
-      setPendingAttendances(list);
-    } catch (e) {
-      setPendingAttendances([]);
-      setError('Failed to load pending approvals');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+
 
   const fetchAllAttendances = useCallback(async () => {
     setLoading(true);
@@ -146,7 +123,6 @@ const AttendanceApprovalPage: React.FC = () => {
 
   useEffect(() => {
     fetchAssignedClasses();
-    fetchPendingApprovals();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -162,44 +138,7 @@ const AttendanceApprovalPage: React.FC = () => {
     }
   }, [filters, view, fetchAllAttendances]);
 
-  const handleApprove = useCallback(async (attendanceId: string) => {
-    setLoading(true);
-    try {
-      await coordinatorApprove(attendanceId);
-      setSnackbar({ open: true, message: 'Attendance approved successfully', severity: 'success' });
-      await fetchPendingApprovals();
-      if (view === 'all') await fetchAllAttendances();
-      if (view === 'history' && filters.classId) await fetchClassHistory(filters.classId);
-    } catch (e: any) {
-      setSnackbar({ open: true, message: e?.message || 'Failed to approve attendance', severity: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchAllAttendances, fetchClassHistory, fetchPendingApprovals, filters.classId, view]);
 
-  const handleRejectClick = useCallback((attendance: IAttendance) => {
-    setSelectedAttendance(attendance);
-    setRejectModalOpen(true);
-  }, []);
-
-  const handleRejectSubmit = useCallback(async (reason: string) => {
-    if (!selectedAttendance) return;
-    setLoading(true);
-    try {
-      await rejectAttendance(selectedAttendance.id, reason);
-      setSnackbar({ open: true, message: 'Attendance rejected', severity: 'success' });
-      setRejectModalOpen(false);
-      setSelectedAttendance(null);
-      await fetchPendingApprovals();
-      if (view === 'all') await fetchAllAttendances();
-      if (view === 'history' && filters.classId) await fetchClassHistory(filters.classId);
-    } catch (e: any) {
-      setSnackbar({ open: true, message: e?.message || 'Failed to reject attendance', severity: 'error' });
-    } finally {
-      setLoading(false);
-      setRejectModalOpen(false);
-    }
-  }, [selectedAttendance, fetchAllAttendances, fetchClassHistory, fetchPendingApprovals, filters.classId, view]);
 
   const handleClassSelect = useCallback((classId: string) => {
     if (!classId) {
@@ -220,7 +159,6 @@ const AttendanceApprovalPage: React.FC = () => {
 
   const handleRefresh = useCallback(() => {
     setSnackbar({ open: true, message: 'Refreshing data...', severity: 'info' });
-    if (view === 'pending') fetchPendingApprovals();
     if (view === 'all') fetchAllAttendances();
     if (view === 'history' && filters.classId) fetchClassHistory(filters.classId);
     if (view === 'sheets') {
@@ -233,7 +171,7 @@ const AttendanceApprovalPage: React.FC = () => {
         }
       })();
     }
-  }, [view, filters.classId, fetchAllAttendances, fetchClassHistory, fetchPendingApprovals]);
+  }, [view, filters.classId, fetchAllAttendances, fetchClassHistory]);
 
   const handleApproveSheet = useCallback(
     async (sheetId: string) => {
@@ -363,8 +301,8 @@ const AttendanceApprovalPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ p: 3 }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%)',
           color: 'white',
           py: { xs: 4, md: 5 },
@@ -385,14 +323,14 @@ const AttendanceApprovalPage: React.FC = () => {
               Review and manage attendance records submitted by parents.
             </Typography>
           </Box>
-          <Button 
-            variant="contained" 
-            startIcon={<RefreshIcon />} 
+          <Button
+            variant="contained"
+            startIcon={<RefreshIcon />}
             onClick={handleRefresh}
-            sx={{ 
-              bgcolor: 'rgba(255,255,255,0.2)', 
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
               backdropFilter: 'blur(4px)',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } 
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
             }}
           >
             Refresh
@@ -400,8 +338,8 @@ const AttendanceApprovalPage: React.FC = () => {
         </Box>
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Tabs 
-            value={view} 
+          <Tabs
+            value={view}
             onChange={(_e, v) => setView(v)}
             sx={{
               '& .MuiTab-root': { color: 'rgba(255,255,255,0.7)', fontWeight: 600, minHeight: 48, fontSize: '0.95rem' },
@@ -414,7 +352,7 @@ const AttendanceApprovalPage: React.FC = () => {
             <Tab value="sheets" label="Monthly Sheets" />
           </Tabs>
         </Box>
-        
+
         {/* Abstract shapes */}
         <Box sx={{
           position: 'absolute',
@@ -459,31 +397,31 @@ const AttendanceApprovalPage: React.FC = () => {
                 pendingSheets.map((sheet) => (
                   <Box key={sheet.id} sx={{ mb: 2, p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                        <Box>
-                            <Typography variant="subtitle1" fontWeight={700}>
-                            {sheet.finalClass?.studentName}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                             {(Array.isArray(sheet.finalClass?.subject) ? sheet.finalClass.subject.join(', ') : sheet.finalClass?.subject)}
-                            </Typography>
-                        </Box>
-                        <Chip label={sheet.periodLabel || `${sheet.month}/${sheet.year}`} size="small" variant="outlined" />
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700}>
+                          {sheet.finalClass?.studentName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {(Array.isArray(sheet.finalClass?.subject) ? sheet.finalClass.subject.join(', ') : sheet.finalClass?.subject)}
+                        </Typography>
+                      </Box>
+                      <Chip label={sheet.periodLabel || `${sheet.month}/${sheet.year}`} size="small" variant="outlined" />
                     </Box>
                     <Grid container spacing={2} mb={3}>
-                        <Grid item xs={4}>
-                             <Typography variant="caption" color="text.secondary">SESSIONS</Typography>
-                             <Typography variant="body2" fontWeight={600}>{sheet.totalSessionsTaken ?? 0} / {sheet.totalSessionsPlanned ?? '—'}</Typography>
-                        </Grid>
-                         <Grid item xs={4}>
-                             <Typography variant="caption" color="text.secondary">PRESENT</Typography>
-                             <Typography variant="body2" fontWeight={600} color="success.main">{sheet.presentCount ?? 0}</Typography>
-                        </Grid>
-                         <Grid item xs={4}>
-                             <Typography variant="caption" color="text.secondary">ABSENT</Typography>
-                             <Typography variant="body2" fontWeight={600} color="error.main">{sheet.absentCount ?? 0}</Typography>
-                        </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">SESSIONS</Typography>
+                        <Typography variant="body2" fontWeight={600}>{sheet.totalSessionsTaken ?? 0} / {sheet.totalSessionsPlanned ?? '—'}</Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">PRESENT</Typography>
+                        <Typography variant="body2" fontWeight={600} color="success.main">{sheet.presentCount ?? 0}</Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">ABSENT</Typography>
+                        <Typography variant="body2" fontWeight={600} color="error.main">{sheet.absentCount ?? 0}</Typography>
+                      </Grid>
                     </Grid>
-                    
+
                     <Box display="flex" gap={1.5} flexWrap="wrap">
                       <Button
                         variant="outlined"
@@ -502,7 +440,7 @@ const AttendanceApprovalPage: React.FC = () => {
                       >
                         Reject
                       </Button>
-                       <Button
+                      <Button
                         variant="contained"
                         size="small"
                         onClick={() => handleApproveSheet(sheet.id)}
@@ -519,78 +457,49 @@ const AttendanceApprovalPage: React.FC = () => {
         </Box>
       )}
 
-      {view === 'pending' && (
-        <Box>
-          {loading && pendingAttendances.length === 0 ? (
-            <LoadingSpinner />
-          ) : (
-            <>
-              {pendingAttendances.length === 0 ? (
-                <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
-                   <Typography variant="h6" color="text.secondary" gutterBottom>All Caught Up</Typography>
-                   <Typography variant="body2" color="text.secondary">No pending approvals required.</Typography>
-                </Box>
-              ) : (
-                pendingAttendances.map((a, index) => (
-                  <Grow in={true} timeout={300 + index * 50} key={a.id}>
-                    <Box sx={{ mb: 2 }}>
-                      <AttendanceApprovalCard
-                        attendance={a}
-                        userRole="COORDINATOR"
-                        onApprove={handleApprove}
-                        onReject={handleRejectClick}
-                        loading={loading}
-                      />
-                    </Box>
-                  </Grow>
-                ))
-              )}
-            </>
-          )}
-        </Box>
-      )}
+
 
       {view === 'all' && (
         <Box>
           <Card elevation={0} sx={{ mb: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-             <CardContent sx={{ py: 2 }}>
-                <Grid container spacing={2} alignItems="center">
+            <CardContent sx={{ py: 2 }}>
+              <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} sm={6} md={3}>
-                    <TextField
+                  <TextField
                     select
                     fullWidth
                     label="Class"
                     size="small"
                     value={filters.classId || ''}
                     onChange={(e) => handleFilterChange('classId', e.target.value)}
-                    >
+                  >
                     <MenuItem value="">All Classes</MenuItem>
                     {assignedClasses.map((cls) => (
-                        <MenuItem key={cls.id} value={cls.id}>
+                      <MenuItem key={cls.id} value={cls.id}>
                         {cls.studentName} • {(Array.isArray(cls.subject) ? cls.subject : [cls.subject]).join(', ')}
-                        </MenuItem>
+                      </MenuItem>
                     ))}
-                    </TextField>
+                  </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <TextField
+                  <TextField
                     select
                     fullWidth
                     label="Status"
                     size="small"
                     value={filters.status || ''}
                     onChange={(e) => handleFilterChange('status', e.target.value)}
-                    >
+                  >
                     <MenuItem value="">All</MenuItem>
                     {Object.values(ATTENDANCE_STATUS).map((s) => (
-                        <MenuItem key={s} value={s}>
+                      <MenuItem key={s} value={s}>
                         {s}
-                        </MenuItem>
+                      </MenuItem>
                     ))}
-                    </TextField>
+                  </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <TextField
+                  <TextField
                     type="date"
                     fullWidth
                     label="From Date"
@@ -598,10 +507,10 @@ const AttendanceApprovalPage: React.FC = () => {
                     InputLabelProps={{ shrink: true }}
                     value={filters.fromDate || ''}
                     onChange={(e) => handleFilterChange('fromDate', e.target.value)}
-                    />
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <TextField
+                  <TextField
                     type="date"
                     fullWidth
                     label="To Date"
@@ -609,41 +518,38 @@ const AttendanceApprovalPage: React.FC = () => {
                     InputLabelProps={{ shrink: true }}
                     value={filters.toDate || ''}
                     onChange={(e) => handleFilterChange('toDate', e.target.value)}
-                    />
+                  />
                 </Grid>
-                </Grid>
-                 <Box display="flex" justifyContent="flex-end" mt={2}>
-                     {activeFilterCount > 0 && (
-                        <Button size="small" onClick={handleClearFilters} color="inherit">
-                            Clear Filters ({activeFilterCount})
-                        </Button>
-                     )}
-                 </Box>
+              </Grid>
+              <Box display="flex" justifyContent="flex-end" mt={2}>
+                {activeFilterCount > 0 && (
+                  <Button size="small" onClick={handleClearFilters} color="inherit">
+                    Clear Filters ({activeFilterCount})
+                  </Button>
+                )}
+              </Box>
             </CardContent>
           </Card>
 
           {loading && <LoadingSpinner />}
           {!loading && (
-             <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 500 }}>
-                Showing {allAttendances.length} records
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 500 }}>
+              Showing {allAttendances.length} records
             </Typography>
           )}
 
           {allAttendances.length === 0 && !loading ? (
-             <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
-                <Typography color="text.secondary">No attendance records found matching filters.</Typography>
-             </Box>
+            <Box textAlign="center" py={8} bgcolor="background.paper" borderRadius={3} border="1px dashed" borderColor="divider">
+              <Typography color="text.secondary">No attendance records found matching filters.</Typography>
+            </Box>
           ) : (
             allAttendances.map((a, index) => (
               <Grow in={true} timeout={300 + index * 50} key={a.id}>
                 <Box sx={{ mb: 2 }}>
-                    <AttendanceApprovalCard
+                  <AttendanceApprovalCard
                     attendance={a}
                     userRole="COORDINATOR"
-                    onApprove={handleApprove}
-                    onReject={handleRejectClick}
-                    loading={loading}
-                    />
+                  />
                 </Box>
               </Grow>
             ))
@@ -719,9 +625,6 @@ const AttendanceApprovalPage: React.FC = () => {
                     <AttendanceApprovalCard
                       attendance={a}
                       userRole="COORDINATOR"
-                      onApprove={handleApprove}
-                      onReject={handleRejectClick}
-                      loading={loading}
                     />
                   </Box>
                 ))
@@ -731,12 +634,7 @@ const AttendanceApprovalPage: React.FC = () => {
         </Box>
       )}
 
-      <RejectAttendanceModal
-        open={rejectModalOpen}
-        onClose={() => setRejectModalOpen(false)}
-        attendance={selectedAttendance}
-        onReject={handleRejectSubmit}
-      />
+
 
       <SnackbarNotification
         open={snackbar.open}

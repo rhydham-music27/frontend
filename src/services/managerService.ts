@@ -133,7 +133,6 @@ export const updateManagerProfile = async (
       canViewSiteLeads?: boolean;
       canVerifyTutors?: boolean;
       canCreateLeads?: boolean;
-      canManagePayments?: boolean;
     };
     bio?: string;
     languagesKnown?: string[];
@@ -161,7 +160,6 @@ export const createManagerProfile = async (
       canViewSiteLeads?: boolean;
       canVerifyTutors?: boolean;
       canCreateLeads?: boolean;
-      canManagePayments?: boolean;
     };
   }
 ): Promise<ApiResponse<IManager>> => {

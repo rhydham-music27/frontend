@@ -94,7 +94,8 @@ export const getLeadFilterOptions = async (): Promise<ApiResponse<{
   areas: string[]; 
   cities: string[]; 
   creators: string[]; 
-  managers: { id: string; name: string }[] 
+  managers: { id: string; name: string }[];
+  coordinators: { id: string; name: string }[];
 }>> => {
   const { data } = await api.get(`${API_ENDPOINTS.LEADS}/filter-options`);
   return data as ApiResponse<{ 
@@ -107,8 +108,10 @@ export const getLeadFilterOptions = async (): Promise<ApiResponse<{
     tiers: string[];
     areas: string[]; 
     cities: string[]; 
+    preferredTutorGender?: string[];
     creators: string[]; 
-    managers: { id: string; name: string }[] 
+    managers: { id: string; name: string }[];
+    coordinators: { id: string; name: string }[];
   }>;
 };
 

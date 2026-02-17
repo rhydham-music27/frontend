@@ -6,7 +6,6 @@ export interface ManagerPermissions {
   canViewSiteLeads?: boolean;
   canVerifyTutors?: boolean;
   canCreateLeads?: boolean;
-  canManagePayments?: boolean;
 }
 
 /**
@@ -27,7 +26,6 @@ export const useManagerPermissions = () => {
     canViewSiteLeads: false,
     canVerifyTutors: false,
     canCreateLeads: false,
-    canManagePayments: false,
   };
 
   return {
@@ -35,7 +33,6 @@ export const useManagerPermissions = () => {
     canViewSiteLeads: permissions.canViewSiteLeads ?? false,
     canVerifyTutors: permissions.canVerifyTutors ?? false,
     canCreateLeads: permissions.canCreateLeads ?? false,
-    canManagePayments: permissions.canManagePayments ?? false,
     isManager: true,
   };
 };
@@ -81,7 +78,6 @@ function getPermissionDescription(permission: keyof ManagerPermissions): string 
     canViewSiteLeads: 'view and manage admin-created leads',
     canVerifyTutors: 'verify tutor profiles',
     canCreateLeads: 'create new class leads',
-    canManagePayments: 'manage payments',
   };
   return descriptions[permission] || 'perform this action';
 }

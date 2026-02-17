@@ -30,7 +30,7 @@ interface EditManagerModalProps {
       canViewSiteLeads?: boolean;
       canVerifyTutors?: boolean;
       canCreateLeads?: boolean;
-      canManagePayments?: boolean;
+
     };
   }) => Promise<void>;
 }
@@ -41,7 +41,6 @@ interface FormValues {
     canViewSiteLeads: boolean;
     canVerifyTutors: boolean;
     canCreateLeads: boolean;
-    canManagePayments: boolean;
   };
 }
 
@@ -52,7 +51,6 @@ const schema = yup.object({
     canViewSiteLeads: yup.boolean().required(),
     canVerifyTutors: yup.boolean().required(),
     canCreateLeads: yup.boolean().required(),
-    canManagePayments: yup.boolean().required(),
   }),
 });
 
@@ -68,7 +66,6 @@ const EditManagerModal: React.FC<EditManagerModalProps> = ({ open, onClose, mana
         canViewSiteLeads: true,
         canVerifyTutors: true,
         canCreateLeads: true,
-        canManagePayments: true,
       },
     },
   });
@@ -80,7 +77,6 @@ const EditManagerModal: React.FC<EditManagerModalProps> = ({ open, onClose, mana
         canViewSiteLeads: manager?.permissions?.canViewSiteLeads ?? true,
         canVerifyTutors: manager?.permissions?.canVerifyTutors ?? true,
         canCreateLeads: manager?.permissions?.canCreateLeads ?? true,
-        canManagePayments: manager?.permissions?.canManagePayments ?? true,
       },
     });
   }, [manager, reset]);
@@ -162,21 +158,7 @@ const EditManagerModal: React.FC<EditManagerModalProps> = ({ open, onClose, mana
                   />
                 )}
               />
-              <Controller
-                name="permissions.canManagePayments"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                      />
-                    }
-                    label="Can check and validate payments"
-                  />
-                )}
-              />
+
             </FormGroup>
           </Box>
           <Controller

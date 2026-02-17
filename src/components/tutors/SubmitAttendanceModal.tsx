@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -37,9 +37,11 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     STUDENT_ATTENDANCE_STATUS.PRESENT
   );
   const [loading, setLoading] = useState<boolean>(false);
+  const [checking, setChecking] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showErrorDialog, setShowErrorDialog] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
+  const [alreadyMarked, setAlreadyMarked] = useState<boolean>(false);
 
   // Determine if today is a scheduled class day for this final class
   const isTodayClassDay = (() => {
@@ -50,6 +52,34 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     return schedule.daysOfWeek.includes(todayName);
   })();
 
+  useEffect(() => {
+    checkExistingAttendance();
+  }, [finalClass.id, sessionDate, open]);
+
+  const checkExistingAttendance = async () => {
+    if (!open || !finalClass.id || !sessionDate) return;
+    try {
+      setChecking(true);
+      // We could optimize this with a specific API, but fetching class attendance is reusing existing endpoint
+      // Adjust import if needed: getAttendanceByClass is in services/attendanceService
+      const { getAttendanceByClass } = await import('../../services/attendanceService');
+      const res = await getAttendanceByClass(finalClass.id);
+      const list = res.data || [];
+
+      const exists = list.some((a: any) => {
+        const d = new Date(a.sessionDate);
+        const target = new Date(sessionDate);
+        return d.toDateString() === target.toDateString();
+      });
+
+      setAlreadyMarked(exists);
+    } catch (err) {
+      console.error('Failed to check existing attendance', err);
+    } finally {
+      setChecking(false);
+    }
+  };
+
   const resetState = () => {
     setSessionDate(todayStr());
     setTopicCovered('');
@@ -59,6 +89,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     setError(null);
     setShowErrorDialog(false);
     setSuccess(false);
+    setAlreadyMarked(false);
   };
 
   const handleClose = () => {
@@ -93,7 +124,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
     } catch (e: any) {
       // Extract error message - prioritize specific field errors
       let errorMsg = 'An unexpected error occurred';
-      
+
       if (e?.response?.data?.error) {
         errorMsg = e.response.data.error;
       } else if (e?.response?.data?.message) {
@@ -103,7 +134,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
       } else if (typeof e === 'string') {
         errorMsg = e;
       }
-      
+
       setError(errorMsg);
       setShowErrorDialog(true);
     } finally {
@@ -121,10 +152,16 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
-          
+
           {!isTodayClassDay && (
             <Alert severity="warning" sx={{ mb: 2 }}>
               Today is not a scheduled day for this class. You cannot submit attendance today.
+            </Alert>
+          )}
+
+          {alreadyMarked && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Attendance for today has already been marked.
             </Alert>
           )}
 
@@ -157,6 +194,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
             value={topicCovered}
             onChange={(e) => { setTopicCovered(e.target.value); setError(null); }}
             sx={{ mb: 2 }}
+            disabled={alreadyMarked}
           />
 
           <TextField
@@ -168,6 +206,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
             onChange={(e) => { setStudentAttendanceStatus(e.target.value); setError(null); }}
             helperText="Mark whether the student attended this session"
             sx={{ mb: 2 }}
+            disabled={alreadyMarked}
           >
             <MenuItem value={STUDENT_ATTENDANCE_STATUS.PRESENT}>Present</MenuItem>
             <MenuItem value={STUDENT_ATTENDANCE_STATUS.ABSENT}>Absent</MenuItem>
@@ -182,6 +221,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
             placeholder="Any additional information about this session"
             value={notes}
             onChange={(e) => { setNotes(e.target.value); }}
+            disabled={alreadyMarked}
           />
 
           {success && (
@@ -197,17 +237,17 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={loading || !sessionDate || !isTodayClassDay}
+            disabled={loading || checking || !sessionDate || !isTodayClassDay || alreadyMarked}
             startIcon={loading ? <CircularProgress size={18} /> : <CheckCircleIcon />}
           >
-            {loading ? 'Submitting...' : 'Submit Attendance'}
+            {loading ? 'Submitting...' : checking ? 'Checking...' : alreadyMarked ? 'Already Marked' : 'Submit Attendance'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Error Dialog */}
-      <Dialog 
-        open={showErrorDialog} 
+      <Dialog
+        open={showErrorDialog}
         onClose={() => setShowErrorDialog(false)}
         maxWidth="xs"
         fullWidth
@@ -249,7 +289,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button 
+          <Button
             onClick={() => setShowErrorDialog(false)}
             variant="contained"
           >

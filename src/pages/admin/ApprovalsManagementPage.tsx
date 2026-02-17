@@ -35,7 +35,6 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import { format } from 'date-fns';
 import { getApprovalLists } from '../../services/adminService';
-import { coordinatorApprove, rejectAttendance } from '../../services/attendanceService';
 import { updateVerificationStatus, approveTierChange } from '../../services/tutorService';
 import { toast } from 'sonner';
 
@@ -75,12 +74,13 @@ const ApprovalsManagementPage: React.FC = () => {
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [approvalType, setApprovalType] = useState<'ATTENDANCE' | 'TUTOR' | 'TIER'>('ATTENDANCE');
+
+  const [approvalType, setApprovalType] = useState<'TUTOR' | 'TIER'>('TUTOR');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmTitle, setConfirmTitle] = useState('');
-  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
+  const [confirmAction, setConfirmAction] = useState<() => void>(() => { });
 
   const fetchData = async () => {
     setLoading(true);
@@ -106,28 +106,9 @@ const ApprovalsManagementPage: React.FC = () => {
     setActiveTab(newValue);
   };
 
-  const handleApproveAttendance = (id: string) => {
-    setConfirmTitle('Approve Attendance');
-    setConfirmMessage('Are you sure you want to approve this attendance record?');
-    setConfirmOpen(true);
-    setConfirmAction(() => async () => {
-      try {
-        setConfirmLoading(true);
-        const res = await coordinatorApprove(id);
-        if (res.success) {
-          toast.success('Attendance approved successfully');
-          setConfirmOpen(false);
-          fetchData();
-        }
-      } catch (err: any) {
-        toast.error(err.message || 'Failed to approve attendance');
-      } finally {
-        setConfirmLoading(false);
-      }
-    });
-  };
 
-  const handleRejectClick = (item: any, type: 'ATTENDANCE' | 'TUTOR' | 'TIER') => {
+
+  const handleRejectClick = (item: any, type: 'TUTOR' | 'TIER') => {
     setSelectedItem(item);
     setApprovalType(type);
     setRejectionReason('');
@@ -137,13 +118,7 @@ const ApprovalsManagementPage: React.FC = () => {
   const handleConfirmRejection = async () => {
     if (!selectedItem) return;
     try {
-      if (approvalType === 'ATTENDANCE') {
-        const res = await rejectAttendance(selectedItem._id, rejectionReason);
-        if (res.success) {
-          toast.success('Attendance rejected');
-          fetchData();
-        }
-      } else if (approvalType === 'TUTOR') {
+      if (approvalType === 'TUTOR') {
         const res = await updateVerificationStatus(selectedItem._id, 'REJECTED' as any, rejectionReason);
         if (res.success) {
           toast.success('Tutor verification rejected');
@@ -245,90 +220,16 @@ const ApprovalsManagementPage: React.FC = () => {
             }
           }}
         >
-          <Tab icon={<EventNoteIcon sx={{ mr: 1 }} />} iconPosition="start" label={`Attendance (${data?.attendance?.length || 0})`} />
           <Tab icon={<VerifiedUserIcon sx={{ mr: 1 }} />} iconPosition="start" label={`Tutor Verifications (${data?.tutors?.length || 0})`} />
           <Tab icon={<TrendingUpIcon sx={{ mr: 1 }} />} iconPosition="start" label={`Tier Changes (${data?.tierChanges?.length || 0})`} />
           <Tab icon={<PendingActionsIcon sx={{ mr: 1 }} />} iconPosition="start" label={`Demos (${data?.demos?.length || 0})`} />
         </Tabs>
 
-        {/* Attendance Tab */}
-        <TabPanel value={activeTab} index={0}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Class / Student</TableCell>
-                  <TableCell>Tutor</TableCell>
-                  <TableCell>Session Date</TableCell>
-                  <TableCell>Topic</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data?.attendance?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Typography color="text.secondary">No pending attendance approvals</Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data?.attendance?.map((row: any) => (
-                    <TableRow key={row._id} hover>
-                      <TableCell>
-                        <Typography variant="subtitle2">{row.finalClass?.className || 'Manual Entry'}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Student: {row.finalClass?.studentName || 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                            {row.tutor?.name?.charAt(0)}
-                          </Avatar>
-                          <Typography variant="body2">{row.tutor?.name || 'N/A'}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>{row.sessionDate ? format(new Date(row.sessionDate), 'dd MMM yyyy') : 'N/A'}</TableCell>
-                      <TableCell>
-                        <Tooltip title={row.topicCovered || ''}>
-                          <Typography variant="body2" noWrap sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {row.topicCovered || 'N/A'}
-                          </Typography>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={row.status === 'PENDING' ? 'Coord. Pending' : 'Parent Pending'}
-                          size="small"
-                          color={row.status === 'PENDING' ? 'warning' : 'info'}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                          <Tooltip title="Approve">
-                            <IconButton size="small" color="success" onClick={() => handleApproveAttendance(row._id)}>
-                              <CheckCircleIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Reject">
-                            <IconButton size="small" color="error" onClick={() => handleRejectClick(row, 'ATTENDANCE')}>
-                              <CancelIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
+
 
         {/* Tutor Verification Tab */}
-        <TabPanel value={activeTab} index={1}>
+        {/* Tutor Verification Tab */}
+        <TabPanel value={activeTab} index={0}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -399,7 +300,7 @@ const ApprovalsManagementPage: React.FC = () => {
         </TabPanel>
 
         {/* Tier Change Tab */}
-        <TabPanel value={activeTab} index={2}>
+        <TabPanel value={activeTab} index={1}>
           <TableContainer>
             <Table>
               <TableHead>
@@ -458,7 +359,7 @@ const ApprovalsManagementPage: React.FC = () => {
         </TabPanel>
 
         {/* Demos Tab */}
-        <TabPanel value={activeTab} index={3}>
+        <TabPanel value={activeTab} index={2}>
           <TableContainer>
             <Table>
               <TableHead>

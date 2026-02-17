@@ -12,6 +12,8 @@ import EmptyState from '../common/EmptyState';
 import { getMyDemos, updateDemoStatus } from '../../services/demoService';
 import { IDemoHistory, PaginatedResponse } from '../../types';
 import { DEMO_STATUS } from '../../constants';
+import { useErrorDialog } from '../../hooks/useErrorDialog';
+import ErrorDialog from '../common/ErrorDialog';
 
 const DemoClassesCard: React.FC = () => {
   const [demos, setDemos] = useState<IDemoHistory[]>([]);
@@ -24,6 +26,7 @@ const DemoClassesCard: React.FC = () => {
     pages: 0,
   });
   const [updatingDemoId, setUpdatingDemoId] = useState<string | null>(null);
+  const { error: dialogError, showError, clearError, handleError } = useErrorDialog();
 
   const formatDate = (date?: string | Date) => {
     if (!date) return '-';
@@ -116,20 +119,20 @@ const DemoClassesCard: React.FC = () => {
 
   if (!loading && activeDemos.length === 0) {
     return (
-        <StyledCard>
-          <CardContent>
-             <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-               <Box display="flex" alignItems="center" gap={1.5}>
-                 <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
-                 <Typography variant="h6" fontWeight={600}>My Demo Sessions</Typography>
-               </Box>
-             </Box>
-            <EmptyState
-              title="No Upcoming Demos"
-              description="You don't have any upcoming demo sessions scheduled."
-            />
-          </CardContent>
-        </StyledCard>
+      <StyledCard>
+        <CardContent>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
+              <Typography variant="h6" fontWeight={600}>My Demo Sessions</Typography>
+            </Box>
+          </Box>
+          <EmptyState
+            title="No Upcoming Demos"
+            description="You don't have any upcoming demo sessions scheduled."
+          />
+        </CardContent>
+      </StyledCard>
     );
   }
 
@@ -153,8 +156,7 @@ const DemoClassesCard: React.FC = () => {
       await updateDemoStatus(leadId, DEMO_STATUS.COMPLETED);
       await fetchDemos(pagination.page);
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || 'Failed to mark demo as completed.';
-      setError(msg);
+      handleError(e);
     } finally {
       setUpdatingDemoId(null);
     }
@@ -176,7 +178,7 @@ const DemoClassesCard: React.FC = () => {
           <Chip size="small" color="primary" variant="outlined" label={`${activeDemos.length} active demo(s)`} />
         </Box>
 
-        <Box 
+        <Box
           sx={{
             maxHeight: 310,
             overflow: 'auto',
@@ -250,8 +252,8 @@ const DemoClassesCard: React.FC = () => {
                     <Typography>Board: {board}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Chip 
-                      size="small" 
+                    <Chip
+                      size="small"
                       label={mode}
                       color={mode === 'ONLINE' ? 'info' : mode === 'OFFLINE' ? 'success' : mode === 'HYBRID' ? 'secondary' : 'default'}
                       aria-label="mode"
@@ -326,6 +328,12 @@ const DemoClassesCard: React.FC = () => {
           </Box>
         )}
       </CardContent>
+      <ErrorDialog
+        open={showError}
+        onClose={clearError}
+        error={dialogError}
+        title="Demo Update Error"
+      />
     </StyledCard>
   );
 };

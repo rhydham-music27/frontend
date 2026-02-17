@@ -133,7 +133,6 @@ const ManagersManagementPage: React.FC = () => {
       canViewSiteLeads?: boolean;
       canVerifyTutors?: boolean;
       canCreateLeads?: boolean;
-      canManagePayments?: boolean;
     };
   }) => {
     try {
@@ -156,7 +155,6 @@ const ManagersManagementPage: React.FC = () => {
         canViewSiteLeads?: boolean;
         canVerifyTutors?: boolean;
         canCreateLeads?: boolean;
-        canManagePayments?: boolean;
       };
     }
   ) => {
@@ -231,8 +229,8 @@ const ManagersManagementPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ p: 3 }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #DD2C00 0%, #BF360C 100%)', // distinct Orange/Red theme for Managers
           color: 'white',
           py: { xs: 4, md: 5 },
@@ -259,9 +257,9 @@ const ManagersManagementPage: React.FC = () => {
         </Box>
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />} 
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
             onClick={() => navigate('/register?role=MANAGER')}
             sx={{
               bgcolor: 'white',
@@ -277,7 +275,7 @@ const ManagersManagementPage: React.FC = () => {
             Create Manager
           </Button>
         </Box>
-        
+
         {/* Abstract shapes */}
         <Box sx={{
           position: 'absolute',
@@ -312,45 +310,45 @@ const ManagersManagementPage: React.FC = () => {
           bgcolor: 'background.paper',
         }}
       >
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                size="small"
-                variant="outlined"
-                placeholder="Search by name or email"
-                InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }}
-                onChange={(e) => debouncedSearch(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                select
-                size="small"
-                label="Status"
-                fullWidth
-                value={isActiveFilter}
-                onChange={(e) => setIsActiveFilter(e.target.value as any)}
-              >
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="inherit"
-                onClick={() => {
-                  setIsActiveFilter('all');
-                  setSearchQuery('');
-                }}
-              >
-                Clear
-              </Button>
-            </Grid>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              size="small"
+              variant="outlined"
+              placeholder="Search by name or email"
+              InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} /> }}
+              onChange={(e) => debouncedSearch(e.target.value)}
+            />
           </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              select
+              size="small"
+              label="Status"
+              fullWidth
+              value={isActiveFilter}
+              onChange={(e) => setIsActiveFilter(e.target.value as any)}
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="inherit"
+              onClick={() => {
+                setIsActiveFilter('all');
+                setSearchQuery('');
+              }}
+            >
+              Clear
+            </Button>
+          </Grid>
+        </Grid>
       </Paper>
 
       {selectedManagers.length > 0 && (
@@ -416,13 +414,13 @@ const ManagersManagementPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
-                          <Chip 
-                            label={m.verificationStatus || 'PENDING'} 
+                          <Chip
+                            label={m.verificationStatus || 'PENDING'}
                             color={m.verificationStatus === 'VERIFIED' ? 'success' : m.verificationStatus === 'REJECTED' ? 'error' : 'warning'}
-                            size="small" 
+                            size="small"
                           />
                           {m.verificationStatus !== 'VERIFIED' && (
-                            <Button 
+                            <Button
                               size="small"
                               variant="outlined"
                               startIcon={<VerifiedIcon />}
@@ -478,16 +476,16 @@ const ManagersManagementPage: React.FC = () => {
                 <Grid container spacing={1}>
                   <Grid item xs={6}><Chip label={m.isActive ? 'Active' : 'Inactive'} color={m.isActive ? 'success' : 'default'} size="small" /></Grid>
                   <Grid item xs={6}>
-                    <Chip 
-                      label={m.verificationStatus || 'PENDING'} 
+                    <Chip
+                      label={m.verificationStatus || 'PENDING'}
                       color={m.verificationStatus === 'VERIFIED' ? 'success' : m.verificationStatus === 'REJECTED' ? 'error' : 'warning'}
                       size="small"
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <Box display="flex" gap={1}>
-                        {m.verificationStatus !== 'VERIFIED' && (
-                        <Button 
+                      {m.verificationStatus !== 'VERIFIED' && (
+                        <Button
                           size="small"
                           variant="outlined"
                           fullWidth

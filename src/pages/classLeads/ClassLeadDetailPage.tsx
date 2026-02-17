@@ -24,6 +24,8 @@ import InterestedTutorsModal from '../../components/classLeads/InterestedTutorsM
 import DemoAssignmentModal from '../../components/classLeads/DemoAssignmentModal';
 import { CLASS_LEAD_STATUS, DEMO_STATUS, USER_ROLES } from '../../constants';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import { useErrorDialog } from '../../hooks/useErrorDialog';
+import ErrorDialog from '../../components/common/ErrorDialog';
 
 export default function ClassLeadDetailPage() {
   const navigate = useNavigate();
@@ -48,6 +50,7 @@ export default function ClassLeadDetailPage() {
   const [approveWithCoordinatorOpen, setApproveWithCoordinatorOpen] = useState(false);
   const [selectedCoordinatorId, setSelectedCoordinatorId] = useState<string>('');
   const [approvingDemo, setApprovingDemo] = useState(false);
+  const { error: dialogError, showError, clearError, handleError } = useErrorDialog();
 
   const fetchFilters = async () => {
     try {
@@ -80,7 +83,7 @@ export default function ClassLeadDetailPage() {
     }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     if (id && id !== 'undefined') {
       refetchAll();
       fetchFilters();
@@ -146,8 +149,7 @@ export default function ClassLeadDetailPage() {
       setSelectedCoordinatorId('');
       setSnack({ open: true, message: 'Demo approved and lead converted successfully', severity: 'success' });
     } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Failed to approve demo';
-      setSnack({ open: true, message: msg, severity: 'error' });
+      handleError(e);
     } finally {
       setApprovingDemo(false);
     }
@@ -166,8 +168,7 @@ export default function ClassLeadDetailPage() {
       await refetchAll();
       setSnack({ open: true, message: 'Demo rejected', severity: 'success' });
     } catch (e: any) {
-      const msg = e?.response?.data?.message || 'Failed to reject demo';
-      setSnack({ open: true, message: msg, severity: 'error' });
+      handleError(e);
     }
   };
 
@@ -224,9 +225,9 @@ export default function ClassLeadDetailPage() {
         </FormControl>
         <Box display="flex" gap={1} justifyContent="flex-end">
           <Button onClick={handleReassignClose} size="small">Cancel</Button>
-          <Button 
-            variant="contained" 
-            size="small" 
+          <Button
+            variant="contained"
+            size="small"
             disabled={reassigning || !selectedManagerId || selectedManagerId === ((classLead as any)?.createdBy?._id || (classLead as any)?.createdBy?.id || classLead?.createdBy)}
             onClick={handleReassignSubmit}
           >
@@ -275,13 +276,13 @@ export default function ClassLeadDetailPage() {
                 <Grid item xs={12} sm={6}>
                   <Typography>
                     <strong>Student Name{(classLead as any).studentType === 'GROUP' ? 's' : ''}:</strong>{' '}
-                    {(classLead as any).studentType === 'GROUP' 
+                    {(classLead as any).studentType === 'GROUP'
                       ? (classLead as any).studentDetails?.map((student: any, index: number) => (
-                          <span key={index}>
-                            {student.name}
-                            {index < (classLead as any).studentDetails.length - 1 && ', '}
-                          </span>
-                        )) || 'No students'
+                        <span key={index}>
+                          {student.name}
+                          {index < (classLead as any).studentDetails.length - 1 && ', '}
+                        </span>
+                      )) || 'No students'
                       : classLead.studentName || 'N/A'
                     }
                   </Typography>
@@ -349,9 +350,9 @@ export default function ClassLeadDetailPage() {
                     <Typography>
                       <strong>Preferred Tutor:</strong>{' '}
                       {((classLead as any).preferredTutorGender === 'MALE' && 'Male') ||
-                       ((classLead as any).preferredTutorGender === 'FEMALE' && 'Female') ||
-                       ((classLead as any).preferredTutorGender === 'NO_PREFERENCE' && 'No preference') ||
-                       (classLead as any).preferredTutorGender}
+                        ((classLead as any).preferredTutorGender === 'FEMALE' && 'Female') ||
+                        ((classLead as any).preferredTutorGender === 'NO_PREFERENCE' && 'No preference') ||
+                        (classLead as any).preferredTutorGender}
                     </Typography>
                   </Grid>
                 )}
@@ -418,9 +419,9 @@ export default function ClassLeadDetailPage() {
                           <Grid item xs={12} sm={4}>
                             <Typography variant="body2">
                               <strong>Total Service Charge:</strong> ₹{
-                              ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0) -
-                              ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0)
-                            }
+                                ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0) -
+                                ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0)
+                              }
                             </Typography>
                           </Grid>
                         </Grid>
@@ -488,12 +489,12 @@ export default function ClassLeadDetailPage() {
                   <Button variant="outlined" color="secondary" onClick={handleReassignOpen}>Reassign Manager</Button>
                 )}
                 <Button variant="outlined" color="error" onClick={handleDelete} startIcon={<DeleteIcon />}>Delete Lead</Button>
-                
+
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="subtitle2" color="text.secondary">Public Share</Typography>
-                <Button 
-                  variant="contained" 
-                  color="success" 
+                <Button
+                  variant="contained"
+                  color="success"
                   startIcon={<WhatsAppIcon />}
                   onClick={() => {
                     const url = `${window.location.origin}/leads/public/${id}`;
@@ -547,15 +548,15 @@ export default function ClassLeadDetailPage() {
           </Select>
         </FormControl>
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             onClick={handleApproveDemoCancel}
             disabled={approvingDemo}
           >
             Cancel
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleApproveDemoWithCoordinator}
             disabled={approvingDemo}
           >
@@ -565,6 +566,13 @@ export default function ClassLeadDetailPage() {
       </Menu>
 
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />
+
+      <ErrorDialog
+        open={showError}
+        onClose={clearError}
+        error={dialogError}
+        title="Demo Update Error"
+      />
     </Container>
   );
 }
