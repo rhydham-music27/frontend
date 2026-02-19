@@ -544,7 +544,7 @@ export default function TutorVerificationPage() {
                             <MuiLink
                               variant="subtitle2"
                               component={RouterLink}
-                              to={`/tutors/verify/${t.id}`}
+                              to={`/tutor-profile/${t.id}`}
                               sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                             >
                               {t.user?.name || 'Unknown Tutor'}

@@ -115,7 +115,7 @@ const TutorProfilePage: React.FC = () => {
 
             setAdminClasses(Array.isArray((classesRes as any).data) ? (classesRes as any).data : []);
             setAdminPayments(Array.isArray((paymentsRes as any).data) ? (paymentsRes as any).data : []);
-            
+
             // Merge internal stats into tutor profile object for easier rendering
             const internalStats = (statsRes as any).data || {};
             setTutorProfile((prev: any) => ({ ...prev, internalStats }));
@@ -192,14 +192,14 @@ const TutorProfilePage: React.FC = () => {
   const fetchClassDetails = async (classObj: IFinalClass) => {
     if (!tutorProfile || !tutorProfile.user) return;
     const userId = tutorProfile.user.id || (tutorProfile.user as any)._id;
-    
+
     setLoadingDetails(true);
     try {
       const [attendanceRes, paymentsRes] = await Promise.all([
         getAttendances({ finalClassId: classObj.id || (classObj as any)._id, tutorId: userId, limit: 100 }),
         getPayments({ finalClassId: classObj.id || (classObj as any)._id, tutorId: userId, limit: 100 })
       ]);
-      
+
       setClassAttendance((attendanceRes as any).data || []);
       setClassPayments((paymentsRes as any).data || []);
     } catch (err) {
@@ -223,24 +223,24 @@ const TutorProfilePage: React.FC = () => {
   const classColumns: GridColDef<IFinalClass>[] = [
     { field: 'className', headerName: 'Class ID', flex: 1, minWidth: 150 },
     { field: 'studentName', headerName: 'Student', flex: 1, minWidth: 150 },
-    { 
-      field: 'subject', 
-      headerName: 'Subject', 
-      flex: 1, 
+    {
+      field: 'subject',
+      headerName: 'Subject',
+      flex: 1,
       minWidth: 150,
-      valueGetter: (params: any) => Array.isArray(params.row.subject) ? params.row.subject.join(', ') : params.row.subject
+      valueGetter: (_value: any, row: any) => Array.isArray(row.subject) ? row.subject.join(', ') : row.subject
     },
     { field: 'grade', headerName: 'Grade', width: 100 },
-    { 
-      field: 'status', 
-      headerName: 'Status', 
+    {
+      field: 'status',
+      headerName: 'Status',
       width: 120,
       renderCell: (params: any) => (
-        <Chip 
-          label={params.value} 
-          size="small" 
-          color={params.value === 'ACTIVE' ? 'success' : 'default'} 
-          variant="outlined" 
+        <Chip
+          label={params.value}
+          size="small"
+          color={params.value === 'ACTIVE' ? 'success' : 'default'}
+          variant="outlined"
         />
       )
     },
@@ -364,78 +364,78 @@ const TutorProfilePage: React.FC = () => {
       </Box>
 
 
-      
+
       {/* Internal Details & Performance Metrics (Combined Section) */}
       {id && (
         <React.Fragment>
-            {/* Internal Stats */}
-            <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
-              <Typography variant="h5" fontWeight={800} mb={3} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <BarChart2 className="text-blue-500" size={24} />
-                Internal Performance Metrics
-              </Typography>
-                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
-                 {[
-                   { label: 'Assigned', value: tutorProfile?.classesAssigned || 0, color: theme.palette.primary.main, bg: alpha(theme.palette.primary.main, 0.05) },
-                   { label: 'Reschedules', value: (tutorProfile as any)?.internalStats?.oneTimeReschedules || 0, color: theme.palette.warning.main, bg: alpha(theme.palette.warning.main, 0.05) },
-                   { label: 'Total Payout', value: `₹${((tutorProfile as any)?.internalStats?.totalPayouts || 0).toLocaleString()}`, color: theme.palette.success.main, bg: alpha(theme.palette.success.main, 0.05) },
-                   { label: 'Attendance', value: (tutorProfile as any)?.internalStats?.attendanceSheetsSubmitted || 0, color: theme.palette.info.main, bg: alpha(theme.palette.info.main, 0.05) },
-                   { label: 'Demos', value: (tutorProfile as any)?.internalStats?.demosScheduled || 0, color: theme.palette.secondary.main, bg: alpha(theme.palette.secondary.main, 0.05) }
-                 ].map((stat, index) => (
-                   <Paper 
-                    key={index} 
-                    elevation={0}
-                    sx={{ 
-                      p: 3, 
-                      borderRadius: 4, 
-                      bgcolor: stat.bg,
-                      border: '1px solid',
-                      borderColor: alpha(stat.color, 0.1),
-                      textAlign: 'center',
-                      transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                      '&:hover': { transform: 'scale(1.05)' }
-                    }}
-                   >
-                     <Typography variant="h4" fontWeight={900} color={stat.color} sx={{ mb: 0.5 }}>{stat.value}</Typography>
-                     <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: 'uppercase', tracking: '0.1em' }}>{stat.label}</Typography>
-                   </Paper>
-                 ))}
-              </Box>
+          {/* Internal Stats */}
+          <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
+            <Typography variant="h5" fontWeight={800} mb={3} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <BarChart2 className="text-blue-500" size={24} />
+              Internal Performance Metrics
+            </Typography>
+            <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
+              {[
+                { label: 'Assigned', value: tutorProfile?.classesAssigned || 0, color: theme.palette.primary.main, bg: alpha(theme.palette.primary.main, 0.05) },
+                { label: 'Reschedules', value: (tutorProfile as any)?.internalStats?.oneTimeReschedules || 0, color: theme.palette.warning.main, bg: alpha(theme.palette.warning.main, 0.05) },
+                { label: 'Total Payout', value: `₹${((tutorProfile as any)?.internalStats?.totalPayouts || 0).toLocaleString()}`, color: theme.palette.success.main, bg: alpha(theme.palette.success.main, 0.05) },
+                { label: 'Attendance', value: (tutorProfile as any)?.internalStats?.attendanceSheetsSubmitted || 0, color: theme.palette.info.main, bg: alpha(theme.palette.info.main, 0.05) },
+                { label: 'Demos', value: (tutorProfile as any)?.internalStats?.demosScheduled || 0, color: theme.palette.secondary.main, bg: alpha(theme.palette.secondary.main, 0.05) }
+              ].map((stat, index) => (
+                <Paper
+                  key={index}
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    borderRadius: 4,
+                    bgcolor: stat.bg,
+                    border: '1px solid',
+                    borderColor: alpha(stat.color, 0.1),
+                    textAlign: 'center',
+                    transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    '&:hover': { transform: 'scale(1.05)' }
+                  }}
+                >
+                  <Typography variant="h4" fontWeight={900} color={stat.color} sx={{ mb: 0.5 }}>{stat.value}</Typography>
+                  <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: 'uppercase', tracking: '0.1em' }}>{stat.label}</Typography>
+                </Paper>
+              ))}
             </Box>
+          </Box>
 
-            {/* Personal & Verification Details */}
-            <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
-              <Typography variant="h5" fontWeight={800} mb={3}>Personal & Verification Details</Typography>
-              <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={4}>
-                    <Box>
-                       <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Permanent Address</Typography>
-                       <Typography variant="body1" fontWeight={600} sx={{ color: 'text.primary', lineHeight: 1.6 }}>{tutorProfile?.permanentAddress || 'Not provided'}</Typography>
-                    </Box>
-                    <Box>
-                       <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Residential Address (Same as Aadhaar)</Typography>
-                       <Typography variant="body1" fontWeight={600} sx={{ color: 'text.primary', lineHeight: 1.6 }}>{tutorProfile?.residentialAddress || 'Not provided'}</Typography>
-                    </Box>
-                    <Box>
-                       <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Aadhaar Card Status</Typography>
-                       <Chip 
-                         label={tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? 'VERIFIED' : 'PENDING / NOT UPLOADED'} 
-                         color={tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? 'success' : 'default'} 
-                         size="small" 
-                         variant="filled"
-                         sx={{ 
-                           fontWeight: 900, 
-                           borderRadius: 2, 
-                           fontSize: '0.65rem', 
-                           letterSpacing: '0.05em',
-                           backgroundColor: tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? alpha(theme.palette.success.main, 0.1) : undefined,
-                           color: tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? theme.palette.success.main : undefined
-                         }}
-                       />
-                    </Box>
-                 </Box>
-              </Paper>
-            </Box>
+          {/* Personal & Verification Details */}
+          <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
+            <Typography variant="h5" fontWeight={800} mb={3}>Personal & Verification Details</Typography>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={4}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Permanent Address</Typography>
+                  <Typography variant="body1" fontWeight={600} sx={{ color: 'text.primary', lineHeight: 1.6 }}>{tutorProfile?.permanentAddress || 'Not provided'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Residential Address (Same as Aadhaar)</Typography>
+                  <Typography variant="body1" fontWeight={600} sx={{ color: 'text.primary', lineHeight: 1.6 }}>{tutorProfile?.residentialAddress || 'Not provided'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Aadhaar Card Status</Typography>
+                  <Chip
+                    label={tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? 'VERIFIED' : 'PENDING / NOT UPLOADED'}
+                    color={tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? 'success' : 'default'}
+                    size="small"
+                    variant="filled"
+                    sx={{
+                      fontWeight: 900,
+                      borderRadius: 2,
+                      fontSize: '0.65rem',
+                      letterSpacing: '0.05em',
+                      backgroundColor: tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? alpha(theme.palette.success.main, 0.1) : undefined,
+                      color: tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? theme.palette.success.main : undefined
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Paper>
+          </Box>
         </React.Fragment>
       )}
 
@@ -473,38 +473,38 @@ const TutorProfilePage: React.FC = () => {
 
           {/* Payment History */}
           <Box sx={{ mb: 4, px: { xs: 1.5, sm: 0 } }}>
-             <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
               <Typography variant="h5" fontWeight={700}>Payment History</Typography>
             </Box>
             <Box overflow="auto" border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper">
-               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                 <thead>
-                   <tr style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
-                     <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Amount</th>
-                     <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Status</th>
-                     <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Method</th>
-                     <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Date</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                    {adminPayments.length > 0 ? (
-                      adminPayments.map((p) => (
-                        <tr key={p.id} style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
-                           <td style={{ padding: '12px 16px' }}>₹{p.amount?.toLocaleString()}</td>
-                           <td style={{ padding: '12px 16px' }}>
-                             <Chip label={p.status} size="small" color={p.status === 'PAID' ? 'success' : p.status === 'PENDING' ? 'warning' : 'default'} />
-                           </td>
-                           <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{p.paymentMethod || '-'}</td>
-                           <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: 'text.secondary' }}>No payment records found.</td>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
+                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Amount</th>
+                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Status</th>
+                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Method</th>
+                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminPayments.length > 0 ? (
+                    adminPayments.map((p) => (
+                      <tr key={p.id} style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
+                        <td style={{ padding: '12px 16px' }}>₹{p.amount?.toLocaleString()}</td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <Chip label={p.status} size="small" color={p.status === 'PAID' ? 'success' : p.status === 'PENDING' ? 'warning' : 'default'} />
+                        </td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{p.paymentMethod || '-'}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</td>
                       </tr>
-                    )}
-                 </tbody>
-               </table>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: 'text.secondary' }}>No payment records found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </Box>
           </Box>
 
@@ -514,20 +514,20 @@ const TutorProfilePage: React.FC = () => {
               <Typography variant="h5" fontWeight={700}>Attendance Snapshot</Typography>
             </Box>
             <Box p={3} border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper">
-                <Box display="flex" gap={2} flexWrap="wrap">
-                  <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#10B981', 0.1)} textAlign="center">
-                     <Typography variant="h4" fontWeight={700} color="success.main">{attendanceStats.present}</Typography>
-                     <Typography variant="caption" fontWeight={600}>PRESENT</Typography>
-                  </Box>
-                  <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#EF4444', 0.1)} textAlign="center">
-                     <Typography variant="h4" fontWeight={700} color="error.main">{attendanceStats.absent}</Typography>
-                     <Typography variant="caption" fontWeight={600}>ABSENT</Typography>
-                  </Box>
-                  <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#F59E0B', 0.1)} textAlign="center">
-                     <Typography variant="h4" fontWeight={700} color="warning.main">{attendanceStats.late}</Typography>
-                     <Typography variant="caption" fontWeight={600}>LATE</Typography>
-                  </Box>
+              <Box display="flex" gap={2} flexWrap="wrap">
+                <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#10B981', 0.1)} textAlign="center">
+                  <Typography variant="h4" fontWeight={700} color="success.main">{attendanceStats.present}</Typography>
+                  <Typography variant="caption" fontWeight={600}>PRESENT</Typography>
                 </Box>
+                <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#EF4444', 0.1)} textAlign="center">
+                  <Typography variant="h4" fontWeight={700} color="error.main">{attendanceStats.absent}</Typography>
+                  <Typography variant="caption" fontWeight={600}>ABSENT</Typography>
+                </Box>
+                <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#F59E0B', 0.1)} textAlign="center">
+                  <Typography variant="h4" fontWeight={700} color="warning.main">{attendanceStats.late}</Typography>
+                  <Typography variant="caption" fontWeight={600}>LATE</Typography>
+                </Box>
+              </Box>
             </Box>
           </Box>
         </React.Fragment>
@@ -569,20 +569,20 @@ const TutorProfilePage: React.FC = () => {
               }
             }}
             renderOption={(props, option, { selected }) => {
-               const isSelectAll = option === 'Select All';
-               const allSelected = selectedSubjects.length === subjectLabels.length && subjectLabels.length > 0;
-               return (
-                 <li {...props}>
-                   <Checkbox
-                     icon={icon}
-                     checkedIcon={checkedIcon}
-                     style={{ marginRight: 8 }}
-                     checked={isSelectAll ? allSelected : selected}
-                   />
-                   {option}
-                 </li>
-               );
-             }}
+              const isSelectAll = option === 'Select All';
+              const allSelected = selectedSubjects.length === subjectLabels.length && subjectLabels.length > 0;
+              return (
+                <li {...props}>
+                  <Checkbox
+                    icon={icon}
+                    checkedIcon={checkedIcon}
+                    style={{ marginRight: 8 }}
+                    checked={isSelectAll ? allSelected : selected}
+                  />
+                  {option}
+                </li>
+              );
+            }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
                 <Chip
@@ -629,21 +629,21 @@ const TutorProfilePage: React.FC = () => {
               }
             }}
             renderOption={(props, option, { selected }) => {
-               const isSelectAll = option === 'Select All';
-               const allValues = extracurricularOptions.map((opt) => opt.value);
-               const allSelected = selectedExtracurriculars.length === allValues.length && allValues.length > 0;
-               return (
-                 <li {...props}>
-                   <Checkbox
-                     icon={icon}
-                     checkedIcon={checkedIcon}
-                     style={{ marginRight: 8 }}
-                     checked={isSelectAll ? allSelected : selected}
-                   />
-                   {option}
-                 </li>
-               );
-             }}
+              const isSelectAll = option === 'Select All';
+              const allValues = extracurricularOptions.map((opt) => opt.value);
+              const allSelected = selectedExtracurriculars.length === allValues.length && allValues.length > 0;
+              return (
+                <li {...props}>
+                  <Checkbox
+                    icon={icon}
+                    checkedIcon={checkedIcon}
+                    style={{ marginRight: 8 }}
+                    checked={isSelectAll ? allSelected : selected}
+                  />
+                  {option}
+                </li>
+              );
+            }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
                 <Chip
@@ -681,20 +681,20 @@ const TutorProfilePage: React.FC = () => {
               }
             }}
             renderOption={(props, option, { selected }) => {
-               const isSelectAll = option === 'Select All';
-               const allSelected = preferredAreas.length === availableAreas.length && availableAreas.length > 0;
-               return (
-                 <li {...props}>
-                   <Checkbox
-                     icon={icon}
-                     checkedIcon={checkedIcon}
-                     style={{ marginRight: 8 }}
-                     checked={isSelectAll ? allSelected : selected}
-                   />
-                   {option}
-                 </li>
-               );
-             }}
+              const isSelectAll = option === 'Select All';
+              const allSelected = preferredAreas.length === availableAreas.length && availableAreas.length > 0;
+              return (
+                <li {...props}>
+                  <Checkbox
+                    icon={icon}
+                    checkedIcon={checkedIcon}
+                    style={{ marginRight: 8 }}
+                    checked={isSelectAll ? allSelected : selected}
+                  />
+                  {option}
+                </li>
+              );
+            }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
                 <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} />
@@ -726,12 +726,12 @@ const TutorProfilePage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* Class Details Drill-down Modal */}
-      <Dialog 
-        open={detailsModalOpen} 
-        onClose={() => setDetailsModalOpen(false)} 
-        fullWidth 
+      <Dialog
+        open={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        fullWidth
         maxWidth="md"
         PaperProps={{
           sx: { borderRadius: 2 }

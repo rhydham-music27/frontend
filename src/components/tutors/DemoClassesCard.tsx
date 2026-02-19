@@ -14,6 +14,7 @@ import { IDemoHistory, PaginatedResponse } from '../../types';
 import { DEMO_STATUS } from '../../constants';
 import { useErrorDialog } from '../../hooks/useErrorDialog';
 import ErrorDialog from '../common/ErrorDialog';
+import DemoAttendanceModal from './DemoAttendanceModal';
 
 const DemoClassesCard: React.FC = () => {
   const [demos, setDemos] = useState<IDemoHistory[]>([]);
@@ -26,6 +27,8 @@ const DemoClassesCard: React.FC = () => {
     pages: 0,
   });
   const [updatingDemoId, setUpdatingDemoId] = useState<string | null>(null);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [selectedDemo, setSelectedDemo] = useState<IDemoHistory | null>(null);
   const { error: dialogError, showError, clearError, handleError } = useErrorDialog();
 
   const formatDate = (date?: string | Date) => {
@@ -144,17 +147,42 @@ const DemoClassesCard: React.FC = () => {
     if (pagination.page < pagination.pages) fetchDemos(pagination.page + 1);
   };
 
-  const handleMarkCompleted = async (demo: IDemoHistory) => {
-    const leadAny: any = demo.classLead as any;
-    const leadId: string | undefined = (demo.classLead as any)?.id || leadAny?._id;
+  const handleMarkCompletedClick = (demo: IDemoHistory) => {
+    setSelectedDemo(demo);
+    setShowAttendanceModal(true);
+  };
+
+  const handleAttendanceSubmit = async (data: {
+    attendanceStatus: 'PRESENT' | 'ABSENT';
+    topicCovered: string;
+    duration: string;
+    feedback: string;
+  }) => {
+    if (!selectedDemo) return;
+
+    const leadAny: any = selectedDemo.classLead as any;
+    const leadId: string | undefined = (selectedDemo.classLead as any)?.id || leadAny?._id;
+
     if (!leadId) {
       setError('Unable to identify the demo lead. Please contact support.');
       return;
     }
+
     try {
-      setUpdatingDemoId(demo.id);
-      await updateDemoStatus(leadId, DEMO_STATUS.COMPLETED);
+      setUpdatingDemoId(selectedDemo.id);
+      await updateDemoStatus(
+        leadId,
+        DEMO_STATUS.COMPLETED,
+        data.feedback,
+        undefined,
+        undefined,
+        data.attendanceStatus,
+        data.topicCovered,
+        data.duration
+      );
       await fetchDemos(pagination.page);
+      setShowAttendanceModal(false);
+      setSelectedDemo(null);
     } catch (e: any) {
       handleError(e);
     } finally {
@@ -302,7 +330,7 @@ const DemoClassesCard: React.FC = () => {
                       size="small"
                       variant="contained"
                       color="success"
-                      onClick={() => handleMarkCompleted(demo)}
+                      onClick={() => handleMarkCompletedClick(demo)}
                       disabled={updatingDemoId === demo.id}
                     >
                       Mark Completed
@@ -333,6 +361,12 @@ const DemoClassesCard: React.FC = () => {
         onClose={clearError}
         error={dialogError}
         title="Demo Update Error"
+      />
+      <DemoAttendanceModal
+        open={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
+        onSubmit={handleAttendanceSubmit}
+        demo={selectedDemo}
       />
     </StyledCard>
   );

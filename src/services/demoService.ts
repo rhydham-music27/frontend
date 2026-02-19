@@ -23,13 +23,19 @@ export const updateDemoStatus = async (
   status: string,
   feedback?: string,
   rejectionReason?: string,
-  coordinatorUserId?: string
+  coordinatorUserId?: string,
+  attendanceStatus?: 'PRESENT' | 'ABSENT',
+  topicCovered?: string,
+  duration?: string
 ): Promise<ApiResponse<IClassLead>> => {
   const { data } = await api.patch(API_ENDPOINTS.DEMOS_STATUS(classLeadId), {
     status,
     feedback,
     rejectionReason,
     coordinatorUserId,
+    attendanceStatus,
+    topicCovered,
+    duration,
   });
   return data as ApiResponse<IClassLead>;
 };

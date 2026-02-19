@@ -462,6 +462,57 @@ export default function ClassLeadDetailPage() {
               <StatusTimeline classLead={classLead} demoHistory={demoHistory} announcement={announcement} />
             </CardContent>
           </Card>
+
+          {/* Demo Details Card */}
+          {classLead.demoDetails && (
+            <Card sx={{ mt: 3 }}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Demo Details</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography><strong>Status:</strong> <Chip size="small" label={classLead.demoDetails.demoStatus} color="primary" variant="outlined" /></Typography>
+                  </Grid>
+                  {classLead.demoDetails.demoDate && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography><strong>Date:</strong> {new Date(classLead.demoDetails.demoDate).toLocaleDateString()}</Typography>
+                    </Grid>
+                  )}
+                  {classLead.demoDetails.demoTime && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography><strong>Time:</strong> {classLead.demoDetails.demoTime}</Typography>
+                    </Grid>
+                  )}
+                  {(classLead.demoDetails as any).duration && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography><strong>Duration:</strong> {(classLead.demoDetails as any).duration}</Typography>
+                    </Grid>
+                  )}
+                  {(classLead.demoDetails as any).attendanceStatus && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography>
+                        <strong>Attendance:</strong>{' '}
+                        <Chip
+                          size="small"
+                          label={(classLead.demoDetails as any).attendanceStatus}
+                          color={(classLead.demoDetails as any).attendanceStatus === 'PRESENT' ? 'success' : 'error'}
+                        />
+                      </Typography>
+                    </Grid>
+                  )}
+                  {(classLead.demoDetails as any).topicCovered && (
+                    <Grid item xs={12}>
+                      <Typography><strong>Topic Covered:</strong> {(classLead.demoDetails as any).topicCovered}</Typography>
+                    </Grid>
+                  )}
+                  {classLead.demoDetails.feedback && (
+                    <Grid item xs={12}>
+                      <Typography><strong>Feedback:</strong> {classLead.demoDetails.feedback}</Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </CardContent>
+            </Card>
+          )}
         </Grid>
         <Grid item xs={12} md={4}>
           <Card>
