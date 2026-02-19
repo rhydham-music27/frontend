@@ -2,9 +2,9 @@ import { useEffect, useMemo } from 'react';
 import { useForm, SubmitHandler, useFieldArray, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { 
-  Box, TextField, Button, MenuItem, Chip, Autocomplete, 
-  FormControl, FormLabel, RadioGroup, Radio, FormControlLabel, 
+import {
+  Box, TextField, Button, MenuItem, Chip, Autocomplete,
+  FormControl, FormLabel, RadioGroup, Radio, FormControlLabel,
   Typography, IconButton, Grid, Paper, InputAdornment, Card, CardContent, Checkbox
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -53,7 +53,7 @@ const schema = yup.object({
   grade: yup.string().when('studentType', {
     is: 'SINGLE',
     then: (schema) => schema.required('Grade is required'),
-    otherwise: (schema) => schema.required('Grade is required for group')
+    otherwise: (schema) => schema.optional()  // Optional for GROUP, comes from studentDetails
   }),
   subject: yup.array().when('studentType', {
     is: 'SINGLE',
@@ -157,8 +157,8 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
         <Typography variant="subtitle2">Student {index + 1}</Typography>
         {index > 0 && (
           <IconButton size="small" color="error" onClick={() => {
-              remove(index);
-              setValue('numberOfStudents', (numberOfStudents || 1) - 1);
+            remove(index);
+            setValue('numberOfStudents', (numberOfStudents || 1) - 1);
           }}>
             <DeleteIcon fontSize="small" />
           </IconButton>
@@ -190,125 +190,138 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
           </TextField>
         </Grid>
         <Grid item xs={12} md={4}>
-             <TextField 
-               select 
-               label="Board" 
-               fullWidth 
-               size="small"
-               value={selectedBoard || ''} 
-               onChange={(e) => {
-                   setValue(`studentDetails.${index}.board`, e.target.value, { shouldValidate: true });
-                   setValue(`studentDetails.${index}.grade`, '', { shouldValidate: true }); 
-                   setValue(`studentDetails.${index}.subject`, [], { shouldValidate: true }); 
-               }}
-               error={!!errors.studentDetails?.[index]?.board}
-             >
-               {boardOptions.length > 0 ? boardOptions.map((b) => (
-                 <MenuItem key={b.value} value={b.value}>{b.label}</MenuItem>
-               )) : Object.values(BOARD_TYPE).map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
-             </TextField>
+          <Controller
+            name={`studentDetails.${index}.board`}
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                select
+                label="Board"
+                fullWidth
+                size="small"
+                value={value || ''}
+                onChange={(e) => {
+                  onChange(e.target.value);
+                  setValue(`studentDetails.${index}.grade`, '', { shouldValidate: true });
+                  setValue(`studentDetails.${index}.subject`, [], { shouldValidate: true });
+                }}
+                error={!!errors.studentDetails?.[index]?.board}
+              >
+                {boardOptions.length > 0 ? boardOptions.map((b) => (
+                  <MenuItem key={b.value} value={b.value}>{b.label}</MenuItem>
+                )) : Object.values(BOARD_TYPE).map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
+              </TextField>
+            )}
+          />
         </Grid>
         <Grid item xs={12} md={4}>
-            <TextField
-              select
-              label="Grade"
-              fullWidth
-              size="small"
-              value={selectedGrade || ''}
-              onChange={(e) => {
-                  setValue(`studentDetails.${index}.grade`, e.target.value, { shouldValidate: true });
+          <Controller
+            name={`studentDetails.${index}.grade`}
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                select
+                label="Grade"
+                fullWidth
+                size="small"
+                value={value || ''}
+                onChange={(e) => {
+                  onChange(e.target.value);
                   setValue(`studentDetails.${index}.subject`, [], { shouldValidate: true });
-              }}
-              error={!!errors.studentDetails?.[index]?.grade}
-              disabled={!selectedBoard}
-            >
-              {gradeOptions.map((g) => (
-                <MenuItem key={g.value} value={g.value}>{g.label}</MenuItem>
-              ))}
-            </TextField>
+                }}
+                error={!!errors.studentDetails?.[index]?.grade}
+                disabled={!selectedBoard}
+              >
+                {gradeOptions.map((g) => (
+                  <MenuItem key={g.value} value={g.value}>{g.label}</MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
         </Grid>
         <Grid item xs={12} md={8}>
-            <Controller
-              name={`studentDetails.${index}.subject`}
-              control={control}
-              render={({ field: { value = [], onChange } }) => (
-                <Autocomplete
-                  multiple
-                  size="small"
-                  options={subjectOptions.length > 0 ? [{ label: 'Select All', value: 'SELECT_ALL' }, ...subjectOptions] : []}
-                  getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
-                  isOptionEqualToValue={(option, value) => option.value === value.value}
-                  value={
-                      (value || []).map((val: string) => {
-                          const opt = subjectOptions.find(o => o.value === val);
-                          return opt ? opt : { label: val, value: val };
-                      })
+          <Controller
+            name={`studentDetails.${index}.subject`}
+            control={control}
+            render={({ field: { value = [], onChange } }) => (
+              <Autocomplete
+                multiple
+                size="small"
+                options={subjectOptions.length > 0 ? [{ label: 'Select All', value: 'SELECT_ALL' }, ...subjectOptions] : []}
+                getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+                isOptionEqualToValue={(option, value) => option.value === value.value}
+                value={
+                  (value || []).map((val: string) => {
+                    const opt = subjectOptions.find(o => o.value === val);
+                    return opt ? opt : { label: val, value: val };
+                  })
+                }
+                onChange={(_, newValue) => {
+                  if (newValue.some(v => (typeof v === 'string' ? v : v.value) === 'SELECT_ALL')) {
+                    if ((value || []).length === subjectOptions.length) {
+                      onChange([]);
+                    } else {
+                      onChange(subjectOptions.map(o => o.value));
+                    }
+                  } else {
+                    onChange(newValue.map(v => typeof v === 'string' ? v : v.value));
                   }
-                  onChange={(_, newValue) => {
-                      if (newValue.some(v => (typeof v === 'string' ? v : v.value) === 'SELECT_ALL')) {
-                          if ((value || []).length === subjectOptions.length) {
-                              onChange([]);
-                          } else {
-                              onChange(subjectOptions.map(o => o.value));
-                          }
-                      } else {
-                          onChange(newValue.map(v => typeof v === 'string' ? v : v.value));
-                      }
-                  }}
-                  disabled={!selectedGrade}
-                  renderOption={(props, option, { selected }) => {
-                    const isSelectAll = (typeof option === 'string' ? option : option.label) === 'Select All';
-                    const allSelected = (value || []).length === subjectOptions.length && subjectOptions.length > 0;
-                    return (
-                      <li {...props}>
-                        <Checkbox
-                          icon={icon}
-                          checkedIcon={checkedIcon}
-                          style={{ marginRight: 8 }}
-                          checked={isSelectAll ? allSelected : selected}
-                        />
-                        {typeof option === 'string' ? option : option.label}
-                      </li>
-                    );
-                  }}
-                  renderTags={(val, getTagProps) =>
-                    val.map((option: any, i: number) => (
-                      <Chip size="small" variant="outlined" label={typeof option === 'string' ? option : option.label} {...getTagProps({ index: i })} key={i} />
-                    ))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Subjects"
-                      error={!!errors.studentDetails?.[index]?.subject}
-                    />
-                  )}
-                />
-              )}
-            />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <TextField
-             label="Parent Name"
-             fullWidth
-             size="small"
-             {...register(`studentDetails.${index}.parentName`)}
+                }}
+                disabled={!selectedGrade}
+                renderOption={(props, option, { selected }) => {
+                  const { key, ...rest } = props as any;
+                  const isSelectAll = (typeof option === 'string' ? option : option.label) === 'Select All';
+                  const allSelected = (value || []).length === subjectOptions.length && subjectOptions.length > 0;
+                  return (
+                    <li key={key} {...rest}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={isSelectAll ? allSelected : selected}
+                      />
+                      {typeof option === 'string' ? option : option.label}
+                    </li>
+                  );
+                }}
+                renderTags={(val, getTagProps) =>
+                  val.map((option: any, i: number) => (
+                    <Chip size="small" variant="outlined" label={typeof option === 'string' ? option : option.label} {...getTagProps({ index: i })} key={i} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Subjects"
+                    error={!!errors.studentDetails?.[index]?.subject}
+                  />
+                )}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12} md={4}>
           <TextField
-             label="Parent Email"
-             fullWidth
-             size="small"
-             {...register(`studentDetails.${index}.parentEmail`)}
+            label="Parent Name"
+            fullWidth
+            size="small"
+            {...register(`studentDetails.${index}.parentName`)}
           />
         </Grid>
-         <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4}>
           <TextField
-             label="Parent Phone"
-             fullWidth
-             size="small"
-             {...register(`studentDetails.${index}.parentPhone`)}
+            label="Parent Email"
+            fullWidth
+            size="small"
+            {...register(`studentDetails.${index}.parentEmail`)}
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <TextField
+            label="Parent Phone"
+            fullWidth
+            size="small"
+            {...register(`studentDetails.${index}.parentPhone`)}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -368,17 +381,17 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       notes: (initialData as any)?.notes || '',
       numberOfStudents: (initialData as any)?.numberOfStudents ?? 1,
       studentDetails: (initialData as any)?.studentDetails || [
-        { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0 }
+        { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' }
       ],
     };
   }, [initialData]);
 
-  const { 
+  const {
     control,
-    register, 
-    handleSubmit, 
-    setValue, 
-    watch, 
+    register,
+    handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
     reset
   } = useForm<IClassLeadFormData>({
@@ -394,7 +407,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   // Fetch Options
   const { options: boardOptions } = useOptions('BOARD');
-  
+
   // Dependent Options
   const selectedBoardOption = useMemo(() => boardOptions.find(b => b.value === selectedBoard), [boardOptions, selectedBoard]);
   const { options: gradeOptions } = useOptions('GRADE', selectedBoardOption ? selectedBoardOption._id : null);
@@ -426,11 +439,11 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
     if (studentType === 'GROUP') {
       const currentLength = watchStudentDetails?.length || 0;
       const diff = (numberOfStudents || 1) - currentLength;
-      
+
       if (diff > 0) {
         // Add new student fields
         for (let i = 0; i < diff; i++) {
-          append({ name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0 });
+          append({ name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' });
         }
       } else if (diff < 0) {
         // Remove extra student fields
@@ -451,7 +464,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
     if (studentType !== 'GROUP' || !watchStudentDetails?.length) return 0;
     return watchStudentDetails.reduce((sum, student) => sum + (Number(student.tutorFees) || 0), 0);
   }, [watchStudentDetails, studentType]);
-  
+
   // Reset fees when switching between single and group
   useEffect(() => {
     if (studentType === 'GROUP') {
@@ -462,20 +475,20 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   // Reset logic for hierarchy
   useEffect(() => {
-     // Optional: Reset grade/subjects if board changes significantly.
-     // Currently we rely on user interaction to change fields.
-     // But strictly speaking if I change Board from CBSE to ICSE, 
-     // the currently selected Grade (e.g. "CBSE_10") might be invalid for ICSE ("ICSE_10").
-     // So we SHOULD reset.
-     if (selectedGrade && selectedBoard) {
-        // Helper check: does current selectedGrade string start with selectedBoard? 
-        // Or better, is it in the new gradeOptions?
-        // gradeOptions are fetched async, so checking here might be tricky if they aren't loaded yet.
-        // A simple heuristic: if Board changes, reset Grade.
-        // But we need to avoid resetting on initial load.
-        // Using a ref to track "mounted" or "previousBoard" would be better.
-        // For now, let's keep it simple and trust the user to re-select if options change.
-     }
+    // Optional: Reset grade/subjects if board changes significantly.
+    // Currently we rely on user interaction to change fields.
+    // But strictly speaking if I change Board from CBSE to ICSE, 
+    // the currently selected Grade (e.g. "CBSE_10") might be invalid for ICSE ("ICSE_10").
+    // So we SHOULD reset.
+    if (selectedGrade && selectedBoard) {
+      // Helper check: does current selectedGrade string start with selectedBoard? 
+      // Or better, is it in the new gradeOptions?
+      // gradeOptions are fetched async, so checking here might be tricky if they aren't loaded yet.
+      // A simple heuristic: if Board changes, reset Grade.
+      // But we need to avoid resetting on initial load.
+      // Using a ref to track "mounted" or "previousBoard" would be better.
+      // For now, let's keep it simple and trust the user to re-select if options change.
+    }
   }, [selectedBoard]);
 
 
@@ -509,7 +522,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   return (
     <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} display="flex" flexDirection="column" gap={3}>
-      
+
       {/* 1. Student Type */}
       <Card variant="outlined">
         <CardContent>
@@ -518,9 +531,9 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             <Typography variant="h6">Student Type</Typography>
           </Box>
           <FormControl component="fieldset">
-            <RadioGroup 
-              row 
-              value={studentType} 
+            <RadioGroup
+              row
+              value={studentType}
               onChange={(e) => {
                 setValue('studentType', e.target.value as StudentType);
                 if (e.target.value === 'SINGLE') {
@@ -544,42 +557,42 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       </Card>
 
       {/* 2. Curriculum (Only for SINGLE) */}
-       {studentType === 'SINGLE' && (
-      <Card variant="outlined">
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
-            <SchoolIcon color="primary" />
-            <Typography variant="h6">Curriculum</Typography>
-          </Box>
-          <Grid container spacing={2}>
-             <Grid item xs={12} md={6}>
-                <TextField 
-                  select 
-                  label="Board" 
-                  fullWidth 
-                  value={watch('board')} 
+      {studentType === 'SINGLE' && (
+        <Card variant="outlined">
+          <CardContent>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <SchoolIcon color="primary" />
+              <Typography variant="h6">Curriculum</Typography>
+            </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Board"
+                  fullWidth
+                  value={watch('board')}
                   onChange={(e) => {
-                      setValue('board', e.target.value, { shouldValidate: true });
-                      setValue('grade', '', { shouldValidate: true }); 
-                      setValue('subject', [], { shouldValidate: true }); 
+                    setValue('board', e.target.value, { shouldValidate: true });
+                    setValue('grade', '', { shouldValidate: true });
+                    setValue('subject', [], { shouldValidate: true });
                   }}
-                  error={!!errors.board} 
+                  error={!!errors.board}
                   helperText={errors.board?.toString()}
                 >
                   {boardOptions.length > 0 ? (
-                      boardOptions.map((b) => (
-                        <MenuItem key={b.value} value={b.value}>{b.label}</MenuItem>
-                      ))
+                    boardOptions.map((b) => (
+                      <MenuItem key={b.value} value={b.value}>{b.label}</MenuItem>
+                    ))
                   ) : (
-                      Object.values(BOARD_TYPE).map((b) => (
-                        <MenuItem key={b} value={b}>{b}</MenuItem>
-                      ))
+                    Object.values(BOARD_TYPE).map((b) => (
+                      <MenuItem key={b} value={b}>{b}</MenuItem>
+                    ))
                   )}
                 </TextField>
-             </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
       )}
 
       {/* 3. Student / Group Details */}
@@ -592,12 +605,12 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             </Box>
             <Grid container spacing={2}>
               <Grid item xs={12} md={4}>
-                <TextField 
-                  label="Student Name" 
-                  fullWidth 
-                  {...register('studentName')} 
-                  error={!!errors.studentName} 
-                  helperText={errors.studentName?.message} 
+                <TextField
+                  label="Student Name"
+                  fullWidth
+                  {...register('studentName')}
+                  error={!!errors.studentName}
+                  helperText={errors.studentName?.message}
                 />
               </Grid>
               <Grid item xs={12} md={4}>
@@ -605,6 +618,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                   select
                   label="Gender"
                   fullWidth
+                  value={watch('studentGender') || 'M'}
                   {...register('studentGender')}
                   error={!!errors.studentGender}
                   helperText={errors.studentGender?.message}
@@ -620,8 +634,8 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                   fullWidth
                   value={watch('grade')}
                   onChange={(e) => {
-                      setValue('grade', e.target.value, { shouldValidate: true });
-                      setValue('subject', [], { shouldValidate: true });
+                    setValue('grade', e.target.value, { shouldValidate: true });
+                    setValue('subject', [], { shouldValidate: true });
                   }}
                   error={!!errors.grade}
                   helperText={errors.grade?.message}
@@ -640,31 +654,32 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                   getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
                   isOptionEqualToValue={(option, value) => option.value === value.value}
                   value={
-                      (watch('subject') || []).map((val: string) => {
-                          const opt = subjectOptions.find(o => o.value === val);
-                          return opt ? opt : { label: val, value: val }; 
-                      })
+                    (watch('subject') || []).map((val: string) => {
+                      const opt = subjectOptions.find(o => o.value === val);
+                      return opt ? opt : { label: val, value: val };
+                    })
                   }
                   onChange={(_, newValue) => {
-                      if (newValue.some(v => (typeof v === 'string' ? v : v.value) === 'SELECT_ALL')) {
-                          const currentSubjects = watch('subject') || [];
-                          if (currentSubjects.length === subjectOptions.length) {
-                              setValue('subject', [], { shouldValidate: true });
-                          } else {
-                              const allValues = subjectOptions.map(o => o.value);
-                              setValue('subject', allValues, { shouldValidate: true });
-                          }
+                    if (newValue.some(v => (typeof v === 'string' ? v : v.value) === 'SELECT_ALL')) {
+                      const currentSubjects = watch('subject') || [];
+                      if (currentSubjects.length === subjectOptions.length) {
+                        setValue('subject', [], { shouldValidate: true });
                       } else {
-                          const values = newValue.map(v => typeof v === 'string' ? v : v.value);
-                          setValue('subject', values, { shouldValidate: true });
+                        const allValues = subjectOptions.map(o => o.value);
+                        setValue('subject', allValues, { shouldValidate: true });
                       }
+                    } else {
+                      const values = newValue.map(v => typeof v === 'string' ? v : v.value);
+                      setValue('subject', values, { shouldValidate: true });
+                    }
                   }}
                   disabled={!selectedGrade}
                   renderOption={(props, option, { selected }) => {
+                    const { key, ...rest } = props as any;
                     const isSelectAll = (typeof option === 'string' ? option : option.label) === 'Select All';
                     const allSelected = (watch('subject') || []).length === subjectOptions.length && subjectOptions.length > 0;
                     return (
-                      <li {...props}>
+                      <li key={key} {...rest}>
                         <Checkbox
                           icon={icon}
                           checkedIcon={checkedIcon}
@@ -681,11 +696,11 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                     ))
                   }
                   renderInput={(params) => (
-                    <TextField 
-                      {...params} 
-                      label="Subjects" 
-                      error={!!errors.subject} 
-                      helperText={errors.subject?.message as string} 
+                    <TextField
+                      {...params}
+                      label="Subjects"
+                      error={!!errors.subject}
+                      helperText={errors.subject?.message as string}
                     />
                   )}
                 />
@@ -718,22 +733,22 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             <Box mt={3}>
               <Typography variant="subtitle1" gutterBottom>Students Details</Typography>
               {fields.map((field, index) => (
-                 <GroupStudentRow 
-                   key={field.id}
-                   index={index}
-                   control={control}
-                   register={register}
-                   setValue={setValue}
-                   watch={watch}
-                   errors={errors}
-                   remove={remove}
-                   numberOfStudents={numberOfStudents}
-                 />
+                <GroupStudentRow
+                  key={field.id}
+                  index={index}
+                  control={control}
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                  errors={errors}
+                  remove={remove}
+                  numberOfStudents={numberOfStudents}
+                />
               ))}
               <Button variant="outlined" startIcon={<AddIcon />} onClick={() => {
-                  append({ name: '', gender: 'M', fees: 0, tutorFees: 0 });
-                  setValue('numberOfStudents', (numberOfStudents || 0) + 1);
-                }}
+                append({ name: '', gender: 'M', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' });
+                setValue('numberOfStudents', (numberOfStudents || 0) + 1);
+              }}
                 disabled={(numberOfStudents || 0) >= 10}>
                 Add Student (Max 10)
               </Button>
@@ -767,47 +782,164 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             <Typography variant="h6">Class Requirements</Typography>
           </Box>
           <Grid container spacing={2}>
-             <Grid item xs={12} md={6}>
-                <FormControl component="fieldset">
-                  <FormLabel component="legend" sx={{ mb: 1, fontSize: '0.875rem' }}>Teaching Mode</FormLabel>
-                  <RadioGroup row value={mode} onChange={(_, v) => setValue('mode', v as any, { shouldValidate: true })}>
-                    {Object.values(TEACHING_MODE).map((m) => (
-                      <FormControlLabel key={m} value={m} control={<Radio size="small" />} label={<Typography variant="body2">{m}</Typography>} />
-                    ))}
-                  </RadioGroup>
-                </FormControl>
-             </Grid>
-             <Grid item xs={12} md={6}>
-               <TextField 
-                 label="Preferred Timing" 
-                 placeholder="e.g., Weekdays 5-7 PM" 
-                 fullWidth 
-                 {...register('timing')} 
-                 error={!!errors.timing} 
-                 helperText={errors.timing?.message} 
-               />
-             </Grid>
-             <Grid item xs={12} md={6}>
-                <TextField
-                  label="Classes per Month"
-                  type="number"
-                  fullWidth
-                  {...register('classesPerMonth', { valueAsNumber: true })}
-                  error={!!errors.classesPerMonth}
-                  helperText={errors.classesPerMonth?.message}
-                />
-             </Grid>
-             <Grid item xs={12} md={6}>
-                <TextField
-                  label="Class Duration (hours)"
-                  type="number"
-                  fullWidth
-                  {...register('classDurationHours', { valueAsNumber: true })}
-                  inputProps={{ step: 0.5 }}
-                  error={!!errors.classDurationHours}
-                  helperText={errors.classDurationHours?.message}
-                />
-             </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl component="fieldset">
+                <FormLabel component="legend" sx={{ mb: 1, fontSize: '0.875rem' }}>Teaching Mode</FormLabel>
+                <RadioGroup row value={mode} onChange={(_, v) => setValue('mode', v as any, { shouldValidate: true })}>
+                  {Object.values(TEACHING_MODE).map((m) => (
+                    <FormControlLabel key={m} value={m} control={<Radio size="small" />} label={<Typography variant="body2">{m}</Typography>} />
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>Preferred Timing</Typography>
+
+                {/* Days of Week Selection */}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" color="textSecondary" display="block" mb={1}>Days</Typography>
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
+                      const currentTiming = watch('timing') || '';
+                      const isSelected = currentTiming.includes(day);
+                      return (
+                        <Chip
+                          key={day}
+                          label={day}
+                          size="small"
+                          color={isSelected ? "primary" : "default"}
+                          variant={isSelected ? "filled" : "outlined"}
+                          onClick={() => {
+                            const parts = currentTiming.split(' ');
+                            let timePartidx = -1;
+                            for (let i = 0; i < parts.length; i++) {
+                              if (parts[i].includes(':') || parts[i].match(/\d/)) {
+                                timePartidx = i;
+                                break;
+                              }
+                            }
+
+                            let daysPart = timePartidx > 0 ? parts.slice(0, timePartidx).join(' ').replace(/,/g, '').split(' ').filter(Boolean) : [];
+                            // Handle case where entire string is just days (no time yet)
+                            if (timePartidx === -1 && currentTiming.trim().length > 0 && !currentTiming.match(/\d/)) {
+                              daysPart = currentTiming.replace(/,/g, '').split(' ').filter(Boolean);
+                            }
+
+                            const timeString = timePartidx >= 0 ? parts.slice(timePartidx).join(' ') : '';
+
+                            if (isSelected) {
+                              daysPart = daysPart.filter(d => d !== day);
+                            } else {
+                              if (!daysPart.includes(day)) daysPart.push(day);
+                              const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                              daysPart.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                            }
+
+                            const newTiming = daysPart.length > 0
+                              ? `${daysPart.join(', ')} ${timeString}`.trim()
+                              : timeString;
+
+                            setValue('timing', newTiming, { shouldValidate: true });
+                          }}
+                          clickable
+                        />
+                      );
+                    })}
+                  </Box>
+                </Box>
+
+                {/* Time Selection */}
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Start Time"
+                      type="time"
+                      fullWidth
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ step: 300 }} // 5 min
+                      defaultValue=""
+                      onChange={(e) => {
+                        const val = e.target.value; // "14:30"
+                        if (!val) return;
+
+                        const [hStr, mStr] = val.split(':');
+                        let h = parseInt(hStr);
+                        const m = parseInt(mStr);
+
+                        // Calculate End Time based on duration
+                        const duration = watch('classDurationHours') || 1;
+                        const startDate = new Date();
+                        startDate.setHours(h, m, 0);
+                        const endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
+
+                        // Format Strings
+                        const formatTime = (date: Date) => {
+                          let hours = date.getHours();
+                          const minutes = date.getMinutes();
+                          const ampm = hours >= 12 ? 'PM' : 'AM';
+                          hours = hours % 12;
+                          hours = hours ? hours : 12; // the hour '0' should be '12'
+                          const strTime = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
+                          return strTime;
+                        };
+
+                        const startTimeStr = formatTime(startDate);
+                        const endTimeStr = formatTime(endDate);
+                        const timeRange = `${startTimeStr} - ${endTimeStr}`;
+
+                        // Merge with existing days
+                        const currentTiming = watch('timing') || '';
+                        const parts = currentTiming.split(' ');
+                        let timePartidx = -1;
+                        for (let i = 0; i < parts.length; i++) {
+                          if (parts[i].includes(':') || parts[i].match(/\d/)) {
+                            timePartidx = i;
+                            break;
+                          }
+                        }
+
+                        // robustly extract days
+                        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                        const existingDays = days.filter(d => currentTiming.includes(d));
+
+                        const newTiming = existingDays.length > 0
+                          ? `${existingDays.join(', ')} ${timeRange}`
+                          : timeRange;
+
+                        setValue('timing', newTiming, { shouldValidate: true });
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                  * End time calculated from Duration ({watch('classDurationHours') || 1} hr) based on selected Start Time
+                </Typography>
+                {errors.timing && <Typography variant="caption" color="error">{errors.timing.message}</Typography>}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Classes per Month"
+                type="number"
+                fullWidth
+                {...register('classesPerMonth', { valueAsNumber: true })}
+                error={!!errors.classesPerMonth}
+                helperText={errors.classesPerMonth?.message}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Class Duration (hours)"
+                type="number"
+                fullWidth
+                {...register('classDurationHours', { valueAsNumber: true })}
+                inputProps={{ step: 0.5 }}
+                error={!!errors.classDurationHours}
+                helperText={errors.classDurationHours?.message}
+              />
+            </Grid>
           </Grid>
         </CardContent>
       </Card>
@@ -822,9 +954,9 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             </Box>
             <Grid container spacing={2}>
               {mode === TEACHING_MODE.HYBRID && (
-                 <Grid item xs={12}>
-                   <TextField label="Location" fullWidth {...register('location')} error={!!errors.location} helperText={errors.location?.toString()} />
-                 </Grid>
+                <Grid item xs={12}>
+                  <TextField label="Location" fullWidth {...register('location')} error={!!errors.location} helperText={errors.location?.toString()} />
+                </Grid>
               )}
               {mode === TEACHING_MODE.OFFLINE && (
                 <>
@@ -844,7 +976,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                     </TextField>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                     <Autocomplete
+                    <Autocomplete
                       options={selectedCity ? areaLabels : []}
                       value={watch('area') || ''}
                       onChange={(_, value) => setValue('area', value || '', { shouldValidate: true })}
@@ -881,28 +1013,28 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
               <Typography variant="h6">Financials</Typography>
             </Box>
             <Grid container spacing={2}>
-               <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Student Fees"
-                    type="number"
-                    fullWidth
-                    {...register('paymentAmount', { valueAsNumber: true })}
-                    error={!!errors.paymentAmount}
-                    helperText={errors.paymentAmount?.message}
-                    InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
-                  />
-               </Grid>
-               <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Tutor Payout"
-                    type="number"
-                    fullWidth
-                    {...register('tutorFees', { valueAsNumber: true })}
-                    error={!!errors.tutorFees}
-                    helperText={errors.tutorFees?.message}
-                    InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
-                  />
-               </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Student Fees"
+                  type="number"
+                  fullWidth
+                  {...register('paymentAmount', { valueAsNumber: true })}
+                  error={!!errors.paymentAmount}
+                  helperText={errors.paymentAmount?.message}
+                  InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Tutor Payout"
+                  type="number"
+                  fullWidth
+                  {...register('tutorFees', { valueAsNumber: true })}
+                  error={!!errors.tutorFees}
+                  helperText={errors.tutorFees?.message}
+                  InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
+                />
+              </Grid>
             </Grid>
           </CardContent>
         </Card>
@@ -910,93 +1042,93 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
       {/* 7. Contact Information */}
       <Card variant="outlined">
-         <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-               <ContactPhoneIcon color="primary" />
-               <Typography variant="h6">Contact Information</Typography>
-            </Box>
-            <Grid container spacing={2}>
-               <Grid item xs={12} md={4}>
-                  <TextField 
-                    label={studentType === 'SINGLE' ? "Parent Name" : "Primary Name"} 
-                    fullWidth 
-                    {...register('parentName')} 
-                    error={!!errors.parentName} 
-                    helperText={errors.parentName?.message} 
-                  />
-               </Grid>
-               <Grid item xs={12} md={4}>
-                  <TextField 
-                    label="Email" 
-                    type="email" 
-                    fullWidth 
-                    {...register('parentEmail')} 
-                    error={!!errors.parentEmail} 
-                    helperText={errors.parentEmail?.message} 
-                  />
-               </Grid>
-               <Grid item xs={12} md={4}>
-                  <TextField 
-                    label="Phone" 
-                    fullWidth 
-                    {...register('parentPhone')} 
-                    error={!!errors.parentPhone} 
-                    helperText={errors.parentPhone?.message} 
-                  />
-               </Grid>
+        <CardContent>
+          <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <ContactPhoneIcon color="primary" />
+            <Typography variant="h6">Contact Information</Typography>
+          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label={studentType === 'SINGLE' ? "Parent Name" : "Primary Name"}
+                fullWidth
+                {...register('parentName')}
+                error={!!errors.parentName}
+                helperText={errors.parentName?.message}
+              />
             </Grid>
-         </CardContent>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Email"
+                type="email"
+                fullWidth
+                {...register('parentEmail')}
+                error={!!errors.parentEmail}
+                helperText={errors.parentEmail?.message}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Phone"
+                fullWidth
+                {...register('parentPhone')}
+                error={!!errors.parentPhone}
+                helperText={errors.parentPhone?.message}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
       </Card>
 
       {/* 8. Additional Info */}
       <Card variant="outlined">
-         <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-               <NoteIcon color="primary" />
-               <Typography variant="h6">Additional Information</Typography>
-            </Box>
-            <Grid container spacing={2}>
-               <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Lead Source"
-                    fullWidth
-                    defaultValue={defaultValues.leadSource || ''}
-                    {...register('leadSource')}
-                  >
-                    <MenuItem value="">Select source</MenuItem>
-                    <MenuItem value="GOOGLE_PROFILE">Google profile</MenuItem>
-                    <MenuItem value="WHATSAPP">WhatsApp</MenuItem>
-                    <MenuItem value="REFERRED">Referred</MenuItem>
-                    <MenuItem value="OTHER">Other</MenuItem>
-                  </TextField>
-               </Grid>
-               <Grid item xs={12} md={6}>
-                  <TextField
-                    select
-                    label="Preferred Tutor Gender"
-                    fullWidth
-                    defaultValue={(initialData as any)?.preferredTutorGender || ''}
-                    {...register('preferredTutorGender')}
-                  >
-                    <MenuItem value="">No preference</MenuItem>
-                    <MenuItem value="MALE">Male</MenuItem>
-                    <MenuItem value="FEMALE">Female</MenuItem>
-                  </TextField>
-               </Grid>
-               <Grid item xs={12}>
-                  <TextField 
-                    label="Internal Notes / Remarks" 
-                    multiline 
-                    rows={3} 
-                    fullWidth 
-                    {...register('notes')} 
-                    error={!!errors.notes} 
-                    helperText={errors.notes?.message} 
-                  />
-               </Grid>
+        <CardContent>
+          <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <NoteIcon color="primary" />
+            <Typography variant="h6">Additional Information</Typography>
+          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Lead Source"
+                fullWidth
+                defaultValue={defaultValues.leadSource || ''}
+                {...register('leadSource')}
+              >
+                <MenuItem value="">Select source</MenuItem>
+                <MenuItem value="GOOGLE_PROFILE">Google profile</MenuItem>
+                <MenuItem value="WHATSAPP">WhatsApp</MenuItem>
+                <MenuItem value="REFERRED">Referred</MenuItem>
+                <MenuItem value="OTHER">Other</MenuItem>
+              </TextField>
             </Grid>
-         </CardContent>
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Preferred Tutor Gender"
+                fullWidth
+                defaultValue={(initialData as any)?.preferredTutorGender || ''}
+                {...register('preferredTutorGender')}
+              >
+                <MenuItem value="">No preference</MenuItem>
+                <MenuItem value="MALE">Male</MenuItem>
+                <MenuItem value="FEMALE">Female</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Internal Notes / Remarks"
+                multiline
+                rows={3}
+                fullWidth
+                {...register('notes')}
+                error={!!errors.notes}
+                helperText={errors.notes?.message}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
       </Card>
 
       {error && <ErrorAlert error={error} />}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Box, Typography, alpha } from '@mui/material';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider, Box, Typography, alpha, Tooltip } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION_ITEMS, USER_ROLES, VERIFICATION_STATUS } from '../../constants';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -121,41 +121,41 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
   };
 
   const drawer = (
-    <Box sx={{ 
-      width: drawerWidth, 
-      height: '100%', 
+    <Box sx={{
+      width: drawerWidth,
+      height: '100%',
       maxHeight: '100vh',
-      display: 'flex', 
-      flexDirection: 'column', 
+      display: 'flex',
+      flexDirection: 'column',
       overflowX: 'hidden',
       position: 'relative'
     }}>
-      <Box 
-        sx={{ 
-          p: isCollapsed ? 1 : { xs: 2, sm: 2.5, md: 3 }, 
-          display: 'flex', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          p: isCollapsed ? 1 : { xs: 2, sm: 2.5, md: 3 },
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'flex-start',
           gap: { xs: 1, sm: 1.5 },
           borderBottom: '1px solid #E2E8F0',
           minHeight: { xs: 56, sm: 64, md: 70 },
         }}
       >
-        <Box 
-          component="img" 
-          src="/1.jpg" 
-          alt="Logo" 
-          sx={{ 
-            height: { xs: 32, sm: 36 }, 
-            width: { xs: 32, sm: 36 }, 
+        <Box
+          component="img"
+          src="/1.jpg"
+          alt="Logo"
+          sx={{
+            height: { xs: 32, sm: 36 },
+            width: { xs: 32, sm: 36 },
             borderRadius: '50%',
             border: '2px solid #E2E8F0',
-          }} 
+          }}
         />
         <Box sx={{ minWidth: 0, flex: 1, display: isCollapsed ? 'none' : 'block' }}>
-          <Typography 
-            variant="h6" 
-            sx={{ 
+          <Typography
+            variant="h6"
+            sx={{
               color: 'primary.main',
               fontWeight: 700,
               fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
@@ -167,9 +167,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           >
             Your Shikshak
           </Typography>
-          <Typography 
-            variant="caption" 
-            sx={{ 
+          <Typography
+            variant="caption"
+            sx={{
               color: 'text.secondary',
               fontSize: { xs: '0.65rem', sm: '0.7rem' },
               display: 'block',
@@ -205,79 +205,90 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           const selected = location.pathname === resolvedPath || location.pathname.startsWith(resolvedPath + '/');
           const isUnverifiedManager = userRole === USER_ROLES.MANAGER && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED;
           const isItemDisabled = isUnverifiedManager && !['Dashboard', 'Profile', 'My Profile'].includes(item.label);
-          
+
           return (
             <ListItem key={item.path} disablePadding sx={{ mb: { xs: 0.25, sm: 0.5 }, display: 'block' }}>
-              <ListItemButton 
-                selected={selected} 
-                disabled={isItemDisabled}
-                onClick={() => !isItemDisabled && handleNavigation(resolvedPath)}
-                sx={{
-                  borderRadius: { xs: '8px', sm: '10px' },
-                  mx: { xs: 0.5, sm: 1 },
-                  py: { xs: 1, sm: 1.25 },
-                  px: { xs: 1, sm: 1.5 },
-                  transition: 'all 0.2s ease-in-out',
-                  opacity: isItemDisabled ? 0.5 : 1,
-                  filter: isItemDisabled ? 'grayscale(1)' : 'none',
-                  '&.Mui-disabled': {
-                    cursor: 'not-allowed',
-                    pointerEvents: 'none',
-                    backgroundColor: isItemDisabled ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
-                  },
-                  '&.Mui-selected': {
-                    backgroundColor: alpha('#0F62FE', 0.08),
-                    color: 'primary.main',
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: alpha('#0F62FE', 0.12),
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'primary.main',
-                    },
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      width: '4px',
-                      height: '60%',
-                      backgroundColor: 'primary.main',
-                      borderRadius: '0 4px 4px 0',
-                    },
-                  },
-                  '&:hover': {
-                    backgroundColor: '#F8FAFC',
-                  },
-                }}
+              <Tooltip
+                title={
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{item.label}</Typography>
+                    <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>{(item as any).description}</Typography>
+                  </Box>
+                }
+                placement="right"
+                arrow
               >
-                <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 2, justifyContent: 'center' }}>
-                  {iconForLabel(item.label)}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.label}
-                  sx={{ opacity: isCollapsed ? 0 : 1 }}
-                  primaryTypographyProps={{
-                    fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                    fontWeight: selected ? 600 : 500,
-                    noWrap: true,
+                <ListItemButton
+                  selected={selected}
+                  disabled={isItemDisabled}
+                  onClick={() => !isItemDisabled && handleNavigation(resolvedPath)}
+                  sx={{
+                    borderRadius: { xs: '8px', sm: '10px' },
+                    mx: { xs: 0.5, sm: 1 },
+                    py: { xs: 1, sm: 1.25 },
+                    px: { xs: 1, sm: 1.5 },
+                    transition: 'all 0.2s ease-in-out',
+                    opacity: isItemDisabled ? 0.5 : 1,
+                    filter: isItemDisabled ? 'grayscale(1)' : 'none',
+                    '&.Mui-disabled': {
+                      cursor: 'not-allowed',
+                      pointerEvents: 'none',
+                      backgroundColor: isItemDisabled ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
+                    },
+                    '&.Mui-selected': {
+                      backgroundColor: alpha('#0F62FE', 0.08),
+                      color: 'primary.main',
+                      fontWeight: 600,
+                      '&:hover': {
+                        backgroundColor: alpha('#0F62FE', 0.12),
+                      },
+                      '& .MuiListItemIcon-root': {
+                        color: 'primary.main',
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        left: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '4px',
+                        height: '60%',
+                        backgroundColor: 'primary.main',
+                        borderRadius: '0 4px 4px 0',
+                      },
+                    },
+                    '&:hover': {
+                      backgroundColor: '#F8FAFC',
+                    },
                   }}
-                />
-              </ListItemButton>
+                >
+                  <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 2, justifyContent: 'center' }}>
+                    {iconForLabel(item.label)}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    sx={{ opacity: isCollapsed ? 0 : 1 }}
+                    primaryTypographyProps={{
+                      fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+                      fontWeight: selected ? 600 : 500,
+                      noWrap: true,
+                    }}
+                  />
+                </ListItemButton>
+              </Tooltip>
             </ListItem>
           );
         })}
       </List>
 
       <Divider />
-      
+
       <Box sx={{ p: { xs: 1.5, sm: 2 }, display: isCollapsed ? 'none' : 'block' }}>
-        <Typography 
-          variant="caption" 
-          color="text.secondary" 
-          sx={{ 
-            display: 'block', 
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            display: 'block',
             textAlign: 'center',
             fontSize: { xs: '0.65rem', sm: '0.75rem' },
           }}
@@ -312,7 +323,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
         open={open}
         onClose={onClose}
         ModalProps={{ keepMounted: true }}
-        sx={{ 
+        sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
             width: drawerWidth,
@@ -326,10 +337,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
       <Drawer
         variant="permanent"
         open
-        sx={{ 
-          display: { xs: 'none', md: 'block' }, 
-          '& .MuiDrawer-paper': { 
-            width: drawerWidth, 
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
             boxSizing: 'border-box',
             borderRight: '1px solid #E2E8F0',
             overflowX: 'hidden',

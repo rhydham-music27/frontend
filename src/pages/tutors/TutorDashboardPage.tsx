@@ -18,7 +18,6 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import TutorDashboardKpiRow from "../../components/tutors/TutorDashboardKpiRow";
 import TutorAdvancedAnalyticsCards from "../../components/tutors/TutorAdvancedAnalyticsCards";
-import PerformanceCharts from "../../components/tutors/PerformanceCharts";
 import TodayScheduleCard from "../../components/tutors/TodayScheduleCard";
 import UpcomingTestsCard from "../../components/tutors/UpcomingTestsCard";
 import ActiveClassesOverviewCard from "../../components/tutors/ActiveClassesOverviewCard";
@@ -99,11 +98,11 @@ const TutorDashboardPage: React.FC = () => {
     if (!tutorProfile?.id) return;
     try {
       if (data.method === 'PAY_NOW') {
-         await updateVerificationFeeStatus(tutorProfile.id, 'PAID', data.file, new Date());
-         toast.success('Verification proof submitted successfully! Please wait for admin approval.');
+        await updateVerificationFeeStatus(tutorProfile.id, 'PAID', data.file, new Date());
+        toast.success('Verification proof submitted successfully! Please wait for admin approval.');
       } else {
-         await updateVerificationFeeStatus(tutorProfile.id, 'DEDUCT_FROM_FIRST_MONTH');
-         toast.success('Verification method updated. Fee will be deducted from your first payout.');
+        await updateVerificationFeeStatus(tutorProfile.id, 'DEDUCT_FROM_FIRST_MONTH');
+        toast.success('Verification method updated. Fee will be deducted from your first payout.');
       }
       // Refresh profile
       const resp = await getMyProfile();
@@ -149,7 +148,7 @@ const TutorDashboardPage: React.FC = () => {
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ 
+            sx={{
               fontSize: { xs: "0.875rem", sm: "1rem" },
               lineHeight: 1.6,
               maxWidth: { xs: '100%', sm: '600px' }
@@ -193,47 +192,30 @@ const TutorDashboardPage: React.FC = () => {
         {!loading && !error && (
           <>
             {showVerificationBanner && (
-               <Card sx={{ mb: 4, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-                 <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
-                   <Box>
-                     <Typography variant="h6" fontWeight={700} display="flex" alignItems="center" gap={1}>
-                       <VerifiedUserIcon /> Complete Your Verification
-                     </Typography>
-                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                       Pay the one-time verification fee to activate your profile and start receiving class leads.
-                     </Typography>
-                   </Box>
-                   <Button 
-                      variant="contained" 
-                      color="secondary" 
-                      onClick={() => setShowVerificationFeeModal(true)}
-                      sx={{ fontWeight: 700 }}
-                   >
-                     Pay Verification Fee
-                   </Button>
-                 </CardContent>
-               </Card>
+              <Card sx={{ mb: 4, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                  <Box>
+                    <Typography variant="h6" fontWeight={700} display="flex" alignItems="center" gap={1}>
+                      <VerifiedUserIcon /> Complete Your Verification
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Pay the one-time verification fee to activate your profile and start receiving class leads.
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => setShowVerificationFeeModal(true)}
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Pay Verification Fee
+                  </Button>
+                </CardContent>
+              </Card>
             )}
 
             <TutorDashboardKpiRow />
             <TutorAdvancedAnalyticsCards />
-            <Box mb={4}>
-              <PerformanceCharts 
-                improvementData={[
-                  { date: 'Jan 01', score: 65 },
-                  { date: 'Jan 07', score: 68 },
-                  { date: 'Jan 14', score: 72 },
-                  { date: 'Jan 21', score: 75 },
-                  { date: 'Jan 28', score: 82 },
-                ]}
-                swotData={{
-                  strengths: ['Punctual', 'Clear concepts'],
-                  weaknesses: ['Late reports'],
-                  opportunities: ['New grade class'],
-                  threats: ['Student busy with sports'],
-                }}
-              />
-            </Box>
           </>
         )}
         <Box mb={{ xs: 3, sm: 4 }}>
@@ -330,8 +312,8 @@ const TutorDashboardPage: React.FC = () => {
       )}
 
       {/* Verification Fee Modal */}
-      <VerificationFeeModal 
-        open={showVerificationFeeModal} 
+      <VerificationFeeModal
+        open={showVerificationFeeModal}
         onClose={() => setShowVerificationFeeModal(false)}
         onSubmit={handleVerificationFeeSubmit}
       />
