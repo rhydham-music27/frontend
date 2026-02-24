@@ -141,6 +141,10 @@ export default function ClassLeadDetailPage() {
 
   const handleApproveDemoWithCoordinator = async () => {
     if (!id) return;
+    if (!selectedCoordinatorId) {
+      setSnack({ open: true, message: 'Coordinator is required to convert to final class', severity: 'error' });
+      return;
+    }
     setApprovingDemo(true);
     try {
       await demoService.updateDemoStatus(id as string, DEMO_STATUS.APPROVED, undefined, undefined, selectedCoordinatorId);
@@ -340,11 +344,6 @@ export default function ClassLeadDetailPage() {
                     <Typography><strong>Class Duration (hours):</strong> {(classLead as any).classDurationHours}</Typography>
                   </Grid>
                 )}
-                {(classLead as any).paymentAmount != null && (
-                  <Grid item xs={12} sm={6}>
-                    <Typography><strong>Fees:</strong> {(classLead as any).paymentAmount}</Typography>
-                  </Grid>
-                )}
                 {(classLead as any).preferredTutorGender && (
                   <Grid item xs={12} sm={6}>
                     <Typography>
@@ -375,60 +374,68 @@ export default function ClassLeadDetailPage() {
                 </Grid>
 
                 {/* Group student details */}
-                {(classLead as any).studentType === 'GROUP' && (classLead as any).studentDetails && (classLead as any).studentDetails.length > 0 && (
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><strong>Student Details</strong></Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {(classLead as any).studentDetails.map((student: any, index: number) => (
-                        <Box key={index} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Student {index + 1}: {student.name}
-                          </Typography>
+                {(classLead as any).studentType === 'GROUP' && (() => {
+                  const details = (classLead as any).studentDetails?.length > 0
+                    ? (classLead as any).studentDetails
+                    : (classLead as any).groupClass?.students;
+
+                  if (!details || details.length === 0) return null;
+
+                  return (
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}><strong>Student Details</strong></Typography>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {details.map((student: any, index: number) => (
+                          <Box key={index} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                            <Typography variant="subtitle2" gutterBottom>
+                              Student {index + 1}: {student.name}
+                            </Typography>
+                            <Grid container spacing={1}>
+                              <Grid item xs={12} sm={4}>
+                                <Typography variant="body2">
+                                  <strong>Fees:</strong> ₹{student.fees || 0}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={12} sm={4}>
+                                <Typography variant="body2">
+                                  <strong>Tutor Fees:</strong> ₹{student.tutorFees || 0}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={12} sm={4}>
+                                <Typography variant="body2">
+                                  <strong>Service Charge:</strong> ₹{(student.fees || 0) - (student.tutorFees || 0)}
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                          </Box>
+                        ))}
+                        <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+                          <Typography variant="subtitle2" gutterBottom><strong>Total Summary</strong></Typography>
                           <Grid container spacing={1}>
                             <Grid item xs={12} sm={4}>
                               <Typography variant="body2">
-                                <strong>Fees:</strong> ₹{student.fees || 0}
+                                <strong>Total Fees:</strong> ₹{details.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0}
                               </Typography>
                             </Grid>
                             <Grid item xs={12} sm={4}>
                               <Typography variant="body2">
-                                <strong>Tutor Fees:</strong> ₹{student.tutorFees || 0}
+                                <strong>Total Tutor Fees:</strong> ₹{details.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0}
                               </Typography>
                             </Grid>
                             <Grid item xs={12} sm={4}>
                               <Typography variant="body2">
-                                <strong>Service Charge:</strong> ₹{(student.fees || 0) - (student.tutorFees || 0)}
+                                <strong>Total Service Charge:</strong> ₹{
+                                  (details.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0) -
+                                  (details.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0)
+                                }
                               </Typography>
                             </Grid>
                           </Grid>
                         </Box>
-                      ))}
-                      <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                        <Typography variant="subtitle2" gutterBottom><strong>Total Summary</strong></Typography>
-                        <Grid container spacing={1}>
-                          <Grid item xs={12} sm={4}>
-                            <Typography variant="body2">
-                              <strong>Total Fees:</strong> ₹{(classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={12} sm={4}>
-                            <Typography variant="body2">
-                              <strong>Total Tutor Fees:</strong> ₹{(classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={12} sm={4}>
-                            <Typography variant="body2">
-                              <strong>Total Service Charge:</strong> ₹{
-                                ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.fees || 0), 0) || 0) -
-                                ((classLead as any).studentDetails?.reduce((sum: number, s: any) => sum + (s.tutorFees || 0), 0) || 0)
-                              }
-                            </Typography>
-                          </Grid>
-                        </Grid>
                       </Box>
-                    </Box>
-                  </Grid>
-                )}
+                    </Grid>
+                  );
+                })()}
 
                 {/* Single student fees */}
                 {(classLead as any).studentType === 'SINGLE' && (classLead as any).paymentAmount != null && (
@@ -581,16 +588,15 @@ export default function ClassLeadDetailPage() {
       >
         <Typography variant="subtitle1" fontWeight={700} mb={2}>Approve Demo & Convert to Final Class</Typography>
         <Typography variant="body2" color="text.secondary" mb={2}>
-          Optionally assign a coordinator to manage this class:
+          Select a coordinator to manage this class:
         </Typography>
         <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-          <InputLabel>Assign Coordinator (Optional)</InputLabel>
+          <InputLabel>Assign Coordinator</InputLabel>
           <Select
             value={selectedCoordinatorId}
-            label="Assign Coordinator (Optional)"
+            label="Assign Coordinator"
             onChange={(e) => setSelectedCoordinatorId(e.target.value)}
           >
-            <MenuItem value="">None</MenuItem>
             {coordinators.map((coord) => (
               <MenuItem key={coord.id} value={coord.id}>
                 {coord.name}
@@ -609,7 +615,7 @@ export default function ClassLeadDetailPage() {
           <Button
             variant="contained"
             onClick={handleApproveDemoWithCoordinator}
-            disabled={approvingDemo}
+            disabled={approvingDemo || !selectedCoordinatorId}
           >
             {approvingDemo ? 'Processing...' : 'Approve & Convert'}
           </Button>

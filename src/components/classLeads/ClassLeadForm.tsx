@@ -62,7 +62,7 @@ const schema = yup.object({
   }),
   board: yup.string().when('studentType', {
     is: 'SINGLE',
-    then: (schema) => schema.oneOf(Object.values(BOARD_TYPE)).required(),
+    then: (schema) => schema.required('Board is required'),
     otherwise: (schema) => schema.optional()
   }),
   mode: yup.string().oneOf(Object.values(TEACHING_MODE)).required(),
@@ -137,6 +137,7 @@ const schema = yup.object({
   }),
   leadSource: yup.string().optional(),
   timing: yup.string().required().min(2).max(100),
+  weekdays: yup.array().of(yup.string()).optional(),
   notes: yup.string().max(500).optional(),
 });
 
@@ -373,6 +374,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       area: (initialData as any)?.area || '',
       address: (initialData as any)?.address || '',
       timing: initialData?.timing || '',
+      weekdays: (initialData as any)?.weekdays || [],
       paymentAmount: initialStudentType === 'SINGLE' ? ((initialData as any)?.paymentAmount ?? undefined) : undefined,
       tutorFees: initialStudentType === 'SINGLE' ? ((initialData as any)?.tutorFees ?? undefined) : undefined,
       classesPerMonth: (initialData as any)?.classesPerMonth ?? undefined,
@@ -380,9 +382,11 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       leadSource: (initialData as any)?.leadSource || '',
       notes: (initialData as any)?.notes || '',
       numberOfStudents: (initialData as any)?.numberOfStudents ?? 1,
-      studentDetails: (initialData as any)?.studentDetails || [
-        { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' }
-      ],
+      studentDetails: (initialData as any)?.studentDetails?.length > 0
+        ? (initialData as any).studentDetails
+        : (initialData as any)?.groupClass?.students || [
+          { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' }
+        ],
     };
   }, [initialData]);
 
@@ -577,7 +581,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                     setValue('subject', [], { shouldValidate: true });
                   }}
                   error={!!errors.board}
-                  helperText={errors.board?.toString()}
+                  helperText={errors.board?.message}
                 >
                   {boardOptions.length > 0 ? (
                     boardOptions.map((b) => (
@@ -800,47 +804,29 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" color="textSecondary" display="block" mb={1}>Days</Typography>
                   <Box display="flex" flexWrap="wrap" gap={1}>
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => {
-                      const currentTiming = watch('timing') || '';
-                      const isSelected = currentTiming.includes(day);
+                    {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map((day) => {
+                      const currentWeekdays = watch('weekdays') || [];
+                      const isSelected = currentWeekdays.includes(day);
+                      // Display label in Title Case for better UI
+                      const displayLabel = day.charAt(0) + day.slice(1).toLowerCase().substring(0, 2);
                       return (
                         <Chip
                           key={day}
-                          label={day}
+                          label={displayLabel}
                           size="small"
                           color={isSelected ? "primary" : "default"}
                           variant={isSelected ? "filled" : "outlined"}
                           onClick={() => {
-                            const parts = currentTiming.split(' ');
-                            let timePartidx = -1;
-                            for (let i = 0; i < parts.length; i++) {
-                              if (parts[i].includes(':') || parts[i].match(/\d/)) {
-                                timePartidx = i;
-                                break;
-                              }
-                            }
-
-                            let daysPart = timePartidx > 0 ? parts.slice(0, timePartidx).join(' ').replace(/,/g, '').split(' ').filter(Boolean) : [];
-                            // Handle case where entire string is just days (no time yet)
-                            if (timePartidx === -1 && currentTiming.trim().length > 0 && !currentTiming.match(/\d/)) {
-                              daysPart = currentTiming.replace(/,/g, '').split(' ').filter(Boolean);
-                            }
-
-                            const timeString = timePartidx >= 0 ? parts.slice(timePartidx).join(' ') : '';
-
+                            let newWeekdays = [...currentWeekdays];
                             if (isSelected) {
-                              daysPart = daysPart.filter(d => d !== day);
+                              newWeekdays = newWeekdays.filter(d => d !== day);
                             } else {
-                              if (!daysPart.includes(day)) daysPart.push(day);
-                              const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                              daysPart.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                              newWeekdays.push(day);
+                              // Sort by day order
+                              const dayOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+                              newWeekdays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
                             }
-
-                            const newTiming = daysPart.length > 0
-                              ? `${daysPart.join(', ')} ${timeString}`.trim()
-                              : timeString;
-
-                            setValue('timing', newTiming, { shouldValidate: true });
+                            setValue('weekdays', newWeekdays, { shouldValidate: true });
                           }}
                           clickable
                         />
@@ -889,26 +875,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                         const endTimeStr = formatTime(endDate);
                         const timeRange = `${startTimeStr} - ${endTimeStr}`;
 
-                        // Merge with existing days
-                        const currentTiming = watch('timing') || '';
-                        const parts = currentTiming.split(' ');
-                        let timePartidx = -1;
-                        for (let i = 0; i < parts.length; i++) {
-                          if (parts[i].includes(':') || parts[i].match(/\d/)) {
-                            timePartidx = i;
-                            break;
-                          }
-                        }
-
-                        // robustly extract days
-                        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                        const existingDays = days.filter(d => currentTiming.includes(d));
-
-                        const newTiming = existingDays.length > 0
-                          ? `${existingDays.join(', ')} ${timeRange}`
-                          : timeRange;
-
-                        setValue('timing', newTiming, { shouldValidate: true });
+                        setValue('timing', timeRange, { shouldValidate: true });
                       }}
                     />
                   </Grid>
@@ -955,7 +922,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             <Grid container spacing={2}>
               {mode === TEACHING_MODE.HYBRID && (
                 <Grid item xs={12}>
-                  <TextField label="Location" fullWidth {...register('location')} error={!!errors.location} helperText={errors.location?.toString()} />
+                  <TextField label="Location" fullWidth {...register('location')} error={!!errors.location} helperText={errors.location?.message} />
                 </Grid>
               )}
               {mode === TEACHING_MODE.OFFLINE && (
@@ -968,7 +935,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                       defaultValue={defaultValues.city}
                       {...register('city')}
                       error={!!errors.city}
-                      helperText={errors.city?.toString()}
+                      helperText={errors.city?.message}
                     >
                       {cityLabels.map((c) => (
                         <MenuItem key={c} value={c}>{c}</MenuItem>
@@ -981,7 +948,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                       value={watch('area') || ''}
                       onChange={(_, value) => setValue('area', value || '', { shouldValidate: true })}
                       renderInput={(params) => (
-                        <TextField {...params} label="Area" error={!!errors.area} helperText={errors.area?.toString()} />
+                        <TextField {...params} label="Area" error={!!errors.area} helperText={errors.area?.message} />
                       )}
                       freeSolo={false}
                     />
@@ -994,7 +961,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                       fullWidth
                       {...register('address')}
                       error={!!errors.address}
-                      helperText={errors.address?.toString()}
+                      helperText={errors.address?.message}
                     />
                   </Grid>
                 </>

@@ -38,8 +38,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 const OPTION_TYPES = [
   { value: 'CURRICULUM', label: 'Curriculum (Hierarchy)' },
   { value: 'CITY', label: 'Cities' },
-  { value: 'MODE', label: 'Modes' },
-  { value: 'GENDER', label: 'Genders' },
+  { value: 'EXTRACURRICULAR_ACTIVITY', label: 'Extracurricular Activities' },
 ];
 
 interface SnackbarState {

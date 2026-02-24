@@ -155,8 +155,10 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
       }
     }
 
-    if (!formData.city) newErrors.city = 'Please select a city';
-    if (formData.preferredAreas.length === 0) newErrors.preferredAreas = 'Select at least one area';
+    if (formData.preferredMode === TeachingMode.OFFLINE || formData.preferredMode === TeachingMode.HYBRID) {
+      if (!formData.city) newErrors.city = 'Please select a city';
+      if (formData.preferredAreas.length === 0) newErrors.preferredAreas = 'Select at least one area';
+    }
     if (!formData.preferredMode) newErrors.preferredMode = 'Preferred mode is required';
 
     setErrors(newErrors);
@@ -170,6 +172,14 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
 
   const handleCityChange = (city: string) => {
     setFormData((prev) => ({ ...prev, city, preferredAreas: [] }));
+  };
+
+  const handlePreferredModeChange = (preferredMode: TeachingMode) => {
+    setFormData((prev) => ({
+      ...prev,
+      preferredMode,
+      ...(preferredMode === TeachingMode.ONLINE ? { city: '', preferredAreas: [] } : null),
+    }));
   };
 
   const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
@@ -592,7 +602,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     labelId="mode-label"
                     label="Preferred Mode"
                     value={formData.preferredMode}
-                    onChange={(e) => setFormData(prev => ({ ...prev, preferredMode: e.target.value as any }))}
+                    onChange={(e) => handlePreferredModeChange(e.target.value as TeachingMode)}
                     disabled={isFieldReadOnly(initialData?.preferredMode)}
                     startAdornment={
                       <InputAdornment position="start">

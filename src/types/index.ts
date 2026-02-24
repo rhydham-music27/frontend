@@ -393,6 +393,7 @@ export interface IScheduleTestFormData {
   finalClassId: string;
   testDate: string;
   testTime: string;
+  weekdays?: string[];
   notes?: string;
 }
 

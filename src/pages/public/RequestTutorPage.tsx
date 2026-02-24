@@ -45,7 +45,6 @@ export default function RequestTutorPage() {
   // Fetch root options
   const { options: boardOptions } = useOptions('BOARD');
   const { options: modeOptions } = useOptions('TEACHING_MODE');
-  const { options: genderOptions } = useOptions('GENDER');
   
   // Find board ID to fetch dependent grades
   const selectedBoardOption = boardOptions.find(b => b.value === form.board);
@@ -402,13 +401,9 @@ export default function RequestTutorPage() {
                   size="small"
                 >
                     <MenuItem value="">No preference</MenuItem>
-                    {genderOptions
-                        .filter(opt => opt.value !== 'NO_PREFERENCE') // Already have explicit option above if needed, or mapping
-                        .map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                        </MenuItem>
-                    ))}
+                    <MenuItem value="MALE">Male</MenuItem>
+                    <MenuItem value="FEMALE">Female</MenuItem>
+                    <MenuItem value="OTHER">Other</MenuItem>
                 </TextField>
               </Grid>
 

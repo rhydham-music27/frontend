@@ -58,6 +58,8 @@ export const useAuth = () => {
       email: string, 
       password: string, 
       phone?: string, 
+      city?: string,
+      gender?: 'MALE' | 'FEMALE' | 'OTHER',
       role?: string, 
       skipAuth?: boolean,
       permissions?: {
@@ -68,7 +70,7 @@ export const useAuth = () => {
     ): Promise<boolean> => {
       try {
         dispatch(setLoading(true));
-        const resp = await authService.register(name, email, password, phone, role, skipAuth, permissions);
+        const resp = await authService.register(name, email, password, phone, city, gender, role, skipAuth, permissions);
         
         if (!skipAuth) {
           const { user, accessToken } = resp.data as { user: IUser; accessToken: string };

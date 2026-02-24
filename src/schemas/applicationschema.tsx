@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Gender } from '@/types/enums';
+import { Gender, TeachingMode } from '@/types/enums';
 
 // Tutor Lead Registration Schema
 export const tutorLeadRegistrationSchema = z.object({
@@ -15,18 +15,49 @@ export const tutorLeadRegistrationSchema = z.object({
   subjects: z.array(z.string()).min(1, 'Select at least one subject'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6),
-  city: z.string().min(1, 'Please select a city'),
-  preferredAreas: z.array(z.string()).min(1, 'Select at least one area'),
-  preferredMode: z.string().min(1, 'Select a preferred mode'),
+  city: z.string().optional().default(''),
+  preferredAreas: z.array(z.string()).optional().default([]),
+  preferredMode: z.nativeEnum(TeachingMode),
   permanentAddress: z.string().optional(),
   residentialAddress: z.string().optional(),
   alternatePhone: z.string().optional(),
   bio: z.string().optional(),
   languagesKnown: z.array(z.string()).optional(),
   skills: z.array(z.string()).optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  path: ['confirmPassword'],
-  message: 'Passwords do not match',
+}).superRefine((data, ctx) => {
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['confirmPassword'],
+      message: 'Passwords do not match',
+    });
+  }
+
+  if (!data.preferredMode) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['preferredMode'],
+      message: 'Select a preferred mode',
+    });
+  }
+
+  if (data.preferredMode === TeachingMode.OFFLINE || data.preferredMode === TeachingMode.HYBRID) {
+    if (!data.city || data.city.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['city'],
+        message: 'Please select a city',
+      });
+    }
+
+    if (!data.preferredAreas || data.preferredAreas.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['preferredAreas'],
+        message: 'Select at least one area',
+      });
+    }
+  }
 });
 
 // Home Tutor Registration Schema (profile completion)

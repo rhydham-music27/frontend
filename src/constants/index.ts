@@ -155,7 +155,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Tests', path: '/tutor-tests', allowedRoles: [USER_ROLES.TUTOR], description: 'Schedule and manage student assessments' },
   { label: 'My Leads', path: '/tutor-leads', allowedRoles: [USER_ROLES.TUTOR], description: 'View and manage leads assigned to you' },
   { label: 'Notes', path: '/tutor-notes', allowedRoles: [USER_ROLES.TUTOR], description: 'Personal notes and scratchpad' },
-  { label: "Today's Tasks", path: '/today-tasks', allowedRoles: [USER_ROLES.COORDINATOR], description: 'View your daily tasks and pending actions' },
+
   { label: 'Class Leads', path: '/class-leads', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN], description: 'Manage prospective student leads and inquiries' },
   { label: 'Lead CRM', path: '/manager/leads-crm', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN], description: 'Advanced pipeline for lead management' },
 

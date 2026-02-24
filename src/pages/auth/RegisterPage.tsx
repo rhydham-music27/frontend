@@ -34,6 +34,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WorkIcon from '@mui/icons-material/Work';
 import { USER_ROLES } from '../../constants';
+import { useOptions } from '@/hooks/useOptions';
 // Grid component is used from @mui/material
 
 interface RegisterFormValues {
@@ -42,6 +43,8 @@ interface RegisterFormValues {
   password: string;
   confirmPassword: string;
   phone?: string;
+  city?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
   role: string;
   permissions?: {
     canViewSiteLeads?: boolean;
@@ -59,6 +62,15 @@ const schema = yup.object({
     .oneOf([yup.ref('password')], 'Passwords must match')
     .required('Confirm your password'),
   phone: yup.string().optional(),
+  city: yup
+    .string()
+    .transform((v) => (typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined))
+    .optional(),
+  gender: yup
+    .mixed<'MALE' | 'FEMALE' | 'OTHER'>()
+    .oneOf(['MALE', 'FEMALE', 'OTHER'] as const)
+    .transform((v) => (v ? v : undefined))
+    .optional(),
   role: yup.string().oneOf(Object.values(USER_ROLES) as string[], 'Invalid role').required('Role is required'),
   permissions: yup.object({
     canViewSiteLeads: yup.boolean().optional(),
@@ -71,6 +83,8 @@ const RegisterPage: React.FC = () => {
   const { register: registerUser, loading, error, isAuthenticated, clearError } = useAuth();
   const [searchParams] = useSearchParams();
   const [isRegisteredSuccessfully, setIsRegisteredSuccessfully] = useState(false);
+
+  const { options: cityOptions } = useOptions('CITY');
 
   // Detect if there's a specific role requested (e.g. from Admin Manager page)
   const queryRole = searchParams.get('role')?.toUpperCase();
@@ -104,7 +118,17 @@ const RegisterPage: React.FC = () => {
       }
 
       // If user is already authenticated (Admin), skip auto-login for new user
-      const success = await registerUser(submitData.name, submitData.email, submitData.password, submitData.phone, submitData.role, isAuthenticated, submitData.permissions);
+      const success = await registerUser(
+        submitData.name,
+        submitData.email,
+        submitData.password,
+        submitData.phone,
+        submitData.city,
+        submitData.gender,
+        submitData.role,
+        isAuthenticated,
+        submitData.permissions
+      );
 
       // Only set success if registration succeeded
       if (success) {
@@ -297,6 +321,38 @@ const RegisterPage: React.FC = () => {
                           ),
                         }}
                       />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        select
+                        label="City"
+                        fullWidth
+                        error={!!errors.city}
+                        helperText={errors.city?.message}
+                        {...register('city')}
+                      >
+                        {cityOptions.map((opt) => (
+                          <MenuItem key={opt.value} value={opt.label}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        select
+                        label="Gender"
+                        fullWidth
+                        error={!!errors.gender}
+                        helperText={errors.gender?.message as any}
+                        {...register('gender')}
+                      >
+                        <MenuItem value="MALE">Male</MenuItem>
+                        <MenuItem value="FEMALE">Female</MenuItem>
+                        <MenuItem value="OTHER">Other</MenuItem>
+                      </TextField>
                     </Grid>
 
                     <Grid item xs={12}>

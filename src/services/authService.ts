@@ -17,6 +17,8 @@ export const register = async (
   email: string,
   password: string,
   phone?: string,
+  city?: string,
+  gender?: 'MALE' | 'FEMALE' | 'OTHER',
   role?: string,
   skipAuth?: boolean,
   permissions?: {
@@ -30,6 +32,8 @@ export const register = async (
     email,
     password,
     phone,
+    city,
+    gender,
     role,
     permissions,
   });
