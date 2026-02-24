@@ -165,6 +165,10 @@ const TodayScheduleCard: React.FC = () => {
             {classes.map((cls) => {
               const subjects = Array.isArray(cls.subject) ? cls.subject.join(', ') : (cls.subject as any) || '';
               const timeSlot = (cls as any)?.schedule?.timeSlot || '';
+              const monthlyClasses =
+                (cls as any)?.classLead?.classesPerMonth ??
+                (cls as any)?.classesPerMonth ??
+                0;
 
               return (
                 <Box key={cls.id}>
@@ -176,7 +180,7 @@ const TodayScheduleCard: React.FC = () => {
                     topic={(cls as any).topic || 'N/A'}
                     schedule={timeSlot}
                     completedSessions={cls.completedSessions}
-                    totalSessions={cls.totalSessions}
+                    totalSessions={monthlyClasses}
                     onMarkClick={() => handleMarkClick(cls)}
                   />
                   <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>

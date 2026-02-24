@@ -30,6 +30,13 @@ import { format } from 'date-fns';
 const formatCurrency = (amount: number): string => `₹${(amount || 0).toLocaleString('en-IN')}`;
 const formatDate = (date?: Date | string): string => (date ? format(new Date(date), 'dd MMM yyyy') : '-');
 
+const getPaymentStatusLabel = (status: string, paymentType: string): string => {
+  if (paymentType === PAYMENT_TYPE.FEES_COLLECTED) {
+    if (status === PAYMENT_STATUS.PAID) return 'Paid by Parents';
+  }
+  return status;
+};
+
 const PaymentTrackingPage: React.FC = () => {
   const [paymentTypeTab, setPaymentTypeTab] = useState<string>(PAYMENT_TYPE.FEES_COLLECTED);
   const [payments, setPayments] = useState<IPayment[]>([]);
@@ -232,7 +239,7 @@ const PaymentTrackingPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={payment.status}
+                          label={getPaymentStatusLabel(payment.status, paymentTypeTab)}
                           color={payment.status === PAYMENT_STATUS.PAID ? 'success' : payment.status === PAYMENT_STATUS.PENDING ? 'warning' : 'error'}
                           size="small"
                           variant="outlined"

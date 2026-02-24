@@ -142,12 +142,13 @@ export const sendPaymentReminder = async (
 };
 
 export const getMyPaymentSummary = async (
-  filters: { status?: string; fromDate?: string; toDate?: string } = {}
+  filters: { status?: string; fromDate?: string; toDate?: string; paymentType?: string } = {}
 ): Promise<ApiResponse<{ payments: IPayment[]; statistics: IPaymentStatistics }>> => {
   const params = new URLSearchParams();
   if (filters.status) params.append('status', filters.status);
   if (filters.fromDate) params.append('fromDate', filters.fromDate);
   if (filters.toDate) params.append('toDate', filters.toDate);
+  if (filters.paymentType) params.append('paymentType', filters.paymentType);
   const url = `${API_ENDPOINTS.PAYMENTS_MY_SUMMARY}?${params.toString()}`;
   const { data } = await api.get(url);
   return data as ApiResponse<{ payments: IPayment[]; statistics: IPaymentStatistics }>;

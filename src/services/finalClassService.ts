@@ -163,6 +163,14 @@ export const repostAsLead = async (classId: string): Promise<ApiResponse<any>> =
   return data as ApiResponse<any>;
 };
 
+export const renewClass = async (
+  classId: string,
+  payload?: { monthlyFee?: number; sessionsPerMonth?: number }
+): Promise<ApiResponse<any>> => {
+  const { data } = await api.post(`/api/final-classes/${classId}/renew`, payload || {});
+  return data as ApiResponse<any>;
+};
+
 export default {
 	getMyClasses,
 	getFinalClasses,
@@ -178,7 +186,8 @@ export default {
   updateTestPerMonth,
   updateAttendanceSubmissionWindow,
   downloadAttendancePdf,
-  changeTutor,
-  recordTutorLeaving,
-  repostAsLead,
+  	changeTutor,
+	recordTutorLeaving,
+	repostAsLead,
+	renewClass,
 };

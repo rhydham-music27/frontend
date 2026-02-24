@@ -8,6 +8,7 @@ import { selectCurrentUser } from '../../store/slices/authSlice';
 import { getTutorPerformanceMetrics, getMyProfile } from '../../services/tutorService';
 import { getPaymentsByTutor } from '../../services/paymentService';
 import { ITutor, ITutorPerformanceMetrics } from '../../types';
+import { PAYMENT_TYPE } from '../../constants';
 
 const TutorDashboardKpiRow: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -35,7 +36,7 @@ const TutorDashboardKpiRow: React.FC = () => {
           const paymentsRes = await getPaymentsByTutor(tutorId);
           const payments = paymentsRes.data.payments || [];
           const totalPaid = payments
-            .filter((p: any) => String(p.status) === 'PAID')
+            .filter((p: any) => String(p.status) === 'PAID' && String(p.paymentType) === PAYMENT_TYPE.TUTOR_PAYOUT)
             .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
           setPaidAmount(totalPaid);
         }

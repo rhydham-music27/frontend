@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Box, Grid, Chip, LinearProgress, Divider, Button, Tooltip, TextField, Collapse, IconButton } from '@mui/material';
+import { Card, CardContent, Typography, Box, Grid, Chip, LinearProgress, Divider, Button, Tooltip, TextField, Collapse, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import PersonIcon from '@mui/icons-material/Person';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -32,10 +32,15 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
 }) => {
   const { user } = useAuth();
   const isManagerOrAdmin = user?.role === 'MANAGER' || user?.role === 'ADMIN';
+  const isCoordinator = user?.role === 'COORDINATOR';
 
   const [tutorModalOpen, setTutorModalOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [renewMonthlyFee, setRenewMonthlyFee] = useState<string>('');
+  const [renewSessionsPerMonth, setRenewSessionsPerMonth] = useState<string>('');
+  const [renewError, setRenewError] = useState<string | null>(null);
 
   const getStatusColor = (status: string): 'success' | 'info' | 'warning' | 'error' | 'default' => {
     switch (status) {
@@ -52,11 +57,76 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
     }
   };
 
-  const progress = typeof finalClass.progressPercentage === 'number'
-    ? finalClass.progressPercentage
-    : finalClass.totalSessions > 0
-      ? Math.round((finalClass.completedSessions / finalClass.totalSessions) * 100)
-      : 0;
+  const monthlyTotalSessions =
+    (finalClass as any)?.classLead?.classesPerMonth ??
+    (finalClass as any)?.classesPerMonth ??
+    finalClass.totalSessions ??
+    0;
+
+  const completedForMonth = Math.min(
+    Number(finalClass.completedSessions || 0),
+    Number(monthlyTotalSessions || 0) || Number(finalClass.completedSessions || 0)
+  );
+
+  const openRenewModal = () => {
+    setRenewError(null);
+    setRenewMonthlyFee('');
+    setRenewSessionsPerMonth('');
+    setRenewModalOpen(true);
+  };
+
+  const closeRenewModal = () => {
+    if (loading) return;
+    setRenewModalOpen(false);
+    setRenewError(null);
+  };
+
+  const handleConfirmRenew = async () => {
+    setRenewError(null);
+
+    const payload: any = {};
+    const feeStr = renewMonthlyFee.trim();
+    const sessionsStr = renewSessionsPerMonth.trim();
+
+    if (feeStr.length > 0) {
+      const fee = Number(feeStr);
+      if (Number.isNaN(fee) || fee < 0) {
+        setRenewError('Monthly fee must be a valid non-negative number');
+        return;
+      }
+      payload.monthlyFee = fee;
+    }
+
+    if (sessionsStr.length > 0) {
+      const sessions = Number(sessionsStr);
+      if (Number.isNaN(sessions) || sessions <= 0) {
+        setRenewError('Sessions per month must be a valid number greater than 0');
+        return;
+      }
+      payload.sessionsPerMonth = sessions;
+    }
+
+    if ((payload.monthlyFee && !payload.sessionsPerMonth) || (!payload.monthlyFee && payload.sessionsPerMonth)) {
+      setRenewError('To update plan, provide both Monthly Fee and Sessions/Month (or leave both blank to keep current plan)');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await finalClassService.renewClass(finalClass.id, payload);
+      setRenewModalOpen(false);
+      onUpdate?.();
+    } catch (err) {
+      console.error('Failed to renew class:', err);
+      setRenewError('Failed to renew class');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const progress = monthlyTotalSessions > 0
+    ? Math.round((completedForMonth / monthlyTotalSessions) * 100)
+    : 0;
 
   const progressColor: 'primary' | 'secondary' | 'inherit' = progress >= 50 ? 'primary' : 'secondary';
 
@@ -190,7 +260,7 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
                 sx={{ height: 6, borderRadius: 3, bgcolor: 'action.selected' }} 
               />
               <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                {finalClass.completedSessions} / {finalClass.totalSessions} sessions completed
+                {completedForMonth} / {monthlyTotalSessions} sessions completed
               </Typography>
             </Box>
 
@@ -301,6 +371,18 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
 
         {showActions && (
           <Box mt={3} display="flex" justifyContent="flex-end" gap={1}>
+            {isCoordinator && finalClass.status === FINAL_CLASS_STATUS.ACTIVE && (
+              <Button
+                variant="outlined"
+                size="small"
+                color="secondary"
+                onClick={openRenewModal}
+                sx={{ borderRadius: 2, textTransform: 'none' }}
+                disabled={loading}
+              >
+                Renew
+              </Button>
+            )}
             {isManagerOrAdmin && finalClass.status === FINAL_CLASS_STATUS.ACTIVE && (
               <>
                 <Button
@@ -352,6 +434,50 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
         onSelect={handleChangeTutor}
         excludeTutorId={finalClass.tutor?.id}
       />
+
+      <Dialog open={renewModalOpen} onClose={closeRenewModal} fullWidth maxWidth="xs">
+        <DialogTitle>Renew Class</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This will reset progress to 0 and create advance payments for the next cycle. Optionally update the monthly plan.
+          </Typography>
+
+          <TextField
+            label="Monthly Fee (optional)"
+            fullWidth
+            margin="dense"
+            type="number"
+            value={renewMonthlyFee}
+            onChange={(e) => setRenewMonthlyFee(e.target.value)}
+            inputProps={{ min: 0 }}
+            disabled={loading}
+          />
+          <TextField
+            label="Sessions Per Month (optional)"
+            fullWidth
+            margin="dense"
+            type="number"
+            value={renewSessionsPerMonth}
+            onChange={(e) => setRenewSessionsPerMonth(e.target.value)}
+            inputProps={{ min: 1 }}
+            disabled={loading}
+          />
+
+          {renewError ? (
+            <Typography variant="caption" color="error" display="block" sx={{ mt: 1 }}>
+              {renewError}
+            </Typography>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeRenewModal} disabled={loading} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleConfirmRenew} disabled={loading} sx={{ textTransform: 'none' }}>
+            Confirm Renew
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

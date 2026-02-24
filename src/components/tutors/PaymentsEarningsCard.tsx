@@ -25,6 +25,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Button } from '@mui/material';
 import { getMyPaymentSummary } from '../../services/paymentService';
 import { IPayment } from '../../types';
+import { PAYMENT_TYPE } from '../../constants';
 
 const PaymentsEarningsCard: React.FC = () => {
   const [payments, setPayments] = useState<IPayment[]>([]);
@@ -37,7 +38,7 @@ const PaymentsEarningsCard: React.FC = () => {
     const fetchPayments = async () => {
       try {
         setLoading(true);
-        const res = await getMyPaymentSummary();
+        const res = await getMyPaymentSummary({ paymentType: PAYMENT_TYPE.TUTOR_PAYOUT });
         console.log('Fetched Payments:', res.data.payments);
         setPayments(res.data.payments || []);
       } catch (err: any) {
@@ -133,7 +134,7 @@ const PaymentsEarningsCard: React.FC = () => {
             />
             <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => {
               setLoading(true);
-              getMyPaymentSummary().then(res => {
+              getMyPaymentSummary({ paymentType: PAYMENT_TYPE.TUTOR_PAYOUT }).then(res => {
                 setPayments(res.data.payments || []);
                 setLoading(false);
               });
