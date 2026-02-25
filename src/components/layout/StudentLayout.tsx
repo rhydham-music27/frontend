@@ -38,7 +38,7 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
           display: 'flex',
           width: '100%',
           minWidth: 0,
-          height: '100vh',
+          height: 'calc(100vh / var(--app-scale))',
           backgroundColor: 'background.default',
         }}
       >
@@ -129,7 +129,7 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            height: '100vh',
+            height: 'calc(100vh / var(--app-scale))',
             overflowY: 'auto',
           }}
         >

@@ -114,7 +114,13 @@ const MainLayout: React.FC = () => {
   }, [resize, stopResizing]);
 
   return (
-    <Box display="flex" sx={{ position: 'relative' }}>
+    <Box
+      display="flex"
+      sx={{
+        position: 'relative',
+        minHeight: 'calc(100vh / var(--app-scale))',
+      }}
+    >
       <Header onMenuClick={handleDrawerToggle} />
       <Sidebar
         open={mobileOpen}
@@ -129,7 +135,7 @@ const MainLayout: React.FC = () => {
           ml: { md: `${sidebarWidth}px`, xs: 0 },
           width: { md: `calc(100% - ${sidebarWidth}px)`, xs: '100%' },
           minWidth: 0,
-          height: '100vh',
+          height: 'calc(100vh / var(--app-scale))',
           overflowY: 'auto',
           backgroundColor: 'background.default',
           transition: isResizing ? 'none' : 'margin 0.3s ease, width 0.3s ease, filter 0.2s ease',

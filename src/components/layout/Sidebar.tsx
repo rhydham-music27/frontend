@@ -124,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
     <Box sx={{
       width: drawerWidth,
       height: '100%',
-      maxHeight: '100vh',
+      maxHeight: 'calc(100vh / var(--app-scale))',
       display: 'flex',
       flexDirection: 'column',
       overflowX: 'hidden',

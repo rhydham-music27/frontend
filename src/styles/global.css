@@ -8,6 +8,8 @@
   --background: 248 250 252;
   --foreground: 30 41 59;
 
+  --app-scale: 0.8;
+
   /* UI Elements */
   --muted: 241 245 249;
   --muted-foreground: 100 116 139;
@@ -97,6 +99,12 @@
     -ms-user-select: none;
   }
 
+  html,
+  body {
+    height: 100%;
+    min-height: calc(100vh / var(--app-scale));
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'cv11', 'ss01';
@@ -108,6 +116,13 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+  }
+
+  #root {
+    transform: scale(var(--app-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--app-scale));
+    min-height: calc(100vh / var(--app-scale));
   }
   
   /* Allow selection in inputs and textareas for better UX */
