@@ -62,7 +62,7 @@ const ClassLeadsFeedCard: React.FC = () => {
     if (!uid) return;
     fetchTutorProfile();
     fetchAnnouncements();
-    return () => {};
+    return () => { };
   }, [user]);
 
   const hasExpressedInterest = (a: IAnnouncement) => {
@@ -85,8 +85,8 @@ const ClassLeadsFeedCard: React.FC = () => {
     const leadSubjects: string[] = Array.isArray(cl.subject)
       ? (cl.subject as string[])
       : cl.subject
-      ? [String(cl.subject)]
-      : [];
+        ? [String(cl.subject)]
+        : [];
     const tutorSubjects: string[] = Array.isArray((tutor as any).subjects)
       ? ((tutor as any).subjects as string[])
       : [];
@@ -115,8 +115,8 @@ const ClassLeadsFeedCard: React.FC = () => {
     const tutorPreferredLocations: string[] = Array.isArray((tutor as any).preferredLocations)
       ? ((tutor as any).preferredLocations as string[])
       : Array.isArray((tutor as any).settings?.preferredLocations)
-      ? ((tutor as any).settings.preferredLocations as string[])
-      : [];
+        ? ((tutor as any).settings.preferredLocations as string[])
+        : [];
 
     const cityApplicable = !!(leadCity && tutorPreferredCities.length);
     const cityMatch = cityApplicable ? tutorPreferredCities.includes(leadCity) : false;
@@ -271,10 +271,10 @@ const ClassLeadsFeedCard: React.FC = () => {
     return (
       <StyledCard>
         <CardContent>
-          <EmptyState 
-            icon={<CampaignIcon color="primary" />} 
-            title="No Active Class Leads" 
-            description="There are no new class opportunities at the moment. Check back later!" 
+          <EmptyState
+            icon={<CampaignIcon color="primary" />}
+            title="No Active Class Leads"
+            description="There are no new class opportunities at the moment. Check back later!"
           />
         </CardContent>
       </StyledCard>
@@ -500,11 +500,11 @@ const ClassLeadsFeedCard: React.FC = () => {
                     </Button>
                   ) : (
                     <>
-                      <Button 
-                        variant="contained" 
-                        color="primary" 
-                        startIcon={<ThumbUpIcon />} 
-                        onClick={() => handleExpressInterest(id)} 
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<ThumbUpIcon />}
+                        onClick={() => handleExpressInterest(id)}
                         disabled={!!actionLoading[id]}
                       >
                         {actionLoading[id] ? 'Expressing...' : 'Express Interest'}

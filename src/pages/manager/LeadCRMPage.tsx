@@ -54,7 +54,7 @@ const COLUMN_CONFIG = [
   { key: 'announced', label: 'Announced', color: '#F59E0B', description: 'Announced to tutors (0 interest)' },
   { key: 'interested', label: 'Interested', color: '#8B5CF6', description: 'Tutors showing interest' },
   { key: 'demoScheduled', label: 'Demo Scheduled', color: '#10B981', description: 'Demos are scheduled' },
-  { key: 'demoPending', label: 'Demo Pending', color: '#EC4899', description: 'Demos done, approval pending' },
+  { key: 'demoCompleted', label: 'Demo Completed', color: '#EC4899', description: 'Demos done, approval pending' },
   { key: 'won', label: 'Won', color: '#059669', description: 'Leads converted to classes' },
 ];
 
@@ -313,7 +313,8 @@ const ManagerLeadCRMPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
   const isAdmin = user?.role === USER_ROLES.ADMIN;
   const [searchParams] = useSearchParams();
-  const highlightColumn = searchParams.get('column');
+  const highlightColumnRaw = searchParams.get('column');
+  const highlightColumn = highlightColumnRaw === 'demoPending' ? 'demoCompleted' : highlightColumnRaw;
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -355,7 +356,15 @@ const ManagerLeadCRMPage: React.FC = () => {
     try {
       const managerId = managerFilter !== 'All' ? managerFilter : undefined;
       const res = await getCRMLeads(managerId);
-      setGroups(res.data);
+      const raw = (res as any)?.data || {};
+      const normalized: Record<string, IClassLead[]> = { ...raw };
+      if (normalized.demoPending && !normalized.demoCompleted) {
+        normalized.demoCompleted = normalized.demoPending;
+      }
+      if (normalized.demoCompleted && !normalized.demoPending) {
+        normalized.demoPending = normalized.demoCompleted;
+      }
+      setGroups(normalized);
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to fetch CRM data');
     } finally {

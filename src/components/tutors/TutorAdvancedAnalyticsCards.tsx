@@ -79,13 +79,13 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
   ];
 
   return (
-    <Grid2 container spacing={{ xs: 2.5, sm: 3 }} mb={{ xs: 3, sm: 4 }}>
+    <Grid2 container spacing={{ xs: 1.25, sm: 1.5, md: 2 }} mb={{ xs: 2, sm: 3 }}>
       {cards.map((card, index) => (
-        <Grid2 key={index} size={{ xs: 6, sm: 6, lg: 3 }}>
+        <Grid2 key={index} size={{ xs: 6, sm: 6, md: 3 }}>
           <Card
             sx={{
               height: '100%',
-              borderRadius: 4,
+              borderRadius: 3,
               boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)',
               border: '1px solid',
               borderColor: 'grey.100',
@@ -109,12 +109,12 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
               }
             }}
           >
-            <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-              <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+            <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.25 } }}>
+              <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.25}>
                 <Box
                   sx={{
-                    p: 1.25,
-                    borderRadius: '12px',
+                    p: 1,
+                    borderRadius: '10px',
                     background: card.gradient,
                     color: 'white',
                     display: 'flex',
@@ -126,30 +126,30 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
                   {React.cloneElement(card.icon as React.ReactElement, { sx: { fontSize: { xs: 20, sm: 24 } } })}
                 </Box>
               </Box>
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                fontWeight={600} 
-                gutterBottom 
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                fontWeight={600}
+                gutterBottom
+                sx={{ fontSize: { xs: '0.72rem', sm: '0.8rem' }, lineHeight: 1.2 }}
               >
                 {card.title}
               </Typography>
-              <Typography 
-                variant="h4" 
-                fontWeight={800} 
+              <Typography
+                variant="h4"
+                fontWeight={800}
                 color="text.primary"
-                sx={{ fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2rem' } }}
+                sx={{ fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.6rem' }, lineHeight: 1.1 }}
               >
                 {card.value}
               </Typography>
-              <Typography 
-                variant="caption" 
-                color="text.secondary" 
-                sx={{ 
-                  mt: 1, 
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  mt: 0.75,
                   display: 'block',
-                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                  fontSize: { xs: '0.62rem', sm: '0.7rem' },
                   fontWeight: 500
                 }}
               >

@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import PermissionDeniedDialog from '../common/PermissionDeniedDialog';
+import TutorBottomNav from '../tutors/TutorBottomNav';
 import { useSelector, useDispatch } from 'react-redux';
 import { hidePermissionDenied, selectPermissionDeniedOpen, selectSidebarWidth, setSidebarWidth } from '../../store/slices/uiSlice';
 import { selectCurrentUser, setAcceptedTerms } from '../../store/slices/authSlice';
@@ -77,6 +78,7 @@ const MainLayout: React.FC = () => {
   const showWhatsapp = user !== null && isOfflineTutor && !user.acceptedTerms && !whatsappConfirmed;
   const showTerms = user !== null && !user.acceptedTerms && (!isOfflineTutor || whatsappConfirmed);
   const showManagerProfileGate = user?.role === USER_ROLES.MANAGER && !user.isProfileComplete && user.acceptedTerms;
+  const showTutorBottomNav = user?.role === USER_ROLES.TUTOR;
 
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 
@@ -144,10 +146,18 @@ const MainLayout: React.FC = () => {
       >
         {/* Spacer to offset fixed AppBar height */}
         <Toolbar sx={{ minHeight: { xs: 56, sm: 64, md: 70 } }} />
-        <Box sx={{ p: { xs: 1.5, sm: 2.5, md: 3, lg: 4 } }}>
+        <Box
+          sx={{
+            p: { xs: 1.5, sm: 2.5, md: 3, lg: 4 },
+            pb: showTutorBottomNav
+              ? { xs: 'calc(64px + env(safe-area-inset-bottom) + 16px)', sm: 2.5, md: 3, lg: 4 }
+              : undefined,
+          }}
+        >
           <Outlet />
         </Box>
       </Box>
+      {showTutorBottomNav && <TutorBottomNav />}
       <PermissionDeniedDialog
         open={permissionDeniedOpen}
         onClose={() => dispatch(hidePermissionDenied())}

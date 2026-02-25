@@ -81,12 +81,17 @@ export default function RequestTutorPage() {
     setError(null);
 
     try {
+      const phoneDigits = (form.parentPhone || '').replace(/\D/g, '');
+      if (phoneDigits && phoneDigits.length !== 10) {
+        throw new Error('Parent phone number must be 10 digits');
+      }
+
       const payload = {
         studentName: form.studentName,
         studentGender: form.studentGender || undefined,
         parentName: form.parentName || undefined,
         parentEmail: form.parentEmail || undefined,
-        parentPhone: form.parentPhone || undefined,
+        parentPhone: phoneDigits || undefined,
         grade: form.grade,
         subject: form.subjects,
         board: form.board,
@@ -185,6 +190,7 @@ export default function RequestTutorPage() {
                   <MenuItem value="">Select</MenuItem>
                   <MenuItem value="M">Male</MenuItem>
                   <MenuItem value="F">Female</MenuItem>
+                  <MenuItem value="OTHER">Other</MenuItem>
                 </TextField>
               </Grid>
 
@@ -218,6 +224,7 @@ export default function RequestTutorPage() {
                   onChange={handleChange}
                   fullWidth
                   size="small"
+                  inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
                 />
               </Grid>
 

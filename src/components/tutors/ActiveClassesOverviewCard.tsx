@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Box, Typography,  CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, LinearProgress } from '@mui/material';
+import { Card, CardContent, Box, Typography, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, LinearProgress } from '@mui/material';
 import ClassIcon from '@mui/icons-material/Class';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { useSelector } from 'react-redux';
@@ -94,13 +94,13 @@ const ActiveClassesOverviewCard: React.FC = () => {
               const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
               const subjects = (cls.subject || []).join(', ');
               return (
-                <Box 
-                  key={cls.id} 
-                  sx={{ 
-                    p: 2, 
-                    mb: 2, 
-                    borderRadius: 3, 
-                    border: '1px solid', 
+                <Box
+                  key={cls.id}
+                  sx={{
+                    p: 2,
+                    mb: 2,
+                    borderRadius: 3,
+                    border: '1px solid',
                     borderColor: 'grey.100',
                     bgcolor: 'grey.50'
                   }}
@@ -112,24 +112,24 @@ const ActiveClassesOverviewCard: React.FC = () => {
                         {subjects} • Grade {cls.grade}
                       </Typography>
                     </Box>
-                    <Chip 
-                        label={cls.status} 
-                        size="small" 
-                        color="success" 
-                        variant="filled"
-                        sx={{ textTransform: 'capitalize', fontSize: '0.65rem', height: 20 }}
+                    <Chip
+                      label={cls.status}
+                      size="small"
+                      color="success"
+                      variant="filled"
+                      sx={{ textTransform: 'capitalize', fontSize: '0.65rem', height: 20 }}
                     />
                   </Box>
-                  
+
                   <Box mb={1.5}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>Progress</Typography>
                       <Typography variant="caption" fontWeight={700}>{progress}%</Typography>
                     </Box>
-                    <LinearProgress 
-                        variant="determinate" 
-                        value={progress} 
-                        sx={{ height: 6, borderRadius: 3, bgcolor: 'grey.200' }}
+                    <LinearProgress
+                      variant="determinate"
+                      value={progress}
+                      sx={{ height: 6, borderRadius: 3, bgcolor: 'grey.200' }}
                     />
                   </Box>
 
@@ -180,21 +180,21 @@ const ActiveClassesOverviewCard: React.FC = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                            label={cls.status} 
-                            size="small" 
-                            color="success" 
-                            variant="outlined"
-                            sx={{ textTransform: 'capitalize' }}
+                        <Chip
+                          label={cls.status}
+                          size="small"
+                          color="success"
+                          variant="outlined"
+                          sx={{ textTransform: 'capitalize' }}
                         />
                       </TableCell>
                       <TableCell sx={{ width: 200 }}>
                         <Box display="flex" alignItems="center" gap={1}>
                           <Box sx={{ flex: 1 }}>
-                            <LinearProgress 
-                                variant="determinate" 
-                                value={progress} 
-                                sx={{ height: 6, borderRadius: 3 }}
+                            <LinearProgress
+                              variant="determinate"
+                              value={progress}
+                              sx={{ height: 6, borderRadius: 3 }}
                             />
                           </Box>
                           <Typography variant="caption" fontWeight={600}>{progress}%</Typography>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Container, Box, Typography, Tabs, Tab, Dialog, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination, TextField, TableSortLabel, MenuItem, Select, InputAdornment, IconButton, Link as MuiLink, Avatar } from '@mui/material';
+import { Container, Box, Typography, Tabs, Tab, Dialog, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination, TextField, TableSortLabel, MenuItem, Select, InputAdornment, IconButton, Link as MuiLink, Avatar, Card, CardContent, Stack, useMediaQuery } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -12,8 +12,11 @@ import VerificationModal from '../../components/tutors/VerificationModal';
 import useTutors from '../../hooks/useTutors';
 import { ITutor, IDocument } from '../../types';
 import { getPendingVerifications, updateVerificationStatus, getSubjects, getVerifiers } from '../../services/tutorService';
+import { useTheme } from '@mui/material/styles';
 
 export default function TutorVerificationPage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tab, setTab] = useState(1);
   const [pending, setPending] = useState<ITutor[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,6 +52,97 @@ export default function TutorVerificationPage() {
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
   const [subjectsList, setSubjectsList] = useState<string[]>([]);
   const [verifiersList, setVerifiersList] = useState<{ _id: string; name: string }[]>([]);
+
+  const renderTutorCard = (t: ITutor, mode: 'pending' | 'all') => {
+    const id = (t as any).id || (t as any)._id;
+    const name = t.user?.name || 'Unknown Tutor';
+    const email = t.user?.email || '-';
+    const phone = t.user?.phone || '-';
+    const locations = (t.preferredLocations || []).join(', ');
+
+    return (
+      <Card
+        key={id}
+        variant="outlined"
+        sx={{
+          borderRadius: 3,
+          borderColor: 'divider',
+        }}
+      >
+        <CardContent sx={{ pb: 2 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl} sx={{ width: 44, height: 44 }}>
+              {(name || 'T').charAt(0).toUpperCase()}
+            </Avatar>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography
+                component={RouterLink}
+                to={`/tutor-profile/${id}`}
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  display: 'block',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                {t.teacherId || '-'}
+              </Typography>
+            </Box>
+            <VerificationStatusChip status={t.verificationStatus} />
+          </Stack>
+
+          <Box sx={{ mt: 1.5 }}>
+            <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>{email}</Typography>
+            <Typography variant="body2" color="text.secondary">{phone}</Typography>
+          </Box>
+
+          <Box sx={{ mt: 1.25 }}>
+            <Typography variant="body2">
+              <strong>Mode:</strong> {t.preferredMode || '-'}
+            </Typography>
+            {locations ? (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                <strong>Locs:</strong> {locations}
+              </Typography>
+            ) : null}
+          </Box>
+
+          <Box sx={{ mt: 1.25 }}>
+            <Typography variant="body2">
+              <strong>Stats:</strong> {t.classesAssigned} Classes, {t.demosApproved} Demos
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Exp:</strong> {t.experienceHours} hrs
+            </Typography>
+          </Box>
+
+          <Box sx={{ mt: 1.25 }}>
+            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              <strong>Subjects:</strong> {(t.subjects || []).join(', ') || '-'}
+            </Typography>
+          </Box>
+
+          <Stack spacing={1} sx={{ mt: 2 }}>
+            <Button
+              fullWidth
+              size="small"
+              variant="contained"
+              component={RouterLink}
+              to={mode === 'pending' ? `/tutors/verify/${id}` : `/tutors/verify/${id}`}
+            >
+              {mode === 'pending' ? 'Details' : 'View'}
+            </Button>
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  };
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -227,6 +321,8 @@ export default function TutorVerificationPage() {
           <Tabs
             value={tab}
             onChange={(_, v) => setTab(v)}
+            variant={isMobile ? 'scrollable' : 'standard'}
+            allowScrollButtonsMobile
             sx={{
               '& .MuiTab-root': { color: 'rgba(255,255,255,0.7)', fontWeight: 600 },
               '& .Mui-selected': { color: '#fff !important' },
@@ -259,19 +355,55 @@ export default function TutorVerificationPage() {
         }} />
       </Box>
 
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{
-          width: '100%',
-          overflowX: 'auto',
-          mb: 3,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        <Table size="small">
+      {isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+          {tab === 0 ? (
+            loading ? (
+              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+                <LoadingSpinner />
+              </Paper>
+            ) : error ? (
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+                <ErrorAlert error={error} />
+              </Paper>
+            ) : pending.length === 0 ? (
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+                <Typography>No tutors pending verification.</Typography>
+              </Paper>
+            ) : (
+              pending.map((t) => renderTutorCard(t, 'pending'))
+            )
+          ) : (
+            loadingTutors ? (
+              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+                <LoadingSpinner />
+              </Paper>
+            ) : (
+              <>
+                {tutors.map((t) => renderTutorCard(t, 'all'))}
+                {tutorsError ? (
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+                    <ErrorAlert error={tutorsError} />
+                  </Paper>
+                ) : null}
+              </>
+            )
+          )}
+        </Box>
+      ) : (
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{
+            width: '100%',
+            overflowX: 'auto',
+            mb: 3,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Table size="small" sx={{ minWidth: 1100 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: 'primary.main', '& th': { color: 'white', fontWeight: 700 } }}>
               <TableCell sx={{ color: 'inherit' }}>
@@ -599,8 +731,9 @@ export default function TutorVerificationPage() {
               </>
             )}
           </TableBody>
-        </Table>
-      </TableContainer>
+          </Table>
+        </TableContainer>
+      )}
 
       {tab === 1 && (
         <TablePagination

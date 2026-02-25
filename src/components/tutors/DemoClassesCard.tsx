@@ -8,10 +8,10 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import { StyledCard } from '../common/StyledCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
-import EmptyState from '../common/EmptyState';
 import { getMyDemos, updateDemoStatus } from '../../services/demoService';
+import { updateClassLeadStatus } from '../../services/leadService';
 import { IDemoHistory, PaginatedResponse } from '../../types';
-import { DEMO_STATUS } from '../../constants';
+import { CLASS_LEAD_STATUS, DEMO_STATUS } from '../../constants';
 import { useErrorDialog } from '../../hooks/useErrorDialog';
 import ErrorDialog from '../common/ErrorDialog';
 import DemoAttendanceModal from './DemoAttendanceModal';
@@ -121,22 +121,7 @@ const DemoClassesCard: React.FC = () => {
   const activeDemos = demos.filter((demo) => demo.status === DEMO_STATUS.SCHEDULED);
 
   if (!loading && activeDemos.length === 0) {
-    return (
-      <StyledCard>
-        <CardContent>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-            <Box display="flex" alignItems="center" gap={1.5}>
-              <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
-              <Typography variant="h6" fontWeight={600}>My Demo Sessions</Typography>
-            </Box>
-          </Box>
-          <EmptyState
-            title="No Upcoming Demos"
-            description="You don't have any upcoming demo sessions scheduled."
-          />
-        </CardContent>
-      </StyledCard>
-    );
+    return null;
   }
 
   const onPrev = () => {
@@ -180,6 +165,7 @@ const DemoClassesCard: React.FC = () => {
         data.topicCovered,
         data.duration
       );
+      await updateClassLeadStatus(leadId, CLASS_LEAD_STATUS.DEMO_COMPLETED);
       await fetchDemos(pagination.page);
       setShowAttendanceModal(false);
       setSelectedDemo(null);

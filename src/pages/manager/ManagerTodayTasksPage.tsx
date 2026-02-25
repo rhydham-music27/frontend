@@ -162,7 +162,7 @@ const ManagerTodayTasksPage: React.FC = () => {
                                 { key: 'announced', label: 'Announced', color: '#F59E0B' },
                                 { key: 'interested', label: 'Interested', color: '#8B5CF6' },
                                 { key: 'demoScheduled', label: 'Demo Scheduled', color: '#10B981' },
-                                { key: 'demoPending', label: 'Demo Pending', color: '#EC4899' },
+                                { key: 'demoPending', label: 'Demo Completed', color: '#EC4899' },
                                 { key: 'won', label: 'Won', color: '#059669' },
                             ].map((col) => (
                                 <Grid item xs={6} sm={4} md={2} key={col.key}>

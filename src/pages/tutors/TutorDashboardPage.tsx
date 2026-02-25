@@ -8,6 +8,9 @@ import {
   Card,
   CardContent,
   Button,
+  Tabs,
+  Tab,
+  useMediaQuery,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +19,6 @@ import { useSelector } from "react-redux";
 import { selectCurrentUser } from "../../store/slices/authSlice";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import TutorDashboardKpiRow from "../../components/tutors/TutorDashboardKpiRow";
 import TutorAdvancedAnalyticsCards from "../../components/tutors/TutorAdvancedAnalyticsCards";
 import TodayScheduleCard from "../../components/tutors/TodayScheduleCard";
 import UpcomingTestsCard from "../../components/tutors/UpcomingTestsCard";
@@ -28,10 +30,14 @@ import { ITutor } from "../../types";
 import { getMyProfile, updateVerificationFeeStatus } from "../../services/tutorService";
 import { toast } from "sonner";
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import { useTheme } from '@mui/material/styles';
 
 const TutorDashboardPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mobileTab, setMobileTab] = useState<0 | 1>(0);
   const [loading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
@@ -118,7 +124,7 @@ const TutorDashboardPage: React.FC = () => {
 
 
   return (
-    <Container maxWidth="xl" disableGutters sx={{ position: "relative", px: { xs: 2.5, sm: 0 } }}>
+    <Container maxWidth="xl" disableGutters sx={{ position: "relative", px: { xs: 2, sm: 0 }, pb: { xs: 10, sm: 0 } }}>
       <Box
         display="flex"
         alignItems={{ xs: "flex-start", sm: "center" }}
@@ -206,56 +212,145 @@ const TutorDashboardPage: React.FC = () => {
                     variant="contained"
                     color="secondary"
                     onClick={() => setShowVerificationFeeModal(true)}
-                    sx={{ fontWeight: 700 }}
+                    sx={{ fontWeight: 700, width: { xs: '100%', sm: 'auto' } }}
                   >
                     Pay Verification Fee
                   </Button>
                 </CardContent>
               </Card>
             )}
-
-            <TutorDashboardKpiRow />
             <TutorAdvancedAnalyticsCards />
+
+            {isMobile && (
+              <Box
+                sx={{
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 30,
+                  mb: 2,
+                  bgcolor: 'background.default',
+                  pt: 0.5,
+                  pb: 1,
+                }}
+              >
+                <Tabs
+                  value={mobileTab}
+                  onChange={(_, v) => setMobileTab(v)}
+                  variant="fullWidth"
+                  sx={{
+                    borderRadius: 3,
+                    minHeight: 44,
+                    bgcolor: 'grey.50',
+                    border: '1px solid',
+                    borderColor: 'grey.100',
+                    px: 0.5,
+                    '& .MuiTab-root': {
+                      minHeight: 44,
+                      fontWeight: 800,
+                      textTransform: 'none',
+                      fontSize: '0.95rem',
+                    },
+                    '& .MuiTabs-indicator': {
+                      height: '100%',
+                      borderRadius: 12,
+                      bgcolor: 'common.white',
+                      boxShadow: '0 10px 30px rgba(15,23,42,0.10)',
+                      border: '1px solid',
+                      borderColor: 'grey.100',
+                    },
+                    '& .MuiTab-root.Mui-selected': {
+                      color: 'text.primary',
+                      zIndex: 1,
+                    },
+                  }}
+                >
+                  <Tab label="Opportunities" />
+                  <Tab label="My Classes" />
+                </Tabs>
+              </Box>
+            )}
           </>
         )}
-        <Box mb={{ xs: 3, sm: 4 }}>
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            mb={{ xs: 2, sm: 2.5, md: 3 }}
-            sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
-          >
-            Class Opportunities & Demos
-          </Typography>
-          <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-            <Grid2 size={{ xs: 12, md: 7 }}>
-              <Box display="flex" flexDirection="column" gap={{ xs: 2, sm: 2.5, md: 3 }}>
-                <DemoClassesCard />
-                <TodayScheduleCard />
-                <UpcomingTestsCard />
-              </Box>
-            </Grid2>
-            <Grid2 size={{ xs: 12, md: 5 }} sx={{ maxWidth: { md: '40%' } }}>
-              <ClassLeadsFeedCard />
-            </Grid2>
-          </Grid2>
-        </Box>
 
-        <Box mt={{ xs: 3, sm: 4 }} mb={{ xs: 3, sm: 4 }}>
-          <Typography
-            variant="h5"
-            fontWeight={700}
-            mb={{ xs: 2, sm: 2.5, md: 3 }}
-            sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
-          >
-            Active Classes Overview
-          </Typography>
-          <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-            <Grid2 size={{ xs: 12 }}>
-              <ActiveClassesOverviewCard />
-            </Grid2>
-          </Grid2>
-        </Box>
+        {isMobile ? (
+          <>
+            {mobileTab === 0 ? (
+              <Box mb={3}>
+                <Typography
+                  variant="h6"
+                  fontWeight={800}
+                  mb={1.5}
+                  sx={{ fontSize: '1.1rem' }}
+                >
+                  Class Opportunities
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  <ClassLeadsFeedCard />
+                  <DemoClassesCard />
+                </Box>
+              </Box>
+            ) : (
+              <Box mb={3}>
+                <Typography
+                  variant="h6"
+                  fontWeight={800}
+                  mb={1.5}
+                  sx={{ fontSize: '1.1rem' }}
+                >
+                  My Classes
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={2}>
+                  <TodayScheduleCard />
+                  <UpcomingTestsCard />
+                  <ActiveClassesOverviewCard />
+                </Box>
+              </Box>
+            )}
+          </>
+        ) : (
+          <>
+            <Box mb={{ xs: 3, sm: 4 }}>
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                mb={{ xs: 2, sm: 2.5, md: 3 }}
+                sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+              >
+                Class Opportunities & Demos
+              </Typography>
+              <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+                <Grid2 size={{ xs: 12, md: 7 }}>
+                  <Box display="flex" flexDirection="column" gap={{ xs: 2, sm: 2.5, md: 3 }}>
+                    <DemoClassesCard />
+                    <TodayScheduleCard />
+                    <UpcomingTestsCard />
+                  </Box>
+                </Grid2>
+                <Grid2 size={{ xs: 12, md: 5 }} sx={{ maxWidth: { md: '40%' } }}>
+                  <Box sx={{ mt: { xs: 0.5, sm: 0 } }}>
+                    <ClassLeadsFeedCard />
+                  </Box>
+                </Grid2>
+              </Grid2>
+            </Box>
+
+            <Box mt={{ xs: 3, sm: 4 }} mb={{ xs: 3, sm: 4 }}>
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                mb={{ xs: 2, sm: 2.5, md: 3 }}
+                sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+              >
+                Active Classes Overview
+              </Typography>
+              <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
+                <Grid2 size={{ xs: 12 }}>
+                  <ActiveClassesOverviewCard />
+                </Grid2>
+              </Grid2>
+            </Box>
+          </>
+        )}
       </Box>
 
       {showCompleteProfileModal && (

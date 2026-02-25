@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Container, Box, Typography, Card, CardContent, Button, TextField, MenuItem } from '@mui/material';
+import { Container, Box, Typography, IconButton, TextField, MenuItem, Chip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate, useParams } from 'react-router-dom';
 import ClassLeadForm from '../../components/classLeads/ClassLeadForm';
 import { IClassLead, IClassLeadFormData } from '../../types';
@@ -57,29 +58,99 @@ export default function EditClassLeadPage() {
   if (!classLead) return null;
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
-      <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <Button variant="text" startIcon={<ArrowBackIcon />} onClick={() => navigate('/class-leads')}>Back to List</Button>
-        <Typography variant="h4">Edit Class Lead</Typography>
-      </Box>
-      <Card elevation={2}>
-        <CardContent>
-          <Box mb={2}>
-            <TextField
-              select
-              label="Lead Status"
-              fullWidth
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 } }}>
+      {/* Page Header */}
+      <Box
+        display="flex"
+        alignItems="center"
+        gap={2}
+        mb={3}
+        sx={{
+          pb: 2.5,
+          borderBottom: '1px solid',
+          borderColor: 'grey.100',
+        }}
+      >
+        <IconButton
+          onClick={() => navigate('/class-leads')}
+          sx={{
+            bgcolor: 'grey.50',
+            border: '1px solid',
+            borderColor: 'grey.200',
+            '&:hover': { bgcolor: 'grey.100' },
+          }}
+        >
+          <ArrowBackIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+        <Box flex={1}>
+          <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
+            <Typography
+              variant="h5"
+              fontWeight={800}
+              sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
             >
-              {Object.values(CLASS_LEAD_STATUS).map((s) => (
-                <MenuItem key={s} value={s}>{s}</MenuItem>
-              ))}
-            </TextField>
+              Edit Lead
+            </Typography>
+            {classLead?.studentName && (
+              <Chip
+                label={classLead.studentName}
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 600, borderRadius: '8px' }}
+              />
+            )}
           </Box>
-          <ClassLeadForm initialData={classLead} onSubmit={handleSubmit as any} loading={submitLoading} submitButtonText="Update Lead" />
-        </CardContent>
-      </Card>
+          <Typography variant="body2" color="text.secondary">
+            Update lead details and status
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            borderRadius: '12px',
+            bgcolor: 'primary.main',
+            display: { xs: 'none', sm: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <EditIcon sx={{ color: 'common.white', fontSize: 20 }} />
+        </Box>
+      </Box>
+
+      {/* Status Selector - pulled into header area */}
+      <Box
+        sx={{
+          mb: 3,
+          p: 2,
+          borderRadius: 2.5,
+          bgcolor: 'grey.50',
+          border: '1px solid',
+          borderColor: 'grey.100',
+        }}
+      >
+        <TextField
+          select
+          label="Lead Status"
+          fullWidth
+          size="small"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              bgcolor: 'background.paper',
+            },
+          }}
+        >
+          {Object.values(CLASS_LEAD_STATUS).map((s) => (
+            <MenuItem key={s} value={s}>{s}</MenuItem>
+          ))}
+        </TextField>
+      </Box>
+
+      <ClassLeadForm initialData={classLead} onSubmit={handleSubmit as any} loading={submitLoading} submitButtonText="Update Lead" />
+
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />
       <ErrorDialog
         open={showError}

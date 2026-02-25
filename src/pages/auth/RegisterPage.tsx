@@ -61,7 +61,11 @@ const schema = yup.object({
     .string()
     .oneOf([yup.ref('password')], 'Passwords must match')
     .required('Confirm your password'),
-  phone: yup.string().optional(),
+  phone: yup
+    .string()
+    .optional()
+    .transform((v) => (typeof v === 'string' ? v.replace(/\D/g, '') : v))
+    .test('phone-10-digits', 'Phone number must be 10 digits', (v) => !v || v.length === 10),
   city: yup
     .string()
     .transform((v) => (typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined))
@@ -313,6 +317,7 @@ const RegisterPage: React.FC = () => {
                         error={!!errors.phone}
                         helperText={errors.phone?.message}
                         {...register('phone')}
+                        inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">

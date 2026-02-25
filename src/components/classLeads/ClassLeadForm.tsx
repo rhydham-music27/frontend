@@ -5,7 +5,8 @@ import * as yup from 'yup';
 import {
   Box, TextField, Button, MenuItem, Chip, Autocomplete,
   FormControl, FormLabel, RadioGroup, Radio, FormControlLabel,
-  Typography, IconButton, Grid, Paper, InputAdornment, Card, CardContent, Checkbox
+  Typography, IconButton, Grid, Paper, InputAdornment, Card, CardContent, Checkbox,
+  Divider, alpha, Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -18,6 +19,13 @@ import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import GroupsIcon from '@mui/icons-material/Groups';
+import SaveIcon from '@mui/icons-material/Save';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import TimerIcon from '@mui/icons-material/Timer';
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -35,6 +43,67 @@ type Props = {
   submitButtonText?: string;
 };
 
+/* ─── Reusable Section Header ─────────────────────────────────────────────── */
+function SectionHeader({ step, icon, title, subtitle }: { step: number; icon: React.ReactNode; title: string; subtitle?: string }) {
+  return (
+    <Box display="flex" alignItems="center" gap={2} mb={3}>
+      <Box
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'primary.main',
+          color: 'common.white',
+          fontWeight: 800,
+          fontSize: '0.85rem',
+          flexShrink: 0,
+        }}
+      >
+        {step}
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box display="flex" alignItems="center" gap={1}>
+          {icon}
+          <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', sm: '1.1rem' } }}>
+            {title}
+          </Typography>
+        </Box>
+        {subtitle && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+/* ─── Section Card Wrapper ────────────────────────────────────────────────── */
+function SectionCard({ children }: { children: React.ReactNode }) {
+  return (
+    <Card
+      sx={{
+        borderRadius: 3,
+        border: '1px solid',
+        borderColor: 'grey.100',
+        boxShadow: '0 2px 12px -4px rgba(0,0,0,0.06)',
+        overflow: 'visible',
+        transition: 'box-shadow 0.2s ease',
+        '&:hover': {
+          boxShadow: '0 6px 20px -6px rgba(0,0,0,0.1)',
+        },
+      }}
+    >
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 }, '&:last-child': { pb: { xs: 2.5, sm: 3 } } }}>
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
 const schema = yup.object({
   studentType: yup.string().oneOf(['SINGLE', 'GROUP']).required('Please select student type'),
   studentName: yup.string().when('studentType', {
@@ -44,12 +113,16 @@ const schema = yup.object({
   }),
   studentGender: yup.string().when('studentType', {
     is: 'SINGLE',
-    then: (schema) => schema.required('Student gender is required').oneOf(['M', 'F'], 'Please select gender'),
+    then: (schema) => schema.required('Student gender is required').oneOf(['M', 'F', 'OTHER'], 'Please select gender'),
     otherwise: (schema) => schema.optional()
   }),
   parentName: yup.string().optional().min(3, 'Name must be at least 3 characters'),
   parentEmail: yup.string().optional().email('Invalid email address'),
-  parentPhone: yup.string().optional(),
+  parentPhone: yup
+    .string()
+    .optional()
+    .transform((v) => (typeof v === 'string' ? v.replace(/\D/g, '') : v))
+    .test('phone-10-digits', 'Phone number must be 10 digits', (v) => !v || v.length === 10),
   grade: yup.string().when('studentType', {
     is: 'SINGLE',
     then: (schema) => schema.required('Grade is required'),
@@ -76,12 +149,16 @@ const schema = yup.object({
     then: (schema) => schema.of(
       yup.object({
         name: yup.string().required('Student name is required'),
-        gender: yup.string().required('Student gender is required').oneOf(['M', 'F'], 'Please select gender'),
+        gender: yup.string().required('Student gender is required').oneOf(['M', 'F', 'OTHER'], 'Please select gender'),
         fees: yup.number().required('Fees are required').min(0, 'Fees cannot be negative'),
         tutorFees: yup.number().required('Tutor fees are required').min(0, 'Tutor fees cannot be negative'),
         parentName: yup.string().optional(),
         parentEmail: yup.string().email('Invalid email address').optional(),
-        parentPhone: yup.string().optional(),
+        parentPhone: yup
+          .string()
+          .optional()
+          .transform((v) => (typeof v === 'string' ? v.replace(/\D/g, '') : v))
+          .test('phone-10-digits', 'Phone number must be 10 digits', (v) => !v || v.length === 10),
         board: yup.string().required('Board is required for student'),
         grade: yup.string().required('Grade is required for student'),
         subject: yup.array().of(yup.string().required()).min(1, 'At least one subject is required')
@@ -153,14 +230,60 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
   const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeOption ? selectedGradeOption._id : null);
 
   return (
-    <Paper variant="outlined" sx={{ p: 2, mb: 2, bgcolor: 'grey.50' }}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, sm: 2.5 },
+        mb: 2,
+        bgcolor: 'grey.50',
+        borderRadius: 2.5,
+        border: '1px solid',
+        borderColor: 'grey.100',
+        borderLeft: '4px solid',
+        borderLeftColor: 'primary.main',
+        transition: 'all 0.2s ease',
+        '&:hover': {
+          borderColor: 'primary.light',
+          borderLeftColor: 'primary.main',
+          bgcolor: (theme: any) => alpha(theme.palette.primary.main, 0.02),
+        },
+      }}
+    >
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="subtitle2">Student {index + 1}</Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Box
+            sx={{
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              bgcolor: 'primary.main',
+              color: 'common.white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.7rem',
+              fontWeight: 800,
+            }}
+          >
+            {index + 1}
+          </Box>
+          <Typography variant="subtitle2" fontWeight={700}>
+            Student {index + 1}
+          </Typography>
+        </Box>
         {index > 0 && (
-          <IconButton size="small" color="error" onClick={() => {
-            remove(index);
-            setValue('numberOfStudents', (numberOfStudents || 1) - 1);
-          }}>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => {
+              remove(index);
+              setValue('numberOfStudents', (numberOfStudents || 1) - 1);
+            }}
+            sx={{
+              bgcolor: 'error.50',
+              '&:hover': { bgcolor: 'error.100' },
+            }}
+          >
             <DeleteIcon fontSize="small" />
           </IconButton>
         )}
@@ -174,6 +297,9 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
             {...register(`studentDetails.${index}.name` as const)}
             error={!!errors.studentDetails?.[index]?.name}
             helperText={errors.studentDetails?.[index]?.name?.message}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><PersonIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+            }}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -188,6 +314,7 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
           >
             <MenuItem value="M">Male</MenuItem>
             <MenuItem value="F">Female</MenuItem>
+            <MenuItem value="OTHER">Other</MenuItem>
           </TextField>
         </Grid>
         <Grid item xs={12} md={4}>
@@ -315,6 +442,9 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
             fullWidth
             size="small"
             {...register(`studentDetails.${index}.parentEmail`)}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><EmailIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+            }}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -323,6 +453,10 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
             fullWidth
             size="small"
             {...register(`studentDetails.${index}.parentPhone`)}
+            inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><PhoneIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+            }}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -479,19 +613,8 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   // Reset logic for hierarchy
   useEffect(() => {
-    // Optional: Reset grade/subjects if board changes significantly.
-    // Currently we rely on user interaction to change fields.
-    // But strictly speaking if I change Board from CBSE to ICSE, 
-    // the currently selected Grade (e.g. "CBSE_10") might be invalid for ICSE ("ICSE_10").
-    // So we SHOULD reset.
     if (selectedGrade && selectedBoard) {
-      // Helper check: does current selectedGrade string start with selectedBoard? 
-      // Or better, is it in the new gradeOptions?
-      // gradeOptions are fetched async, so checking here might be tricky if they aren't loaded yet.
-      // A simple heuristic: if Board changes, reset Grade.
-      // But we need to avoid resetting on initial load.
-      // Using a ref to track "mounted" or "previousBoard" would be better.
-      // For now, let's keep it simple and trust the user to re-select if options change.
+      // Keep it simple and trust the user to re-select if options change.
     }
   }, [selectedBoard]);
 
@@ -504,6 +627,10 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   const handleFormSubmit: SubmitHandler<IClassLeadFormData> = (formData) => {
     const payload: IClassLeadFormData = { ...formData };
+
+    if ((payload as any).preferredTutorGender === '') {
+      delete (payload as any).preferredTutorGender;
+    }
 
     if (payload.studentType === 'SINGLE') {
       // Group-only fields should not be sent for single-student leads
@@ -524,584 +651,722 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
     onSubmit(payload);
   };
 
+  /* ─── Compute which step we are at for numbering ──────────────────────── */
+  let stepCounter = 0;
+  const nextStep = () => ++stepCounter;
+
   return (
     <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} display="flex" flexDirection="column" gap={3}>
 
-      {/* 1. Student Type */}
-      <Card variant="outlined">
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
-            <PersonIcon color="primary" />
-            <Typography variant="h6">Student Type</Typography>
-          </Box>
-          <FormControl component="fieldset">
-            <RadioGroup
-              row
-              value={studentType}
-              onChange={(e) => {
-                setValue('studentType', e.target.value as StudentType);
-                if (e.target.value === 'SINGLE') {
-                  setValue('studentDetails', []);
-                } else {
-                  setValue('studentName', '');
-                  setValue('grade', '');
-                  setValue('subject', []);
-                  setValue('numberOfStudents', 1);
-                }
-              }}
-            >
-              <FormControlLabel value="SINGLE" control={<Radio />} label="Single Student" />
-              <FormControlLabel value="GROUP" control={<Radio />} label="Group of Students" />
-            </RadioGroup>
-            {errors.studentType && (
-              <Typography color="error" variant="caption">{errors.studentType.message}</Typography>
-            )}
-          </FormControl>
-        </CardContent>
-      </Card>
-
-      {/* 2. Curriculum (Only for SINGLE) */}
-      {studentType === 'SINGLE' && (
-        <Card variant="outlined">
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <SchoolIcon color="primary" />
-              <Typography variant="h6">Curriculum</Typography>
-            </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  select
-                  label="Board"
-                  fullWidth
-                  value={watch('board')}
-                  onChange={(e) => {
-                    setValue('board', e.target.value, { shouldValidate: true });
-                    setValue('grade', '', { shouldValidate: true });
-                    setValue('subject', [], { shouldValidate: true });
-                  }}
-                  error={!!errors.board}
-                  helperText={errors.board?.message}
-                >
-                  {boardOptions.length > 0 ? (
-                    boardOptions.map((b) => (
-                      <MenuItem key={b.value} value={b.value}>{b.label}</MenuItem>
-                    ))
-                  ) : (
-                    Object.values(BOARD_TYPE).map((b) => (
-                      <MenuItem key={b} value={b}>{b}</MenuItem>
-                    ))
-                  )}
-                </TextField>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 3. Student / Group Details */}
-      {studentType === 'SINGLE' && (
-        <Card variant="outlined">
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <PersonIcon color="primary" />
-              <Typography variant="h6">Student Information</Typography>
-            </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Student Name"
-                  fullWidth
-                  {...register('studentName')}
-                  error={!!errors.studentName}
-                  helperText={errors.studentName?.message}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  select
-                  label="Gender"
-                  fullWidth
-                  value={watch('studentGender') || 'M'}
-                  {...register('studentGender')}
-                  error={!!errors.studentGender}
-                  helperText={errors.studentGender?.message}
-                >
-                  <MenuItem value="M">Male</MenuItem>
-                  <MenuItem value="F">Female</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  select
-                  label="Grade/Class"
-                  fullWidth
-                  value={watch('grade')}
-                  onChange={(e) => {
-                    setValue('grade', e.target.value, { shouldValidate: true });
-                    setValue('subject', [], { shouldValidate: true });
-                  }}
-                  error={!!errors.grade}
-                  helperText={errors.grade?.message}
-                  disabled={!selectedBoard}
-                >
-                  {gradeOptions.map((g) => (
-                    <MenuItem key={g.value} value={g.value}>{g.label}</MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12}>
-                <Autocomplete
-                  multiple
-                  disableCloseOnSelect
-                  options={subjectOptions.length > 0 ? [{ label: 'Select All', value: 'SELECT_ALL' }, ...subjectOptions] : []}
-                  getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
-                  isOptionEqualToValue={(option, value) => option.value === value.value}
-                  value={
-                    (watch('subject') || []).map((val: string) => {
-                      const opt = subjectOptions.find(o => o.value === val);
-                      return opt ? opt : { label: val, value: val };
-                    })
-                  }
-                  onChange={(_, newValue) => {
-                    if (newValue.some(v => (typeof v === 'string' ? v : v.value) === 'SELECT_ALL')) {
-                      const currentSubjects = watch('subject') || [];
-                      if (currentSubjects.length === subjectOptions.length) {
-                        setValue('subject', [], { shouldValidate: true });
-                      } else {
-                        const allValues = subjectOptions.map(o => o.value);
-                        setValue('subject', allValues, { shouldValidate: true });
-                      }
-                    } else {
-                      const values = newValue.map(v => typeof v === 'string' ? v : v.value);
-                      setValue('subject', values, { shouldValidate: true });
-                    }
-                  }}
-                  disabled={!selectedGrade}
-                  renderOption={(props, option, { selected }) => {
-                    const { key, ...rest } = props as any;
-                    const isSelectAll = (typeof option === 'string' ? option : option.label) === 'Select All';
-                    const allSelected = (watch('subject') || []).length === subjectOptions.length && subjectOptions.length > 0;
-                    return (
-                      <li key={key} {...rest}>
-                        <Checkbox
-                          icon={icon}
-                          checkedIcon={checkedIcon}
-                          style={{ marginRight: 8 }}
-                          checked={isSelectAll ? allSelected : selected}
-                        />
-                        {typeof option === 'string' ? option : option.label}
-                      </li>
-                    );
-                  }}
-                  renderTags={(value: readonly any[], getTagProps) =>
-                    value.map((option: any, index: number) => (
-                      <Chip variant="outlined" label={typeof option === 'string' ? option : option.label} {...getTagProps({ index })} key={index} />
-                    ))
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Subjects"
-                      error={!!errors.subject}
-                      helperText={errors.subject?.message as string}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
-
-      {studentType === 'GROUP' && (
-        <Card variant="outlined">
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <PersonIcon color="primary" />
-              <Typography variant="h6">Group Information</Typography>
-            </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={12}>
-                <TextField
-                  label="Number of Students"
-                  type="number"
-                  fullWidth
-                  {...register('numberOfStudents', { valueAsNumber: true })}
-                  error={!!errors.numberOfStudents}
-                  helperText={errors.numberOfStudents?.message}
-                  inputProps={{ min: 1, max: 10 }}
-                />
-              </Grid>
-            </Grid>
-            <Box mt={3}>
-              <Typography variant="subtitle1" gutterBottom>Students Details</Typography>
-              {fields.map((field, index) => (
-                <GroupStudentRow
-                  key={field.id}
-                  index={index}
-                  control={control}
-                  register={register}
-                  setValue={setValue}
-                  watch={watch}
-                  errors={errors}
-                  remove={remove}
-                  numberOfStudents={numberOfStudents}
-                />
-              ))}
-              <Button variant="outlined" startIcon={<AddIcon />} onClick={() => {
-                append({ name: '', gender: 'M', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' });
-                setValue('numberOfStudents', (numberOfStudents || 0) + 1);
-              }}
-                disabled={(numberOfStudents || 0) >= 10}>
-                Add Student (Max 10)
-              </Button>
-
-              <Box sx={{ mt: 3, p: 2, bgcolor: 'primary.50', borderRadius: 1, border: '1px solid', borderColor: 'primary.100' }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle2" color="textSecondary">Total Fees</Typography>
-                    <Typography variant="h6" color="primary">₹{totalFees.toLocaleString()}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle2" color="textSecondary">Total Tutor Payout</Typography>
-                    <Typography variant="h6" color="primary">₹{totalTutorFees.toLocaleString()}</Typography>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle2" color="textSecondary">Net Company Revenue</Typography>
-                    <Typography variant="h6" color="success.main">₹{(totalFees - totalTutorFees).toLocaleString()}</Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 4. Class Details */}
-      <Card variant="outlined">
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
-            <ClassIcon color="primary" />
-            <Typography variant="h6">Class Requirements</Typography>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <FormControl component="fieldset">
-                <FormLabel component="legend" sx={{ mb: 1, fontSize: '0.875rem' }}>Teaching Mode</FormLabel>
-                <RadioGroup row value={mode} onChange={(_, v) => setValue('mode', v as any, { shouldValidate: true })}>
-                  {Object.values(TEACHING_MODE).map((m) => (
-                    <FormControlLabel key={m} value={m} control={<Radio size="small" />} label={<Typography variant="body2">{m}</Typography>} />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
-                <Typography variant="subtitle2" gutterBottom>Preferred Timing</Typography>
-
-                {/* Days of Week Selection */}
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="textSecondary" display="block" mb={1}>Days</Typography>
-                  <Box display="flex" flexWrap="wrap" gap={1}>
-                    {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map((day) => {
-                      const currentWeekdays = watch('weekdays') || [];
-                      const isSelected = currentWeekdays.includes(day);
-                      // Display label in Title Case for better UI
-                      const displayLabel = day.charAt(0) + day.slice(1).toLowerCase().substring(0, 2);
-                      return (
-                        <Chip
-                          key={day}
-                          label={displayLabel}
-                          size="small"
-                          color={isSelected ? "primary" : "default"}
-                          variant={isSelected ? "filled" : "outlined"}
-                          onClick={() => {
-                            let newWeekdays = [...currentWeekdays];
-                            if (isSelected) {
-                              newWeekdays = newWeekdays.filter(d => d !== day);
-                            } else {
-                              newWeekdays.push(day);
-                              // Sort by day order
-                              const dayOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-                              newWeekdays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
-                            }
-                            setValue('weekdays', newWeekdays, { shouldValidate: true });
-                          }}
-                          clickable
-                        />
-                      );
-                    })}
-                  </Box>
+      {/* ───────────── 1. Student Type ───────────── */}
+      <SectionCard>
+        <SectionHeader
+          step={nextStep()}
+          icon={<PersonIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+          title="Student Type"
+          subtitle="Choose whether this lead is for a single student or a group"
+        />
+        <FormControl component="fieldset">
+          <RadioGroup
+            row
+            value={studentType}
+            onChange={(e) => {
+              setValue('studentType', e.target.value as StudentType);
+              if (e.target.value === 'SINGLE') {
+                setValue('studentDetails', []);
+              } else {
+                setValue('studentName', '');
+                setValue('grade', '');
+                setValue('subject', []);
+                setValue('numberOfStudents', 1);
+              }
+            }}
+          >
+            <FormControlLabel
+              value="SINGLE"
+              control={<Radio />}
+              label={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <PersonIcon sx={{ fontSize: 18, color: studentType === 'SINGLE' ? 'primary.main' : 'text.disabled' }} />
+                  <Typography variant="body2" fontWeight={studentType === 'SINGLE' ? 700 : 400}>Single Student</Typography>
                 </Box>
+              }
+            />
+            <FormControlLabel
+              value="GROUP"
+              control={<Radio />}
+              label={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <GroupsIcon sx={{ fontSize: 18, color: studentType === 'GROUP' ? 'primary.main' : 'text.disabled' }} />
+                  <Typography variant="body2" fontWeight={studentType === 'GROUP' ? 700 : 400}>Group of Students</Typography>
+                </Box>
+              }
+            />
+          </RadioGroup>
+          {errors.studentType && (
+            <Typography color="error" variant="caption">{errors.studentType.message}</Typography>
+          )}
+        </FormControl>
+      </SectionCard>
 
-                {/* Time Selection */}
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Start Time"
-                      type="time"
-                      fullWidth
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                      inputProps={{ step: 300 }} // 5 min
-                      defaultValue=""
-                      onChange={(e) => {
-                        const val = e.target.value; // "14:30"
-                        if (!val) return;
-
-                        const [hStr, mStr] = val.split(':');
-                        let h = parseInt(hStr);
-                        const m = parseInt(mStr);
-
-                        // Calculate End Time based on duration
-                        const duration = watch('classDurationHours') || 1;
-                        const startDate = new Date();
-                        startDate.setHours(h, m, 0);
-                        const endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
-
-                        // Format Strings
-                        const formatTime = (date: Date) => {
-                          let hours = date.getHours();
-                          const minutes = date.getMinutes();
-                          const ampm = hours >= 12 ? 'PM' : 'AM';
-                          hours = hours % 12;
-                          hours = hours ? hours : 12; // the hour '0' should be '12'
-                          const strTime = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
-                          return strTime;
-                        };
-
-                        const startTimeStr = formatTime(startDate);
-                        const endTimeStr = formatTime(endDate);
-                        const timeRange = `${startTimeStr} - ${endTimeStr}`;
-
-                        setValue('timing', timeRange, { shouldValidate: true });
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
-                  * End time calculated from Duration ({watch('classDurationHours') || 1} hr) based on selected Start Time
-                </Typography>
-                {errors.timing && <Typography variant="caption" color="error">{errors.timing.message}</Typography>}
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Classes per Month"
-                type="number"
-                fullWidth
-                {...register('classesPerMonth', { valueAsNumber: true })}
-                error={!!errors.classesPerMonth}
-                helperText={errors.classesPerMonth?.message}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Class Duration (hours)"
-                type="number"
-                fullWidth
-                {...register('classDurationHours', { valueAsNumber: true })}
-                inputProps={{ step: 0.5 }}
-                error={!!errors.classDurationHours}
-                helperText={errors.classDurationHours?.message}
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* 5. Location (Conditional) */}
-      {(mode === TEACHING_MODE.OFFLINE || mode === TEACHING_MODE.HYBRID) && (
-        <Card variant="outlined">
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <PlaceIcon color="primary" />
-              <Typography variant="h6">Location Details</Typography>
-            </Box>
-            <Grid container spacing={2}>
-              {mode === TEACHING_MODE.HYBRID && (
-                <Grid item xs={12}>
-                  <TextField label="Location" fullWidth {...register('location')} error={!!errors.location} helperText={errors.location?.message} />
-                </Grid>
-              )}
-              {mode === TEACHING_MODE.OFFLINE && (
-                <>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      select
-                      label="City"
-                      fullWidth
-                      defaultValue={defaultValues.city}
-                      {...register('city')}
-                      error={!!errors.city}
-                      helperText={errors.city?.message}
-                    >
-                      {cityLabels.map((c) => (
-                        <MenuItem key={c} value={c}>{c}</MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Autocomplete
-                      options={selectedCity ? areaLabels : []}
-                      value={watch('area') || ''}
-                      onChange={(_, value) => setValue('area', value || '', { shouldValidate: true })}
-                      renderInput={(params) => (
-                        <TextField {...params} label="Area" error={!!errors.area} helperText={errors.area?.message} />
-                      )}
-                      freeSolo={false}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Full Address / Google Map Link"
-                      multiline
-                      rows={2}
-                      fullWidth
-                      {...register('address')}
-                      error={!!errors.address}
-                      helperText={errors.address?.message}
-                    />
-                  </Grid>
-                </>
-              )}
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 6. Financials (Single Student) */}
+      {/* ───────────── 2. Curriculum (SINGLE only) ───────────── */}
       {studentType === 'SINGLE' && (
-        <Card variant="outlined">
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <CurrencyRupeeIcon color="primary" />
-              <Typography variant="h6">Financials</Typography>
-            </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Student Fees"
-                  type="number"
-                  fullWidth
-                  {...register('paymentAmount', { valueAsNumber: true })}
-                  error={!!errors.paymentAmount}
-                  helperText={errors.paymentAmount?.message}
-                  InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Tutor Payout"
-                  type="number"
-                  fullWidth
-                  {...register('tutorFees', { valueAsNumber: true })}
-                  error={!!errors.tutorFees}
-                  helperText={errors.tutorFees?.message}
-                  InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
-                />
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 7. Contact Information */}
-      <Card variant="outlined">
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
-            <ContactPhoneIcon color="primary" />
-            <Typography variant="h6">Contact Information</Typography>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label={studentType === 'SINGLE' ? "Parent Name" : "Primary Name"}
-                fullWidth
-                {...register('parentName')}
-                error={!!errors.parentName}
-                helperText={errors.parentName?.message}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label="Email"
-                type="email"
-                fullWidth
-                {...register('parentEmail')}
-                error={!!errors.parentEmail}
-                helperText={errors.parentEmail?.message}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label="Phone"
-                fullWidth
-                {...register('parentPhone')}
-                error={!!errors.parentPhone}
-                helperText={errors.parentPhone?.message}
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* 8. Additional Info */}
-      <Card variant="outlined">
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
-            <NoteIcon color="primary" />
-            <Typography variant="h6">Additional Information</Typography>
-          </Box>
+        <SectionCard>
+          <SectionHeader
+            step={nextStep()}
+            icon={<SchoolIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+            title="Curriculum"
+            subtitle="Select the board to populate grade and subject options"
+          />
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <TextField
                 select
-                label="Lead Source"
+                label="Board"
                 fullWidth
-                defaultValue={defaultValues.leadSource || ''}
-                {...register('leadSource')}
+                value={watch('board')}
+                onChange={(e) => {
+                  setValue('board', e.target.value, { shouldValidate: true });
+                  setValue('grade', '', { shouldValidate: true });
+                  setValue('subject', [], { shouldValidate: true });
+                }}
+                error={!!errors.board}
+                helperText={errors.board?.message}
               >
-                <MenuItem value="">Select source</MenuItem>
-                <MenuItem value="GOOGLE_PROFILE">Google profile</MenuItem>
-                <MenuItem value="WHATSAPP">WhatsApp</MenuItem>
-                <MenuItem value="REFERRED">Referred</MenuItem>
+                {boardOptions.length > 0 ? (
+                  boardOptions.map((b) => (
+                    <MenuItem key={b.value} value={b.value}>{b.label}</MenuItem>
+                  ))
+                ) : (
+                  Object.values(BOARD_TYPE).map((b) => (
+                    <MenuItem key={b} value={b}>{b}</MenuItem>
+                  ))
+                )}
+              </TextField>
+            </Grid>
+          </Grid>
+        </SectionCard>
+      )}
+
+      {/* ───────────── 3. Student / Group Details ───────────── */}
+      {studentType === 'SINGLE' && (
+        <SectionCard>
+          <SectionHeader
+            step={nextStep()}
+            icon={<PersonIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+            title="Student Information"
+            subtitle="Enter the student's personal and academic details"
+          />
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Student Name"
+                fullWidth
+                {...register('studentName')}
+                error={!!errors.studentName}
+                helperText={errors.studentName?.message}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start"><PersonIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                select
+                label="Gender"
+                fullWidth
+                value={watch('studentGender') || 'M'}
+                {...register('studentGender')}
+                error={!!errors.studentGender}
+                helperText={errors.studentGender?.message}
+              >
+                <MenuItem value="M">Male</MenuItem>
+                <MenuItem value="F">Female</MenuItem>
                 <MenuItem value="OTHER">Other</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <TextField
                 select
-                label="Preferred Tutor Gender"
+                label="Grade / Class"
                 fullWidth
-                defaultValue={(initialData as any)?.preferredTutorGender || ''}
-                {...register('preferredTutorGender')}
+                value={watch('grade')}
+                onChange={(e) => {
+                  setValue('grade', e.target.value, { shouldValidate: true });
+                  setValue('subject', [], { shouldValidate: true });
+                }}
+                error={!!errors.grade}
+                helperText={errors.grade?.message}
+                disabled={!selectedBoard}
               >
-                <MenuItem value="">No preference</MenuItem>
-                <MenuItem value="MALE">Male</MenuItem>
-                <MenuItem value="FEMALE">Female</MenuItem>
+                {gradeOptions.map((g) => (
+                  <MenuItem key={g.value} value={g.value}>{g.label}</MenuItem>
+                ))}
               </TextField>
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                label="Internal Notes / Remarks"
-                multiline
-                rows={3}
-                fullWidth
-                {...register('notes')}
-                error={!!errors.notes}
-                helperText={errors.notes?.message}
+              <Autocomplete
+                multiple
+                disableCloseOnSelect
+                options={subjectOptions.length > 0 ? [{ label: 'Select All', value: 'SELECT_ALL' }, ...subjectOptions] : []}
+                getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+                isOptionEqualToValue={(option, value) => option.value === value.value}
+                value={
+                  (watch('subject') || []).map((val: string) => {
+                    const opt = subjectOptions.find(o => o.value === val);
+                    return opt ? opt : { label: val, value: val };
+                  })
+                }
+                onChange={(_, newValue) => {
+                  if (newValue.some(v => (typeof v === 'string' ? v : v.value) === 'SELECT_ALL')) {
+                    const currentSubjects = watch('subject') || [];
+                    if (currentSubjects.length === subjectOptions.length) {
+                      setValue('subject', [], { shouldValidate: true });
+                    } else {
+                      const allValues = subjectOptions.map(o => o.value);
+                      setValue('subject', allValues, { shouldValidate: true });
+                    }
+                  } else {
+                    const values = newValue.map(v => typeof v === 'string' ? v : v.value);
+                    setValue('subject', values, { shouldValidate: true });
+                  }
+                }}
+                disabled={!selectedGrade}
+                renderOption={(props, option, { selected }) => {
+                  const { key, ...rest } = props as any;
+                  const isSelectAll = (typeof option === 'string' ? option : option.label) === 'Select All';
+                  const allSelected = (watch('subject') || []).length === subjectOptions.length && subjectOptions.length > 0;
+                  return (
+                    <li key={key} {...rest}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={isSelectAll ? allSelected : selected}
+                      />
+                      {typeof option === 'string' ? option : option.label}
+                    </li>
+                  );
+                }}
+                renderTags={(value: readonly any[], getTagProps) =>
+                  value.map((option: any, index: number) => (
+                    <Chip variant="outlined" label={typeof option === 'string' ? option : option.label} {...getTagProps({ index })} key={index} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Subjects"
+                    error={!!errors.subject}
+                    helperText={errors.subject?.message as string}
+                  />
+                )}
               />
             </Grid>
           </Grid>
-        </CardContent>
-      </Card>
+        </SectionCard>
+      )}
+
+      {studentType === 'GROUP' && (
+        <SectionCard>
+          <SectionHeader
+            step={nextStep()}
+            icon={<GroupsIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+            title="Group Information"
+            subtitle="Add details for each student in the group"
+          />
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Number of Students"
+                type="number"
+                fullWidth
+                {...register('numberOfStudents', { valueAsNumber: true })}
+                error={!!errors.numberOfStudents}
+                helperText={errors.numberOfStudents?.message}
+                inputProps={{ min: 1, max: 10 }}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start"><GroupsIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ mb: 2.5 }} />
+
+          <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ mb: 2 }}>
+            Student Details
+          </Typography>
+          {fields.map((field, index) => (
+            <GroupStudentRow
+              key={field.id}
+              index={index}
+              control={control}
+              register={register}
+              setValue={setValue}
+              watch={watch}
+              errors={errors}
+              remove={remove}
+              numberOfStudents={numberOfStudents}
+            />
+          ))}
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              append({ name: '', gender: 'M', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' });
+              setValue('numberOfStudents', (numberOfStudents || 0) + 1);
+            }}
+            disabled={(numberOfStudents || 0) >= 10}
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, mb: 3 }}
+          >
+            Add Student (Max 10)
+          </Button>
+
+          {/* Totals summary */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: 2.5,
+              background: 'linear-gradient(135deg, rgba(15,98,254,0.04) 0%, rgba(15,98,254,0.08) 100%)',
+              border: '1px solid',
+              borderColor: 'primary.100',
+            }}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Total Fees
+                </Typography>
+                <Typography variant="h6" fontWeight={800} color="primary.main">₹{totalFees.toLocaleString()}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Tutor Payout
+                </Typography>
+                <Typography variant="h6" fontWeight={800} color="primary.main">₹{totalTutorFees.toLocaleString()}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Net Revenue
+                </Typography>
+                <Typography variant="h6" fontWeight={800} color="success.main">₹{(totalFees - totalTutorFees).toLocaleString()}</Typography>
+              </Grid>
+            </Grid>
+          </Box>
+        </SectionCard>
+      )}
+
+      {/* ───────────── 4. Class Requirements ───────────── */}
+      <SectionCard>
+        <SectionHeader
+          step={nextStep()}
+          icon={<ClassIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+          title="Class Requirements"
+          subtitle="Mode, schedule, duration, and frequency"
+        />
+        <Grid container spacing={2.5}>
+          {/* Teaching Mode */}
+          <Grid item xs={12} md={6}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend" sx={{ mb: 1, fontSize: '0.875rem', fontWeight: 600 }}>Teaching Mode</FormLabel>
+              <RadioGroup row value={mode} onChange={(_, v) => setValue('mode', v as any, { shouldValidate: true })}>
+                {Object.values(TEACHING_MODE).map((m) => (
+                  <FormControlLabel
+                    key={m}
+                    value={m}
+                    control={<Radio size="small" />}
+                    label={
+                      <Typography variant="body2" fontWeight={mode === m ? 600 : 400}>
+                        {m}
+                      </Typography>
+                    }
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          </Grid>
+
+          {/* Preferred Timing */}
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={0}
+              sx={{
+                border: '1px solid',
+                borderColor: 'grey.100',
+                borderRadius: 2.5,
+                p: 2.5,
+                bgcolor: 'grey.50',
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1} mb={2}>
+                <AccessTimeIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+                <Typography variant="subtitle2" fontWeight={700}>Preferred Timing</Typography>
+              </Box>
+
+              {/* Days of Week Selection */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="caption" color="text.secondary" display="block" mb={1} fontWeight={600}>
+                  Days
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={0.75}>
+                  {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map((day) => {
+                    const currentWeekdays = watch('weekdays') || [];
+                    const isSelected = currentWeekdays.includes(day);
+                    const displayLabel = day.charAt(0) + day.slice(1).toLowerCase().substring(0, 2);
+                    return (
+                      <Chip
+                        key={day}
+                        label={displayLabel}
+                        size="small"
+                        color={isSelected ? "primary" : "default"}
+                        variant={isSelected ? "filled" : "outlined"}
+                        onClick={() => {
+                          let newWeekdays = [...currentWeekdays];
+                          if (isSelected) {
+                            newWeekdays = newWeekdays.filter(d => d !== day);
+                          } else {
+                            newWeekdays.push(day);
+                            const dayOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+                            newWeekdays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                          }
+                          setValue('weekdays', newWeekdays, { shouldValidate: true });
+                        }}
+                        clickable
+                        sx={{
+                          fontWeight: isSelected ? 700 : 500,
+                          borderRadius: '20px',
+                          transition: 'all 0.15s ease',
+                          minWidth: 44,
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              </Box>
+
+              {/* Time Selection */}
+              <TextField
+                label="Start Time"
+                type="time"
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                defaultValue=""
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) return;
+
+                  const [hStr, mStr] = val.split(':');
+                  let h = parseInt(hStr);
+                  const m = parseInt(mStr);
+
+                  const duration = watch('classDurationHours') || 1;
+                  const startDate = new Date();
+                  startDate.setHours(h, m, 0);
+                  const endDate = new Date(startDate.getTime() + duration * 60 * 60 * 1000);
+
+                  const formatTime = (date: Date) => {
+                    let hours = date.getHours();
+                    const minutes = date.getMinutes();
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                    const strTime = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
+                    return strTime;
+                  };
+
+                  const startTimeStr = formatTime(startDate);
+                  const endTimeStr = formatTime(endDate);
+                  const timeRange = `${startTimeStr} - ${endTimeStr}`;
+
+                  setValue('timing', timeRange, { shouldValidate: true });
+                }}
+              />
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                End time auto-calculated from duration ({watch('classDurationHours') || 1} hr)
+              </Typography>
+              {errors.timing && <Typography variant="caption" color="error">{errors.timing.message}</Typography>}
+            </Paper>
+          </Grid>
+
+          {/* Classes per Month & Duration */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Classes per Month"
+              type="number"
+              fullWidth
+              {...register('classesPerMonth', { valueAsNumber: true })}
+              error={!!errors.classesPerMonth}
+              helperText={errors.classesPerMonth?.message}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><CalendarMonthIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Class Duration (hours)"
+              type="number"
+              fullWidth
+              {...register('classDurationHours', { valueAsNumber: true })}
+              inputProps={{ step: 0.5 }}
+              error={!!errors.classDurationHours}
+              helperText={errors.classDurationHours?.message}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><TimerIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+              }}
+            />
+          </Grid>
+        </Grid>
+      </SectionCard>
+
+      {/* ───────────── 5. Location (Conditional) ───────────── */}
+      {(mode === TEACHING_MODE.OFFLINE || mode === TEACHING_MODE.HYBRID) && (
+        <SectionCard>
+          <SectionHeader
+            step={nextStep()}
+            icon={<PlaceIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+            title="Location Details"
+            subtitle={mode === TEACHING_MODE.OFFLINE ? "Offline tuition location" : "Hybrid mode location"}
+          />
+          <Grid container spacing={2}>
+            {mode === TEACHING_MODE.HYBRID && (
+              <Grid item xs={12}>
+                <TextField
+                  label="Location"
+                  fullWidth
+                  {...register('location')}
+                  error={!!errors.location}
+                  helperText={errors.location?.message}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start"><PlaceIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+                  }}
+                />
+              </Grid>
+            )}
+            {mode === TEACHING_MODE.OFFLINE && (
+              <>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    select
+                    label="City"
+                    fullWidth
+                    defaultValue={defaultValues.city}
+                    {...register('city')}
+                    error={!!errors.city}
+                    helperText={errors.city?.message}
+                  >
+                    {cityLabels.map((c) => (
+                      <MenuItem key={c} value={c}>{c}</MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Autocomplete
+                    options={selectedCity ? areaLabels : []}
+                    value={watch('area') || ''}
+                    onChange={(_, value) => setValue('area', value || '', { shouldValidate: true })}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Area" error={!!errors.area} helperText={errors.area?.message} />
+                    )}
+                    freeSolo={false}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    label="Full Address / Google Map Link"
+                    multiline
+                    rows={2}
+                    fullWidth
+                    {...register('address')}
+                    error={!!errors.address}
+                    helperText={errors.address?.message}
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </SectionCard>
+      )}
+
+      {/* ───────────── 6. Financials (Single Student) ───────────── */}
+      {studentType === 'SINGLE' && (
+        <SectionCard>
+          <SectionHeader
+            step={nextStep()}
+            icon={<CurrencyRupeeIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+            title="Financials"
+            subtitle="Student fees and tutor payout for this lead"
+          />
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Student Fees"
+                type="number"
+                fullWidth
+                {...register('paymentAmount', { valueAsNumber: true })}
+                error={!!errors.paymentAmount}
+                helperText={errors.paymentAmount?.message}
+                InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="Tutor Payout"
+                type="number"
+                fullWidth
+                {...register('tutorFees', { valueAsNumber: true })}
+                error={!!errors.tutorFees}
+                helperText={errors.tutorFees?.message}
+                InputProps={{ startAdornment: <InputAdornment position="start">₹</InputAdornment> }}
+              />
+            </Grid>
+          </Grid>
+        </SectionCard>
+      )}
+
+      {/* ───────────── 7. Contact Information ───────────── */}
+      <SectionCard>
+        <SectionHeader
+          step={nextStep()}
+          icon={<ContactPhoneIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+          title="Contact Information"
+          subtitle={studentType === 'SINGLE' ? "Parent or guardian contact details" : "Primary contact details"}
+        />
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              label={studentType === 'SINGLE' ? "Parent Name" : "Primary Name"}
+              fullWidth
+              {...register('parentName')}
+              error={!!errors.parentName}
+              helperText={errors.parentName?.message}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><PersonIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              label="Email"
+              type="email"
+              fullWidth
+              {...register('parentEmail')}
+              error={!!errors.parentEmail}
+              helperText={errors.parentEmail?.message}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><EmailIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              label="Phone"
+              fullWidth
+              {...register('parentPhone')}
+              error={!!errors.parentPhone}
+              helperText={errors.parentPhone?.message}
+              inputProps={{ maxLength: 10, inputMode: 'numeric', pattern: '[0-9]*' }}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><PhoneIcon sx={{ fontSize: 18, color: 'text.disabled' }} /></InputAdornment>,
+              }}
+            />
+          </Grid>
+        </Grid>
+      </SectionCard>
+
+      {/* ───────────── 8. Additional Info ───────────── */}
+      <SectionCard>
+        <SectionHeader
+          step={nextStep()}
+          icon={<NoteIcon sx={{ fontSize: 20, color: 'primary.main' }} />}
+          title="Additional Information"
+          subtitle="Source, tutor preferences, and internal notes"
+        />
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              label="Lead Source"
+              fullWidth
+              defaultValue={defaultValues.leadSource || ''}
+              {...register('leadSource')}
+            >
+              <MenuItem value="">Select source</MenuItem>
+              <MenuItem value="GOOGLE_PROFILE">Google profile</MenuItem>
+              <MenuItem value="WHATSAPP">WhatsApp</MenuItem>
+              <MenuItem value="REFERRED">Referred</MenuItem>
+              <MenuItem value="OTHER">Other</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              label="Preferred Tutor Gender"
+              fullWidth
+              defaultValue={(initialData as any)?.preferredTutorGender || ''}
+              {...register('preferredTutorGender')}
+            >
+              <MenuItem value="">No preference</MenuItem>
+              <MenuItem value="MALE">Male</MenuItem>
+              <MenuItem value="FEMALE">Female</MenuItem>
+              <MenuItem value="OTHER">Other</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Internal Notes / Remarks"
+              multiline
+              rows={3}
+              fullWidth
+              {...register('notes')}
+              error={!!errors.notes}
+              helperText={errors.notes?.message}
+              placeholder="Add any special requirements or notes about this lead..."
+            />
+          </Grid>
+        </Grid>
+      </SectionCard>
 
       {error && <ErrorAlert error={error} />}
 
-      <Box sx={{ position: 'sticky', bottom: 0, bgcolor: 'background.paper', p: 2, zIndex: 10, boxShadow: 3 }}>
-        <Button size="large" type="submit" variant="contained" color="primary" fullWidth disabled={!!loading} startIcon={!loading && <AddIcon />}>
+      {/* ───────────── Sticky Submit Bar ───────────── */}
+      <Box
+        sx={{
+          position: 'sticky',
+          bottom: 0,
+          bgcolor: 'background.paper',
+          p: 2,
+          zIndex: 10,
+          borderTop: '1px solid',
+          borderColor: 'grey.100',
+          borderRadius: '16px 16px 0 0',
+          boxShadow: '0 -4px 20px -4px rgba(0,0,0,0.08)',
+        }}
+      >
+        <Button
+          size="large"
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={!!loading}
+          disableElevation
+          startIcon={!loading && <SaveIcon />}
+          sx={{
+            py: 1.5,
+            fontWeight: 700,
+            fontSize: '1rem',
+            borderRadius: 2.5,
+            textTransform: 'none',
+            boxShadow: '0 4px 14px -4px rgba(15,98,254,0.4)',
+            '&:hover': {
+              boxShadow: '0 6px 20px -4px rgba(15,98,254,0.5)',
+            },
+          }}
+        >
           {loading ? <LoadingSpinner /> : submitButtonText}
         </Button>
       </Box>

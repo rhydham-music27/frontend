@@ -184,17 +184,17 @@ const TodayScheduleCard: React.FC = () => {
                     onMarkClick={() => handleMarkClick(cls)}
                   />
                   <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Button 
-                      size="small" 
-                      variant="outlined" 
+                    <Button
+                      size="small"
+                      variant="outlined"
                       startIcon={<ClassIcon />}
                       onClick={() => navigate(`/tutor-tests?classId=${cls.id}`)}
                     >
                       Record Test
                     </Button>
-                    <Button 
-                      size="small" 
-                      variant="outlined" 
+                    <Button
+                      size="small"
+                      variant="outlined"
                       onClick={() => navigate(`/tutor-attendance?classId=${cls.id}`)}
                     >
                       Upload Report
