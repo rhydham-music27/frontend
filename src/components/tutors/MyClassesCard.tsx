@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -12,6 +12,7 @@ import {
   IconButton,
   alpha,
   useTheme,
+  Card,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -21,26 +22,16 @@ import SendIcon from '@mui/icons-material/Send';
 import ClassIcon from '@mui/icons-material/Class';
 import QuizIcon from '@mui/icons-material/Quiz';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import PersonIcon from '@mui/icons-material/Person';
-import { StyledCard } from '../common/StyledCard';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
 import TutorClassesStatsBox from './TutorClassesStatsBox';
 import { getMyClasses } from '../../services/finalClassService';
-import { getAttendanceByClass } from '../../services/attendanceService';
-import {
-  upsertAttendanceSheet,
-  submitAttendanceSheet,
-} from '../../services/attendanceSheetService';
-import AttendanceSheet, {
-  AttendanceRecord,
-  AssignedClass,
-  TutorProfile,
-} from './AttendanceSheet';
+import { upsertAttendanceSheet, submitAttendanceSheet } from '../../services/attendanceSheetService';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { useSelector } from 'react-redux';
@@ -57,11 +48,8 @@ const MyClassesCard: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
   const [attendanceModalOpen, setAttendanceModalOpen] = useState<boolean>(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-
-  // State for client-side AttendanceSheet PDF generation
   const [sheetGeneratingClassId, setSheetGeneratingClassId] = useState<string | null>(null);
   const [sheetSubmittingClassId, setSheetSubmittingClassId] = useState<string | null>(null);
-
 
   const handleViewAttendanceSheet = (cls: IFinalClass) => {
     const classIdStr = String((cls as any).id || (cls as any)._id || '');
@@ -125,26 +113,22 @@ const MyClassesCard: React.FC = () => {
     }
   };
 
+  const getStatusThemeColor = (status: string) => {
+    switch (status) {
+      case FINAL_CLASS_STATUS.ACTIVE: return '#10b981';
+      case FINAL_CLASS_STATUS.COMPLETED: return '#3b82f6';
+      case FINAL_CLASS_STATUS.PAUSED: return '#f59e0b';
+      case FINAL_CLASS_STATUS.CANCELLED: return '#ef4444';
+      default: return '#94a3b8';
+    }
+  };
+
   const calculateProgress = (cls: IFinalClass) => {
     if ((cls as any).progressPercentage != null) return Math.round((cls as any).progressPercentage);
     const completed = Number(cls.completedSessions || 0);
     const total = Number(cls.totalSessions || 0);
     if (!total) return 0;
     return Math.round((completed / total) * 100);
-  };
-
-  const handleGenerateMonthlySheet = async (cls: IFinalClass) => {
-    const classIdStr = String((cls as any).id || (cls as any)._id || '');
-    try {
-      setSheetGeneratingClassId(classIdStr);
-      const now = new Date();
-      await upsertAttendanceSheet(classIdStr, now.getMonth() + 1, now.getFullYear());
-      setActionSuccess('Monthly attendance sheet generated.');
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSheetGeneratingClassId(null);
-    }
   };
 
   const handleSubmitMonthlySheet = async (cls: IFinalClass) => {
@@ -164,34 +148,43 @@ const MyClassesCard: React.FC = () => {
     }
   };
 
+  const cardSx = {
+    borderRadius: 3,
+    border: '1px solid',
+    borderColor: 'grey.100',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+    transition: 'box-shadow 0.2s',
+    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+  };
+
   if (loading) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" justifyContent="center" py={4}>
             <LoadingSpinner message="Loading your classes..." />
           </Box>
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   if (error && classes.length === 0) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" flexDirection="column" gap={2}>
             <ErrorAlert error={error} />
-            <Button variant="outlined" onClick={fetchClasses}>Retry</Button>
+            <Button variant="outlined" onClick={fetchClasses} sx={{ borderRadius: 2, textTransform: 'none' }}>Retry</Button>
           </Box>
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   if (!loading && classes.length === 0) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <EmptyState
             icon={<ClassIcon color="primary" />}
@@ -199,37 +192,88 @@ const MyClassesCard: React.FC = () => {
             description="You don't have any active classes assigned yet."
           />
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   return (
-    <StyledCard>
-      <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+    <Card sx={cardSx}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
+        {/* Card Header */}
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
           <Box display="flex" alignItems="center" gap={1.5}>
-            <ClassIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="h6" fontWeight={600}>My Classes</Typography>
+            <Box
+              sx={{
+                p: 0.75,
+                borderRadius: 2,
+                bgcolor: alpha('#6366f1', 0.08),
+                display: 'flex',
+              }}
+            >
+              <ClassIcon sx={{ fontSize: 20, color: '#6366f1' }} />
+            </Box>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
+              My Classes
+            </Typography>
           </Box>
-          <Chip size="small" color="primary" variant="filled" label={`${classes.length} active`} sx={{ fontWeight: 700 }} />
+          <Chip
+            size="small"
+            label={`${classes.length} active`}
+            sx={{
+              bgcolor: alpha('#6366f1', 0.08),
+              color: '#4f46e5',
+              fontWeight: 700,
+              fontSize: '0.72rem',
+              height: 26,
+            }}
+          />
         </Box>
 
         {actionSuccess && (
-          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setActionSuccess(null)}>
+          <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setActionSuccess(null)}>
             {actionSuccess}
           </Alert>
         )}
 
+        {/* Stats */}
         <TutorClassesStatsBox classes={classes} newClassLeads={0} />
 
+        {/* Content Grid */}
         <Grid container spacing={3}>
+          {/* Left: Class Cards */}
           <Grid item xs={12} md={7}>
-            <Typography variant="subtitle1" fontWeight={600} gutterBottom>Assigned Classes</Typography>
-            <Box sx={{ maxHeight: 500, overflow: 'auto', pr: 1 }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight={700}
+              gutterBottom
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                color: 'text.primary',
+                fontSize: '0.88rem',
+                mb: 2,
+              }}
+            >
+              <Box sx={{ width: 3, height: 18, borderRadius: 2, bgcolor: '#6366f1' }} />
+              Assigned Classes
+            </Typography>
+            <Box
+              sx={{
+                maxHeight: 600,
+                overflow: 'auto',
+                pr: 1,
+                '&::-webkit-scrollbar': { width: '4px' },
+                '&::-webkit-scrollbar-track': { background: 'transparent' },
+                '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
+              }}
+            >
               {classes.map((cls) => {
                 const progress = calculateProgress(cls);
                 const isSelected = selectedClass?.id === cls.id;
                 const classIdStr = String((cls as any).id || (cls as any)._id || '');
+                const statusColor = getStatusThemeColor(cls.status);
+                const progressColor = progress >= 75 ? '#10b981' : progress >= 40 ? '#6366f1' : '#f59e0b';
 
                 return (
                   <Box
@@ -237,113 +281,189 @@ const MyClassesCard: React.FC = () => {
                     onClick={() => setSelectedClass(cls)}
                     sx={{
                       border: '1px solid',
-                      borderColor: isSelected ? 'primary.main' : 'divider',
-                      borderRadius: 4,
+                      borderColor: isSelected ? alpha('#6366f1', 0.35) : alpha('#6366f1', 0.08),
+                      borderRadius: 2.5,
                       p: 2.5,
                       mb: 2,
                       cursor: 'pointer',
-                      bgcolor: isSelected ? 'rgba(99, 102, 241, 0.04)' : 'background.paper',
-                      transition: 'all 0.3s ease',
+                      bgcolor: isSelected ? alpha('#6366f1', 0.03) : '#fff',
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        borderColor: 'primary.light',
-                        transform: 'translateY(-2px)',
+                        borderColor: alpha('#6366f1', 0.25),
+                        bgcolor: alpha('#6366f1', 0.02),
                       },
                     }}
                   >
+                    {/* Student Header */}
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                      <Box display="flex" alignItems="center" gap={1}>
+                      <Box display="flex" alignItems="center" gap={1.25}>
                         <Box
                           sx={{
-                            width: 40, height: 40, borderRadius: '50%',
-                            bgcolor: isSelected ? 'primary.main' : 'primary.light',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
+                            width: 38, height: 38, borderRadius: 2,
+                            bgcolor: isSelected ? '#6366f1' : alpha('#6366f1', 0.08),
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: isSelected ? 'white' : '#6366f1',
+                            transition: 'all 0.2s',
                           }}
                         >
-                          <SchoolIcon fontSize="small" />
+                          <SchoolIcon sx={{ fontSize: 18 }} />
                         </Box>
                         <Box>
-                          <Typography variant="h6" fontWeight={700}>{cls.studentName}</Typography>
-                          <Typography variant="caption" color="text.secondary">Grade {cls.grade} • {cls.board}</Typography>
+                          <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.92rem' }}>{cls.studentName}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Grade {cls.grade} • {cls.board}</Typography>
                         </Box>
                       </Box>
-                      <Chip label={cls.status} color={getStatusColor(cls.status)} size="small" sx={{ fontWeight: 700 }} />
+                      <Chip
+                        label={cls.status}
+                        size="small"
+                        sx={{
+                          bgcolor: alpha(statusColor, 0.08),
+                          color: statusColor,
+                          fontWeight: 700,
+                          fontSize: '0.65rem',
+                          height: 22,
+                        }}
+                      />
                     </Box>
 
+                    {/* Subject & Mode Chips */}
                     <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
                       {(Array.isArray(cls.subject) ? cls.subject : [cls.subject]).map((sub) => (
-                        <Chip key={String(sub)} size="small" variant="outlined" label={String(sub)} />
+                        <Chip
+                          key={String(sub)}
+                          size="small"
+                          label={String(sub)}
+                          sx={{
+                            bgcolor: alpha('#6366f1', 0.06),
+                            color: '#4f46e5',
+                            fontWeight: 600,
+                            fontSize: '0.65rem',
+                            height: 22,
+                          }}
+                        />
                       ))}
-                      <Chip size="small" label={cls.mode} variant="outlined" color="info" />
+                      <Chip
+                        size="small"
+                        label={cls.mode}
+                        sx={{
+                          bgcolor: cls.mode === 'ONLINE' ? alpha('#3b82f6', 0.08) : cls.mode === 'OFFLINE' ? alpha('#10b981', 0.08) : alpha('#8b5cf6', 0.08),
+                          color: cls.mode === 'ONLINE' ? '#2563eb' : cls.mode === 'OFFLINE' ? '#059669' : '#7c3aed',
+                          fontWeight: 600,
+                          fontSize: '0.65rem',
+                          height: 22,
+                        }}
+                      />
                     </Box>
 
-                    <Grid container spacing={1} mb={2}>
-                      <Grid item xs={6}>
-                        <Box display="flex" alignItems="center" gap={0.5} color="text.secondary">
-                          <AccessTimeIcon sx={{ fontSize: 14 }} />
-                          <Typography variant="caption" noWrap>{(cls.schedule as any)?.timeSlot || 'No schedule'}</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Box display="flex" alignItems="center" gap={0.5} color="text.secondary">
-                          <PersonIcon sx={{ fontSize: 14 }} />
-                          <Typography variant="caption" noWrap>{cls.coordinator?.name}</Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
+                    {/* Meta Info */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                        mb: 2,
+                        p: 1.25,
+                        borderRadius: 2,
+                        bgcolor: alpha('#f8fafc', 0.8),
+                        border: '1px solid',
+                        borderColor: 'grey.50',
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={0.5} color="text.secondary">
+                        <AccessTimeIcon sx={{ fontSize: 13 }} />
+                        <Typography variant="caption" noWrap sx={{ fontSize: '0.7rem' }}>{(cls.schedule as any)?.timeSlot || 'No schedule'}</Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" gap={0.5} color="text.secondary">
+                        <PersonIcon sx={{ fontSize: 13 }} />
+                        <Typography variant="caption" noWrap sx={{ fontSize: '0.7rem' }}>{cls.coordinator?.name}</Typography>
+                      </Box>
+                    </Box>
 
+                    {/* Progress Bar */}
                     <Box sx={{ mb: 2 }}>
                       <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
-                        <Typography variant="caption" color="text.secondary">Progress {cls.completedSessions}/{cls.totalSessions}</Typography>
-                        <Typography variant="caption" fontWeight={700} color="primary.main">{progress}%</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>Progress {cls.completedSessions}/{cls.totalSessions}</Typography>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: progressColor, fontSize: '0.72rem' }}>{progress}%</Typography>
                       </Box>
-                      <LinearProgress variant="determinate" value={progress} sx={{ height: 6, borderRadius: 3 }} />
+                      <LinearProgress
+                        variant="determinate"
+                        value={progress}
+                        sx={{
+                          height: 5,
+                          borderRadius: 3,
+                          bgcolor: alpha(progressColor, 0.1),
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: progressColor,
+                            borderRadius: 3,
+                          },
+                        }}
+                      />
                     </Box>
 
-                    <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mt: 2, pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
-                      <Box display="flex" gap={1}>
-                        <IconButton size="small" color="success" onClick={(e) => { e.stopPropagation(); handleAttendanceClick(cls); }}>
-                          <CheckCircleOutlineIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); navigate('/tutor-tests'); }}>
-                          <QuizIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small" color="info" onClick={(e) => { e.stopPropagation(); navigate('/tutor-notes'); }}>
-                          <NoteAddIcon fontSize="small" />
-                        </IconButton>
+                    {/* Action Row */}
+                    <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ pt: 2, borderTop: '1px solid', borderColor: alpha('#6366f1', 0.06) }}>
+                      <Box display="flex" gap={0.5}>
+                        <Tooltip title="Mark Attendance">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); handleAttendanceClick(cls); }}
+                            sx={{ bgcolor: alpha('#10b981', 0.08), '&:hover': { bgcolor: alpha('#10b981', 0.15) }, width: 32, height: 32 }}
+                          >
+                            <CheckCircleOutlineIcon sx={{ fontSize: 16, color: '#10b981' }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Tests">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); navigate('/tutor-tests'); }}
+                            sx={{ bgcolor: alpha('#6366f1', 0.08), '&:hover': { bgcolor: alpha('#6366f1', 0.15) }, width: 32, height: 32 }}
+                          >
+                            <QuizIcon sx={{ fontSize: 16, color: '#6366f1' }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Notes">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); navigate('/tutor-notes'); }}
+                            sx={{ bgcolor: alpha('#3b82f6', 0.08), '&:hover': { bgcolor: alpha('#3b82f6', 0.15) }, width: 32, height: 32 }}
+                          >
+                            <NoteAddIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                       <Box display="flex" alignItems="center" gap={1}>
                         <Button
-                          variant="text"
                           size="small"
                           onClick={(e) => { e.stopPropagation(); handleViewAttendanceSheet(cls); }}
-                          sx={{ textTransform: 'none', fontWeight: 600 }}
+                          sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.72rem', color: 'text.secondary', minWidth: 'auto' }}
                         >
                           View Sheet
                         </Button>
                         <Button
-                          variant="contained"
                           size="small"
-                          color="primary"
+                          variant="contained"
                           onClick={(e) => { e.stopPropagation(); handleSubmitMonthlySheet(cls); }}
                           disabled={sheetSubmittingClassId === classIdStr}
-                          startIcon={<SendIcon fontSize="small" />}
+                          startIcon={<SendIcon sx={{ fontSize: 13 }} />}
                           sx={{
                             textTransform: 'none',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             boxShadow: 'none',
-                            px: 2
+                            px: 2,
+                            borderRadius: 2,
+                            bgcolor: '#6366f1',
+                            fontSize: '0.72rem',
+                            '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' },
                           }}
                         >
                           {sheetSubmittingClassId === classIdStr ? 'Submitting...' : 'Submit'}
                         </Button>
-                        <Tooltip title={`Call Coordinator: ${cls.coordinator?.name || 'Assigned'}`}>
+                        <Tooltip title={`Call ${cls.coordinator?.name || 'Coordinator'}`}>
                           <IconButton
                             size="small"
-                            color="info"
                             onClick={(e) => { e.stopPropagation(); handleCallCoordinator(cls); }}
-                            sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), '&:hover': { bgcolor: alpha(theme.palette.info.main, 0.2) } }}
+                            sx={{ bgcolor: alpha('#3b82f6', 0.08), '&:hover': { bgcolor: alpha('#3b82f6', 0.15) }, width: 32, height: 32 }}
                           >
-                            <LocalPhoneIcon fontSize="small" />
+                            <LocalPhoneIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -354,43 +474,134 @@ const MyClassesCard: React.FC = () => {
             </Box>
           </Grid>
 
+          {/* Right: Attendance Tracker */}
           <Grid item xs={12} md={5}>
-            <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, height: '100%' }}>
-              <Typography variant="h6" fontWeight={600} mb={2}>Attendance Tracker</Typography>
+            <Box
+              sx={{
+                border: '1px solid',
+                borderColor: alpha('#6366f1', 0.1),
+                borderRadius: 3,
+                p: 2.5,
+                height: '100%',
+                bgcolor: '#fff',
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                fontWeight={700}
+                mb={2}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  fontSize: '0.88rem',
+                }}
+              >
+                <Box sx={{ width: 3, height: 18, borderRadius: 2, bgcolor: '#10b981' }} />
+                Attendance Tracker
+              </Typography>
               {selectedClass ? (
                 <>
-                  <Box sx={{ borderRadius: 2, p: 2, bgcolor: 'primary.main', color: 'primary.contrastText', mb: 2 }}>
-                    <Typography variant="subtitle1" fontWeight={700}>{selectedClass.studentName}</Typography>
-                    <Typography variant="body2">Grade {selectedClass.grade} • {selectedClass.board}</Typography>
+                  <Box
+                    sx={{
+                      borderRadius: 2.5,
+                      p: 2.5,
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      color: '#fff',
+                      mb: 2.5,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-50%',
+                        right: '-30%',
+                        width: '60%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <Typography variant="subtitle1" fontWeight={700} sx={{ position: 'relative', zIndex: 1 }}>{selectedClass.studentName}</Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8, position: 'relative', zIndex: 1, fontSize: '0.82rem' }}>Grade {selectedClass.grade} • {selectedClass.board}</Typography>
                   </Box>
-                  <Box mb={2}>
-                    <Box display="flex" justifyContent="space-between" mb={1}>
-                      <Typography variant="body2">Total Sessions</Typography>
-                      <Typography variant="body2" fontWeight={600}>{selectedClass.totalSessions}</Typography>
-                    </Box>
-                    <Box display="flex" justifyContent="space-between" mb={1}>
-                      <Typography variant="body2">Completed</Typography>
-                      <Typography variant="body2" fontWeight={600} color="success.main">{selectedClass.completedSessions}</Typography>
-                    </Box>
-                    <Box mt={1}>
-                      <Typography variant="caption" color="text.secondary">Progress</Typography>
-                      <LinearProgress variant="determinate" value={calculateProgress(selectedClass)} sx={{ height: 8, borderRadius: 1, mt: 0.5 }} />
+                  <Box mb={2.5}>
+                    {[
+                      { label: 'Total Sessions', value: selectedClass.totalSessions, color: 'text.primary' },
+                      { label: 'Completed', value: selectedClass.completedSessions, color: '#10b981' },
+                      { label: 'Remaining', value: (selectedClass.totalSessions || 0) - (selectedClass.completedSessions || 0), color: '#f59e0b' },
+                    ].map((item, i) => (
+                      <Box key={i} display="flex" justifyContent="space-between" alignItems="center" py={1} sx={i < 2 ? { borderBottom: '1px solid', borderColor: alpha('#6366f1', 0.06) } : {}}>
+                        <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>{item.label}</Typography>
+                        <Typography variant="body2" fontWeight={700} sx={{ color: item.color, fontSize: '0.88rem' }}>{item.value}</Typography>
+                      </Box>
+                    ))}
+                    <Box mt={2}>
+                      <Box display="flex" justifyContent="space-between" mb={0.5}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Progress</Typography>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: '#6366f1', fontSize: '0.7rem' }}>{calculateProgress(selectedClass)}%</Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={calculateProgress(selectedClass)}
+                        sx={{
+                          height: 6,
+                          borderRadius: 3,
+                          bgcolor: alpha('#6366f1', 0.08),
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: '#6366f1',
+                            borderRadius: 3,
+                          },
+                        }}
+                      />
                     </Box>
                   </Box>
-                  <Button fullWidth variant="contained" startIcon={<CheckCircleIcon />} onClick={() => handleAttendanceClick(selectedClass!)}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<CheckCircleIcon />}
+                    onClick={() => handleAttendanceClick(selectedClass!)}
+                    sx={{
+                      borderRadius: 2.5,
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      py: 1.25,
+                      bgcolor: '#10b981',
+                      '&:hover': { bgcolor: '#059669' },
+                      boxShadow: 'none',
+                    }}
+                  >
                     Mark Today's Attendance
                   </Button>
                 </>
               ) : (
                 <Box textAlign="center" py={6}>
-                  <ClassIcon sx={{ fontSize: 40, color: 'grey.300', mb: 1 }} />
-                  <Typography variant="body2" color="text.secondary">Select a class to view details</Typography>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: '50%',
+                      bgcolor: alpha('#6366f1', 0.06),
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 1.5,
+                    }}
+                  >
+                    <CalendarTodayIcon sx={{ fontSize: 24, color: '#6366f1' }} />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                    Select a class to view details
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled" display="block" mt={0.5}>
+                    Click any class card on the left
+                  </Typography>
                 </Box>
               )}
             </Box>
           </Grid>
         </Grid>
-
 
         {selectedClass && attendanceModalOpen && (
           <SubmitAttendanceModal
@@ -401,7 +612,7 @@ const MyClassesCard: React.FC = () => {
           />
         )}
       </CardContent>
-    </StyledCard>
+    </Card>
   );
 };
 

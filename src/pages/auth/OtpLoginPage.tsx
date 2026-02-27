@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Box, Card, CardContent, Typography, TextField, Button } from '@mui/material';
+import { Container, Box, Card, CardContent, Typography, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import LoginIcon from '@mui/icons-material/Login';
 import { sendLoginOtp, resendLoginOtp, verifyLoginOtp } from '../../services/authService';
 import { setCredentials, setError } from '../../store/slices/authSlice';
 import type { AppDispatch } from '../../store';
-import ErrorAlert from '../../components/common/ErrorAlert';
+import { toast } from 'sonner';
 
 const OtpLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,9 +18,11 @@ const OtpLoginPage: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [resending, setResending] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [error, setLocalError] = useState<string | null>(null);
+  // errors are shown via toast popups
   const [canResend, setCanResend] = useState(false);
   const [resendTimer, setResendTimer] = useState(60);
+  const [otpErrorOpen, setOtpErrorOpen] = useState(false);
+  const [otpErrorMessage, setOtpErrorMessage] = useState('');
 
   // Prefill email if passed via query param (e.g. /login-otp?email=someone@example.com)
   useEffect(() => {
@@ -32,24 +34,34 @@ const OtpLoginPage: React.FC = () => {
 
   // Resend timer countdown
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     if (step === 'otp' && resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
     } else if (resendTimer === 0) {
       setCanResend(true);
     }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [resendTimer, step]);
 
   const handleSendOtp = async () => {
     if (!email.trim()) return;
     try {
       setSending(true);
-      setLocalError(null);
       await sendLoginOtp(email.trim());
       setStep('otp');
       setResendTimer(60);
       setCanResend(false);
       dispatch(setError(null));
+      toast.success('OTP sent to your email!');
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || 'Failed to send OTP';
+      toast.error(msg);
     } finally {
       setSending(false);
     }
@@ -59,15 +71,15 @@ const OtpLoginPage: React.FC = () => {
     if (!email.trim() || !canResend) return;
     try {
       setResending(true);
-      setLocalError(null);
       await resendLoginOtp(email.trim());
       setResendTimer(60);
       setCanResend(false);
       setOtp(''); // Clear previous OTP
       dispatch(setError(null));
+      toast.success('OTP resent successfully!');
     } catch (e: any) {
       const msg = e?.response?.data?.message || e?.message || 'Failed to resend OTP';
-      setLocalError(msg);
+      toast.error(msg);
     } finally {
       setResending(false);
     }
@@ -77,7 +89,6 @@ const OtpLoginPage: React.FC = () => {
     if (!otp.trim()) return;
     try {
       setVerifying(true);
-      setLocalError(null);
       const resp: any = await verifyLoginOtp(email.trim(), otp.trim());
       const { user, accessToken } = resp.data || {};
       if (!user || !accessToken) {
@@ -95,9 +106,24 @@ const OtpLoginPage: React.FC = () => {
       dispatch(setError(null));
       navigate('/');
     } catch (e: any) {
-      const msg = e?.response?.data?.message || e?.message || 'Failed to verify OTP';
-      setLocalError(msg);
-      dispatch(setError(msg));
+      const serverMsg = e?.response?.data?.message;
+      const status = e?.response?.status;
+      const rawMsg = (serverMsg || e?.message || '').toString();
+      const msgLower = rawMsg.toLowerCase();
+
+      const looksLikeOtpError =
+        status === 400 ||
+        status === 401 ||
+        msgLower.includes('otp') ||
+        msgLower.includes('invalid') ||
+        msgLower.includes('expired');
+
+      const friendlyMsg = looksLikeOtpError
+        ? 'Wrong OTP entered. Please try again.'
+        : 'An unexpected error occurred. Please try again.';
+
+      setOtpErrorMessage(friendlyMsg);
+      setOtpErrorOpen(true);
     } finally {
       setVerifying(false);
     }
@@ -106,7 +132,7 @@ const OtpLoginPage: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: 'var(--full-height)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -125,10 +151,30 @@ const OtpLoginPage: React.FC = () => {
           backgroundSize: '50% 50%',
           backgroundPosition: 'top left',
           opacity: 0.1,
+          pointerEvents: 'none',
+          zIndex: 0,
         },
       }}
     >
-      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
+      <Dialog
+        open={otpErrorOpen}
+        onClose={() => setOtpErrorOpen(false)}
+        aria-labelledby="otp-error-dialog-title"
+      >
+        <DialogTitle id="otp-error-dialog-title">OTP Verification Failed</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {otpErrorMessage || 'Invalid OTP. Please try again.'}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOtpErrorOpen(false)} variant="contained">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
         <Box className="animate-scale-in" textAlign="center" mb={{ xs: 3, sm: 4 }}>
           <Box
             display="inline-flex"
@@ -218,7 +264,7 @@ const OtpLoginPage: React.FC = () => {
           </Box>
 
           <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-            <ErrorAlert error={error} />
+
             {step === 'email' && (
               <Box display="flex" flexDirection="column" gap={{ xs: 2.5, sm: 3 }}>
                 <TextField

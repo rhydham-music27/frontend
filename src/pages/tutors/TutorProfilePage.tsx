@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Autocomplete, Chip, alpha, useTheme, Grid, Paper, Tabs, Tab, IconButton, Divider, Checkbox } from '@mui/material';
+import { Container, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Autocomplete, Chip, alpha, useTheme, Grid, Paper, Tabs, Tab, IconButton, Divider, Checkbox, Stack, Avatar } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloseIcon from '@mui/icons-material/Close';
@@ -8,9 +8,11 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import EventIcon from '@mui/icons-material/EventAvailable';
 import ListIcon from '@mui/icons-material/ListAlt';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import PersonIcon from '@mui/icons-material/Person';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import SchoolIcon from '@mui/icons-material/School';
 import { BarChart2 } from 'lucide-react';
 import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
-import ProfileVerificationCard from '../../components/tutors/ProfileVerificationCard';
 import TutorTierProgressCard from '../../components/tutors/TutorTierProgressCard';
 import MUIProfileCard from '../../components/tutors/MUIProfileCard';
 import { getFinalClasses } from '../../services/finalClassService';
@@ -99,8 +101,6 @@ const TutorProfilePage: React.FC = () => {
         const data: any = (resp as any)?.data ?? resp;
         const tutor = (data as ITutor) || null;
         setTutorProfile(tutor);
-
-        // Automatic modal opening removed as per user request
 
         // Fetch detailed data for Admin view
         if (id && tutor && tutor.user) {
@@ -239,8 +239,13 @@ const TutorProfilePage: React.FC = () => {
         <Chip
           label={params.value}
           size="small"
-          color={params.value === 'ACTIVE' ? 'success' : 'default'}
-          variant="outlined"
+          sx={{
+            fontWeight: 700,
+            fontSize: '0.65rem',
+            height: 22,
+            bgcolor: params.value === 'ACTIVE' ? alpha('#10b981', 0.1) : alpha('#64748b', 0.08),
+            color: params.value === 'ACTIVE' ? '#059669' : '#475569',
+          }}
         />
       )
     },
@@ -249,7 +254,7 @@ const TutorProfilePage: React.FC = () => {
       headerName: 'Progress',
       width: 150,
       renderCell: (params: any) => (
-        <Typography variant="body2">
+        <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>
           {params.row.completedSessions}/{params.row.totalSessions} sessions
         </Typography>
       )
@@ -261,193 +266,313 @@ const TutorProfilePage: React.FC = () => {
       sortable: false,
       renderCell: (params: any) => (
         <IconButton
-          color="primary"
           onClick={() => handleViewClassDetails(params.row as IFinalClass)}
           size="small"
+          sx={{
+            bgcolor: alpha('#6366f1', 0.06),
+            color: '#6366f1',
+            '&:hover': { bgcolor: alpha('#6366f1', 0.12) },
+          }}
         >
-          <VisibilityIcon />
+          <VisibilityIcon sx={{ fontSize: 18 }} />
         </IconButton>
       )
     }
   ];
 
+  // Stat cards config for admin view
+  const internalStatCards = [
+    { label: 'Assigned', value: tutorProfile?.classesAssigned || 0, color: '#6366f1', icon: '📚' },
+    { label: 'Reschedules', value: (tutorProfile as any)?.internalStats?.oneTimeReschedules || 0, color: '#f59e0b', icon: '🔄' },
+    { label: 'Total Payout', value: `₹${((tutorProfile as any)?.internalStats?.totalPayouts || 0).toLocaleString()}`, color: '#10b981', icon: '💰' },
+    { label: 'Attendance', value: (tutorProfile as any)?.internalStats?.attendanceSheetsSubmitted || 0, color: '#3b82f6', icon: '📋' },
+    { label: 'Demos', value: (tutorProfile as any)?.internalStats?.demosScheduled || 0, color: '#a855f7', icon: '🎯' },
+  ];
+
 
   return (
-    <Container maxWidth="xl" disableGutters>
+    <Container maxWidth="xl" disableGutters sx={{ px: { xs: 2, sm: 0 }, pb: { xs: 10, sm: 0 } }}>
+      {/* ─── Premium Header ──────────────────────────── */}
       <Box
-        display="flex"
-        alignItems={{ xs: 'flex-start', sm: 'center' }}
-        justifyContent="space-between"
-        mb={{ xs: 3, sm: 4 }}
-        flexDirection={{ xs: 'column', sm: 'row' }}
-        gap={{ xs: 2, sm: 2 }}
+        sx={{
+          position: 'relative',
+          borderRadius: { xs: 3, sm: 4 },
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #312e81 100%)',
+          p: { xs: 2.5, sm: 4 },
+          mb: { xs: 2.5, sm: 4 },
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            right: '-15%',
+            width: '60%',
+            height: '200%',
+            background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.08) 40%, transparent 70%)',
+            pointerEvents: 'none',
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: '-30%',
+            left: '-10%',
+            width: '40%',
+            height: '150%',
+            background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 60%)',
+            pointerEvents: 'none',
+          },
+        }}
       >
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            sx={{
-              mb: 0.5,
-              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-            }}
-          >
-            {id ? 'Tutor Profile (Admin View)' : 'My Profile'}
-          </Typography>
-          {!id && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<LockResetIcon />}
-              onClick={() => setChangePasswordOpen(true)}
-              sx={{ mt: 1 }}
-            >
-              Change Password
-            </Button>
-          )}
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
-          >
-            {id ? `Managing profile for ${tutorProfile?.user?.name || 'Tutor'}` : 'View and manage your tutor profile, documents, and verification status.'}
-          </Typography>
-        </Box>
-        {(() => {
-          if (!tutorProfile || id) return null; // Hide if not self
-          const hasSubjects = Array.isArray(tutorProfile.subjects) && tutorProfile.subjects.length > 0;
-          const hasQualifications =
-            Array.isArray(tutorProfile.qualifications) && tutorProfile.qualifications.length > 0;
-          const hasLocations =
-            Array.isArray(tutorProfile.preferredLocations) &&
-            tutorProfile.preferredLocations.length > 0;
-          const isIncomplete = !hasSubjects || !hasQualifications || !hasLocations;
-          if (!isIncomplete) return null;
-          return (
+        <Box position="relative" zIndex={1}>
+          <Box display="flex" alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" gap={2} flexWrap="wrap">
             <Box>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => window.location.href = '/tutor-register?mode=edit'}
-              >
-                Complete Profile
-              </Button>
-            </Box>
-          );
-        })()}
-      </Box>
-
-      <Box
-        sx={{
-          mb: { xs: 3, sm: 4 },
-          px: { xs: 1.5, sm: 0 },
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: '100%',
-          }}
-        >
-          {tutorProfile && <TutorTierProgressCard tutor={tutorProfile} />}
-          <MUIProfileCard tutorId={id} />
-        </Box>
-      </Box>
-
-      <Box
-        sx={{
-          mb: { xs: 3, sm: 4 },
-          px: { xs: 1.5, sm: 0 },
-        }}
-      >
-        <Box sx={{ maxWidth: 960, mx: 'auto' }}>
-          <ProfileVerificationCard tutorId={id} />
-        </Box>
-      </Box>
-
-
-
-      {/* Internal Details & Performance Metrics (Combined Section) */}
-      {id && (
-        <React.Fragment>
-          {/* Internal Stats */}
-          <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
-            <Typography variant="h5" fontWeight={800} mb={3} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <BarChart2 className="text-blue-500" size={24} />
-              Internal Performance Metrics
-            </Typography>
-            <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
-              {[
-                { label: 'Assigned', value: tutorProfile?.classesAssigned || 0, color: theme.palette.primary.main, bg: alpha(theme.palette.primary.main, 0.05) },
-                { label: 'Reschedules', value: (tutorProfile as any)?.internalStats?.oneTimeReschedules || 0, color: theme.palette.warning.main, bg: alpha(theme.palette.warning.main, 0.05) },
-                { label: 'Total Payout', value: `₹${((tutorProfile as any)?.internalStats?.totalPayouts || 0).toLocaleString()}`, color: theme.palette.success.main, bg: alpha(theme.palette.success.main, 0.05) },
-                { label: 'Attendance', value: (tutorProfile as any)?.internalStats?.attendanceSheetsSubmitted || 0, color: theme.palette.info.main, bg: alpha(theme.palette.info.main, 0.05) },
-                { label: 'Demos', value: (tutorProfile as any)?.internalStats?.demosScheduled || 0, color: theme.palette.secondary.main, bg: alpha(theme.palette.secondary.main, 0.05) }
-              ].map((stat, index) => (
-                <Paper
-                  key={index}
-                  elevation={0}
+              <Box display="flex" alignItems="center" gap={1.5} mb={0.75}>
+                <Typography
+                  variant="h4"
                   sx={{
-                    p: 3,
-                    borderRadius: 4,
-                    bgcolor: stat.bg,
-                    border: '1px solid',
-                    borderColor: alpha(stat.color, 0.1),
-                    textAlign: 'center',
-                    transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                    '&:hover': { transform: 'scale(1.05)' }
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: { xs: '1.5rem', sm: '1.85rem', md: '2.2rem' },
+                    letterSpacing: '-0.03em',
+                    lineHeight: 1.15,
                   }}
                 >
-                  <Typography variant="h4" fontWeight={900} color={stat.color} sx={{ mb: 0.5 }}>{stat.value}</Typography>
-                  <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ textTransform: 'uppercase', tracking: '0.1em' }}>{stat.label}</Typography>
-                </Paper>
-              ))}
+                  {id ? 'Tutor Profile' : 'My Profile'}
+                </Typography>
+                {id && (
+                  <Chip
+                    label="Admin View"
+                    size="small"
+                    sx={{
+                      bgcolor: alpha('#f59e0b', 0.15),
+                      color: '#fbbf24',
+                      fontWeight: 700,
+                      fontSize: '0.62rem',
+                      height: 22,
+                      border: `1px solid ${alpha('#f59e0b', 0.2)}`,
+                    }}
+                  />
+                )}
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: alpha('#fff', 0.55),
+                  fontSize: { xs: '0.8rem', sm: '0.88rem' },
+                  maxWidth: 500,
+                }}
+              >
+                {id
+                  ? `Managing profile for ${tutorProfile?.user?.name || 'Tutor'}`
+                  : 'View and manage your tutor profile and verification status.'}
+              </Typography>
             </Box>
+
+            <Box display="flex" gap={1} flexWrap="wrap">
+              {!id && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<LockResetIcon sx={{ fontSize: 16 }} />}
+                  onClick={() => setChangePasswordOpen(true)}
+                  sx={{
+                    borderRadius: 2.5,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    borderColor: alpha('#fff', 0.2),
+                    color: alpha('#fff', 0.8),
+                    backdropFilter: 'blur(8px)',
+                    '&:hover': { borderColor: alpha('#fff', 0.4), bgcolor: alpha('#fff', 0.05) },
+                  }}
+                >
+                  Change Password
+                </Button>
+              )}
+              {(() => {
+                if (!tutorProfile || id) return null;
+                const hasSubjects = Array.isArray(tutorProfile.subjects) && tutorProfile.subjects.length > 0;
+                const hasQualifications = Array.isArray(tutorProfile.qualifications) && tutorProfile.qualifications.length > 0;
+                const hasLocations = Array.isArray(tutorProfile.preferredLocations) && tutorProfile.preferredLocations.length > 0;
+                const isIncomplete = !hasSubjects || !hasQualifications || !hasLocations;
+                if (!isIncomplete) return null;
+                return (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => window.location.href = '/tutor-register?mode=edit'}
+                    sx={{
+                      borderRadius: 2.5,
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.75rem',
+                      bgcolor: '#6366f1',
+                      boxShadow: `0 4px 14px ${alpha('#6366f1', 0.4)}`,
+                      '&:hover': { bgcolor: '#4f46e5' },
+                    }}
+                  >
+                    Complete Profile
+                  </Button>
+                );
+              })()}
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ─── Tier Progress + Profile Card ────────────── */}
+      <Box sx={{ mb: { xs: 2.5, sm: 4 } }}>
+        {tutorProfile && <TutorTierProgressCard tutor={tutorProfile} />}
+        <MUIProfileCard tutorId={id} />
+      </Box>
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/* ─── Admin-Only Sections ──────────────────────── */}
+      {/* ═══════════════════════════════════════════════ */}
+      {id && (
+        <>
+          {/* Internal Performance Metrics */}
+          <Box sx={{ mb: { xs: 3, sm: 5 } }}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#6366f1', 0.06), display: 'flex' }}>
+                <BarChart2 size={18} color="#6366f1" />
+              </Box>
+              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
+                Internal Performance Metrics
+              </Typography>
+            </Box>
+
+            <Grid container spacing={{ xs: 1, sm: 2 }}>
+              {internalStatCards.map((stat, index) => (
+                <Grid item xs={index < 3 ? 4 : 6} sm key={index}>
+                  <Box
+                    sx={{
+                      p: { xs: 1.5, sm: 2.5 },
+                      borderRadius: { xs: 2.5, sm: 3 },
+                      bgcolor: '#fff',
+                      border: '1px solid',
+                      borderColor: alpha(stat.color, 0.12),
+                      textAlign: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 8px 24px ${alpha(stat.color, 0.12)}`,
+                        borderColor: alpha(stat.color, 0.25),
+                      },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 3,
+                        background: `linear-gradient(90deg, ${stat.color}, ${alpha(stat.color, 0.3)})`,
+                        borderRadius: '12px 12px 0 0',
+                      },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, mb: { xs: 0, sm: 0.25 } }}>
+                      {stat.icon}
+                    </Typography>
+                    <Typography variant="h5" fontWeight={900} sx={{ color: stat.color, fontSize: { xs: '1.1rem', sm: '1.5rem' }, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </Box>
 
           {/* Personal & Verification Details */}
-          <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
-            <Typography variant="h5" fontWeight={800} mb={3}>Personal & Verification Details</Typography>
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-              <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={4}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Permanent Address</Typography>
-                  <Typography variant="body1" fontWeight={600} sx={{ color: 'text.primary', lineHeight: 1.6 }}>{tutorProfile?.permanentAddress || 'Not provided'}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Residential Address (Same as Aadhaar)</Typography>
-                  <Typography variant="body1" fontWeight={600} sx={{ color: 'text.primary', lineHeight: 1.6 }}>{tutorProfile?.residentialAddress || 'Not provided'}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ textTransform: 'uppercase', mb: 1, display: 'block' }}>Aadhaar Card Status</Typography>
-                  <Chip
-                    label={tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? 'VERIFIED' : 'PENDING / NOT UPLOADED'}
-                    color={tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? 'success' : 'default'}
-                    size="small"
-                    variant="filled"
-                    sx={{
-                      fontWeight: 900,
-                      borderRadius: 2,
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.05em',
-                      backgroundColor: tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? alpha(theme.palette.success.main, 0.1) : undefined,
-                      color: tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt ? theme.palette.success.main : undefined
-                    }}
-                  />
-                </Box>
+          <Box sx={{ mb: { xs: 3, sm: 5 } }}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#10b981', 0.06), display: 'flex' }}>
+                <VerifiedIcon sx={{ fontSize: 18, color: '#10b981' }} />
               </Box>
-            </Paper>
-          </Box>
-        </React.Fragment>
-      )}
-
-      {/* Admin Internal Details Section (Existing: Classes, Payments, Attendance) */}
-      {id && (
-        <React.Fragment>
-          {/* Assigned Classes */}
-          <Box sx={{ mb: 6, px: { xs: 1.5, sm: 0 } }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-              <Typography variant="h5" fontWeight={800}>Assigned Classes</Typography>
+              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
+                Personal & Verification Details
+              </Typography>
             </Box>
-            <Paper elevation={0} sx={{ height: 420, width: '100%', borderRadius: 5, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+
+            <Box
+              sx={{
+                p: { xs: 2.5, sm: 3.5 },
+                borderRadius: 3,
+                bgcolor: '#fff',
+                border: '1px solid',
+                borderColor: 'grey.100',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+            >
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.06em', display: 'block', mb: 0.75 }}>
+                    Permanent Address
+                  </Typography>
+                  <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
+                    {tutorProfile?.permanentAddress || 'Not provided'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.06em', display: 'block', mb: 0.75 }}>
+                    Residential Address (Same as Aadhaar)
+                  </Typography>
+                  <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
+                    {tutorProfile?.residentialAddress || 'Not provided'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.06em', display: 'block', mb: 0.75 }}>
+                    Aadhaar Card Status
+                  </Typography>
+                  {(() => {
+                    const verified = tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt;
+                    return (
+                      <Chip
+                        label={verified ? 'VERIFIED' : 'PENDING / NOT UPLOADED'}
+                        size="small"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '0.65rem',
+                          height: 24,
+                          bgcolor: verified ? alpha('#10b981', 0.1) : alpha('#f59e0b', 0.1),
+                          color: verified ? '#059669' : '#d97706',
+                        }}
+                      />
+                    );
+                  })()}
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+
+          {/* Assigned Classes DataGrid */}
+          <Box sx={{ mb: { xs: 3, sm: 5 } }}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#6366f1', 0.06), display: 'flex' }}>
+                <SchoolIcon sx={{ fontSize: 18, color: '#6366f1' }} />
+              </Box>
+              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
+                Assigned Classes
+              </Typography>
+            </Box>
+            <Paper
+              elevation={0}
+              sx={{
+                height: 420,
+                width: '100%',
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.100',
+                overflow: 'hidden',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+            >
               <DataGrid
                 rows={adminClasses}
                 columns={classColumns}
@@ -460,47 +585,72 @@ const TutorProfilePage: React.FC = () => {
                 sx={{
                   border: 'none',
                   '& .MuiDataGrid-columnHeaders': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                    bgcolor: alpha('#6366f1', 0.04),
                     borderRadius: 0,
                   },
+                  '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' },
                   '& .MuiDataGrid-cell:focus': { outline: 'none' },
                   '& .MuiDataGrid-cell': { px: 2 },
                   '& .MuiDataGrid-columnHeader': { px: 2 },
+                  '& .MuiDataGrid-row:hover': { bgcolor: alpha('#6366f1', 0.02) },
                 }}
               />
             </Paper>
           </Box>
 
           {/* Payment History */}
-          <Box sx={{ mb: 4, px: { xs: 1.5, sm: 0 } }}>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <Typography variant="h5" fontWeight={700}>Payment History</Typography>
+          <Box sx={{ mb: { xs: 3, sm: 5 } }}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#10b981', 0.06), display: 'flex' }}>
+                <PaymentsIcon sx={{ fontSize: 18, color: '#10b981' }} />
+              </Box>
+              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
+                Payment History
+              </Typography>
             </Box>
-            <Box overflow="auto" border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper">
+            <Box
+              sx={{
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'grey.100',
+                bgcolor: '#fff',
+                overflow: 'hidden',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+            >
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
-                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Amount</th>
-                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Status</th>
-                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Method</th>
-                    <th style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 600 }}>Date</th>
+                  <tr style={{ borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
+                    {['Amount', 'Status', 'Method', 'Date'].map((h) => (
+                      <th key={h} style={{ padding: '14px 16px', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {adminPayments.length > 0 ? (
                     adminPayments.map((p) => (
-                      <tr key={p.id} style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
-                        <td style={{ padding: '12px 16px' }}>₹{p.amount?.toLocaleString()}</td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <Chip label={p.status} size="small" color={p.status === 'PAID' ? 'success' : p.status === 'PENDING' ? 'warning' : 'default'} />
+                      <tr key={p.id} style={{ borderBottom: `1px solid ${alpha('#6366f1', 0.04)}` }}>
+                        <td style={{ padding: '14px 16px', fontWeight: 700, fontSize: '0.88rem' }}>₹{p.amount?.toLocaleString()}</td>
+                        <td style={{ padding: '14px 16px' }}>
+                          <Chip
+                            label={p.status}
+                            size="small"
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: '0.62rem',
+                              height: 22,
+                              bgcolor: p.status === 'PAID' ? alpha('#10b981', 0.1) : p.status === 'PENDING' ? alpha('#f59e0b', 0.1) : alpha('#64748b', 0.08),
+                              color: p.status === 'PAID' ? '#059669' : p.status === 'PENDING' ? '#d97706' : '#475569',
+                            }}
+                          />
                         </td>
-                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{p.paymentMethod || '-'}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '0.875rem' }}>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: '0.82rem', color: '#64748b' }}>{p.paymentMethod || '-'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: '0.82rem', color: '#64748b' }}>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: 'text.secondary' }}>No payment records found.</td>
+                      <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>No payment records found.</td>
                     </tr>
                   )}
                 </tbody>
@@ -509,39 +659,76 @@ const TutorProfilePage: React.FC = () => {
           </Box>
 
           {/* Attendance Snapshot */}
-          <Box sx={{ mb: 4, px: { xs: 1.5, sm: 0 } }}>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <Typography variant="h5" fontWeight={700}>Attendance Snapshot</Typography>
-            </Box>
-            <Box p={3} border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper">
-              <Box display="flex" gap={2} flexWrap="wrap">
-                <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#10B981', 0.1)} textAlign="center">
-                  <Typography variant="h4" fontWeight={700} color="success.main">{attendanceStats.present}</Typography>
-                  <Typography variant="caption" fontWeight={600}>PRESENT</Typography>
-                </Box>
-                <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#EF4444', 0.1)} textAlign="center">
-                  <Typography variant="h4" fontWeight={700} color="error.main">{attendanceStats.absent}</Typography>
-                  <Typography variant="caption" fontWeight={600}>ABSENT</Typography>
-                </Box>
-                <Box flex={1} minWidth={100} p={2} borderRadius={2} bgcolor={alpha('#F59E0B', 0.1)} textAlign="center">
-                  <Typography variant="h4" fontWeight={700} color="warning.main">{attendanceStats.late}</Typography>
-                  <Typography variant="caption" fontWeight={600}>LATE</Typography>
-                </Box>
+          <Box sx={{ mb: { xs: 3, sm: 5 } }}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#3b82f6', 0.06), display: 'flex' }}>
+                <EventIcon sx={{ fontSize: 18, color: '#3b82f6' }} />
               </Box>
+              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
+                Attendance Snapshot
+              </Typography>
             </Box>
+            <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
+              {[
+                { label: 'Present', value: attendanceStats.present, color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
+                { label: 'Absent', value: attendanceStats.absent, color: '#ef4444', gradient: 'linear-gradient(135deg, #ef4444, #dc2626)' },
+                { label: 'Late', value: attendanceStats.late, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
+              ].map((stat, idx) => (
+                <Grid item xs={4} key={idx}>
+                  <Box
+                    sx={{
+                      p: { xs: 2, sm: 3 },
+                      borderRadius: { xs: 2.5, sm: 3 },
+                      background: stat.gradient,
+                      color: '#fff',
+                      textAlign: 'center',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      transition: 'all 0.3s',
+                      '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${alpha(stat.color, 0.3)}` },
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-50%',
+                        right: '-30%',
+                        width: '70%',
+                        height: '200%',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 60%)',
+                        pointerEvents: 'none',
+                      },
+                    }}
+                  >
+                    <Typography variant="h4" fontWeight={900} sx={{ position: 'relative', zIndex: 1, fontSize: { xs: '1.4rem', sm: '2rem' } }}>{stat.value}</Typography>
+                    <Typography variant="caption" fontWeight={700} sx={{ position: 'relative', zIndex: 1, opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: { xs: '0.55rem', sm: '0.7rem' } }}>{stat.label}</Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </Box>
-        </React.Fragment>
+        </>
       )}
 
+      {/* ─── Complete Profile Dialog ─────────────────── */}
       <Dialog
         open={completeModalOpen}
         onClose={() => !saving && setCompleteModalOpen(false)}
         fullWidth
         maxWidth="sm"
+        PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
       >
-        <DialogTitle>Complete your tutor profile</DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <DialogTitle
+          sx={{
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            color: '#fff',
+            pb: 2,
+          }}
+        >
+          <Typography variant="h6" component="div" fontWeight={700} sx={{ fontSize: '1.05rem' }}>
+            Complete your tutor profile
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers sx={{ pt: 2.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: '0.82rem' }}>
             Fill these details so our team can match you with the right classes.
           </Typography>
           <TextField
@@ -551,6 +738,7 @@ const TutorProfilePage: React.FC = () => {
             fullWidth
             margin="normal"
             placeholder="e.g., 2 years, Fresher"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
           <Autocomplete
             multiple
@@ -590,6 +778,7 @@ const TutorProfilePage: React.FC = () => {
                   label={option}
                   {...getTagProps({ index })}
                   key={option}
+                  sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }}
                 />
               ))
             }
@@ -600,6 +789,7 @@ const TutorProfilePage: React.FC = () => {
                 placeholder="Select one or more subjects"
                 margin="normal"
                 fullWidth
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
             )}
           />
@@ -610,6 +800,7 @@ const TutorProfilePage: React.FC = () => {
             fullWidth
             margin="normal"
             placeholder="e.g., B.Sc, M.Sc, B.Ed"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
           <Autocomplete
             multiple
@@ -651,6 +842,7 @@ const TutorProfilePage: React.FC = () => {
                   label={option}
                   {...getTagProps({ index })}
                   key={option}
+                  sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }}
                 />
               ))
             }
@@ -661,6 +853,7 @@ const TutorProfilePage: React.FC = () => {
                 placeholder="Select one or more activities"
                 margin="normal"
                 fullWidth
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
             )}
           />
@@ -697,7 +890,7 @@ const TutorProfilePage: React.FC = () => {
             }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
-                <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} />
+                <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }} />
               ))
             }
             renderInput={(params) => (
@@ -707,172 +900,201 @@ const TutorProfilePage: React.FC = () => {
                 placeholder="Preferred Areas for Offline Classes"
                 margin="normal"
                 fullWidth
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
             )}
           />
-          {/* Subjects and locations are now selected via dropdowns, so no comma instruction needed */}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCompleteModalOpen(false)} disabled={saving}>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button
+            onClick={() => setCompleteModalOpen(false)}
+            disabled={saving}
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleSaveCompleteProfile}
-            color="primary"
             variant="contained"
             disabled={saving}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 700,
+              bgcolor: '#6366f1',
+              '&:hover': { bgcolor: '#4f46e5' },
+              boxShadow: 'none',
+              px: 3,
+            }}
           >
             {saving ? <CircularProgress size={20} color="inherit" /> : 'Save & Continue'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Class Details Drill-down Modal */}
+      {/* ─── Class Details Drill-down Dialog ──────────── */}
       <Dialog
         open={detailsModalOpen}
         onClose={() => setDetailsModalOpen(false)}
         fullWidth
         maxWidth="md"
-        PaperProps={{
-          sx: { borderRadius: 2 }
-        }}
+        PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <DialogTitle
+          sx={{
+            m: 0,
+            px: 3,
+            py: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            color: '#fff',
+          }}
+        >
           <Box display="flex" alignItems="center" gap={1}>
-            <ListIcon color="primary" />
-            <Typography variant="h6" fontWeight={700}>
+            <Box sx={{ p: 0.5, borderRadius: 1.5, bgcolor: alpha('#fff', 0.1), display: 'flex' }}>
+              <ListIcon sx={{ fontSize: 18, color: alpha('#fff', 0.8) }} />
+            </Box>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: '1rem' }}>
               Class: {selectedClass?.className}
             </Typography>
           </Box>
-          <IconButton onClick={() => setDetailsModalOpen(false)} size="small">
-            <CloseIcon />
+          <IconButton onClick={() => setDetailsModalOpen(false)} size="small" sx={{ color: alpha('#fff', 0.6) }}>
+            <CloseIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </DialogTitle>
-        <Divider />
-        <DialogContent sx={{ p: 0, minHeight: 400 }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={activeTab} onChange={handleTabChange} sx={{ px: 2 }}>
-              <Tab icon={<VisibilityIcon sx={{ fontSize: '1.2rem' }} />} iconPosition="start" label="General Info" />
-              <Tab icon={<EventIcon sx={{ fontSize: '1.2rem' }} />} iconPosition="start" label="Attendance" />
-              <Tab icon={<PaymentsIcon sx={{ fontSize: '1.2rem' }} />} iconPosition="start" label="Payments" />
-            </Tabs>
-          </Box>
-
-          <Box sx={{ p: 3 }}>
-            {activeTab === 0 && selectedClass && (
-              <Grid container spacing={3}>
-                {[
-                  { label: 'Student Name', value: selectedClass.studentName },
-                  { label: 'Grade', value: selectedClass.grade },
-                  { label: 'Subject', value: Array.isArray(selectedClass.subject) ? selectedClass.subject.join(', ') : selectedClass.subject },
-                  { label: 'Board', value: selectedClass.board },
-                  { label: 'Mode', value: selectedClass.mode },
-                  { label: 'Location', value: selectedClass.location || 'N/A' },
-                  { label: 'Start Date', value: new Date(selectedClass.startDate).toLocaleDateString() },
-                  { label: 'Timing', value: selectedClass.schedule?.timeSlot || 'N/A' },
-                  { label: 'Days', value: selectedClass.schedule?.daysOfWeek?.join(', ') || 'N/A' },
-                  { label: 'Total Sessions', value: selectedClass.totalSessions },
-                  { label: 'Rate per Session', value: selectedClass.ratePerSession ? `₹${selectedClass.ratePerSession}` : 'N/A' },
-                  { label: 'Status', value: <Chip label={selectedClass.status} size="small" color={selectedClass.status === 'ACTIVE' ? 'success' : 'default'} /> }
-                ].map((item, idx) => (
-                  <Grid item xs={12} sm={6} md={4} key={idx}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            sx={{
+              px: 2,
+              '& .MuiTabs-indicator': { bgcolor: '#6366f1', height: 2.5, borderRadius: 2 },
+              '& .MuiTab-root': { textTransform: 'none', fontWeight: 700, fontSize: '0.82rem', '&.Mui-selected': { color: '#6366f1' } },
+            }}
+          >
+            <Tab icon={<VisibilityIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="General Info" />
+            <Tab icon={<EventIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Attendance" />
+            <Tab icon={<PaymentsIcon sx={{ fontSize: '1rem' }} />} iconPosition="start" label="Payments" />
+          </Tabs>
+        </Box>
+        <DialogContent sx={{ p: 3, bgcolor: '#f8fafc', minHeight: 400 }}>
+          {activeTab === 0 && selectedClass && (
+            <Grid container spacing={2.5}>
+              {[
+                { label: 'Student Name', value: selectedClass.studentName },
+                { label: 'Grade', value: selectedClass.grade },
+                { label: 'Subject', value: Array.isArray(selectedClass.subject) ? selectedClass.subject.join(', ') : selectedClass.subject },
+                { label: 'Board', value: selectedClass.board },
+                { label: 'Mode', value: selectedClass.mode },
+                { label: 'Location', value: selectedClass.location || 'N/A' },
+                { label: 'Start Date', value: new Date(selectedClass.startDate).toLocaleDateString() },
+                { label: 'Timing', value: selectedClass.schedule?.timeSlot || 'N/A' },
+                { label: 'Days', value: selectedClass.schedule?.daysOfWeek?.join(', ') || 'N/A' },
+                { label: 'Total Sessions', value: selectedClass.totalSessions },
+                { label: 'Rate per Session', value: selectedClass.ratePerSession ? `₹${selectedClass.ratePerSession}` : 'N/A' },
+                { label: 'Status', value: <Chip label={selectedClass.status} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', height: 22, bgcolor: selectedClass.status === 'ACTIVE' ? alpha('#10b981', 0.1) : alpha('#64748b', 0.08), color: selectedClass.status === 'ACTIVE' ? '#059669' : '#475569' }} /> }
+              ].map((item, idx) => (
+                <Grid item xs={12} sm={6} md={4} key={idx}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#fff', border: '1px solid', borderColor: alpha('#6366f1', 0.06) }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '0.06em' }}>
                       {item.label}
                     </Typography>
-                    <Typography variant="body1" fontWeight={500}>
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.85rem', mt: 0.25 }}>
                       {item.value || '-'}
                     </Typography>
-                  </Grid>
-                ))}
-                {selectedClass.notes && (
-                  <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase">
+                  </Box>
+                </Grid>
+              ))}
+              {selectedClass.notes && (
+                <Grid item xs={12}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#fff', border: '1px solid', borderColor: alpha('#6366f1', 0.06) }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '0.06em' }}>
                       Notes
                     </Typography>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem', mt: 0.25 }}>
                       {selectedClass.notes}
                     </Typography>
-                  </Grid>
-                )}
-              </Grid>
-            )}
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          )}
 
-            {activeTab === 1 && (
-              <Box>
-                {loadingDetails ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
-                ) : classAttendance.length > 0 ? (
-                  <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead style={{ backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
-                        <tr>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>DATE</th>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>TOPIC</th>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>STUDENT ATTENDANCE</th>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>STATUS</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {classAttendance.map((att) => (
-                          <tr key={att.id} style={{ borderTop: `1px solid ${theme.palette.divider}` }}>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>{new Date(att.sessionDate).toLocaleDateString()}</td>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>{att.topicCovered || '-'}</td>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>
-                              <Chip label={att.studentAttendanceStatus || 'PRESENT'} size="small" color={att.studentAttendanceStatus === 'ABSENT' ? 'error' : 'success'} variant="outlined" />
-                            </td>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>
-                              <Chip label={att.status} size="small" color={att.status === 'APPROVED' ? 'success' : att.status === 'REJECTED' ? 'error' : 'warning'} />
-                            </td>
-                          </tr>
+          {activeTab === 1 && (
+            <Box>
+              {loadingDetails ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress size={32} sx={{ color: '#6366f1' }} /></Box>
+              ) : classAttendance.length > 0 ? (
+                <Box sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden', bgcolor: '#fff' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
+                        {['Date', 'Topic', 'Student Attendance', 'Status'].map((h) => (
+                          <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '0.68rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                         ))}
-                      </tbody>
-                    </table>
-                  </Paper>
-                ) : (
-                  <Typography variant="body2" color="text.secondary" textAlign="center" py={4}>
-                    No attendance records found for this tutor in this class.
-                  </Typography>
-                )}
-              </Box>
-            )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classAttendance.map((att) => (
+                        <tr key={att.id} style={{ borderTop: `1px solid ${alpha('#6366f1', 0.04)}` }}>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem', fontWeight: 600 }}>{new Date(att.sessionDate).toLocaleDateString()}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem' }}>{att.topicCovered || '-'}</td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Chip label={att.studentAttendanceStatus || 'PRESENT'} size="small" sx={{ fontWeight: 700, fontSize: '0.62rem', height: 22, bgcolor: att.studentAttendanceStatus === 'ABSENT' ? alpha('#ef4444', 0.1) : alpha('#10b981', 0.1), color: att.studentAttendanceStatus === 'ABSENT' ? '#dc2626' : '#059669' }} />
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Chip label={att.status} size="small" sx={{ fontWeight: 700, fontSize: '0.62rem', height: 22, bgcolor: att.status === 'APPROVED' ? alpha('#10b981', 0.1) : att.status === 'REJECTED' ? alpha('#ef4444', 0.1) : alpha('#f59e0b', 0.1), color: att.status === 'APPROVED' ? '#059669' : att.status === 'REJECTED' ? '#dc2626' : '#d97706' }} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary" textAlign="center" py={4} sx={{ fontSize: '0.85rem' }}>
+                  No attendance records found for this tutor in this class.
+                </Typography>
+              )}
+            </Box>
+          )}
 
-            {activeTab === 2 && (
-              <Box>
-                {loadingDetails ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
-                ) : classPayments.length > 0 ? (
-                  <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead style={{ backgroundColor: alpha(theme.palette.primary.main, 0.05) }}>
-                        <tr>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>DUE DATE</th>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>AMOUNT</th>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>STATUS</th>
-                          <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.75rem', fontWeight: 700 }}>PAYMENT DATE</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {classPayments.map((pay) => (
-                          <tr key={pay.id} style={{ borderTop: `1px solid ${theme.palette.divider}` }}>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>{new Date(pay.dueDate).toLocaleDateString()}</td>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>₹{pay.amount.toLocaleString()}</td>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>
-                              <Chip label={pay.status} size="small" color={pay.status === 'PAID' ? 'success' : pay.status === 'OVERDUE' ? 'error' : 'warning'} />
-                            </td>
-                            <td style={{ padding: '12px', fontSize: '0.875rem' }}>{pay.paymentDate ? new Date(pay.paymentDate).toLocaleDateString() : '-'}</td>
-                          </tr>
+          {activeTab === 2 && (
+            <Box>
+              {loadingDetails ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress size={32} sx={{ color: '#6366f1' }} /></Box>
+              ) : classPayments.length > 0 ? (
+                <Box sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden', bgcolor: '#fff' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
+                        {['Due Date', 'Amount', 'Status', 'Payment Date'].map((h) => (
+                          <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '0.68rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                         ))}
-                      </tbody>
-                    </table>
-                  </Paper>
-                ) : (
-                  <Typography variant="body2" color="text.secondary" textAlign="center" py={4}>
-                    No payment records found for this tutor in this class.
-                  </Typography>
-                )}
-              </Box>
-            )}
-          </Box>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classPayments.map((pay) => (
+                        <tr key={pay.id} style={{ borderTop: `1px solid ${alpha('#6366f1', 0.04)}` }}>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem', fontWeight: 600 }}>{new Date(pay.dueDate).toLocaleDateString()}</td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.88rem', fontWeight: 800 }}>₹{pay.amount.toLocaleString()}</td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Chip label={pay.status} size="small" sx={{ fontWeight: 700, fontSize: '0.62rem', height: 22, bgcolor: pay.status === 'PAID' ? alpha('#10b981', 0.1) : pay.status === 'OVERDUE' ? alpha('#ef4444', 0.1) : alpha('#f59e0b', 0.1), color: pay.status === 'PAID' ? '#059669' : pay.status === 'OVERDUE' ? '#dc2626' : '#d97706' }} />
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem', color: '#64748b' }}>{pay.paymentDate ? new Date(pay.paymentDate).toLocaleDateString() : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary" textAlign="center" py={4} sx={{ fontSize: '0.85rem' }}>
+                  No payment records found for this tutor in this class.
+                </Typography>
+              )}
+            </Box>
+          )}
         </DialogContent>
       </Dialog>
       <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
@@ -881,4 +1103,3 @@ const TutorProfilePage: React.FC = () => {
 };
 
 export default TutorProfilePage;
-

@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Typography, Chip, CardContent, Grid, Divider, Stack, Button } from '@mui/material';
+import { Box, Typography, Chip, CardContent, Grid, Divider, Stack, Button, Card, alpha } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import { StyledCard } from '../common/StyledCard';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import { getMyDemos, updateDemoStatus } from '../../services/demoService';
@@ -58,7 +58,6 @@ const DemoClassesCard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Clamp requested page to a safe value based on current state
       const requested = page ?? 1;
       const safeRequestedPage = Math.max(1, requested);
 
@@ -79,37 +78,45 @@ const DemoClassesCard: React.FC = () => {
   }, [pagination.limit]);
 
   useEffect(() => {
-    // Initial load - always start from first page
     fetchDemos(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const cardSx = {
+    borderRadius: 3,
+    border: '1px solid',
+    borderColor: 'grey.100',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+    transition: 'box-shadow 0.2s',
+    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+  };
+
   if (loading) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" justifyContent="center" py={6} aria-busy>
             <LoadingSpinner message="Loading demo sessions..." />
           </Box>
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   if (error && demos.length === 0) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" flexDirection="column" gap={2}>
             <ErrorAlert error={error} />
             <Box display="flex" justifyContent="center">
-              <Button variant="outlined" onClick={() => fetchDemos()}>
+              <Button variant="outlined" onClick={() => fetchDemos()} sx={{ borderRadius: 2, textTransform: 'none' }}>
                 Retry
               </Button>
             </Box>
           </Box>
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
@@ -117,7 +124,6 @@ const DemoClassesCard: React.FC = () => {
     return null;
   }
 
-  // Filter to show only upcoming (SCHEDULED) demos
   const activeDemos = demos.filter((demo) => demo.status === DEMO_STATUS.SCHEDULED);
 
   if (!loading && activeDemos.length === 0) {
@@ -165,7 +171,6 @@ const DemoClassesCard: React.FC = () => {
         data.topicCovered,
         data.duration
       );
-      await updateClassLeadStatus(leadId, CLASS_LEAD_STATUS.DEMO_COMPLETED);
       await fetchDemos(pagination.page);
       setShowAttendanceModal(false);
       setSelectedDemo(null);
@@ -177,29 +182,50 @@ const DemoClassesCard: React.FC = () => {
   };
 
   return (
-    <StyledCard>
-      <CardContent>
+    <Card sx={cardSx}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
         {error && demos.length > 0 && (
           <Box mb={2}>
             <ErrorAlert error={error} />
           </Box>
         )}
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
           <Box display="flex" alignItems="center" gap={1.5}>
-            <AssignmentIcon sx={{ color: 'primary.main' }} aria-label="demo-sessions" />
-            <Typography variant="h6" fontWeight={600}>My Demo Sessions</Typography>
+            <Box
+              sx={{
+                p: 0.75,
+                borderRadius: 2,
+                bgcolor: alpha('#8b5cf6', 0.08),
+                display: 'flex',
+              }}
+            >
+              <AssignmentIcon sx={{ fontSize: 20, color: '#8b5cf6' }} aria-label="demo-sessions" />
+            </Box>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
+              My Demo Sessions
+            </Typography>
           </Box>
-          <Chip size="small" color="primary" variant="outlined" label={`${activeDemos.length} active demo(s)`} />
+          <Chip
+            size="small"
+            label={`${activeDemos.length} active`}
+            sx={{
+              bgcolor: alpha('#8b5cf6', 0.08),
+              color: '#7c3aed',
+              fontWeight: 700,
+              fontSize: '0.72rem',
+              height: 26,
+            }}
+          />
         </Box>
 
         <Box
           sx={{
-            maxHeight: 310,
+            maxHeight: 400,
             overflow: 'auto',
             pr: 1,
-            '&::-webkit-scrollbar': { width: 8 },
-            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8 },
-            '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' },
+            '&::-webkit-scrollbar': { width: '4px' },
+            '&::-webkit-scrollbar-track': { background: 'transparent' },
+            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
           }}
         >
           {activeDemos.map((demo, index) => {
@@ -215,97 +241,112 @@ const DemoClassesCard: React.FC = () => {
                 key={demo.id || index}
                 sx={{
                   border: '1px solid',
-                  borderColor: 'grey.200',
-                  borderRadius: 3,
+                  borderColor: alpha('#8b5cf6', 0.12),
+                  borderRadius: 2.5,
                   p: 2.5,
                   mb: 2,
                   position: 'relative',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.2s ease',
+                  bgcolor: alpha('#8b5cf6', 0.02),
                   '&:hover': {
-                    bgcolor: 'grey.50',
-                    borderColor: 'primary.light',
-                    transform: 'translateX(4px)'
-                  }
+                    borderColor: alpha('#8b5cf6', 0.25),
+                    bgcolor: alpha('#8b5cf6', 0.04),
+                  },
                 }}
               >
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                   <Stack spacing={0.5}>
                     <Box display="flex" alignItems="center" gap={1}>
-                      <PersonIcon fontSize="small" color="action" aria-label="student" />
-                      <Typography variant="h6" fontWeight={600} sx={{ wordBreak: 'break-word' }}>
+                      <PersonIcon fontSize="small" sx={{ color: '#8b5cf6' }} aria-label="student" />
+                      <Typography variant="subtitle1" fontWeight={700} sx={{ wordBreak: 'break-word', fontSize: '0.95rem' }}>
                         {studentName}
                       </Typography>
                     </Box>
                   </Stack>
-                  <Chip size="small" color={statusProps.color} label={statusProps.label} aria-label={`status-${statusProps.label}`} />
+                  <Chip size="small" color={statusProps.color} label={statusProps.label} sx={{ fontWeight: 600, fontSize: '0.7rem' }} aria-label={`status-${statusProps.label}`} />
                 </Box>
 
-                <Grid container spacing={2} mb={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <EventIcon fontSize="small" color="action" aria-label="demo-date" />
-                      <Typography>{formatDate(demo.demoDate)}</Typography>
+                <Grid container spacing={1.5} mb={2}>
+                  <Grid item xs={6}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                      <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
+                        <EventIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="demo-date" />
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Date</Typography>
+                      </Box>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{formatDate(demo.demoDate)}</Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AccessTimeIcon fontSize="small" color="action" aria-label="demo-time" />
-                      <Typography>{demo.demoTime || '-'}</Typography>
+                  <Grid item xs={6}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                      <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
+                        <AccessTimeIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="demo-time" />
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Time</Typography>
+                      </Box>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{demo.demoTime || '-'}</Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <MenuBookIcon fontSize="small" color="action" aria-label="subject" />
-                      <Typography>{subject}</Typography>
+                  <Grid item xs={6}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                      <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
+                        <MenuBookIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="subject" />
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Subject</Typography>
+                      </Box>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{subject}</Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography>Grade: {grade}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography>Board: {board}</Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Chip
-                      size="small"
-                      label={mode}
-                      color={mode === 'ONLINE' ? 'info' : mode === 'OFFLINE' ? 'success' : mode === 'HYBRID' ? 'secondary' : 'default'}
-                      aria-label="mode"
-                    />
+                  <Grid item xs={6}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.25}>Grade & Board</Typography>
+                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{grade} • {board}</Typography>
+                    </Box>
                   </Grid>
                 </Grid>
 
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <Chip
+                    size="small"
+                    label={mode}
+                    sx={{
+                      bgcolor: mode === 'ONLINE' ? alpha('#3b82f6', 0.08) : mode === 'OFFLINE' ? alpha('#10b981', 0.08) : alpha('#8b5cf6', 0.08),
+                      color: mode === 'ONLINE' ? '#2563eb' : mode === 'OFFLINE' ? '#059669' : '#7c3aed',
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                    }}
+                    aria-label="mode"
+                  />
+                </Box>
+
                 {(demo.notes || demo.feedback || demo.rejectionReason) && (
                   <>
-                    <Divider sx={{ my: 2 }} />
+                    <Divider sx={{ my: 1.5, borderColor: alpha('#8b5cf6', 0.08) }} />
                     {demo.notes && (
-                      <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
-                        <Typography variant="caption" color="text.secondary">Notes:</Typography>
-                        <Typography variant="body2">{demo.notes}</Typography>
+                      <Box sx={{ bgcolor: alpha('#6366f1', 0.04), p: 1.5, borderRadius: 2 }}>
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Notes</Typography>
+                        <Typography variant="body2" sx={{ fontSize: '0.82rem', mt: 0.25 }}>{demo.notes}</Typography>
                       </Box>
                     )}
                     {demo.feedback && (
-                      <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 2, mt: demo.notes ? 1.5 : 0 }}>
-                        <Typography variant="caption" color="text.secondary">Feedback:</Typography>
-                        <Typography variant="body2">{demo.feedback}</Typography>
+                      <Box sx={{ bgcolor: alpha('#6366f1', 0.04), p: 1.5, borderRadius: 2, mt: demo.notes ? 1 : 0 }}>
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Feedback</Typography>
+                        <Typography variant="body2" sx={{ fontSize: '0.82rem', mt: 0.25 }}>{demo.feedback}</Typography>
                       </Box>
                     )}
                     {demo.rejectionReason && (
-                      <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 2, mt: (demo.notes || demo.feedback) ? 1.5 : 0 }}>
-                        <Typography variant="caption" color="error.main">Rejection Reason:</Typography>
-                        <Typography variant="body2" color="error.main">{demo.rejectionReason}</Typography>
+                      <Box sx={{ bgcolor: alpha('#ef4444', 0.04), p: 1.5, borderRadius: 2, mt: (demo.notes || demo.feedback) ? 1 : 0 }}>
+                        <Typography variant="caption" color="error.main" fontWeight={600}>Rejection Reason</Typography>
+                        <Typography variant="body2" color="error.main" sx={{ fontSize: '0.82rem', mt: 0.25 }}>{demo.rejectionReason}</Typography>
                       </Box>
                     )}
                   </>
                 )}
 
-                <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} pt={2} sx={{ borderTop: '1px solid', borderColor: 'grey.100' }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Assigned on {formatDate(demo.assignedAt)}
+                <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} pt={1.5} sx={{ borderTop: '1px solid', borderColor: alpha('#8b5cf6', 0.08) }}>
+                  <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
+                    Assigned {formatDate(demo.assignedAt)}
                   </Typography>
                   {demo.completedAt && (
-                    <Typography variant="caption" color="text.secondary">
-                      Completed on {formatDate(demo.completedAt)}
+                    <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
+                      Completed {formatDate(demo.completedAt)}
                     </Typography>
                   )}
                 </Box>
@@ -315,9 +356,18 @@ const DemoClassesCard: React.FC = () => {
                     <Button
                       size="small"
                       variant="contained"
-                      color="success"
+                      startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
                       onClick={() => handleMarkCompletedClick(demo)}
                       disabled={updatingDemoId === demo.id}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        bgcolor: '#10b981',
+                        '&:hover': { bgcolor: '#059669' },
+                        px: 2.5,
+                      }}
                     >
                       Mark Completed
                     </Button>
@@ -329,14 +379,26 @@ const DemoClassesCard: React.FC = () => {
         </Box>
 
         {pagination.pages > 1 && (
-          <Box display="flex" justifyContent="center" mt={3} gap={2}>
-            <Button size="small" variant="outlined" disabled={pagination.page <= 1} onClick={onPrev}>
+          <Box display="flex" justifyContent="center" alignItems="center" mt={3} gap={2}>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={pagination.page <= 1}
+              onClick={onPrev}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+            >
               Previous
             </Button>
-            <Typography variant="body2" color="text.secondary" sx={{ alignSelf: 'center' }}>
-              Page {pagination.page} of {pagination.pages}
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
+              {pagination.page} / {pagination.pages}
             </Typography>
-            <Button size="small" variant="outlined" disabled={pagination.page >= pagination.pages} onClick={onNext}>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={pagination.page >= pagination.pages}
+              onClick={onNext}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+            >
               Next
             </Button>
           </Box>
@@ -354,7 +416,7 @@ const DemoClassesCard: React.FC = () => {
         onSubmit={handleAttendanceSubmit}
         demo={selectedDemo}
       />
-    </StyledCard>
+    </Card>
   );
 };
 

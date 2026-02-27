@@ -19,7 +19,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
       try {
         setLoading(true);
         setError(null);
-        
+
         const [interestedRes, recommendedRes] = await Promise.all([
           announcementService.getInterestedTutors(announcementId),
           announcementService.getRecommendedTutors(announcementId)
@@ -70,7 +70,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
       renderCell: (params: any) => {
         const name = params?.row?.name ?? params?.row?.user?.name ?? '-';
         const teacherId = params?.row?.teacherId;
-        
+
         if (teacherId) {
           return (
             <MuiLink
@@ -85,7 +85,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
             </MuiLink>
           );
         }
-        
+
         return <Typography variant="body2" sx={{ fontWeight: 500 }}>{name}</Typography>;
       },
     },
@@ -155,11 +155,35 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 100,
+      width: 140,
       sortable: false,
-      renderCell: (params: any) => (
-        <Button size="small" variant="contained" onClick={() => onSelectTutor(params.row)} sx={{ fontSize: '0.7rem' }}>Select</Button>
-      ),
+      renderCell: (params: any) => {
+        const status = params?.row?.verificationStatus;
+        const isVerified = status === 'VERIFIED';
+        const tutorId = params?.row?.id || params?.row?._id;
+
+        if (isVerified) {
+          return <Button size="small" variant="contained" onClick={() => onSelectTutor(params.row)} sx={{ fontSize: '0.7rem' }}>Select</Button>;
+        }
+
+        return (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              color="warning"
+              component={Link}
+              to={`/tutor-profile/${tutorId}`}
+              sx={{ fontSize: '0.65rem', lineHeight: 1.2, py: 0.3 }}
+            >
+              Verify First
+            </Button>
+            <Typography variant="caption" color="warning.main" sx={{ fontSize: '0.6rem', lineHeight: 1 }}>
+              Not verified
+            </Typography>
+          </Box>
+        );
+      },
     },
   ];
 
@@ -170,7 +194,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
       </DialogTitle>
       <DialogContent sx={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {error && <ErrorAlert error={error} />}
-        
+
         {loading ? (
           <Box sx={{ p: 4 }}><LoadingSpinner /></Box>
         ) : (
@@ -185,7 +209,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
                   columns={columns}
                   getRowId={(r: any) => r.id}
                   hideFooter={interestedTutors.length <= 5}
-                  initialState={{ 
+                  initialState={{
                     pagination: { paginationModel: { pageSize: 5 } },
                     sorting: { sortModel: [{ field: 'matchPercentage', sort: 'desc' }] }
                   }}
@@ -204,7 +228,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
                   columns={columns}
                   getRowId={(r: any) => r.id}
                   hideFooter={recommendedTutors.length <= 5}
-                  initialState={{ 
+                  initialState={{
                     pagination: { paginationModel: { pageSize: 5 } },
                     sorting: { sortModel: [{ field: 'matchPercentage', sort: 'desc' }] }
                   }}

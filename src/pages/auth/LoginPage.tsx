@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: 'var(--full-height)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -63,15 +63,17 @@ const LoginPage: React.FC = () => {
           backgroundSize: '50% 50%',
           backgroundPosition: 'top left',
           opacity: 0.1,
+          pointerEvents: 'none',
+          zIndex: 0,
         },
       }}
     >
-      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
+      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
         <Box className="animate-scale-in" textAlign="center" mb={{ xs: 3, sm: 4 }}>
-          <Box 
-            display="inline-flex" 
-            alignItems="center" 
-            justifyContent="center" 
+          <Box
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
             mb={{ xs: 1.5, sm: 2 }}
             sx={{
               p: { xs: 1.5, sm: 2 },
@@ -80,23 +82,23 @@ const LoginPage: React.FC = () => {
               backdropFilter: 'blur(10px)',
             }}
           >
-            <Box 
-              component="img" 
-              src="/1.jpg" 
-              alt="logo" 
-              sx={{ 
-                height: { xs: 48, sm: 56 }, 
-                width: { xs: 48, sm: 56 }, 
-                borderRadius: '50%', 
+            <Box
+              component="img"
+              src="/1.jpg"
+              alt="logo"
+              sx={{
+                height: { xs: 48, sm: 56 },
+                width: { xs: 48, sm: 56 },
+                borderRadius: '50%',
                 mr: { xs: 1.5, sm: 2 },
                 border: '3px solid rgba(255, 255, 255, 0.3)',
-              }} 
+              }}
             />
             <Box textAlign="left">
-              <Typography 
-                variant="h3" 
-                fontWeight={800} 
-                sx={{ 
+              <Typography
+                variant="h3"
+                fontWeight={800}
+                sx={{
                   color: 'white',
                   fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.25rem' },
                   lineHeight: 1.2,
@@ -104,9 +106,9 @@ const LoginPage: React.FC = () => {
               >
                 Your Shikshak
               </Typography>
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   color: 'rgba(255, 255, 255, 0.9)',
                   fontWeight: 500,
                   fontSize: { xs: '0.8125rem', sm: '0.875rem' },
@@ -118,10 +120,10 @@ const LoginPage: React.FC = () => {
           </Box>
         </Box>
 
-        <Card 
+        <Card
           elevation={0}
           className="animate-slide-in-up"
-          sx={{ 
+          sx={{
             borderRadius: { xs: '20px', sm: '24px' },
             boxShadow: '0px 20px 60px rgba(0, 0, 0, 0.3)',
             overflow: 'hidden',
@@ -135,18 +137,18 @@ const LoginPage: React.FC = () => {
             }}
           >
             <LoginIcon sx={{ fontSize: { xs: 40, sm: 48 }, color: 'white', mb: { xs: 0.75, sm: 1 } }} />
-            <Typography 
-              variant="h5" 
-              color="white" 
+            <Typography
+              variant="h5"
+              color="white"
               fontWeight={700}
               sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
             >
               Welcome Back
             </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'rgba(255, 255, 255, 0.9)', 
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.9)',
                 mt: 0.5,
                 fontSize: { xs: '0.8125rem', sm: '0.875rem' },
               }}
@@ -157,7 +159,7 @@ const LoginPage: React.FC = () => {
 
           <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
             <ErrorAlert error={error} onClose={clearError} />
-            
+
             <Box component="form" onSubmit={handleSubmit(onSubmit)} display="flex" flexDirection="column" gap={{ xs: 2.5, sm: 3 }}>
               <TextField
                 label="Email Address"
@@ -172,7 +174,7 @@ const LoginPage: React.FC = () => {
                   },
                 }}
               />
-              
+
               <TextField
                 label="Password"
                 type="password"
@@ -187,11 +189,11 @@ const LoginPage: React.FC = () => {
                 }}
               />
 
-              <Button 
-                type="submit" 
-                variant="contained" 
-                color="primary" 
-                fullWidth 
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
                 disabled={loading}
                 sx={{
                   py: { xs: 1.25, sm: 1.5 },
@@ -231,16 +233,16 @@ const LoginPage: React.FC = () => {
             </Box>
 
             <Box mt={{ xs: 2.5, sm: 3 }} textAlign="center">
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color="text.secondary"
                 sx={{ fontSize: { xs: '0.8125rem', sm: '0.875rem' } }}
               >
-                Don't have an account?{' '}
+                Don't have an Tutor account?{' '}
                 <MLink 
-                  component={Link} 
-                  to="/register" 
-                  sx={{ 
+                  component={Link}
+                  to="/tutor-register"
+                  sx={{
                     color: 'primary.main',
                     fontWeight: 600,
                     textDecoration: 'none',
@@ -256,9 +258,9 @@ const LoginPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Typography 
-          variant="caption" 
-          sx={{ 
+        <Typography
+          variant="caption"
+          sx={{
             display: 'block',
             textAlign: 'center',
             mt: 3,

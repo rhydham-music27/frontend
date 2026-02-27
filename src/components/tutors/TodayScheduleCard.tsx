@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Card, CardContent, Button, Chip, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Button, Chip, CircularProgress, alpha } from '@mui/material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ClassIcon from '@mui/icons-material/Class';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
@@ -72,9 +73,18 @@ const TodayScheduleCard: React.FC = () => {
     setSelectedClass(null);
   };
 
+  const cardSx = {
+    borderRadius: 3,
+    border: '1px solid',
+    borderColor: 'grey.100',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+    transition: 'box-shadow 0.2s',
+    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+  };
+
   if (loading) {
     return (
-      <Card>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" alignItems="center" justifyContent="center" py={4}>
             <CircularProgress size={24} />
@@ -86,7 +96,7 @@ const TodayScheduleCard: React.FC = () => {
 
   if (error) {
     return (
-      <Card>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" alignItems="center" gap={1}>
             <ErrorOutlineIcon color="error" />
@@ -101,12 +111,28 @@ const TodayScheduleCard: React.FC = () => {
 
   if (!classes.length) {
     return (
-      <Card>
+      <Card sx={cardSx}>
         <CardContent>
-          <Box textAlign="center" py={4}>
-            <ScheduleIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
-            <Typography variant="body2" color="text.secondary">
-              No classes scheduled for today.
+          <Box textAlign="center" py={5}>
+            <Box
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                bgcolor: alpha('#6366f1', 0.08),
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 1.5,
+              }}
+            >
+              <CalendarTodayIcon sx={{ fontSize: 24, color: '#6366f1' }} />
+            </Box>
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+              No classes scheduled for today
+            </Typography>
+            <Typography variant="caption" color="text.disabled" display="block" mt={0.5}>
+              Enjoy your free time! 🎉
             </Typography>
           </Box>
         </CardContent>
@@ -116,19 +142,34 @@ const TodayScheduleCard: React.FC = () => {
 
   return (
     <>
-      <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', p: 3, height: '100%' }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+      <Card sx={{ ...cardSx, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2.5, sm: 3 }, height: '100%' }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
             <Box display="flex" alignItems="center" gap={1.5}>
-              <ScheduleIcon color="primary" />
-              <Typography variant="subtitle1" fontWeight={600}>
-                Today's Classes {classes.length > 3 ? `(Showing 3 of ${classes.length})` : `(${classes.length} classes)`}
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: 2,
+                  bgcolor: alpha('#6366f1', 0.08),
+                  display: 'flex',
+                }}
+              >
+                <ScheduleIcon sx={{ fontSize: 20, color: '#6366f1' }} />
+              </Box>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
+                Today's Classes
               </Typography>
             </Box>
             <Chip
               size="small"
-              color="primary"
               label={`${classes.length} class${classes.length === 1 ? '' : 'es'}`}
+              sx={{
+                bgcolor: alpha('#6366f1', 0.08),
+                color: '#6366f1',
+                fontWeight: 700,
+                fontSize: '0.72rem',
+                height: 26,
+              }}
             />
           </Box>
 
@@ -140,26 +181,11 @@ const TodayScheduleCard: React.FC = () => {
               flex: '1 1 auto',
               overflowY: 'auto',
               maxHeight: 600,
-              pr: 2,
-              '& > *': {
-                flexShrink: 0,
-              },
-              WebkitOverflowScrolling: 'touch',
-              '&::-webkit-scrollbar': {
-                width: '6px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'transparent',
-                borderRadius: '10px',
-                margin: '4px 0',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: '#888',
-                borderRadius: '10px',
-                '&:hover': {
-                  background: '#555',
-                },
-              },
+              pr: 1,
+              '& > *': { flexShrink: 0 },
+              '&::-webkit-scrollbar': { width: '4px' },
+              '&::-webkit-scrollbar-track': { background: 'transparent' },
+              '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
             }}
           >
             {classes.map((cls) => {
@@ -189,6 +215,7 @@ const TodayScheduleCard: React.FC = () => {
                       variant="outlined"
                       startIcon={<ClassIcon />}
                       onClick={() => navigate(`/tutor-tests?classId=${cls.id}`)}
+                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
                     >
                       Record Test
                     </Button>
@@ -196,6 +223,7 @@ const TodayScheduleCard: React.FC = () => {
                       size="small"
                       variant="outlined"
                       onClick={() => navigate(`/tutor-attendance?classId=${cls.id}`)}
+                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
                     >
                       Upload Report
                     </Button>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, GraduationCap, Briefcase, FileText, CheckCircle, Star } from 'lucide-react';
+import { User, GraduationCap, Briefcase, Star } from 'lucide-react';
 import { ITutor, IPublicTutorReview } from '../../types';
 
 interface PublicTutorProfileCardProps {
@@ -43,20 +43,11 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
     preferredCities: (tutor as any).preferredCities || [],
   };
 
-  const documents = {
-    aadhar: (tutor.documents || []).some((d) => d.documentType === 'AADHAR' && d.verifiedAt),
-    panCard: (tutor.documents || []).some((d) => d.documentType === 'PAN_CARD' && d.verifiedAt),
-    collegeId: (tutor.documents || []).some((d) => d.documentType === 'COLLEGE_ID' && d.verifiedAt),
-    bankStatement: (tutor.documents || []).some((d) => d.documentType === 'BANK_STATEMENT' && d.verifiedAt),
-    qualificationCert: (tutor.documents || []).some((d) => d.documentType === 'QUALIFICATION_CERT' && d.verifiedAt),
-  };
-
   const tutorData = {
     personalDetails,
     education,
     workExperience,
     locationPreferences,
-    documents,
     rating,
     totalTeachingHours: totalHours,
     activeClasses,
@@ -227,35 +218,6 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
         </div>
       </div>
 
-      {/* Documents summary */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-600" />
-          Documents
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {Object.entries(documents).map(([key, value]) => (
-            <div
-              key={key}
-              className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200 hover:shadow-md transition-all"
-            >
-              <div className="flex items-center justify-center mb-2">
-                {value ? (
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                ) : (
-                  <FileText className="w-8 h-8 text-gray-400" />
-                )}
-              </div>
-              <p className="text-xs text-center font-medium text-gray-700 capitalize">
-                {key.replace(/([A-Z])/g, ' $1').trim()}
-              </p>
-              <p className="text-xs text-center text-green-600 font-medium mt-1">
-                {value ? 'Verified' : 'Pending'}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Reviews section */}
       {reviews.length > 0 && (

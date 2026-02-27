@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Chip, Stack, Divider, IconButton, Tooltip, Alert, CardContent, Button } from '@mui/material';
+import { Box, Typography, Chip, Stack, Divider, IconButton, Tooltip, Alert, CardContent, Button, Card, alpha } from '@mui/material';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CloseIcon from '@mui/icons-material/Close';
 import SchoolIcon from '@mui/icons-material/School';
@@ -9,7 +9,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CampaignIcon from '@mui/icons-material/Campaign';
-import { StyledCard } from '../common/StyledCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
@@ -52,7 +51,6 @@ const ClassLeadsFeedCard: React.FC = () => {
       const res = await tutorService.getMyProfile();
       setTutorProfile((res as any)?.data || null);
     } catch (e) {
-      // fail silently for highlighting; core functionality should still work
       setTutorProfile(null);
     }
   };
@@ -126,8 +124,6 @@ const ClassLeadsFeedCard: React.FC = () => {
       ? tutorPreferredLocations.some((loc) => !!loc && (loc === leadArea || loc === leadLocation))
       : false;
 
-    // Weights add up to 1.0; only include criteria that are applicable so
-    // missing tutor preferences do not unfairly reduce the score.
     const subjectWeight = 0.4;
     const modeWeight = 0.2;
     const cityWeight = 0.2;
@@ -154,7 +150,6 @@ const ClassLeadsFeedCard: React.FC = () => {
     }
 
     if (totalWeight === 0) {
-      // No applicable preferences: treat as neutral 100% so opportunities are not penalized.
       return 100;
     }
 
@@ -177,7 +172,6 @@ const ClassLeadsFeedCard: React.FC = () => {
           return { announcement: a, matchPercentage };
         });
 
-      // Sort by: highest match first, then ones without interest first.
       enriched.sort((x, y) => {
         const aInterested = hasExpressedInterest(x.announcement) ? 1 : 0;
         const bInterested = hasExpressedInterest(y.announcement) ? 1 : 0;
@@ -242,34 +236,43 @@ const ClassLeadsFeedCard: React.FC = () => {
     });
   };
 
+  const cardSx = {
+    borderRadius: 3,
+    border: '1px solid',
+    borderColor: 'grey.100',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+    transition: 'box-shadow 0.2s',
+    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+  };
+
   if (loading) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <Box display="flex" justifyContent="center" py={4} aria-busy>
             <LoadingSpinner message="Loading class opportunities..." />
           </Box>
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   if (error && filteredAnnouncements.length === 0) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <ErrorAlert error={error} />
           <Box mt={1.5} display="flex" justifyContent="center">
-            <Button variant="outlined" onClick={fetchAnnouncements}>Retry</Button>
+            <Button variant="outlined" onClick={fetchAnnouncements} sx={{ borderRadius: 2, textTransform: 'none' }}>Retry</Button>
           </Box>
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   if (!loading && filteredAnnouncements.length === 0) {
     return (
-      <StyledCard>
+      <Card sx={cardSx}>
         <CardContent>
           <EmptyState
             icon={<CampaignIcon color="primary" />}
@@ -277,28 +280,58 @@ const ClassLeadsFeedCard: React.FC = () => {
             description="There are no new class opportunities at the moment. Check back later!"
           />
         </CardContent>
-      </StyledCard>
+      </Card>
     );
   }
 
   return (
-    <StyledCard>
-      <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+    <Card sx={cardSx}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
           <Box display="flex" alignItems="center" gap={1.5}>
-            <CampaignIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="h6" fontWeight={600}>Class Opportunities</Typography>
+            <Box
+              sx={{
+                p: 0.75,
+                borderRadius: 2,
+                bgcolor: alpha('#3b82f6', 0.08),
+                display: 'flex',
+              }}
+            >
+              <CampaignIcon sx={{ fontSize: 20, color: '#3b82f6' }} />
+            </Box>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
+              Class Opportunities
+            </Typography>
           </Box>
-          <Chip label={`${filteredAnnouncements.length} available`} size="small" color="primary" variant="outlined" />
+          <Chip
+            label={`${filteredAnnouncements.length} available`}
+            size="small"
+            sx={{
+              bgcolor: alpha('#3b82f6', 0.08),
+              color: '#2563eb',
+              fontWeight: 700,
+              fontSize: '0.72rem',
+              height: 26,
+            }}
+          />
         </Box>
 
         {successMessage && (
-          <Alert severity="success" onClose={() => setSuccessMessage(null)} sx={{ mb: 2 }} role="status">
+          <Alert severity="success" onClose={() => setSuccessMessage(null)} sx={{ mb: 2, borderRadius: 2 }} role="status">
             {successMessage}
           </Alert>
         )}
 
-        <Box sx={{ maxHeight: 600, overflow: 'auto', pr: 1, '&::-webkit-scrollbar': { width: 8 }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8 }, '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' } }}>
+        <Box
+          sx={{
+            maxHeight: 600,
+            overflow: 'auto',
+            pr: 1,
+            '&::-webkit-scrollbar': { width: '4px' },
+            '&::-webkit-scrollbar-track': { background: 'transparent' },
+            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
+          }}
+        >
           {filteredAnnouncements.map((item) => {
             const a = item.announcement as IAnnouncement;
             const matchPercentage = item.matchPercentage as number;
@@ -309,7 +342,6 @@ const ClassLeadsFeedCard: React.FC = () => {
             const cl = (a as any).classLead || {};
             const subjects = Array.isArray(cl?.subject) ? cl.subject.join(', ') : (cl?.subject || '');
 
-            // Highlight logic: offline classes where city, preferred area and at least one subject match tutor profile
             const isHighlighted = Boolean(matchPercentage >= 80);
 
             const grade = cl?.grade || '-';
@@ -329,7 +361,6 @@ const ClassLeadsFeedCard: React.FC = () => {
               ? qualifications.split(/[,•\n]/).map((s) => s.trim()).filter(Boolean)
               : [];
 
-            // Get student display information
             const getStudentDisplay = () => {
               if (studentType === 'GROUP') {
                 const studentNames = studentDetails.map((s: any) => s.name).filter(Boolean).join(', ');
@@ -337,7 +368,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                   type: 'GROUP',
                   label: `Group (${numberOfStudents} students)`,
                   names: studentNames || `${numberOfStudents} students`,
-                  icon: <GroupIcon fontSize="small" />
+                  icon: <GroupIcon fontSize="small" />,
                 };
               } else {
                 const studentName = cl?.studentName || 'Student';
@@ -345,17 +376,15 @@ const ClassLeadsFeedCard: React.FC = () => {
                   type: 'SINGLE',
                   label: 'Single Student',
                   names: studentName,
-                  icon: <PersonIcon fontSize="small" />
+                  icon: <PersonIcon fontSize="small" />,
                 };
               }
             };
 
             const studentDisplay = getStudentDisplay();
 
-            // Calculate tutor fees
             const getTutorFeesDisplay = () => {
               if (studentType === 'GROUP') {
-                // Sum up tutor fees from all students in the group
                 const totalTutorFees = studentDetails.reduce((sum: number, student: any) => {
                   return sum + (student.tutorFees || 0);
                 }, 0);
@@ -365,7 +394,6 @@ const ClassLeadsFeedCard: React.FC = () => {
                   perStudent: studentDetails.length > 1 ? `₹${Math.round(totalTutorFees / studentDetails.length).toLocaleString()} per student` : null
                 };
               } else {
-                // Single student tutor fees
                 const tutorFees = (cl as any)?.tutorFees || 0;
                 return {
                   amount: tutorFees,
@@ -377,104 +405,139 @@ const ClassLeadsFeedCard: React.FC = () => {
 
             const tutorFeesDisplay = getTutorFeesDisplay();
 
+            const matchColor = matchPercentage >= 80 ? '#10b981' : matchPercentage >= 50 ? '#3b82f6' : '#94a3b8';
+
             return (
               <Box
                 key={id}
                 sx={{
                   border: '1px solid',
-                  borderColor: isHighlighted ? 'primary.main' : 'grey.200',
-                  borderWidth: isHighlighted ? 2 : 1,
-                  borderRadius: 3,
+                  borderColor: isHighlighted ? alpha('#10b981', 0.3) : alpha('#3b82f6', 0.1),
+                  borderRadius: 2.5,
                   p: 2.5,
                   mb: 2,
                   position: 'relative',
-                  backgroundColor: isHighlighted ? 'rgba(25,118,210,0.04)' : 'inherit',
-                  transition: 'all 0.3s ease',
+                  bgcolor: isHighlighted ? alpha('#10b981', 0.03) : alpha('#3b82f6', 0.01),
+                  transition: 'all 0.2s ease',
                   '&:hover': {
-                    backgroundColor: isHighlighted ? 'rgba(25,118,210,0.08)' : 'grey.50',
-                    borderColor: 'primary.light',
-                    transform: 'translateX(4px)',
+                    bgcolor: isHighlighted ? alpha('#10b981', 0.06) : alpha('#3b82f6', 0.04),
+                    borderColor: isHighlighted ? alpha('#10b981', 0.4) : alpha('#3b82f6', 0.2),
                   },
                 }}
               >
+                {/* Header */}
                 <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Stack spacing={0.75}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <SchoolIcon fontSize="small" color="action" aria-label="Class" />
-                      <Typography variant="subtitle1" fontWeight={700} sx={{ wordBreak: 'break-word' }}>
+                  <Stack spacing={0.5}>
+                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                      <SchoolIcon sx={{ fontSize: 18, color: '#3b82f6' }} aria-label="Class" />
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ wordBreak: 'break-word', fontSize: '0.92rem' }}>
                         {`Class ${grade} - ${subjects || '-'}`}
                       </Typography>
+                    </Box>
+                    <Box display="flex" gap={0.75} flexWrap="wrap" mt={0.5}>
                       <Chip
                         icon={studentDisplay.icon}
                         label={studentDisplay.label}
                         size="small"
-                        color={studentDisplay.type === 'GROUP' ? 'secondary' : 'primary'}
-                        variant="outlined"
-                        sx={{ ml: 1, fontWeight: 500 }}
+                        sx={{
+                          bgcolor: studentDisplay.type === 'GROUP' ? alpha('#8b5cf6', 0.08) : alpha('#3b82f6', 0.08),
+                          color: studentDisplay.type === 'GROUP' ? '#7c3aed' : '#2563eb',
+                          fontWeight: 600,
+                          fontSize: '0.68rem',
+                          height: 24,
+                          '& .MuiChip-icon': { color: 'inherit' },
+                        }}
                       />
                       <Chip
                         label={`${matchPercentage}% match`}
-                        color={matchPercentage >= 80 ? 'success' : matchPercentage >= 50 ? 'primary' : 'default'}
                         size="small"
-                        sx={{ ml: 1, fontWeight: 600 }}
+                        sx={{
+                          bgcolor: alpha(matchColor, 0.1),
+                          color: matchColor,
+                          fontWeight: 700,
+                          fontSize: '0.68rem',
+                          height: 24,
+                        }}
                       />
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {`${board} | ${mode}`}
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem', mt: 0.5 }}>
+                      {`${board} • ${mode}`}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
                       {studentDisplay.names}
                     </Typography>
                     {postedStr && (
-                      <Typography variant="caption" color="text.secondary">
-                        {`Posted on ${postedStr}`}
+                      <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
+                        {`Posted ${postedStr}`}
                       </Typography>
                     )}
                   </Stack>
                   <Tooltip title="Ignore this lead">
-                    <IconButton size="small" onClick={() => handleIgnore(id)} aria-label="Ignore lead">
-                      <CloseIcon fontSize="small" />
+                    <IconButton
+                      size="small"
+                      onClick={() => handleIgnore(id)}
+                      aria-label="Ignore lead"
+                      sx={{
+                        bgcolor: alpha('#ef4444', 0.06),
+                        '&:hover': { bgcolor: alpha('#ef4444', 0.12) },
+                        width: 28,
+                        height: 28,
+                      }}
+                    >
+                      <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
                     </IconButton>
                   </Tooltip>
                 </Box>
 
-                <Stack spacing={1.25} mb={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <LocationOnIcon fontSize="small" color="action" />
-                    <Typography variant="body2">
-                      {location || area || city || '-'}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <AccessTimeIcon fontSize="small" color="action" />
-                    <Typography variant="body2">
-                      {scheduleLine}
-                      {classesPerMonth != null && ` (${classesPerMonth} classes/month)`}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <AttachMoneyIcon fontSize="small" color="action" />
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {tutorFeesDisplay.label}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <PersonIcon fontSize="small" color="action" />
-                    <Typography variant="body2">
-                      {`Preferred Tutor: ${genderPref}`}
-                    </Typography>
-                  </Box>
-                </Stack>
+                {/* Details */}
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: alpha('#f8fafc', 0.8),
+                    border: '1px solid',
+                    borderColor: 'grey.50',
+                    mb: 2,
+                  }}
+                >
+                  <Stack spacing={1}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <LocationOnIcon sx={{ fontSize: 15, color: 'text.disabled' }} />
+                      <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>
+                        {location || area || city || '-'}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <AccessTimeIcon sx={{ fontSize: 15, color: 'text.disabled' }} />
+                      <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>
+                        {scheduleLine}
+                        {classesPerMonth != null && ` (${classesPerMonth}/month)`}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <AttachMoneyIcon sx={{ fontSize: 15, color: '#10b981' }} />
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', color: '#059669' }}>
+                        {tutorFeesDisplay.label}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <PersonIcon sx={{ fontSize: 15, color: 'text.disabled' }} />
+                      <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>
+                        {`Preferred: ${genderPref}`}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Box>
 
                 {requirementItems.length > 0 && (
                   <Box mb={2}>
-                    <Typography variant="body2" fontWeight={600} gutterBottom>
-                      Parent Requirements:
+                    <Typography variant="caption" fontWeight={700} display="block" mb={0.75} sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.65rem' }}>
+                      Parent Requirements
                     </Typography>
-                    <Stack spacing={0.5} pl={2}>
+                    <Stack spacing={0.25} pl={0.5}>
                       {requirementItems.map((req, idx) => (
-                        <Typography key={idx} variant="body2" sx={{ position: 'relative' }}>
-                          {`• ${req}`}
+                        <Typography key={idx} variant="body2" sx={{ fontSize: '0.8rem', position: 'relative', pl: 1.5, '&::before': { content: '"•"', position: 'absolute', left: 0, color: 'text.disabled' } }}>
+                          {req}
                         </Typography>
                       ))}
                     </Stack>
@@ -482,19 +545,28 @@ const ClassLeadsFeedCard: React.FC = () => {
                 )}
 
                 {!!(a as any)?.interestCount && (a as any).interestCount > 0 && (
-                  <Box display="flex" alignItems="center" gap={0.5} mb={2}>
-                    <Typography variant="caption" color="text.secondary">{(a as any).interestCount} tutor(s) interested</Typography>
-                  </Box>
+                  <Typography variant="caption" color="text.disabled" display="block" mb={1.5} sx={{ fontSize: '0.68rem' }}>
+                    {(a as any).interestCount} tutor(s) interested
+                  </Typography>
                 )}
 
-                <Divider sx={{ my: 2 }} />
-                <Box display="flex" gap={2} flexWrap="wrap">
+                <Divider sx={{ mb: 2, borderColor: alpha('#3b82f6', 0.06) }} />
+
+                {/* Actions */}
+                <Box display="flex" gap={1.5} flexWrap="wrap">
                   {interested ? (
                     <Button
                       variant="outlined"
-                      color="success"
-                      startIcon={<ThumbUpIcon />}
+                      startIcon={<ThumbUpIcon sx={{ fontSize: 16 }} />}
                       disabled
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.78rem',
+                        borderColor: alpha('#10b981', 0.3),
+                        color: '#10b981',
+                      }}
                     >
                       Already Expressed
                     </Button>
@@ -502,26 +574,48 @@ const ClassLeadsFeedCard: React.FC = () => {
                     <>
                       <Button
                         variant="contained"
-                        color="primary"
-                        startIcon={<ThumbUpIcon />}
+                        startIcon={<ThumbUpIcon sx={{ fontSize: 16 }} />}
                         onClick={() => handleExpressInterest(id)}
                         disabled={!!actionLoading[id]}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.78rem',
+                          bgcolor: '#3b82f6',
+                          '&:hover': { bgcolor: '#2563eb' },
+                          px: 2.5,
+                        }}
                       >
                         {actionLoading[id] ? 'Expressing...' : 'Express Interest'}
                       </Button>
-                      <Button variant="outlined" color="inherit" onClick={() => handleIgnore(id)}>Ignore</Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => handleIgnore(id)}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.78rem',
+                          color: 'text.secondary',
+                          borderColor: 'grey.200',
+                          '&:hover': { borderColor: 'grey.400' },
+                        }}
+                      >
+                        Ignore
+                      </Button>
                     </>
                   )}
                 </Box>
                 {actionError[id] && (
-                  <Alert severity="error" sx={{ mt: 1 }}>{actionError[id]}</Alert>
+                  <Alert severity="error" sx={{ mt: 1.5, borderRadius: 2, fontSize: '0.78rem' }}>{actionError[id]}</Alert>
                 )}
               </Box>
             );
           })}
         </Box>
       </CardContent>
-    </StyledCard>
+    </Card>
   );
 };
 

@@ -17,6 +17,8 @@ import {
   alpha,
   useTheme,
   InputAdornment,
+  Checkbox,
+  ListItemText,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -41,10 +43,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
   // Helper function to check if a field should be read-only
   // Only lock fields that have actual meaningful data in initialData
   const isFieldReadOnly = (fieldValue: any) => {
-    if (mode !== 'edit') return false;
-    if (Array.isArray(fieldValue)) return fieldValue.length > 0;
-    if (typeof fieldValue === 'string') return fieldValue.trim() !== '';
-    return Boolean(fieldValue);
+    return false;
   };
   const theme = useTheme();
   const [formData, setFormData] = useState<TutorLeadFormData>(initialData || {
@@ -74,38 +73,39 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
   // Local state for hierarchy selection
   const [selectedBoard, setSelectedBoard] = useState('');
   const [selectedGrade, setSelectedGrade] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
   // Options Hooks
   const { options: boardOptions } = useOptions('BOARD');
-  
+
   // Dependent Options
   const selectedBoardId = useMemo(() => boardOptions.find(b => b.value === selectedBoard)?._id, [boardOptions, selectedBoard]);
   const { options: gradeOptions } = useOptions('GRADE', selectedBoardId ?? null);
 
   const selectedGradeId = useMemo(() => gradeOptions.find(g => g.value === selectedGrade)?._id, [gradeOptions, selectedGrade]);
   const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeId ?? null);
-  
-  const handleAddSubject = () => {
-     if (selectedSubject && !formData.subjects.includes(selectedSubject)) {
-        setFormData(prev => ({ ...prev, subjects: [...prev.subjects, selectedSubject] }));
-        setSelectedSubject('');
-     }
+
+  const handleAddSubjects = () => {
+    const newSubjects = selectedSubjects.filter(s => !formData.subjects.includes(s));
+    if (newSubjects.length > 0) {
+      setFormData(prev => ({ ...prev, subjects: [...prev.subjects, ...newSubjects] }));
+      setSelectedSubjects([]);
+    }
   };
 
   const handleRemoveSubject = (subjectToRemove: string) => {
-     setFormData(prev => ({ ...prev, subjects: prev.subjects.filter(s => s !== subjectToRemove) }));
+    setFormData(prev => ({ ...prev, subjects: prev.subjects.filter(s => s !== subjectToRemove) }));
   };
-  
+
   const formatSubjectLabel = (val: string) => {
-      const parts = val.split('_');
-      if (parts.length >= 3) {
-          const board = parts[0];
-          const grade = parts[1];
-          const subject = parts.slice(2).join(' ');
-          return `${board} • Class ${grade} • ${subject}`;
-      }
-      return val.replace(/_/g, ' ');
+    const parts = val.split('_');
+    if (parts.length >= 3) {
+      const board = parts[0];
+      const grade = parts[1];
+      const subject = parts.slice(2).join(' ');
+      return `${board} • Class ${grade} • ${subject}`;
+    }
+    return val.replace(/_/g, ' ');
   };
 
   const { options: extracurricularOptions } = useOptions('EXTRACURRICULAR_ACTIVITY');
@@ -183,24 +183,24 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
   };
 
   const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 1.5, 
-        mb: 3, 
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        mb: 3,
         mt: title === 'Personal Information' ? 0 : 4,
         pb: 1,
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
       }}
     >
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          p: 1, 
-          borderRadius: 1.5, 
-          bgcolor: alpha(theme.palette.primary.main, 0.1), 
-          color: 'primary.main' 
+      <Box
+        sx={{
+          display: 'flex',
+          p: 1,
+          borderRadius: 1.5,
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          color: 'primary.main'
         }}
       >
         <Icon fontSize="small" />
@@ -213,14 +213,14 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
 
   return (
     <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <Card 
-        elevation={0} 
-        sx={{ 
-          borderRadius: 4, 
+      <Card
+        elevation={0}
+        sx={{
+          borderRadius: 4,
           overflow: 'visible',
           background: 'rgba(255, 255, 255, 0.9)',
           backdropFilter: 'blur(20px)',
@@ -322,15 +322,13 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   error={Boolean(errors.email)}
-                  helperText={errors.email || (mode === 'edit' ? 'Email cannot be changed' : '')}
-                  disabled={mode === 'edit'}
+                  helperText={errors.email}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <EmailIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: mode === 'edit',
                   }}
                 />
               </Grid>
@@ -408,7 +406,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
                     Select Board, Class, and Subject to add to your profile
                   </Typography>
-                  
+
                   <Grid container spacing={1.5}>
                     <Grid item xs={12} sm={3.5}>
                       <FormControl fullWidth size="small">
@@ -416,7 +414,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                         <Select
                           value={selectedBoard}
                           label="Board"
-                          onChange={(e) => { setSelectedBoard(e.target.value); setSelectedGrade(''); setSelectedSubject(''); }}
+                          onChange={(e) => { setSelectedBoard(e.target.value); setSelectedGrade(''); setSelectedSubjects([]); }}
                         >
                           {boardOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
                         </Select>
@@ -428,7 +426,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                         <Select
                           value={selectedGrade}
                           label="Class"
-                          onChange={(e) => { setSelectedGrade(e.target.value); setSelectedSubject(''); }}
+                          onChange={(e) => { setSelectedGrade(e.target.value); setSelectedSubjects([]); }}
                         >
                           {gradeOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
                         </Select>
@@ -436,34 +434,41 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     </Grid>
                     <Grid item xs={12} sm={3.5}>
                       <FormControl fullWidth size="small" disabled={!selectedGrade}>
-                        <InputLabel>Subject</InputLabel>
+                        <InputLabel>Subjects</InputLabel>
                         <Select
-                          value={selectedSubject}
-                          label="Subject"
-                          onChange={(e) => setSelectedSubject(e.target.value)}
+                          multiple
+                          value={selectedSubjects}
+                          label="Subjects"
+                          onChange={(e) => setSelectedSubjects(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value as string[])}
+                          renderValue={(selected) => `${selected.length} selected`}
                         >
-                          {subjectOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
+                          {subjectOptions.map(opt => (
+                            <MenuItem key={opt.value} value={opt.value}>
+                              <Checkbox checked={selectedSubjects.includes(opt.value)} size="small" />
+                              <ListItemText primary={opt.label} />
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
                     </Grid>
                     <Grid item xs={12} sm={1.5}>
-                      <Button 
-                        fullWidth 
-                        variant="contained" 
-                        disabled={!selectedSubject || isFieldReadOnly(initialData?.subjects)}
-                        onClick={handleAddSubject}
-                        sx={{ height: 40, borderRadius: 2 }}
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        disabled={selectedSubjects.length === 0 || isFieldReadOnly(initialData?.subjects)}
+                        onClick={handleAddSubjects}
+                        sx={{ height: 40, borderRadius: 2, fontSize: '0.75rem' }}
                       >
-                        <AddCircleOutlineIcon />
+                        <AddCircleOutlineIcon sx={{ mr: 0.5 }} /> Add
                       </Button>
                     </Grid>
                   </Grid>
 
                   <Box mt={2.5} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {formData.subjects.map((sub) => (
-                      <Chip 
-                        key={sub} 
-                        label={formatSubjectLabel(sub)} 
+                      <Chip
+                        key={sub}
+                        label={formatSubjectLabel(sub)}
                         onDelete={isFieldReadOnly(initialData?.subjects) ? undefined : () => handleRemoveSubject(sub)}
                         sx={{ borderRadius: 1.5, fontWeight: 600 }}
                         color="primary"
@@ -771,17 +776,17 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
             )}
 
             <Box pt={5}>
-              <Button 
-                type="submit" 
-                variant="contained" 
-                color="primary" 
-                fullWidth 
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
                 size="large"
                 disabled={isLoading}
-                sx={{ 
-                  py: 1.8, 
-                  borderRadius: 3, 
-                  fontWeight: 800, 
+                sx={{
+                  py: 1.8,
+                  borderRadius: 3,
+                  fontWeight: 800,
                   fontSize: '1.1rem',
                   textTransform: 'none',
                   boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.4)}`,
@@ -792,8 +797,8 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   transition: 'all 0.3s ease'
                 }}
               >
-                {isLoading 
-                  ? (mode === 'edit' ? 'Updating Profile...' : 'Creating Your Profile...') 
+                {isLoading
+                  ? (mode === 'edit' ? 'Updating Profile...' : 'Creating Your Profile...')
                   : (mode === 'edit' ? 'Update Profile' : 'Complete Teacher Registration')}
               </Button>
             </Box>

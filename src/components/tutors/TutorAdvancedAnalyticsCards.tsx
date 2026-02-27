@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid2, Card, CardContent, Typography, CircularProgress, useTheme } from '@mui/material';
+import { Box, Grid2, Typography, CircularProgress, alpha, useTheme } from '@mui/material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -49,114 +49,120 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
       value: analytics.sessions.completedThisWeek,
       subValue: `${analytics.sessions.completedThisMonth} this month`,
       icon: <TimelineIcon />,
-      color: theme.palette.primary.main,
-      gradient: 'linear-gradient(135deg, #6366F1 0%, #4338CA 100%)',
+      color: '#6366f1',
+      lightBg: alpha('#6366f1', 0.08),
     },
     {
       title: 'Earnings This Week',
       value: `₹${analytics.earnings.thisWeek.toLocaleString()}`,
       subValue: `₹${analytics.earnings.thisMonth.toLocaleString()} this month`,
       icon: <TrendingUpIcon />,
-      color: theme.palette.success.main,
-      gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+      color: '#10b981',
+      lightBg: alpha('#10b981', 0.08),
     },
     {
       title: 'New Classes (Month)',
       value: analytics.newClassesCount,
       subValue: 'Growth this month',
       icon: <GroupAddIcon />,
-      color: theme.palette.warning.main,
-      gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+      color: '#f59e0b',
+      lightBg: alpha('#f59e0b', 0.08),
     },
     {
       title: 'Demo Approval Rate',
       value: `${analytics.demos.approvalRate}%`,
       subValue: `${analytics.demos.approved}/${analytics.demos.total} approved`,
       icon: <CheckCircleOutlineIcon />,
-      color: theme.palette.secondary.main,
-      gradient: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
+      color: '#ec4899',
+      lightBg: alpha('#ec4899', 0.08),
     },
   ];
 
   return (
-    <Grid2 container spacing={{ xs: 1.25, sm: 1.5, md: 2 }} mb={{ xs: 2, sm: 3 }}>
+    <Grid2 container spacing={{ xs: 1.5, sm: 2 }} mb={{ xs: 2, sm: 3 }}>
       {cards.map((card, index) => (
         <Grid2 key={index} size={{ xs: 6, sm: 6, md: 3 }}>
-          <Card
+          <Box
             sx={{
               height: '100%',
               borderRadius: 3,
-              boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)',
+              bgcolor: '#fff',
               border: '1px solid',
-              borderColor: 'grey.100',
+              borderColor: alpha(card.color, 0.12),
+              p: { xs: 2, sm: 2.5 },
               position: 'relative',
               overflow: 'hidden',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: 'default',
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)',
-                borderColor: 'primary.light',
+                transform: 'translateY(-2px)',
+                boxShadow: `0 8px 24px ${alpha(card.color, 0.15)}`,
+                borderColor: alpha(card.color, 0.25),
               },
-              '&::after': {
+              '&::before': {
                 content: '""',
                 position: 'absolute',
-                top: -20,
-                right: -20,
-                width: 80,
-                height: 80,
-                background: 'rgba(0,0,0,0.02)',
-                borderRadius: '50%',
-              }
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 3,
+                background: `linear-gradient(90deg, ${card.color}, ${alpha(card.color, 0.4)})`,
+                borderRadius: '12px 12px 0 0',
+              },
             }}
           >
-            <CardContent sx={{ p: { xs: 1.5, sm: 2, md: 2.25 } }}>
-              <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.25}>
-                <Box
-                  sx={{
-                    p: 1,
-                    borderRadius: '10px',
-                    background: card.gradient,
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: `0 8px 16px -4px ${card.color}40`,
-                  }}
-                >
-                  {React.cloneElement(card.icon as React.ReactElement, { sx: { fontSize: { xs: 20, sm: 24 } } })}
-                </Box>
+            <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: 2,
+                  bgcolor: card.lightBg,
+                  color: card.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {React.cloneElement(card.icon as React.ReactElement, { sx: { fontSize: { xs: 18, sm: 20 } } })}
               </Box>
               <Typography
                 variant="body2"
-                color="text.secondary"
-                fontWeight={600}
-                gutterBottom
-                sx={{ fontSize: { xs: '0.72rem', sm: '0.8rem' }, lineHeight: 1.2 }}
+                sx={{
+                  color: 'text.secondary',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.68rem', sm: '0.78rem' },
+                  lineHeight: 1.2,
+                  letterSpacing: '0.01em',
+                }}
               >
                 {card.title}
               </Typography>
-              <Typography
-                variant="h4"
-                fontWeight={800}
-                color="text.primary"
-                sx={{ fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.6rem' }, lineHeight: 1.1 }}
-              >
-                {card.value}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  mt: 0.75,
-                  display: 'block',
-                  fontSize: { xs: '0.62rem', sm: '0.7rem' },
-                  fontWeight: 500
-                }}
-              >
-                {card.subValue}
-              </Typography>
-            </CardContent>
-          </Card>
+            </Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                color: 'text.primary',
+                fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.7rem' },
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {card.value}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                mt: 0.75,
+                display: 'block',
+                fontSize: { xs: '0.6rem', sm: '0.68rem' },
+                fontWeight: 500,
+                color: alpha(card.color, 0.8),
+              }}
+            >
+              {card.subValue}
+            </Typography>
+          </Box>
         </Grid2>
       ))}
     </Grid2>
