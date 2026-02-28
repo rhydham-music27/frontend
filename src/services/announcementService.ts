@@ -82,6 +82,11 @@ export const expressInterest = async (
   return data as ApiResponse<IAnnouncement>;
 };
 
+export const getMyExpressedInterests = async (): Promise<{ data: any[]; success: boolean }> => {
+  const { data } = await api.get('/api/announcements/tutor/my-interests');
+  return data;
+};
+
 export const sendCoordinatorAnnouncement = async (
   payload: ISendAnnouncementFormData
 ): Promise<ApiResponse<ICoordinatorAnnouncement>> => {

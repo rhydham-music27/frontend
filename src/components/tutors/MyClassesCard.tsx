@@ -10,13 +10,21 @@ import {
   Alert,
   Tooltip,
   IconButton,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   alpha,
   useTheme,
   Card,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SendIcon from '@mui/icons-material/Send';
 import ClassIcon from '@mui/icons-material/Class';
@@ -32,11 +40,15 @@ import SubmitAttendanceModal from './SubmitAttendanceModal';
 import TutorClassesStatsBox from './TutorClassesStatsBox';
 import { getMyClasses } from '../../services/finalClassService';
 import { upsertAttendanceSheet, submitAttendanceSheet } from '../../services/attendanceSheetService';
-import { IFinalClass } from '../../types';
+import { IFinalClass, ITest } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import { getTestsByClass, getTestById } from '../../services/testService';
+import TestReportCard from '../coordinator/TestReportCard';
+import { getAttendanceByClass } from '../../services/attendanceService';
+import AttendanceSheet, { AttendanceRecord, AssignedClass, TutorProfile } from './AttendanceSheet';
 
 const MyClassesCard: React.FC = () => {
   const theme = useTheme();
@@ -48,12 +60,87 @@ const MyClassesCard: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
   const [attendanceModalOpen, setAttendanceModalOpen] = useState<boolean>(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [sheetGeneratingClassId, setSheetGeneratingClassId] = useState<string | null>(null);
   const [sheetSubmittingClassId, setSheetSubmittingClassId] = useState<string | null>(null);
 
-  const handleViewAttendanceSheet = (cls: IFinalClass) => {
-    const classIdStr = String((cls as any).id || (cls as any)._id || '');
-    navigate(`/tutor-classes/${classIdStr}/attendance`);
+  const [attendanceMonthByClassId, setAttendanceMonthByClassId] = useState<Record<string, string>>({});
+  const [testsByClassId, setTestsByClassId] = useState<Record<string, ITest[]>>({});
+  const [testsLoadingByClassId, setTestsLoadingByClassId] = useState<Record<string, boolean>>({});
+  const [selectedTestIdByClassId, setSelectedTestIdByClassId] = useState<Record<string, string>>({});
+
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportTest, setReportTest] = useState<ITest | null>(null);
+  const [reportSwot, setReportSwot] = useState<{ strengths: Array<{ label: string; count: number }>; improvements: Array<{ label: string; count: number }> } | null>(null);
+
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetError, setSheetError] = useState<string | null>(null);
+  const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
+  const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
+  const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>(undefined);
+
+  const ensureTestsLoaded = async (classIdStr: string) => {
+    if (!classIdStr) return;
+    if (testsByClassId[classIdStr]) return;
+    try {
+      setTestsLoadingByClassId((prev) => ({ ...prev, [classIdStr]: true }));
+      const resp = await getTestsByClass(classIdStr);
+      const list = (resp.data || []) as ITest[];
+      setTestsByClassId((prev) => ({ ...prev, [classIdStr]: list }));
+    } catch (e: any) {
+      setTestsByClassId((prev) => ({ ...prev, [classIdStr]: [] }));
+    } finally {
+      setTestsLoadingByClassId((prev) => ({ ...prev, [classIdStr]: false }));
+    }
+  };
+
+  const buildSwotFromTests = (tests: ITest[]) => {
+    const strengthsMap: Record<string, number> = {};
+    const improvementsMap: Record<string, number> = {};
+    tests
+      .filter((t) => !!(t as any).report)
+      .forEach((t) => {
+        const sRaw = ((t as any).report?.strengths || '').toString();
+        const iRaw = ((t as any).report?.areasOfImprovement || '').toString();
+        const strengths = sRaw.split(/[\n,]/).map((x) => x.trim()).filter(Boolean);
+        const improvements = iRaw.split(/[\n,]/).map((x) => x.trim()).filter(Boolean);
+        strengths.forEach((x) => (strengthsMap[x] = (strengthsMap[x] || 0) + 1));
+        improvements.forEach((x) => (improvementsMap[x] = (improvementsMap[x] || 0) + 1));
+      });
+
+    const strengths = Object.entries(strengthsMap)
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+    const improvements = Object.entries(improvementsMap)
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+    return { strengths, improvements };
+  };
+
+  const openTestReport = async (classIdStr: string, testId: string) => {
+    if (!testId) return;
+    setReportOpen(true);
+    setReportLoading(true);
+    setReportError(null);
+    setReportTest(null);
+    try {
+      const [testResp] = await Promise.all([
+        getTestById(testId),
+        ensureTestsLoaded(classIdStr),
+      ]);
+      const t = (testResp.data || (testResp as any).data || null) as any;
+      setReportTest(t as ITest);
+
+      const list = testsByClassId[classIdStr] || [];
+      setReportSwot(buildSwotFromTests(list));
+    } catch (e: any) {
+      setReportError(e?.response?.data?.message || 'Failed to load test report');
+    } finally {
+      setReportLoading(false);
+    }
   };
 
   const fetchClasses = async () => {
@@ -79,9 +166,104 @@ const MyClassesCard: React.FC = () => {
     fetchClasses();
   }, [user]);
 
+  useEffect(() => {
+    const next: Record<string, string> = {};
+    classes.forEach((cls) => {
+      const classIdStr = String((cls as any).id || (cls as any)._id || '');
+      if (!classIdStr) return;
+      next[classIdStr] = attendanceMonthByClassId[classIdStr] || new Date().toISOString().slice(0, 7);
+    });
+    if (Object.keys(next).length) {
+      setAttendanceMonthByClassId((prev) => ({ ...next, ...prev }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classes]);
+
   const handleAttendanceClick = (cls: IFinalClass) => {
     setSelectedClass(cls);
     setAttendanceModalOpen(true);
+  };
+
+  const openAttendanceSheetModal = async (cls: IFinalClass) => {
+    setSelectedClass(cls);
+    const classIdStr = String((cls as any).id || (cls as any)._id || '');
+    const monthStr = attendanceMonthByClassId[classIdStr] || new Date().toISOString().slice(0, 7);
+    const [yRaw, mRaw] = monthStr.split('-');
+    const year = Number(yRaw);
+    const month = Number(mRaw);
+    if (!Number.isFinite(year) || !Number.isFinite(month)) {
+      setSheetError('Invalid month selected');
+      setSheetOpen(true);
+      return;
+    }
+
+    setSheetOpen(true);
+    setSheetLoading(true);
+    setSheetError(null);
+    setSheetTutorData(null);
+    setSheetClassInfo(null);
+    setSheetRange(undefined);
+
+    try {
+      const res = await getAttendanceByClass(classIdStr);
+      const attendances = (res.data || []) as any[];
+
+      const mapped: AttendanceRecord[] = attendances
+        .filter((a) => {
+          const sm = Number((a as any)._sheetMonth);
+          const sy = Number((a as any)._sheetYear);
+          if (Number.isFinite(sm) && Number.isFinite(sy)) {
+            return sm === month && sy === year;
+          }
+          // fallback if backend doesn't provide sheet month/year
+          return a.sessionDate && String(a.sessionDate).slice(0, 7) === monthStr;
+        })
+        .map((a: any) => {
+          const dateObj = a.sessionDate ? new Date(a.sessionDate as any) : null;
+          const yyyyMmDd = dateObj
+            ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(
+                dateObj.getDate()
+              ).padStart(2, '0')}`
+            : '';
+
+          let durationHours =
+            typeof a.durationHours === 'number'
+              ? a.durationHours
+              : (a.finalClass as any)?.classLead?.classDurationHours ?? 1;
+
+          return {
+            classId: classIdStr,
+            date: yyyyMmDd,
+            status: (a as any).studentAttendanceStatus || a.status || '',
+            duration: durationHours,
+            topicsCovered: a.topicCovered || undefined,
+            markedAt: a.submittedAt ? String(a.submittedAt) : a.createdAt ? String(a.createdAt) : '',
+          } as AttendanceRecord;
+        })
+        .filter((r) => r.date);
+
+      const monthPadded = String(month).padStart(2, '0');
+      const firstDay = `${year}-${monthPadded}-01`;
+      const lastDate = new Date(year, month, 0).getDate();
+      const lastDay = `${year}-${monthPadded}-${String(lastDate).padStart(2, '0')}`;
+
+      setSheetTutorData({ attendanceRecords: mapped });
+      setSheetClassInfo({
+        classId: (cls as any).className || classIdStr,
+        studentName: (cls as any).studentName || '',
+        subject: Array.isArray((cls as any).subject) ? (cls as any).subject.join(', ') : String((cls as any).subject || ''),
+        tutorName: user?.name,
+      });
+      setSheetRange({ start: firstDay, end: lastDay });
+
+      if (!mapped.length) {
+        setSheetError(`No attendance records found for ${monthStr}.`);
+      }
+    } catch (e: any) {
+      setSheetError(e?.response?.data?.message || e?.message || 'Failed to load attendance sheet');
+    } finally {
+      setSheetLoading(false);
+    }
   };
 
   const handleCallCoordinator = (cls: IFinalClass) => {
@@ -274,6 +456,9 @@ const MyClassesCard: React.FC = () => {
                 const classIdStr = String((cls as any).id || (cls as any)._id || '');
                 const statusColor = getStatusThemeColor(cls.status);
                 const progressColor = progress >= 75 ? '#10b981' : progress >= 40 ? '#6366f1' : '#f59e0b';
+                const selectedMonth = attendanceMonthByClassId[classIdStr] || new Date().toISOString().slice(0, 7);
+                const tests = testsByClassId[classIdStr] || [];
+                const selectedTestId = selectedTestIdByClassId[classIdStr] || '';
 
                 return (
                   <Box
@@ -310,7 +495,7 @@ const MyClassesCard: React.FC = () => {
                         </Box>
                         <Box>
                           <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.92rem' }}>{cls.studentName}</Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Grade {cls.grade} • {cls.board}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Grade {cls.grade} • {cls.board} • ID: {classIdStr}</Typography>
                         </Box>
                       </Box>
                       <Chip
@@ -402,15 +587,35 @@ const MyClassesCard: React.FC = () => {
                     {/* Action Row */}
                     <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ pt: 2, borderTop: '1px solid', borderColor: alpha('#6366f1', 0.06) }}>
                       <Box display="flex" gap={0.5}>
-                        <Tooltip title="Mark Attendance">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => { e.stopPropagation(); handleAttendanceClick(cls); }}
-                            sx={{ bgcolor: alpha('#10b981', 0.08), '&:hover': { bgcolor: alpha('#10b981', 0.15) }, width: 32, height: 32 }}
-                          >
-                            <CheckCircleOutlineIcon sx={{ fontSize: 16, color: '#10b981' }} />
-                          </IconButton>
-                        </Tooltip>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAttendanceClick(cls);
+                          }}
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.72rem',
+                            boxShadow: 'none',
+                            bgcolor: '#10b981',
+                            '&:hover': { bgcolor: '#059669', boxShadow: 'none' },
+                          }}
+                        >
+                          Mark Attendance
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void openAttendanceSheetModal(cls);
+                          }}
+                          sx={{ textTransform: 'none', fontWeight: 800, fontSize: '0.72rem' }}
+                        >
+                          See Attendance Sheet
+                        </Button>
                         <Tooltip title="Tests">
                           <IconButton
                             size="small"
@@ -431,13 +636,81 @@ const MyClassesCard: React.FC = () => {
                         </Tooltip>
                       </Box>
                       <Box display="flex" alignItems="center" gap={1}>
+                        <TextField
+                          type="month"
+                          size="small"
+                          value={selectedMonth}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setAttendanceMonthByClassId((prev) => ({ ...prev, [classIdStr]: e.target.value }));
+                          }}
+                          sx={{ width: 150 }}
+                        />
                         <Button
                           size="small"
-                          onClick={(e) => { e.stopPropagation(); handleViewAttendanceSheet(cls); }}
-                          sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.72rem', color: 'text.secondary', minWidth: 'auto' }}
+                          onClick={(e) => { e.stopPropagation(); void openAttendanceSheetModal(cls); }}
+                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.72rem', minWidth: 'auto' }}
                         >
-                          View Sheet
+                          View Attendance
                         </Button>
+
+                        <FormControl
+                          size="small"
+                          sx={{ minWidth: 210 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <InputLabel>Tests</InputLabel>
+                          <Select
+                            label="Tests"
+                            value={selectedTestId}
+                            onOpen={() => ensureTestsLoaded(classIdStr)}
+                            onChange={(e) => {
+                              setSelectedTestIdByClassId((prev) => ({ ...prev, [classIdStr]: String(e.target.value) }));
+                            }}
+                            renderValue={(val) => {
+                              if (!val) return testsLoadingByClassId[classIdStr] ? 'Loading...' : 'Select test';
+                              const t = tests.find((x) => String((x as any).id || (x as any)._id) === String(val));
+                              const tid = String((t as any)?.id || (t as any)?._id || val);
+                              const name = (t as any)?.topicName || (t as any)?.paperName || 'Test';
+                              return `${tid} • ${name}`;
+                            }}
+                          >
+                            {testsLoadingByClassId[classIdStr] && (
+                              <MenuItem value="" disabled>
+                                Loading...
+                              </MenuItem>
+                            )}
+                            {!testsLoadingByClassId[classIdStr] && tests.length === 0 && (
+                              <MenuItem value="" disabled>
+                                No tests found
+                              </MenuItem>
+                            )}
+                            {tests.map((t) => {
+                              const tid = String((t as any).id || (t as any)._id);
+                              const name = (t as any).topicName || (t as any).paperName || 'Test';
+                              return (
+                                <MenuItem key={tid} value={tid}>
+                                  {tid} — {name}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          disabled={!selectedTestId}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void openTestReport(classIdStr, selectedTestId);
+                          }}
+                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.72rem' }}
+                        >
+                          View Report
+                        </Button>
+
                         <Button
                           size="small"
                           variant="contained"
@@ -611,6 +884,101 @@ const MyClassesCard: React.FC = () => {
             onSuccess={handleActionSuccess}
           />
         )}
+
+        <Dialog
+          open={sheetOpen}
+          onClose={sheetLoading ? undefined : () => { setSheetOpen(false); setSheetError(null); setSheetTutorData(null); setSheetClassInfo(null); }}
+          maxWidth="lg"
+          fullWidth
+        >
+          <DialogTitle>Attendance Sheet</DialogTitle>
+          <DialogContent>
+            {sheetError && <Alert severity={sheetTutorData ? 'info' : 'error'} sx={{ mb: 2 }}>{sheetError}</Alert>}
+            {sheetLoading && (
+              <Box py={6} display="flex" justifyContent="center">
+                <LoadingSpinner message="Loading attendance sheet..." />
+              </Box>
+            )}
+            {!sheetLoading && sheetTutorData && sheetClassInfo && (
+              <Box display="flex" justifyContent="center" sx={{ overflowX: 'auto' }}>
+                <AttendanceSheet
+                  tutorData={sheetTutorData}
+                  classInfo={sheetClassInfo}
+                  range={sheetRange}
+                  sheetNo={1}
+                />
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'space-between' }}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                if (selectedClass) {
+                  setSheetOpen(false);
+                  handleAttendanceClick(selectedClass);
+                }
+              }}
+              disabled={!selectedClass || sheetLoading}
+            >
+              Mark Attendance
+            </Button>
+            <Button onClick={() => { setSheetOpen(false); setSheetError(null); setSheetTutorData(null); setSheetClassInfo(null); }} disabled={sheetLoading}>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={reportOpen} onClose={reportLoading ? undefined : () => { setReportOpen(false); setReportTest(null); setReportSwot(null); setReportError(null); }} maxWidth="md" fullWidth>
+          <DialogTitle>Test Report & SWOT Analysis</DialogTitle>
+          <DialogContent>
+            {reportError && <Alert severity="error" sx={{ mb: 2 }}>{reportError}</Alert>}
+            {reportLoading && (
+              <Box py={6} display="flex" justifyContent="center">
+                <LoadingSpinner message="Loading report..." />
+              </Box>
+            )}
+            {!reportLoading && reportTest && (
+              <Box>
+                <TestReportCard test={reportTest} showActions={false} />
+
+                {reportSwot && (
+                  <Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={800} gutterBottom>
+                        Strengths
+                      </Typography>
+                      <Box display="flex" gap={1} flexWrap="wrap">
+                        {reportSwot.strengths.length === 0
+                          ? <Typography variant="body2" color="text.secondary">Not enough data yet.</Typography>
+                          : reportSwot.strengths.map((s) => (
+                              <Chip key={s.label} label={s.label} color="success" variant="outlined" size="small" />
+                            ))}
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={800} gutterBottom>
+                        Areas for improvement
+                      </Typography>
+                      <Box display="flex" gap={1} flexWrap="wrap">
+                        {reportSwot.improvements.length === 0
+                          ? <Typography variant="body2" color="text.secondary">Not enough data yet.</Typography>
+                          : reportSwot.improvements.map((s) => (
+                              <Chip key={s.label} label={s.label} color="warning" variant="outlined" size="small" />
+                            ))}
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => { setReportOpen(false); setReportTest(null); setReportSwot(null); setReportError(null); }} disabled={reportLoading}>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </CardContent>
     </Card>
   );

@@ -378,7 +378,7 @@ const PaymentsEarningsCard: React.FC = () => {
               '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: 4 },
             }}
           >
-            <Table>
+            <Table sx={{ minWidth: 750 }}>
               <TableHead>
                 <TableRow>
                   {['Service Date / Class', 'Amount', 'Status', 'Reference'].map((h) => (

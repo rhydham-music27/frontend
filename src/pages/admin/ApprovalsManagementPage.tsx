@@ -230,8 +230,8 @@ const ApprovalsManagementPage: React.FC = () => {
         {/* Tutor Verification Tab */}
         {/* Tutor Verification Tab */}
         <TabPanel value={activeTab} index={0}>
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table sx={{ minWidth: 750 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Tutor</TableCell>
@@ -301,8 +301,8 @@ const ApprovalsManagementPage: React.FC = () => {
 
         {/* Tier Change Tab */}
         <TabPanel value={activeTab} index={1}>
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table sx={{ minWidth: 750 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Tutor</TableCell>
@@ -360,8 +360,8 @@ const ApprovalsManagementPage: React.FC = () => {
 
         {/* Demos Tab */}
         <TabPanel value={activeTab} index={2}>
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table sx={{ minWidth: 750 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Student</TableCell>

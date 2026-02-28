@@ -111,7 +111,7 @@ export const loadRazorpayScript = (): Promise<boolean> => {
 };
 
 // Create a payment order
-export const createRazorpayOrder = async (amount: number): Promise<{ id: string }> => {
+export const createRazorpayOrder = async (_amount: number): Promise<{ id: string }> => {
   await simulateNetworkDelay();
   return {
     id: `order_${uuidv4()}`,

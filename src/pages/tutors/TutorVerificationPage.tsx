@@ -405,8 +405,8 @@ export default function TutorVerificationPage() {
         >
           <Table size="small" sx={{ minWidth: 1100 }}>
           <TableHead>
-            <TableRow sx={{ bgcolor: 'primary.main', '& th': { color: 'white', fontWeight: 700 } }}>
-              <TableCell sx={{ color: 'inherit' }}>
+            <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { color: 'text.primary', fontWeight: 700, borderBottom: '2px solid', borderColor: 'divider' } }}>
+              <TableCell sx={{ fontWeight: 700 }}>
                 <TableSortLabel
                   active={sort.sortBy === 'teacherId'}
                   direction={sort.sortBy === 'teacherId' ? sort.sortOrder : 'asc'}
@@ -420,7 +420,7 @@ export default function TutorVerificationPage() {
                   ID
                 </TableSortLabel>
               </TableCell>
-              <TableCell sx={{ color: 'inherit' }}>
+              <TableCell sx={{ fontWeight: 700 }}>
                 <TableSortLabel
                   active={sort.sortBy === 'name'}
                   direction={sort.sortBy === 'name' ? sort.sortOrder : 'asc'}
@@ -434,9 +434,9 @@ export default function TutorVerificationPage() {
                   Name
                 </TableSortLabel>
               </TableCell>
-              <TableCell sx={{ color: 'inherit' }}>Contact Info</TableCell>
-              <TableCell sx={{ color: 'inherit' }}>Mode/Locs</TableCell>
-              <TableCell sx={{ color: 'inherit' }}>
+              <TableCell sx={{ fontWeight: 700 }}>Contact Info</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Mode/Locs</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>
                 <TableSortLabel
                   active={sort.sortBy === 'classesAssigned'}
                   direction={sort.sortBy === 'classesAssigned' ? sort.sortOrder : 'asc'}
@@ -450,7 +450,7 @@ export default function TutorVerificationPage() {
                   Stats
                 </TableSortLabel>
               </TableCell>
-              <TableCell sx={{ color: 'inherit' }}>
+              <TableCell sx={{ fontWeight: 700 }}>
                 <TableSortLabel
                   active={sort.sortBy === 'experienceHours'}
                   direction={sort.sortBy === 'experienceHours' ? sort.sortOrder : 'asc'}
@@ -464,10 +464,10 @@ export default function TutorVerificationPage() {
                   Exp
                 </TableSortLabel>
               </TableCell>
-              <TableCell sx={{ color: 'inherit' }}>Subjects</TableCell>
-              <TableCell sx={{ color: 'inherit' }}>Status</TableCell>
-              <TableCell sx={{ color: 'inherit' }}>Verifier</TableCell>
-              <TableCell align="right" sx={{ color: 'inherit' }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Subjects</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Verifier</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
             </TableRow>
             {/* Filter Row */}
             <TableRow sx={{ bgcolor: 'background.paper' }}>

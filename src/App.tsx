@@ -50,6 +50,7 @@ import AdvancedAnalyticsPage from "./pages/admin/AdvancedAnalyticsPage";
 import AdminProfilePage from "./pages/admin/AdminProfilePage";
 import ManagersManagementPage from "./pages/admin/ManagersManagementPage";
 import CoordinatorsManagementPage from "./pages/admin/CoordinatorsManagementPage";
+import CoordinatorVerificationPage from "./pages/admin/CoordinatorVerificationPage";
 import FinalClassesManagementPage from "./pages/admin/FinalClassesManagementPage";
 import DataManagementPage from "./pages/admin/DataManagementPage";
 import TutorDashboardPage from "./pages/tutors/TutorDashboardPage";
@@ -472,6 +473,10 @@ const App: React.FC = () => {
                 <Route
                   path="coordinators"
                   element={<CoordinatorsManagementPage />}
+                />
+                <Route
+                  path="verify-coordinators"
+                  element={<CoordinatorVerificationPage />}
                 />
                 <Route
                   path="final-classes"

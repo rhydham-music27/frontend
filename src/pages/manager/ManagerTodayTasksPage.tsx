@@ -230,8 +230,8 @@ const ManagerTodayTasksPage: React.FC = () => {
                                         ) : unassignedClasses.length === 0 ? (
                                             <Typography color="text.secondary">No unassigned active classes found.</Typography>
                                         ) : (
-                                            <TableContainer>
-                                                <Table size="small">
+                                            <TableContainer sx={{ overflowX: "auto" }}>
+                                                <Table size="small" sx={{ minWidth: 750 }}>
                                                     <TableHead>
                                                         <TableRow>
                                                             <TableCell>Class</TableCell>

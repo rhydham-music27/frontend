@@ -363,26 +363,25 @@ const ManagersManagementPage: React.FC = () => {
 
       {!isXs ? (
         <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
-          <TableContainer>
-            <Table size="small">
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table size="small" sx={{ minWidth: 750 }}>
               <TableHead>
-                <TableRow sx={{ bgcolor: 'secondary.main', '& th': { color: 'white', fontWeight: 700 } }}>
+                <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { color: 'text.primary', fontWeight: 700, borderBottom: '2px solid', borderColor: 'divider' } }}>
                   <TableCell padding="checkbox">
                     <Checkbox
-                      sx={{ color: 'white!important' }}
                       indeterminate={selectedManagers.length > 0 && selectedManagers.length < managers.length}
                       checked={managers.length > 0 && selectedManagers.length === managers.length}
                       onChange={handleSelectAll}
                     />
                   </TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Name</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Email</TableCell>
-                  <TableCell align="right" sx={{ color: 'inherit' }}>Leads Created</TableCell>
-                  <TableCell align="right" sx={{ color: 'inherit' }}>Classes Converted</TableCell>
-                  <TableCell align="right" sx={{ color: 'inherit' }}>Revenue Generated</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Status</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Verification</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Leads Created</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Classes Converted</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Revenue Generated</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Verification</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

@@ -447,18 +447,18 @@ const FinalClassesManagementPage: React.FC = () => {
 
       {!isXs ? (
         <Paper sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }} elevation={0}>
-          <TableContainer>
-            <Table size="small">
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table size="small" sx={{ minWidth: 750 }}>
               <TableHead>
-                <TableRow sx={{ bgcolor: 'primary.main', '& th': { color: 'white', fontWeight: 700 } }}>
-                  <TableCell sx={{ color: 'inherit' }}>Class Name</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Student</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Subject / Grade</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Tutor</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Coordinator</TableCell>
-                  <TableCell align="right" sx={{ color: 'inherit' }}>Progress</TableCell>
-                  <TableCell sx={{ color: 'inherit' }}>Status</TableCell>
-                  <TableCell align="right" sx={{ color: 'inherit' }}>Actions</TableCell>
+                <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { color: 'text.primary', fontWeight: 700, borderBottom: '2px solid', borderColor: 'divider' } }}>
+                  <TableCell sx={{ fontWeight: 700 }}>Class Name</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Student</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Subject / Grade</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Tutor</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Coordinator</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Progress</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

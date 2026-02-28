@@ -120,6 +120,28 @@ export const getCoordinators = async (
   return data as PaginatedResponse<any[]>;
 };
 
+export const uploadCoordinatorDocument = async (
+  coordinatorId: string,
+  documentType: string,
+  file: File
+): Promise<ApiResponse<any>> => {
+  const formData = new FormData();
+  formData.append('document', file, file.name || 'upload');
+  formData.append('documentType', documentType);
+  const { data } = await api.post(`${API_ENDPOINTS.COORDINATORS_DOCUMENTS(coordinatorId)}`, formData);
+  return data as ApiResponse<any>;
+};
+
+export const deleteCoordinatorDocument = async (
+  coordinatorId: string,
+  documentIndex: number
+): Promise<ApiResponse<any>> => {
+  const { data } = await api.delete(
+    `${API_ENDPOINTS.COORDINATORS_DELETE_DOCUMENT(coordinatorId, documentIndex)}`
+  );
+  return data as ApiResponse<any>;
+};
+
 export const updateCoordinator = async (
   coordinatorId: string,
   updateData: Partial<{ maxClassCapacity: number; specialization: string[]; isActive: boolean }>
@@ -135,4 +157,21 @@ export const deleteCoordinator = async (
   return data as ApiResponse<boolean>;
 };
 
-export default { getDashboardStats, getTodaysTasks, getAssignedClasses, getPaymentSummary, getProfileMetrics, getCoordinatorByUserId, createCoordinator, getEligibleCoordinatorUsers, getCoordinators, updateCoordinator, deleteCoordinator };
+export const getPendingCoordinatorVerifications = async (): Promise<ApiResponse<any[]>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.COORDINATORS}/pending-verifications`);
+  return data as ApiResponse<any[]>;
+};
+
+export const updateCoordinatorVerificationStatus = async (
+  coordinatorId: string,
+  status: 'VERIFIED' | 'REJECTED',
+  rejectionReason?: string
+): Promise<ApiResponse<any>> => {
+  const { data } = await api.patch(`${API_ENDPOINTS.COORDINATORS}/${coordinatorId}/verification-status`, {
+    status,
+    ...(rejectionReason ? { verificationNotes: rejectionReason } : {}),
+  });
+  return data as ApiResponse<any>;
+};
+
+export default { getDashboardStats, getTodaysTasks, getAssignedClasses, getPaymentSummary, getProfileMetrics, getCoordinatorByUserId, createCoordinator, getEligibleCoordinatorUsers, getCoordinators, updateCoordinator, deleteCoordinator, getPendingCoordinatorVerifications, updateCoordinatorVerificationStatus };

@@ -192,8 +192,8 @@ const PaymentTrackingPage: React.FC = () => {
         <LoadingSpinner />
       ) : (
         <>
-          <TableContainer component={Paper}>
-            <Table>
+          <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+            <Table sx={{ minWidth: 750 }}>
               <TableHead sx={{ bgcolor: 'grey.100' }}>
                 <TableRow>
                   <TableCell><strong>Class / Student</strong></TableCell>

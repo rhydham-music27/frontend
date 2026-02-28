@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Box, Typography, Grid, Card, CardContent, Avatar, Divider, Chip, Tabs, Tab, Button } from '@mui/material';
+import { Container, Box, Typography, Grid, Card, CardContent, Avatar, Divider, Chip, Tabs, Tab, Button, TextField, MenuItem, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -10,6 +10,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import ClassIcon from '@mui/icons-material/Class';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { ICoordinator, ICoordinatorProfileMetrics } from '../../types';
@@ -29,7 +30,7 @@ const CoordinatorProfilePage: React.FC = () => {
   const [profileMetrics, setProfileMetrics] = useState<ICoordinatorProfileMetrics | null>(null);
   const [profileMissing, setProfileMissing] = useState<boolean>(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{ fromDate?: string; toDate?: string}>({
+  const [dateRange, setDateRange] = useState<{ fromDate?: string; toDate?: string }>({
     fromDate: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
     toDate: format(new Date(), 'yyyy-MM-dd'),
   });
@@ -37,6 +38,11 @@ const CoordinatorProfilePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'success' });
+
+  const [docType, setDocType] = useState<string>('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docUploading, setDocUploading] = useState<boolean>(false);
+  const [docError, setDocError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,7 +55,9 @@ const CoordinatorProfilePage: React.FC = () => {
         if (id) {
           const profileRes = await coordinatorService.getCoordinatorById(id);
           profile = profileRes.data as unknown as ICoordinator;
-          userIdForMetrics = profile.user?.toString() || (profile as any).user?._id;
+          // profile.user may be a populated object — extract _id string correctly
+          const userObj = (profile as any).user;
+          userIdForMetrics = userObj?._id ? String(userObj._id) : (typeof userObj === 'string' ? userObj : undefined);
         } else if (user?.id) {
           const profileRes = await getCoordinatorByUserId(user.id);
           profile = profileRes.data as unknown as ICoordinator;
@@ -61,8 +69,8 @@ const CoordinatorProfilePage: React.FC = () => {
           setProfileMissing(false);
           // Only fetch metrics if we have a userId to fetch for
           if (userIdForMetrics) {
-             const metricsRes = await getProfileMetrics(dateRange.fromDate, dateRange.toDate, userIdForMetrics);
-             setProfileMetrics(metricsRes.data as ICoordinatorProfileMetrics);
+            const metricsRes = await getProfileMetrics(dateRange.fromDate, dateRange.toDate, userIdForMetrics);
+            setProfileMetrics(metricsRes.data as ICoordinatorProfileMetrics);
           }
         }
       } catch (err: any) {
@@ -80,6 +88,50 @@ const CoordinatorProfilePage: React.FC = () => {
   }, [id, user?.id, dateRange.fromDate, dateRange.toDate]);
 
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '';
+
+  const canEditDocuments = user?.role === 'COORDINATOR' || user?.role === 'ADMIN' || user?.role === 'MANAGER';
+
+  const handleUploadDoc = async () => {
+    if (!coordinatorProfile) return;
+    if (!docType) {
+      setDocError('Please select a document type');
+      return;
+    }
+    if (!docFile) {
+      setDocError('Please choose a file');
+      return;
+    }
+    try {
+      setDocUploading(true);
+      setDocError(null);
+      const coordinatorId = (coordinatorProfile as any).id || (coordinatorProfile as any)._id;
+      const resp = await coordinatorService.uploadCoordinatorDocument(String(coordinatorId), docType, docFile);
+      setCoordinatorProfile(resp.data as unknown as ICoordinator);
+      setDocType('');
+      setDocFile(null);
+      setSnackbar({ open: true, message: 'Document uploaded', severity: 'success' });
+    } catch (e: any) {
+      setDocError(e?.response?.data?.message || e?.response?.data?.error || 'Failed to upload document');
+    } finally {
+      setDocUploading(false);
+    }
+  };
+
+  const handleDeleteDoc = async (index: number) => {
+    if (!coordinatorProfile) return;
+    try {
+      setDocUploading(true);
+      setDocError(null);
+      const coordinatorId = (coordinatorProfile as any).id || (coordinatorProfile as any)._id;
+      const resp = await coordinatorService.deleteCoordinatorDocument(String(coordinatorId), index);
+      setCoordinatorProfile(resp.data as unknown as ICoordinator);
+      setSnackbar({ open: true, message: 'Document deleted', severity: 'success' });
+    } catch (e: any) {
+      setDocError(e?.response?.data?.message || e?.response?.data?.error || 'Failed to delete document');
+    } finally {
+      setDocUploading(false);
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ p: 3 }}>
@@ -111,9 +163,9 @@ const CoordinatorProfilePage: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">{coordinatorProfile.user?.email || user?.email}</Typography>
                   <Chip label={coordinatorProfile.user?.role || user?.role} color="primary" />
                   {!id && (
-                    <Button 
-                      variant="outlined" 
-                      size="small" 
+                    <Button
+                      variant="outlined"
+                      size="small"
                       onClick={() => setChangePasswordOpen(true)}
                       sx={{ mt: 1 }}
                       startIcon={<LockResetIcon />}
@@ -127,6 +179,95 @@ const CoordinatorProfilePage: React.FC = () => {
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="body2">Status:</Typography>
                     <Chip size="small" label={coordinatorProfile.isActive ? 'Active' : 'Inactive'} color={coordinatorProfile.isActive ? 'success' : 'default'} />
+                  </Box>
+                  {'verificationStatus' in (coordinatorProfile as any) && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="body2">Verification:</Typography>
+                      <Chip
+                        size="small"
+                        label={String((coordinatorProfile as any).verificationStatus || 'PENDING')}
+                        color={String((coordinatorProfile as any).verificationStatus) === 'VERIFIED' ? 'success' : 'default'}
+                      />
+                    </Box>
+                  )}
+
+                  <Divider sx={{ width: '100%', my: 2 }} />
+
+                  <Box width="100%">
+                    <Typography variant="subtitle1" fontWeight={700} mb={1}>
+                      Documents
+                    </Typography>
+
+                    {canEditDocuments && (
+                      <Box display="flex" flexDirection="column" gap={1.5}>
+                        <TextField
+                          select
+                          size="small"
+                          label="Document Type"
+                          value={docType}
+                          onChange={(e) => setDocType(e.target.value)}
+                          fullWidth
+                        >
+                          {['AADHAAR', 'PROFILE_PHOTO', 'EXPERIENCE_PROOF', 'DEGREE', 'CERTIFICATE', 'OTHER'].map((t) => (
+                            <MenuItem key={t} value={t}>
+                              {t}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+
+                        <Button variant="outlined" component="label" size="small" disabled={docUploading}>
+                          Choose File
+                          <input
+                            hidden
+                            type="file"
+                            accept="image/jpeg,image/png,application/pdf"
+                            onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+                          />
+                        </Button>
+                        {docFile && (
+                          <Typography variant="caption" color="text.secondary">
+                            {docFile.name}
+                          </Typography>
+                        )}
+
+                        {docError && <Typography variant="caption" color="error">{docError}</Typography>}
+
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={handleUploadDoc}
+                          disabled={docUploading || !docType || !docFile}
+                        >
+                          {docUploading ? 'Uploading...' : 'Upload Document'}
+                        </Button>
+                      </Box>
+                    )}
+
+                    <List dense sx={{ mt: 1 }}>
+                      {Array.isArray((coordinatorProfile as any).documents) && (coordinatorProfile as any).documents.length > 0 ? (
+                        (coordinatorProfile as any).documents.map((d: any, idx: number) => (
+                          <ListItem
+                            key={`${d?.documentType || 'DOC'}-${idx}`}
+                            secondaryAction={
+                              canEditDocuments ? (
+                                <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDoc(idx)} disabled={docUploading}>
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              ) : null
+                            }
+                          >
+                            <ListItemText
+                              primary={`${d?.documentType || 'Document'}${d?.verifiedAt ? ' (Verified)' : ''}`}
+                              secondary={''}
+                            />
+                          </ListItem>
+                        ))
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          No documents uploaded yet.
+                        </Typography>
+                      )}
+                    </List>
                   </Box>
                 </Box>
               </CardContent>
@@ -220,7 +361,7 @@ const CoordinatorProfilePage: React.FC = () => {
       )}
 
       <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
-      
+
       <SnackbarNotification open={snackbar.open} message={snackbar.message} severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} />
     </Container>
   );

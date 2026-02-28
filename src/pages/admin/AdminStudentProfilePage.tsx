@@ -92,13 +92,24 @@ const AdminStudentProfilePage: React.FC = () => {
   if (error) return <Container sx={{ py: 4 }}><ErrorAlert error={error} /></Container>;
   if (!student) return null;
 
+  // Derive contact info: backend may set email/phone/parentName directly, or we fallback to classLead in classes
+  const firstClassLead = student.classes?.[0]?.classLead;
+  const contactEmail = student.email || firstClassLead?.parentEmail || null;
+  const contactPhone = student.phone || firstClassLead?.parentPhone || null;
+  const contactParentName = student.parentName || firstClassLead?.parentName || null;
+  const contactAddress = student.address
+    || firstClassLead?.address
+    || firstClassLead?.location
+    || [firstClassLead?.area, firstClassLead?.city].filter(Boolean).join(', ')
+    || null;
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header & Back Button */}
       <Box mb={4} display="flex" alignItems="center" gap={2}>
-        <Button 
-          variant="outlined" 
-          startIcon={<ArrowBackIcon />} 
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
           sx={{ borderRadius: 2 }}
         >
@@ -132,21 +143,25 @@ const AdminStudentProfilePage: React.FC = () => {
                 <Chip label={student.grade} size="small" variant="outlined" color="primary" />
                 <Chip label={student.gender} size="small" variant="outlined" />
               </Box>
-              
+
               <Divider sx={{ my: 3 }} />
-              
+
               <Stack spacing={2} textAlign="left">
                 <Box>
-                  <Typography variant="caption" color="text.secondary" display="block">Email</Typography>
-                  <Typography variant="body2" fontWeight={500}>{student.email || 'N/A'}</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">Parent Name</Typography>
+                  <Typography variant="body2" fontWeight={500}>{contactParentName || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary" display="block">Phone</Typography>
-                  <Typography variant="body2" fontWeight={500}>{student.phone || 'N/A'}</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">Parent Email</Typography>
+                  <Typography variant="body2" fontWeight={500}>{contactEmail || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary" display="block">Parent Phone</Typography>
+                  <Typography variant="body2" fontWeight={500}>{contactPhone || 'N/A'}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" display="block">Address</Typography>
-                  <Typography variant="body2" fontWeight={500}>{student.address || 'N/A'}</Typography>
+                  <Typography variant="body2" fontWeight={500}>{contactAddress || 'N/A'}</Typography>
                 </Box>
               </Stack>
             </CardContent>
@@ -171,22 +186,22 @@ const AdminStudentProfilePage: React.FC = () => {
                           <Grid item xs={12} md={8}>
                             <Typography variant="h6" fontWeight={700} gutterBottom>{cls.className}</Typography>
                             <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {cls.subject.join(', ')} • {cls.grade} • Start Date: {new Date(cls.startDate).toLocaleDateString()}
+                              {cls.subject.join(', ')} â€¢ {cls.grade} â€¢ Start Date: {new Date(cls.startDate).toLocaleDateString()}
                             </Typography>
                           </Grid>
                           <Grid item xs={12} md={4} display="flex" justifyContent="flex-end" alignItems="flex-start">
-                             <FormControl size="small" sx={{ minWidth: 150 }}>
-                               <InputLabel>Status</InputLabel>
-                               <Select
-                                 value={cls.status}
-                                 label="Status"
-                                 onChange={(e) => handleStatusChange(cls.id || cls._id, e.target.value)}
-                               >
-                                 {Object.values(FINAL_CLASS_STATUS).map((s) => (
-                                   <MenuItem key={s} value={s}>{s}</MenuItem>
-                                 ))}
-                               </Select>
-                             </FormControl>
+                            <FormControl size="small" sx={{ minWidth: 150 }}>
+                              <InputLabel>Status</InputLabel>
+                              <Select
+                                value={cls.status}
+                                label="Status"
+                                onChange={(e) => handleStatusChange(cls.id || cls._id, e.target.value)}
+                              >
+                                {Object.values(FINAL_CLASS_STATUS).map((s) => (
+                                  <MenuItem key={s} value={s}>{s}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
                           </Grid>
 
                           <Grid item xs={12}><Divider /></Grid>
@@ -200,74 +215,74 @@ const AdminStudentProfilePage: React.FC = () => {
                                 <Typography variant="body2" fontWeight={500}>{cls.tutor?.name || 'Unassigned'}</Typography>
                               </Box>
                               <Box display="flex" justifyContent="space-between">
-                                 <Typography variant="body2" color="text.secondary">Coordinator:</Typography>
-                                 <Typography variant="body2" fontWeight={500}>{cls.coordinator?.name || 'Unassigned'}</Typography>
+                                <Typography variant="body2" color="text.secondary">Coordinator:</Typography>
+                                <Typography variant="body2" fontWeight={500}>{cls.coordinator?.name || 'Unassigned'}</Typography>
                               </Box>
                               <Box display="flex" justifyContent="space-between">
                                 <Typography variant="body2" color="text.secondary">Teachers Changed:</Typography>
-                                <Typography variant="body2" fontWeight={500}>0 (Logs N/A)</Typography>
+                                <Typography variant="body2" fontWeight={500}>{(cls.tutorHistory || []).filter((h: any) => h.endDate).length}</Typography>
                               </Box>
-                               <Box display="flex" justifyContent="space-between">
+                              <Box display="flex" justifyContent="space-between">
                                 <Typography variant="body2" color="text.secondary">Coordinators Changed:</Typography>
-                                <Typography variant="body2" fontWeight={500}>0 (Logs N/A)</Typography>
+                                <Typography variant="body2" fontWeight={500}>{(cls.tutorHistory || []).filter((h: any) => h.endDate).length}</Typography>
                               </Box>
                             </Stack>
                           </Grid>
 
                           {/* Demo Details */}
                           <Grid item xs={12} md={6}>
-                             <Typography variant="subtitle2" fontWeight={600} gutterBottom>Demo Details</Typography>
-                             {cls.classLead?.demoDetails ? (
-                               <Stack spacing={1}>
-                                 <Box display="flex" justifyContent="space-between">
-                                    <Typography variant="body2" color="text.secondary">Date:</Typography>
-                                    <Typography variant="body2">{new Date(cls.classLead.demoDetails.demoDate).toLocaleDateString()}</Typography>
-                                 </Box>
-                                 <Box display="flex" justifyContent="space-between">
-                                    <Typography variant="body2" color="text.secondary">Status:</Typography>
-                                    <Typography variant="body2">{cls.classLead.demoDetails.demoStatus}</Typography>
-                                 </Box>
-                                  <Box display="flex" justifyContent="space-between">
-                                    <Typography variant="body2" color="text.secondary">Feedback:</Typography>
-                                    <Typography variant="caption" sx={{ maxWidth: '60%', textAlign: 'right' }}>{cls.classLead.demoDetails.feedback || '-'}</Typography>
-                                 </Box>
-                               </Stack>
-                             ) : (
-                               <Typography variant="body2" color="text.secondary" fontStyle="italic">No demo details available.</Typography>
-                             )}
+                            <Typography variant="subtitle2" fontWeight={600} gutterBottom>Demo Details</Typography>
+                            {cls.classLead?.demoDetails ? (
+                              <Stack spacing={1}>
+                                <Box display="flex" justifyContent="space-between">
+                                  <Typography variant="body2" color="text.secondary">Date:</Typography>
+                                  <Typography variant="body2">{new Date(cls.classLead.demoDetails.demoDate).toLocaleDateString()}</Typography>
+                                </Box>
+                                <Box display="flex" justifyContent="space-between">
+                                  <Typography variant="body2" color="text.secondary">Status:</Typography>
+                                  <Typography variant="body2">{cls.classLead.demoDetails.demoStatus}</Typography>
+                                </Box>
+                                <Box display="flex" justifyContent="space-between">
+                                  <Typography variant="body2" color="text.secondary">Feedback:</Typography>
+                                  <Typography variant="caption" sx={{ maxWidth: '60%', textAlign: 'right' }}>{cls.classLead.demoDetails.feedback || '-'}</Typography>
+                                </Box>
+                              </Stack>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary" fontStyle="italic">No demo details available.</Typography>
+                            )}
                           </Grid>
 
-                           <Grid item xs={12}><Divider /></Grid>
+                          <Grid item xs={12}><Divider /></Grid>
 
                           {/* Stats & Actions */}
                           <Grid item xs={12} md={4}>
-                             <Box 
-                               p={2} 
-                               bgcolor="action.hover" 
-                               borderRadius={2} 
-                               textAlign="center" 
-                               sx={{ cursor: 'pointer' }}
-                               onClick={() => handleOpenReschedules(cls.oneTimeReschedules)}
-                             >
-                               <Typography variant="h5" fontWeight={700} color="primary">{cls.oneTimeReschedules?.length || 0}</Typography>
-                               <Typography variant="caption" fontWeight={600}>Reschedules Requested</Typography>
-                               <Typography variant="caption" display="block" color="text.secondary">(Click to view)</Typography>
-                             </Box>
-                          </Grid>
-                          
-                           <Grid item xs={12} md={4}>
-                             <Box p={2} bgcolor="action.hover" borderRadius={2} textAlign="center">
-                               {/* Filter tests for this class if multiple classes exist */}
-                               <Typography variant="h5" fontWeight={700} color="info.main">{student.tests?.filter((t: any) => t.finalClass === (cls.id || cls._id)).length || 0}</Typography>
-                               <Typography variant="caption" fontWeight={600}>Tests Conducted</Typography>
-                             </Box>
+                            <Box
+                              p={2}
+                              bgcolor="action.hover"
+                              borderRadius={2}
+                              textAlign="center"
+                              sx={{ cursor: 'pointer' }}
+                              onClick={() => handleOpenReschedules(cls.oneTimeReschedules)}
+                            >
+                              <Typography variant="h5" fontWeight={700} color="primary">{cls.oneTimeReschedules?.length || 0}</Typography>
+                              <Typography variant="caption" fontWeight={600}>Reschedules Requested</Typography>
+                              <Typography variant="caption" display="block" color="text.secondary">(Click to view)</Typography>
+                            </Box>
                           </Grid>
 
-                           <Grid item xs={12} md={4}>
-                             <Box p={2} bgcolor="action.hover" borderRadius={2} textAlign="center">
-                               <Typography variant="h5" fontWeight={700} color="success.main">{cls.completedSessions}/{cls.totalSessions}</Typography>
-                               <Typography variant="caption" fontWeight={600}>Sessions Completed</Typography>
-                             </Box>
+                          <Grid item xs={12} md={4}>
+                            <Box p={2} bgcolor="action.hover" borderRadius={2} textAlign="center">
+                              {/* Filter tests for this class if multiple classes exist */}
+                              <Typography variant="h5" fontWeight={700} color="info.main">{student.tests?.filter((t: any) => t.finalClass === (cls.id || cls._id)).length || 0}</Typography>
+                              <Typography variant="caption" fontWeight={600}>Tests Conducted</Typography>
+                            </Box>
+                          </Grid>
+
+                          <Grid item xs={12} md={4}>
+                            <Box p={2} bgcolor="action.hover" borderRadius={2} textAlign="center">
+                              <Typography variant="h5" fontWeight={700} color="success.main">{cls.completedSessions}/{cls.totalSessions}</Typography>
+                              <Typography variant="caption" fontWeight={600}>Sessions Completed</Typography>
+                            </Box>
                           </Grid>
 
                           <Grid item xs={12}>
@@ -293,7 +308,7 @@ const AdminStudentProfilePage: React.FC = () => {
                 <Typography variant="h6" fontWeight={700}>Payment History</Typography>
               </Box>
               <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                <Table>
+                <Table sx={{ minWidth: 750 }}>
                   <TableHead sx={{ bgcolor: 'action.hover' }}>
                     <TableRow>
                       <TableCell>Month</TableCell>
@@ -306,13 +321,17 @@ const AdminStudentProfilePage: React.FC = () => {
                     {student.payments?.length > 0 ? (
                       student.payments.map((p: any) => (
                         <TableRow key={p.id || p._id}>
-                          <TableCell sx={{ fontWeight: 500 }}>{p.month}</TableCell>
-                          <TableCell>₹{p.amount?.toLocaleString()}</TableCell>
+                          <TableCell sx={{ fontWeight: 500 }}>
+                            {p.cycleMonth && p.cycleYear
+                              ? `${new Date(p.cycleYear, p.cycleMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}`
+                              : p.month || '-'}
+                          </TableCell>
+                          <TableCell>â‚¹{p.amount?.toLocaleString()}</TableCell>
                           <TableCell>
                             <Chip label={p.status} size="small" variant="outlined" color={p.status === 'PAID' ? 'success' : 'warning'} />
                           </TableCell>
                           <TableCell color="text.secondary">
-                            {p.paidDate ? new Date(p.paidDate).toLocaleDateString() : '-'}
+                            {(p.paymentDate || p.paidDate) ? new Date(p.paymentDate || p.paidDate).toLocaleDateString() : '-'}
                           </TableCell>
                         </TableRow>
                       ))
@@ -349,9 +368,9 @@ const AdminStudentProfilePage: React.FC = () => {
                   })}
                 </Grid>
                 <Box mt={3}>
-                   <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                     * Attendance history can be viewed in detail from the specific Class page.
-                   </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    * Attendance history can be viewed in detail from the specific Class page.
+                  </Typography>
                 </Box>
               </Card>
             </Box>
@@ -371,13 +390,13 @@ const AdminStudentProfilePage: React.FC = () => {
         </DialogTitle>
         <DialogContent dividers>
           {selectedClassReschedules.length > 0 ? (
-            <TableContainer>
-              <Table size="small">
+            <TableContainer sx={{ overflowX: "auto" }}>
+              <Table size="small" sx={{ minWidth: 750 }}>
                 <TableHead>
                   <TableRow>
-                     <TableCell>From</TableCell>
-                     <TableCell>To</TableCell>
-                     <TableCell>Time Slot</TableCell>
+                    <TableCell>From</TableCell>
+                    <TableCell>To</TableCell>
+                    <TableCell>Time Slot</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -401,7 +420,7 @@ const AdminStudentProfilePage: React.FC = () => {
           <Button onClick={() => setRescheduleModalOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-      
+
       <SnackbarNotification
         open={!!notification}
         message={notification?.message || ''}
@@ -413,3 +432,4 @@ const AdminStudentProfilePage: React.FC = () => {
 };
 
 export default AdminStudentProfilePage;
+

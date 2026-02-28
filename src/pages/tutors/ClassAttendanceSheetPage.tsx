@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Container,
     Box,
     Typography,
     Button,
     CircularProgress,
-    IconButton,
     Paper,
     Breadcrumbs,
     Link,
@@ -31,6 +30,7 @@ import { selectCurrentUser } from '../../store/slices/authSlice';
 const ClassAttendanceSheetPage: React.FC = () => {
     const { classId } = useParams<{ classId: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const user = useSelector(selectCurrentUser);
 
     const [finalClass, setFinalClass] = useState<IFinalClass | null>(null);
@@ -40,6 +40,13 @@ const ClassAttendanceSheetPage: React.FC = () => {
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
 
     const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
+
+    useEffect(() => {
+        const monthFromQuery = searchParams.get('month');
+        if (monthFromQuery && /^\d{4}-\d{2}$/.test(monthFromQuery)) {
+            setSelectedMonth(monthFromQuery);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchData = async () => {

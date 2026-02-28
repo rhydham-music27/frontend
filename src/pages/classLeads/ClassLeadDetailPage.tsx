@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
   Container, Box, Typography, Card, CardContent, Button, Grid, Divider, Chip,
-  IconButton, Menu, MenuItem, FormControl, InputLabel, Select, Paper, alpha, Stack
+  IconButton, Menu, MenuItem, FormControl, InputLabel, Select, Paper, alpha
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AnnouncementIcon from '@mui/icons-material/Announcement';
-import ShareIcon from '@mui/icons-material/Share';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PersonIcon from '@mui/icons-material/Person';
@@ -279,7 +278,30 @@ export default function ClassLeadDetailPage() {
 
   const isManagerOrAdmin = user?.role === USER_ROLES.MANAGER || user?.role === USER_ROLES.ADMIN;
   const isAdmin = user?.role === USER_ROLES.ADMIN;
-  const demoStatus = (classLead as any)?.demoDetails?.demoStatus as string | undefined;
+
+  const latestDemoFromHistory = demoHistory
+    .slice()
+    .sort((a, b) => {
+      const at = new Date((a as any).completedAt || (a as any).assignedAt || (a as any).createdAt || 0).getTime();
+      const bt = new Date((b as any).completedAt || (b as any).assignedAt || (b as any).createdAt || 0).getTime();
+      return bt - at;
+    })[0];
+
+  const demoDetailsToShow: any = (classLead as any).demoDetails ||
+    (latestDemoFromHistory
+      ? {
+          demoStatus: (latestDemoFromHistory as any).status,
+          demoDate: (latestDemoFromHistory as any).demoDate,
+          demoTime: (latestDemoFromHistory as any).demoTime,
+          notes: (latestDemoFromHistory as any).notes,
+          feedback: (latestDemoFromHistory as any).feedback,
+          rejectionReason: (latestDemoFromHistory as any).rejectionReason,
+          completedAt: (latestDemoFromHistory as any).completedAt,
+        }
+      : null);
+
+  const demoTutorToShow: any = (classLead as any).demoTutor || (latestDemoFromHistory as any)?.tutor || null;
+  const demoStatus = (demoDetailsToShow as any)?.demoStatus as string | undefined;
   const canApproveOrRejectDemo = isManagerOrAdmin && demoStatus === DEMO_STATUS.COMPLETED;
 
   /* ─── Subject list helpers ───────────────────────────────────────────── */
@@ -732,7 +754,7 @@ export default function ClassLeadDetailPage() {
             )}
 
             {/* ─── Demo Details Card ─── */}
-            {classLead.demoDetails && (
+            {demoDetailsToShow && (
               <SectionCard>
                 <SectionHeader icon={<ClassIcon sx={{ fontSize: 18 }} />} title="Demo Details" />
                 <Grid container spacing={0}>
@@ -743,7 +765,7 @@ export default function ClassLeadDetailPage() {
                       chip={
                         <Chip
                           size="small"
-                          label={classLead.demoDetails.demoStatus}
+                          label={demoDetailsToShow.demoStatus}
                           color="primary"
                           variant="outlined"
                           sx={{ fontWeight: 600, borderRadius: '8px', mt: 0.5 }}
@@ -751,22 +773,27 @@ export default function ClassLeadDetailPage() {
                       }
                     />
                   </Grid>
-                  {classLead.demoDetails.demoDate && (
+                  {demoTutorToShow && (
                     <Grid item xs={12} sm={6}>
-                      <InfoRow icon={<CalendarMonthIcon sx={{ fontSize: 18 }} />} label="Date" value={new Date(classLead.demoDetails.demoDate).toLocaleDateString()} />
+                      <InfoRow icon={<PersonIcon sx={{ fontSize: 18 }} />} label="Tutor" value={demoTutorToShow.name || demoTutorToShow.fullName || 'Assigned'} />
                     </Grid>
                   )}
-                  {classLead.demoDetails.demoTime && (
+                  {demoDetailsToShow.demoDate && (
                     <Grid item xs={12} sm={6}>
-                      <InfoRow icon={<AccessTimeIcon sx={{ fontSize: 18 }} />} label="Time" value={classLead.demoDetails.demoTime} />
+                      <InfoRow icon={<CalendarMonthIcon sx={{ fontSize: 18 }} />} label="Date" value={new Date(demoDetailsToShow.demoDate).toLocaleDateString()} />
                     </Grid>
                   )}
-                  {(classLead.demoDetails as any).duration && (
+                  {demoDetailsToShow.demoTime && (
                     <Grid item xs={12} sm={6}>
-                      <InfoRow icon={<TimerIcon sx={{ fontSize: 18 }} />} label="Duration" value={(classLead.demoDetails as any).duration} />
+                      <InfoRow icon={<AccessTimeIcon sx={{ fontSize: 18 }} />} label="Time" value={demoDetailsToShow.demoTime} />
                     </Grid>
                   )}
-                  {(classLead.demoDetails as any).attendanceStatus && (
+                  {(demoDetailsToShow as any).duration && (
+                    <Grid item xs={12} sm={6}>
+                      <InfoRow icon={<TimerIcon sx={{ fontSize: 18 }} />} label="Duration" value={(demoDetailsToShow as any).duration} />
+                    </Grid>
+                  )}
+                  {(demoDetailsToShow as any).attendanceStatus && (
                     <Grid item xs={12} sm={6}>
                       <InfoRow
                         icon={<CheckCircleIcon sx={{ fontSize: 18 }} />}
@@ -774,22 +801,27 @@ export default function ClassLeadDetailPage() {
                         chip={
                           <Chip
                             size="small"
-                            label={(classLead.demoDetails as any).attendanceStatus}
-                            color={(classLead.demoDetails as any).attendanceStatus === 'PRESENT' ? 'success' : 'error'}
+                            label={(demoDetailsToShow as any).attendanceStatus}
+                            color={(demoDetailsToShow as any).attendanceStatus === 'PRESENT' ? 'success' : 'error'}
                             sx={{ fontWeight: 600, borderRadius: '8px', mt: 0.5 }}
                           />
                         }
                       />
                     </Grid>
                   )}
-                  {(classLead.demoDetails as any).topicCovered && (
+                  {(demoDetailsToShow as any).topicCovered && (
                     <Grid item xs={12}>
-                      <InfoRow icon={<NoteIcon sx={{ fontSize: 18 }} />} label="Topic Covered" value={(classLead.demoDetails as any).topicCovered} />
+                      <InfoRow icon={<NoteIcon sx={{ fontSize: 18 }} />} label="Topic Covered" value={(demoDetailsToShow as any).topicCovered} />
                     </Grid>
                   )}
-                  {classLead.demoDetails.feedback && (
+                  {(demoDetailsToShow as any).notes && (
                     <Grid item xs={12}>
-                      <InfoRow icon={<NoteIcon sx={{ fontSize: 18 }} />} label="Feedback" value={classLead.demoDetails.feedback} />
+                      <InfoRow icon={<NoteIcon sx={{ fontSize: 18 }} />} label="Notes" value={(demoDetailsToShow as any).notes} />
+                    </Grid>
+                  )}
+                  {demoDetailsToShow.feedback && (
+                    <Grid item xs={12}>
+                      <InfoRow icon={<NoteIcon sx={{ fontSize: 18 }} />} label="Feedback" value={demoDetailsToShow.feedback} />
                     </Grid>
                   )}
                 </Grid>

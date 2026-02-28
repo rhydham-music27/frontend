@@ -28,7 +28,7 @@ export default function ClassLeadsListPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const { isAuthorized: canCreateLeads } = usePermissionCheck('canCreateLeads');
-  
+
   const [filters, setFilters] = useState({
     studentName: '',
     grade: '',
@@ -67,8 +67,8 @@ export default function ClassLeadsListPage() {
     sortOrder: 'desc'
   });
 
-  const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({ 
-    open: false, message: '', severity: 'success' 
+  const [snack, setSnack] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>({
+    open: false, message: '', severity: 'success'
   });
 
   const [groupModalOpen, setGroupModalOpen] = useState(false);
@@ -168,18 +168,18 @@ export default function ClassLeadsListPage() {
       let subjVal: any = r.subject ?? r.subjects ?? r.subjectList ?? r.subject_names ?? r.subjectName ?? r.subject_name;
       let subjectList: string[] = [];
       const toStrings = (arr: any[]) => arr.map((s: any) => String(s)).filter((s) => s.trim().length > 0);
-      
+
       if (Array.isArray(subjVal)) subjectList = toStrings(subjVal);
       else if (typeof subjVal === 'string' && subjVal) {
         if (subjVal.startsWith('[') || subjVal.startsWith('{')) {
           try {
             const p = JSON.parse(subjVal);
             if (Array.isArray(p)) subjectList = toStrings(p);
-          } catch {}
+          } catch { }
         }
         if (subjectList.length === 0) subjectList = subjVal.split(',').map(x => x.trim()).filter(Boolean);
       }
-      
+
       return { ...lead, displaySubjects: subjectList };
     });
 
@@ -212,8 +212,8 @@ export default function ClassLeadsListPage() {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%)', // distinct green theme for Leads
           color: 'white',
           py: { xs: 4, md: 5 },
@@ -240,14 +240,14 @@ export default function ClassLeadsListPage() {
         </Box>
 
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Tooltip 
+          <Tooltip
             title={user?.role === 'MANAGER' && !canCreateLeads ? 'You do not have permission to create class leads' : ''}
             arrow
           >
             <span>
-              <Button 
-                variant="contained" 
-                startIcon={<AddIcon />} 
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
                 onClick={() => navigate('/class-leads/new')}
                 disabled={user?.role === 'MANAGER' && !canCreateLeads}
                 sx={{
@@ -271,7 +271,7 @@ export default function ClassLeadsListPage() {
             </span>
           </Tooltip>
         </Box>
-        
+
         {/* Abstract shapes */}
         <Box sx={{
           position: 'absolute',
@@ -297,88 +297,88 @@ export default function ClassLeadsListPage() {
 
       {isXs ? (
         <Stack spacing={2} mb={3}>
-           {/* Mobile Filter Bar */}
-           <Card sx={{ p: 2 }}>
-             <TextField
-               fullWidth
-               size="small"
-               placeholder="Global Search..."
-               value={filters.search}
-               onChange={(e) => handleFilterChange('search', e.target.value)}
-             />
-           </Card>
-           {loading ? <LoadingSpinner /> : formattedLeads.map((lead) => (
-             <Card key={lead.id} variant="outlined">
-               <CardContent>
-                 <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography 
-                      variant="h6" 
-                      fontWeight={600}
-                      sx={{ 
-                        cursor: 'pointer', 
-                        color: 'text.primary',
-                        transition: 'color 0.2s',
-                        '&:hover': { color: 'primary.main', textDecoration: 'underline' } 
-                      }}
-                      onClick={() => handleStudentNameClick(lead)}
-                    >
-                      {lead.studentName}
-                    </Typography>
-                    <ClassLeadStatusChip status={lead.status} />
-                 </Box>
-                 <Typography variant="body2" color="text.secondary">Grade: {lead.grade}</Typography>
-                 <Typography variant="body2" color="text.secondary">Mode: {lead.mode} | Board: {lead.board}</Typography>
-                 <Typography variant="body2" color="text.secondary">
-                    Address: {lead.mode === 'OFFLINE' ? `${lead.address || ''} ${lead.area ? `, ${lead.area}` : ''} ${lead.city ? `, ${lead.city}` : ''}`.trim() : 'Zoom'}
-                 </Typography>
-                 <Typography variant="body2" color="text.secondary">Timing: {lead.timing}</Typography>
-                 <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {lead.displaySubjects.map((s: string) => <Chip key={s} label={s} size="small" />)}
-                 </Box>
-                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption">By: {(lead.createdBy as any)?.name || '-'}</Typography>
-                    <Box>
-                      {(lead.status === 'CONVERTED' || (lead as any).status === 'WON') && !(lead as any).paymentReceived && (
-                        <Tooltip title="Mark Payment Received">
-                          <IconButton 
-                            size="small" 
-                            color="success"
-                            onClick={() => handleMarkPaymentReceived(lead.id)}
-                          >
-                            <CheckCircleOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      <IconButton onClick={() => navigate(`/class-leads/${lead.id}`)}><VisibilityIcon /></IconButton>
-                      <IconButton onClick={() => navigate(`/class-leads/${lead.id}/edit`)}><EditIcon /></IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(lead.id)}><DeleteIcon /></IconButton>
-                    </Box>
-                 </Box>
-               </CardContent>
-             </Card>
-           ))}
+          {/* Mobile Filter Bar */}
+          <Card sx={{ p: 2 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Global Search..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+            />
+          </Card>
+          {loading ? <LoadingSpinner /> : formattedLeads.map((lead) => (
+            <Card key={lead.id} variant="outlined">
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" mb={1}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    sx={{
+                      cursor: 'pointer',
+                      color: 'text.primary',
+                      transition: 'color 0.2s',
+                      '&:hover': { color: 'primary.main', textDecoration: 'underline' }
+                    }}
+                    onClick={() => handleStudentNameClick(lead)}
+                  >
+                    {lead.studentName}
+                  </Typography>
+                  <ClassLeadStatusChip status={lead.status} />
+                </Box>
+                <Typography variant="body2" color="text.secondary">Grade: {lead.grade}</Typography>
+                <Typography variant="body2" color="text.secondary">Mode: {lead.mode} | Board: {lead.board}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Address: {lead.mode === 'OFFLINE' ? `${lead.address || ''} ${lead.area ? `, ${lead.area}` : ''} ${lead.city ? `, ${lead.city}` : ''}`.trim() : 'Zoom'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">Timing: {lead.timing}</Typography>
+                <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                  {lead.displaySubjects.map((s: string) => <Chip key={s} label={s} size="small" />)}
+                </Box>
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption">By: {(lead.createdBy as any)?.name || '-'}</Typography>
+                  <Box>
+                    {(lead.status === 'CONVERTED' || (lead as any).status === 'WON') && !(lead as any).paymentReceived && (
+                      <Tooltip title="Mark Payment Received">
+                        <IconButton
+                          size="small"
+                          color="success"
+                          onClick={() => handleMarkPaymentReceived(lead.id)}
+                        >
+                          <CheckCircleOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <IconButton onClick={() => navigate(`/class-leads/${lead.id}`)}><VisibilityIcon /></IconButton>
+                    <IconButton onClick={() => navigate(`/class-leads/${lead.id}/edit`)}><EditIcon /></IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(lead.id)}><DeleteIcon /></IconButton>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
         </Stack>
       ) : (
-        <TableContainer 
-          component={Paper} 
-          elevation={0} 
-          sx={{ 
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{
             mb: 3,
             borderRadius: 3,
             border: '1px solid',
             borderColor: 'divider',
-            overflow: 'hidden',
+            overflowX: 'auto',
           }}
         >
-          <Table size="small">
+          <Table size="small" sx={{ minWidth: 750 }}>
             <TableHead>
-              <TableRow sx={{ bgcolor: 'secondary.main', '& th': { color: 'white', fontWeight: 700 } }}>
-                <TableCell sx={{ color: 'inherit' }}>
+              <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { color: 'text.primary', fontWeight: 700, borderBottom: '2px solid', borderColor: 'divider' } }}>
+                <TableCell sx={{ fontWeight: 700 }}>
                   <TableSortLabel
                     active={sort.sortBy === 'studentName'}
                     direction={sort.sortBy === 'studentName' ? sort.sortOrder : 'asc'}
                     onClick={() => handleSort('studentName')}
-                    sx={{ 
+                    sx={{
                       '&.MuiTableSortLabel-root': { color: 'inherit' },
                       '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                       '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -387,12 +387,12 @@ export default function ClassLeadsListPage() {
                     Student Name
                   </TableSortLabel>
                 </TableCell>
-                <TableCell sx={{ color: 'inherit' }}>
+                <TableCell sx={{ fontWeight: 700 }}>
                   <TableSortLabel
                     active={sort.sortBy === 'grade'}
                     direction={sort.sortBy === 'grade' ? sort.sortOrder : 'asc'}
                     onClick={() => handleSort('grade')}
-                    sx={{ 
+                    sx={{
                       '&.MuiTableSortLabel-root': { color: 'inherit' },
                       '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                       '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -401,19 +401,20 @@ export default function ClassLeadsListPage() {
                     Grade
                   </TableSortLabel>
                 </TableCell>
-                <TableCell sx={{ color: 'inherit' }}>Subjects</TableCell>
-                <TableCell sx={{ color: 'inherit' }}>Board</TableCell>
-                <TableCell sx={{ color: 'inherit' }}>Mode</TableCell>
-                <TableCell sx={{ color: 'inherit' }}>Area</TableCell>
-                <TableCell sx={{ color: 'inherit' }}>Timing</TableCell>
-                <TableCell sx={{ color: 'inherit' }}>Status</TableCell>
-                {isAdmin && <TableCell sx={{ color: 'inherit' }}>Created By</TableCell>}
-                <TableCell sx={{ color: 'inherit' }}>
+                <TableCell sx={{ fontWeight: 700 }}>Subjects</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Board</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Mode</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Area</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Timing</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Source</TableCell>
+                {isAdmin && <TableCell sx={{ fontWeight: 700 }}>Created By</TableCell>}
+                <TableCell sx={{ fontWeight: 700 }}>
                   <TableSortLabel
                     active={sort.sortBy === 'createdAt'}
                     direction={sort.sortBy === 'createdAt' ? sort.sortOrder : 'asc'}
                     onClick={() => handleSort('createdAt')}
-                    sx={{ 
+                    sx={{
                       '&.MuiTableSortLabel-root': { color: 'inherit' },
                       '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
                       '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
@@ -422,7 +423,7 @@ export default function ClassLeadsListPage() {
                     Created
                   </TableSortLabel>
                 </TableCell>
-                <TableCell align="right" sx={{ color: 'inherit' }}>Actions</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
               </TableRow>
               {/* Filter Row */}
               <TableRow sx={{ bgcolor: 'background.paper' }}>
@@ -521,6 +522,7 @@ export default function ClassLeadsListPage() {
                     </Select>
                   </TableCell>
                 )}
+                <TableCell />{/* Source – no filter */}
                 <TableCell />
                 <TableCell />
               </TableRow>
@@ -534,11 +536,11 @@ export default function ClassLeadsListPage() {
                 formattedLeads.map((lead) => (
                   <TableRow key={lead.id} hover>
                     <TableCell>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         fontWeight={600}
-                        sx={{ 
-                          cursor: 'pointer', 
+                        sx={{
+                          cursor: 'pointer',
                           color: 'text.primary',
                           transition: 'color 0.2s',
                           '&:hover': { color: 'primary.main', textDecoration: 'underline' }
@@ -559,9 +561,9 @@ export default function ClassLeadsListPage() {
                     <TableCell><Chip label={lead.mode} size="small" color={lead.mode === 'ONLINE' ? 'primary' : 'secondary'} variant="outlined" /></TableCell>
                     <TableCell>
                       {lead.mode === 'OFFLINE' ? (
-                        <Typography 
-                          variant="body2" 
-                          color="primary" 
+                        <Typography
+                          variant="body2"
+                          color="primary"
                           sx={{ fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                           onClick={() => handleAddressClick(lead)}
                         >
@@ -582,8 +584,8 @@ export default function ClassLeadsListPage() {
                         ) : (
                           (lead.status === 'CONVERTED' || (lead as any).status === 'WON') && (
                             <Tooltip title="Mark Payment Received">
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 color="success"
                                 onClick={() => handleMarkPaymentReceived(lead.id)}
                               >
@@ -593,6 +595,23 @@ export default function ClassLeadsListPage() {
                           )
                         )}
                       </Box>
+                    </TableCell>
+                    <TableCell>
+                      {(lead as any).leadSource ? (
+                        <Chip
+                          label={(lead as any).leadSource.replace(/_/g, ' ')}
+                          size="small"
+                          variant="outlined"
+                          color={
+                            (lead as any).leadSource === 'SITE' ? 'info' :
+                              (lead as any).leadSource === 'WHATSAPP' ? 'success' :
+                                (lead as any).leadSource === 'REFERRED' ? 'secondary' :
+                                  (lead as any).leadSource === 'GOOGLE_PROFILE' ? 'primary' :
+                                    'default'
+                          }
+                          sx={{ fontSize: '0.7rem', textTransform: 'capitalize' }}
+                        />
+                      ) : <Typography variant="caption" color="text.disabled">—</Typography>}
                     </TableCell>
                     {isAdmin && (
                       <TableCell>
@@ -617,19 +636,19 @@ export default function ClassLeadsListPage() {
       )}
 
       <Box display="flex" justifyContent="center" mt={2}>
-        <Pagination 
-          count={pagination.pages} 
-          page={page} 
-          onChange={(_, p) => setPage(p)} 
-          color="primary" 
+        <Pagination
+          count={pagination.pages}
+          page={page}
+          onChange={(_, p) => setPage(p)}
+          color="primary"
         />
       </Box>
 
-      <SnackbarNotification 
-        open={snack.open} 
-        message={snack.message} 
-        severity={snack.severity} 
-        onClose={() => setSnack((s) => ({ ...s, open: false }))} 
+      <SnackbarNotification
+        open={snack.open}
+        message={snack.message}
+        severity={snack.severity}
+        onClose={() => setSnack((s) => ({ ...s, open: false }))}
       />
 
       <GroupStudentsModal

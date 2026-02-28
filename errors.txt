@@ -1,0 +1,177 @@
+﻿src/components/attendance/AttendanceApprovalCard.tsx(1,46): error TS6133: 'Button' is declared but its value is never read.
+src/components/attendance/AttendanceApprovalCard.tsx(16,62): error TS6133: 'userRole' is declared but its value is never read.
+src/components/attendance/AttendanceStatusChip.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/attendance/RejectAttendanceModal.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/classLeads/ClassLeadForm.tsx(9,19): error TS6133: 'Stack' is declared but its value is never read.
+src/components/classLeads/ClassLeadForm.tsx(1014,51): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(names: readonly ("notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`)[], defaultValue?: { ...; } | undefined): readonly (string | ... 4 more ... | undefined)[]', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'readonly ("notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`)[]'.
+  Overload 2 of 4, '(name: "notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`, defaultValue?: string | ... 4 more ... | undefined): string | ... 4 more ... | undefined', gave the following error.
+    Argument of type '"weekdays"' is not assignable to parameter of type '"notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`'.
+  Overload 3 of 4, '(callback: WatchObserver<IClassLeadFormData>, defaultValues?: { studentType?: StudentType | undefined; studentName?: string | undefined; ... 21 more ...; studentDetails?: ({ ...; } | undefined)[] | undefined; } | undefined): Subscription', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'WatchObserver<IClassLeadFormData>'.
+src/components/classLeads/ClassLeadForm.tsx(1031,73): error TS2345: Argument of type 'string | number | string[] | { name: string; gender: "M" | "F"; fees: number; tutorFees: number; parentName?: string | undefined; parentEmail?: string | undefined; parentPhone?: string | undefined; board?: string | undefined; grade?: string | undefined; subject?: string[] | undefined; } | { ...; }[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/classLeads/ClassLeadForm.tsx(1031,95): error TS2345: Argument of type 'string | number | string[] | { name: string; gender: "M" | "F"; fees: number; tutorFees: number; parentName?: string | undefined; parentEmail?: string | undefined; parentPhone?: string | undefined; board?: string | undefined; grade?: string | undefined; subject?: string[] | undefined; } | { ...; }[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/classLeads/ClassLeadForm.tsx(1033,36): error TS2345: Argument of type '"weekdays"' is not assignable to parameter of type '"notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`'.
+src/components/classLeads/ClassLeadStatusChip.tsx(1,16): error TS6133: 'alpha' is declared but its value is never read.
+src/components/classLeads/StatusTimeline.tsx(18,9): error TS6133: 'hasDemoScheduled' is declared but its value is never read.
+src/components/classLeads/StatusTimeline.tsx(19,9): error TS6133: 'hasDemoCompleted' is declared but its value is never read.
+src/components/common/ChangePasswordOtpModal.tsx(38,13): error TS7030: Not all code paths return a value.
+src/components/common/ErrorBoundary.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/coordinator/TaskCard.tsx(14,10): error TS6133: 'ATTENDANCE_STATUS' is declared but its value is never read.
+src/components/coordinator/TaskCard.tsx(176,44): error TS2532: Object is possibly 'undefined'.
+src/components/dashboard/ConversionFunnelChart.tsx(2,10): error TS6133: 'Typography' is declared but its value is never read.
+src/components/dashboard/ConversionFunnelChart.tsx(11,43): error TS6133: 'label' is declared but its value is never read.
+src/components/dashboard/DateWiseLeadsChart.tsx(2,68): error TS6133: 'Card' is declared but its value is never read.
+src/components/dashboard/DateWiseLeadsChart.tsx(2,74): error TS6133: 'CardContent' is declared but its value is never read.
+src/components/dashboard/DateWiseLeadsChart.tsx(5,10): error TS6133: 'LineChart' is declared but its value is never read.
+src/components/dashboard/DateWiseLeadsChart.tsx(5,31): error TS6133: 'Line' is declared but its value is never read.
+src/components/dashboard/DateWiseLeadsChart.tsx(5,80): error TS6133: 'Legend' is declared but its value is never read.
+src/components/dashboard/RoleDistributionChart.tsx(57,39): error TS6133: 'entry' is declared but its value is never read.
+src/components/layout/Header.tsx(27,10): error TS6133: 'tutorProfile' is declared but its value is never read.
+src/components/layout/NotificationsPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/payments/CreatePaymentModal.tsx(18,1): error TS6133: 'ITutor' is declared but its value is never read.
+src/components/payments/PaymentHistoryTable.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/tutors/AttendanceSheet.tsx(35,10): error TS6133: 'toCsvValue' is declared but its value is never read.
+src/components/tutors/CompletedLeadsTable.tsx(5,3): error TS6133: 'CardContent' is declared but its value is never read.
+src/components/tutors/CompletedLeadsTable.tsx(27,13): error TS6133: 'PersonIcon' is declared but its value is never read.
+src/components/tutors/CompletedLeadsTable.tsx(171,19): error TS6133: 'address' is declared but its value is never read.
+src/components/tutors/DocumentViewer.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/tutors/FeedbackPerformanceCard.tsx(157,9): error TS6133: 'attendanceApprovalRate' is declared but its value is never read.
+src/components/tutors/MyClassesCard.tsx(42,9): error TS6133: 'theme' is declared but its value is never read.
+src/components/tutors/MyClassesCard.tsx(51,10): error TS6133: 'sheetGeneratingClassId' is declared but its value is never read.
+src/components/tutors/MyClassesCard.tsx(51,34): error TS6133: 'setSheetGeneratingClassId' is declared but its value is never read.
+src/components/tutors/MyClassesCard.tsx(106,9): error TS6133: 'getStatusColor' is declared but its value is never read.
+src/components/tutors/NotificationsCenterCard.tsx(32,5): error TS6133: 'pagination' is declared but its value is never read.
+src/components/tutors/PaymentsEarningsCard.tsx(431,44): error TS6133: 'idx' is declared but its value is never read.
+src/components/tutors/TutorAdvancedAnalyticsCards.tsx(13,9): error TS6133: 'theme' is declared but its value is never read.
+src/components/tutors/TutorLeadForm.tsx(45,28): error TS6133: 'fieldValue' is declared but its value is never read.
+src/components/tutors/TutorProfileOverviewCard.tsx(18,23): error TS6133: 'orange' is declared but its value is never read.
+src/components/tutors/TutorTierProgressCard.tsx(2,15): error TS6133: 'Paper' is declared but its value is never read.
+src/components/tutors/TutorTierProgressCard.tsx(3,36): error TS6133: 'Award' is declared but its value is never read.
+src/components/tutors/UpcomingTestsCard.tsx(176,42): error TS2339: Property '_id' does not exist on type 'IFinalClass'.
+src/components/tutors/VerificationModal.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/tutors/VerificationStatusChip.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/ui/calendar.tsx(3,27): error TS2307: Cannot find module 'react-day-picker' or its corresponding type declarations.
+src/components/ui/calendar.tsx(55,20): error TS6133: '_props' is declared but its value is never read.
+src/components/ui/calendar.tsx(56,21): error TS6133: '_props' is declared but its value is never read.
+src/components/ui/carousel.tsx(4,8): error TS2307: Cannot find module 'embla-carousel-react' or its corresponding type declarations.
+src/components/ui/chart.tsx(210,29): error TS2345: Argument of type '{ "h-2.5 w-2.5": boolean; "w-1": boolean; "w-0 border-[1.5px] border-dashed bg-transparent": boolean; "my-0.5": boolean; }' is not assignable to parameter of type 'string | false | null | undefined'.
+src/components/ui/drawer.tsx(2,43): error TS2307: Cannot find module 'vaul' or its corresponding type declarations.
+src/components/ui/input-otp.tsx(2,43): error TS2307: Cannot find module 'input-otp' or its corresponding type declarations.
+src/components/ui/input-otp.tsx(36,44): error TS18046: 'inputOTPContext' is of type 'unknown'.
+src/components/ui/resizable.tsx(2,37): error TS2307: Cannot find module 'react-resizable-panels' or its corresponding type declarations.
+src/components/ui/sidebar.tsx(6,29): error TS2307: Cannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+src/components/ui/sonner.tsx(1,26): error TS2307: Cannot find module 'next-themes' or its corresponding type declarations.
+src/components/ui/toaster.tsx(1,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+src/components/ui/toaster.tsx(16,31): error TS7031: Binding element 'id' implicitly has an 'any' type.
+src/components/ui/toaster.tsx(16,35): error TS7031: Binding element 'title' implicitly has an 'any' type.
+src/components/ui/toaster.tsx(16,42): error TS7031: Binding element 'description' implicitly has an 'any' type.
+src/components/ui/toaster.tsx(16,55): error TS7031: Binding element 'action' implicitly has an 'any' type.
+src/components/ui/use-toast.ts(1,33): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+src/pages/admin/ApprovalsManagementPage.tsx(35,1): error TS6133: 'EventNoteIcon' is declared but its value is never read.
+src/pages/auth/ParentLoginPage.tsx(2,76): error TS6133: 'ToggleButtonGroup' is declared but its value is never read.
+src/pages/auth/ParentLoginPage.tsx(2,95): error TS6133: 'ToggleButton' is declared but its value is never read.
+src/pages/auth/ParentLoginPage.tsx(6,40): error TS6133: 'parentLoginLookup' is declared but its value is never read.
+src/pages/auth/StudentLoginPage.tsx(45,11): error TS2741: Property 'acceptedTerms' is missing in type '{ role: string; email: string; createdAt: Date; updatedAt: Date; id: string; studentId: string; name: string; gender: string; grade: string; finalClass: string; classLead: string; isPasswordChanged: boolean; }' but required in type 'IUser'.
+src/pages/auth/StudentLoginPage.tsx(111,9): error TS2741: Property 'acceptedTerms' is missing in type '{ role: string; email: string; createdAt: Date; updatedAt: Date; id: string; studentId: string; name: string; gender: string; grade: string; finalClass: string; classLead: string; isPasswordChanged: boolean; }' but required in type 'IUser'.
+src/pages/classLeads/ClassLeadDetailPage.tsx(4,78): error TS6133: 'Stack' is declared but its value is never read.
+src/pages/classLeads/ClassLeadDetailPage.tsx(11,1): error TS6133: 'ShareIcon' is declared but its value is never read.
+src/pages/classLeads/CreateClassLeadPage.tsx(2,38): error TS6133: 'Button' is declared but its value is never read.
+src/pages/coordinator/AttendanceApprovalPage.tsx(25,17): error TS6133: 'setError' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(2,17): error TS6133: 'useState' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(3,44): error TS6133: 'Card' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(3,50): error TS6133: 'CardContent' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(3,78): error TS6133: 'Grow' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(3,115): error TS6133: 'Badge' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(8,1): error TS6133: 'TrendingUpIcon' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(10,1): error TS6133: 'ScheduleIcon' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(14,1): error TS6133: 'WarningIcon' is declared but its value is never read.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(171,33): error TS2322: Type '{ title: string; value: number; icon: Element; gradient: string; loading: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+src/pages/coordinator/CoordinatorDashboardPage.tsx(180,33): error TS2322: Type '{ title: string; value: number; icon: Element; gradient: string; loading: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+src/pages/coordinator/CoordinatorSettingsPage.tsx(5,34): error TS6133: 'updateCoordinator' is declared but its value is never read.
+src/pages/coordinator/SendAnnouncementPage.tsx(80,9): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/coordinator/SendAnnouncementPage.tsx(91,21): error TS6133: 'pagination' is declared but its value is never read.
+src/pages/coordinator/TestReportAnalysisPage.tsx(6,1): error TS6133: 'DownloadIcon' is declared but its value is never read.
+src/pages/coordinator/TestReportAnalysisPage.tsx(8,10): error TS6133: 'LineChart' is declared but its value is never read.
+src/pages/coordinator/TestReportAnalysisPage.tsx(8,21): error TS6133: 'Line' is declared but its value is never read.
+src/pages/coordinator/TestReportAnalysisPage.tsx(19,18): error TS6133: 'subDays' is declared but its value is never read.
+src/pages/coordinator/TestReportAnalysisPage.tsx(30,9): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/coordinator/TestReportAnalysisPage.tsx(145,29): error TS6133: 'event' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(3,38): error TS6133: 'Tabs' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(3,44): error TS6133: 'Tab' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(3,82): error TS6133: 'Divider' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(3,97): error TS6133: 'Badge' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(3,121): error TS6133: 'IconButton' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(10,1): error TS6133: 'ScheduleIcon' is declared but its value is never read.
+src/pages/coordinator/TodayTasksPage.tsx(45,9): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/coordinator/TutorPerformancePage.tsx(1,41): error TS6133: 'useMemo' is declared but its value is never read.
+src/pages/coordinator/TutorPerformancePage.tsx(25,1): error TS6133: 'AssessmentIcon' is declared but its value is never read.
+src/pages/coordinator/TutorPerformancePage.tsx(59,10): error TS6133: 'snackbar' is declared but its value is never read.
+src/pages/coordinator/TutorPerformancePage.tsx(60,9): error TS6133: 'navigate' is declared but its value is never read.
+src/pages/manager/CoordinatorsPage.tsx(3,38): error TS6133: 'Card' is declared but its value is never read.
+src/pages/manager/CoordinatorsPage.tsx(3,44): error TS6133: 'CardContent' is declared but its value is never read.
+src/pages/manager/CoordinatorsPage.tsx(3,127): error TS6133: 'Stack' is declared but its value is never read.
+src/pages/manager/CoordinatorsPage.tsx(3,134): error TS6133: 'Divider' is declared but its value is never read.
+src/pages/manager/CoordinatorsPage.tsx(20,9): error TS6133: 'isXs' is declared but its value is never read.
+src/pages/manager/LeadCRMPage.tsx(44,22): error TS6133: 'IUser' is declared but its value is never read.
+src/pages/manager/LeadCRMPage.tsx(73,164): error TS6133: 'managers' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(3,44): error TS6133: 'Card' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(3,50): error TS6133: 'CardContent' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(3,137): error TS6133: 'Avatar' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(16,1): error TS6133: 'PeopleIcon' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(19,86): error TS6133: 'BarChart' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(19,96): error TS6133: 'Bar' is declared but its value is never read.
+src/pages/manager/ManagerAnalyticsPage.tsx(146,123): error TS2322: Type '{ title: string; value: number; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+src/pages/manager/ManagerAnalyticsPage.tsx(149,113): error TS2322: Type '{ title: string; value: number; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+src/pages/manager/ManagerAnalyticsPage.tsx(152,148): error TS2322: Type '{ title: string; value: string; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+src/pages/manager/ManagerAnalyticsPage.tsx(155,126): error TS2322: Type '{ title: string; value: string; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+src/pages/manager/ManagerAnalyticsPage.tsx(194,27): error TS2304: Cannot find name 'Stack'.
+src/pages/manager/ManagerAnalyticsPage.tsx(201,31): error TS2304: Cannot find name 'Divider'.
+src/pages/manager/ManagerAnalyticsPage.tsx(208,31): error TS2304: Cannot find name 'Divider'.
+src/pages/manager/ManagerAnalyticsPage.tsx(215,28): error TS2304: Cannot find name 'Stack'.
+src/pages/parent/ParentDashboardPage.tsx(44,10): error TS6133: 'primaryTutorId' is declared but its value is never read.
+src/pages/parent/ParentPaymentsPage.tsx(12,3): error TS6133: 'IconButton' is declared but its value is never read.
+src/pages/parent/ParentPaymentsPage.tsx(35,24): error TS6133: 'setIsProcessing' is declared but its value is never read.
+src/pages/student/StudentAttendancePage.tsx(6,1): error TS6133: 'EventIcon' is declared but its value is never read.
+src/pages/student/StudentClassesPage.tsx(7,1): error TS6133: 'SchoolIcon' is declared but its value is never read.
+src/pages/student/StudentTestDetailPage.tsx(29,9): error TS6133: 'id' is declared but its value is never read.
+src/pages/tutors/ClassAttendanceSheetPage.tsx(9,5): error TS6133: 'IconButton' is declared but its value is never read.
+src/pages/tutors/TutorLeadsPage.tsx(2,38): error TS6133: 'Chip' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(10,3): error TS6133: 'Button' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(13,3): error TS6133: 'TextField' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(14,3): error TS6133: 'Dialog' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(15,3): error TS6133: 'DialogTitle' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(16,3): error TS6133: 'DialogContent' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(17,3): error TS6133: 'DialogActions' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(19,3): error TS6133: 'Stack' is declared but its value is never read.
+src/pages/tutors/TutorNotesPage.tsx(24,1): error TS6133: 'CreateNewFolderIcon' is declared but its value is never read.
+src/pages/tutors/TutorProfilePage.tsx(3,188): error TS6133: 'Divider' is declared but its value is never read.
+src/pages/tutors/TutorProfilePage.tsx(3,207): error TS6133: 'Stack' is declared but its value is never read.
+src/pages/tutors/TutorProfilePage.tsx(3,214): error TS6133: 'Avatar' is declared but its value is never read.
+src/pages/tutors/TutorProfilePage.tsx(11,1): error TS6133: 'PersonIcon' is declared but its value is never read.
+src/pages/tutors/TutorProfilePage.tsx(83,9): error TS6133: 'theme' is declared but its value is never read.
+src/pages/tutors/TutorProfilePage.tsx(968,12): error TS2304: Cannot find name 'Tabs'.
+src/pages/tutors/TutorProfilePage.tsx(977,14): error TS2304: Cannot find name 'Tab'.
+src/pages/tutors/TutorProfilePage.tsx(978,14): error TS2304: Cannot find name 'Tab'.
+src/pages/tutors/TutorProfilePage.tsx(979,14): error TS2304: Cannot find name 'Tab'.
+src/pages/tutors/TutorProfilePage.tsx(980,13): error TS2304: Cannot find name 'Tabs'.
+src/pages/tutors/TutorTimetablePage.tsx(33,1): error TS6133: 'TodayIcon' is declared but its value is never read.
+src/pages/tutors/TutorTimetablePage.tsx(35,1): error TS6133: 'SchoolIcon' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(1,51): error TS6133: 'useRef' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(17,5): error TS6133: 'Tabs' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(18,5): error TS6133: 'Tab' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(25,5): error TS6133: 'Card' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(26,5): error TS6133: 'CardContent' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(84,11): error TS6133: 'theme' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(89,12): error TS6133: 'tabValue' is declared but its value is never read.
+src/pages/tutors/TutorVerificationDetailsPage.tsx(123,11): error TS6133: 'handleTabChange' is declared but its value is never read.
+src/services/adminService.ts(3,67): error TS6133: 'IUser' is declared but its value is never read.

@@ -138,6 +138,8 @@ export const getAttendanceByClass = async (
                  ...record,
                  finalClass: sheet.finalClass, // Inject finalClass from sheet
                  coordinator: sheet.coordinator,
+                 _sheetMonth: sheet.month,
+                 _sheetYear: sheet.year,
                  // Ensure dates are Dates if needed, though usually string from JSON
              });
           });

@@ -222,7 +222,7 @@ const ManagerAnalyticsPage: React.FC = () => {
                          <Box p={2} bgcolor={alpha(theme.palette.primary.main, 0.04)} borderBottom="1px solid" borderColor="divider">
                              <Typography variant="subtitle1" fontWeight={700}>Detailed Performance Log</Typography>
                          </Box>
-                         <Table>
+                         <Table sx={{ minWidth: 750 }}>
                              <TableHead>
                                  <TableRow>
                                      <TableCell>Date</TableCell>

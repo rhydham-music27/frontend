@@ -153,7 +153,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Payments', path: '/tutor-payments', allowedRoles: [USER_ROLES.TUTOR], description: 'Track your earnings and payment history' },
   { label: 'Attendance', path: '/tutor-attendance', allowedRoles: [USER_ROLES.TUTOR], description: 'Mark and view student attendance records' },
   { label: 'Tests', path: '/tutor-tests', allowedRoles: [USER_ROLES.TUTOR], description: 'Schedule and manage student assessments' },
-  { label: 'My Leads', path: '/tutor-leads', allowedRoles: [USER_ROLES.TUTOR], description: 'View and manage leads assigned to you' },
+  { label: 'My Activity', path: '/tutor-leads', allowedRoles: [USER_ROLES.TUTOR], description: 'Track your demo sessions and class interests' },
   { label: 'Notes', path: '/tutor-notes', allowedRoles: [USER_ROLES.TUTOR], description: 'Personal notes and scratchpad' },
 
   { label: 'Class Leads', path: '/class-leads', allowedRoles: [USER_ROLES.MANAGER, USER_ROLES.ADMIN], description: 'Manage prospective student leads and inquiries' },
@@ -287,6 +287,8 @@ export const API_ENDPOINTS = {
   COORDINATOR_PAYMENTS_SUMMARY: '/api/coordinators/payments/summary',
   COORDINATOR_PROFILE_METRICS: '/api/coordinators/profile/metrics',
   COORDINATORS_SETTINGS: (id: string) => `/api/coordinators/${id}/settings`,
+  COORDINATORS_DOCUMENTS: (id: string) => `/api/coordinators/${id}/documents`,
+  COORDINATORS_DELETE_DOCUMENT: (id: string, docIndex: number) => `/api/coordinators/${id}/documents/${docIndex}`,
   // Test endpoints
   TESTS: '/api/tests',
   TESTS_COORDINATOR: '/api/tests/coordinator/tests',
