@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Card, CardContent, Button, Chip, CircularProgress, alpha } from '@mui/material';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import ClassIcon from '@mui/icons-material/Class';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useNavigate } from 'react-router-dom';
@@ -209,25 +208,6 @@ const TodayScheduleCard: React.FC = () => {
                     totalSessions={monthlyClasses}
                     onMarkClick={() => handleMarkClick(cls)}
                   />
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<ClassIcon />}
-                      onClick={() => navigate(`/tutor-tests?classId=${cls.id}`)}
-                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
-                    >
-                      Record Test
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => navigate(`/tutor-attendance?classId=${cls.id}`)}
-                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
-                    >
-                      Upload Report
-                    </Button>
-                  </Box>
                 </Box>
               );
             })}

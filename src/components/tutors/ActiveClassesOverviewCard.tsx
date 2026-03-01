@@ -40,8 +40,12 @@ const ActiveClassesOverviewCard: React.FC = () => {
     if ((cls as any).progressPercentage != null) {
       return Math.round((cls as any).progressPercentage as number);
     }
-    if (!cls.totalSessions) return 0;
-    return Math.round((cls.completedSessions / cls.totalSessions) * 100);
+    const monthlyTotalSessions = Number(
+      (cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0
+    );
+    if (!monthlyTotalSessions) return 0;
+    const completedForMonth = Math.min(Number(cls.completedSessions || 0), monthlyTotalSessions || Number(cls.completedSessions || 0));
+    return Math.round((completedForMonth / monthlyTotalSessions) * 100);
   };
 
   const getProgressColor = (p: number) => {
@@ -141,11 +145,15 @@ const ActiveClassesOverviewCard: React.FC = () => {
               </Typography>
             </Box>
           ) : (
-            classes.map((cls) => {
+            classes.slice(0, 4).map((cls) => {
               const progress = getProgress(cls);
               const pColor = getProgressColor(progress);
               const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
               const subjects = (cls.subject || []).join(', ');
+              const monthlyTotalSessions = Number(
+                (cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0
+              );
+              const completedForMonth = Math.min(Number(cls.completedSessions || 0), monthlyTotalSessions || Number(cls.completedSessions || 0));
               return (
                 <Box
                   key={cls.id}
@@ -210,7 +218,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                     </Box>
                     <Box textAlign="right">
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem' }}>Sessions</Typography>
-                      <Typography variant="body2" fontWeight={700} sx={{ fontSize: '0.8rem' }}>{cls.completedSessions} / {cls.totalSessions}</Typography>
+                      <Typography variant="body2" fontWeight={700} sx={{ fontSize: '0.8rem' }}>{completedForMonth} / {monthlyTotalSessions}</Typography>
                     </Box>
                   </Box>
                 </Box>
@@ -256,6 +264,10 @@ const ActiveClassesOverviewCard: React.FC = () => {
                   const progress = getProgress(cls);
                   const pColor = getProgressColor(progress);
                   const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
+                  const monthlyTotalSessions = Number(
+                    (cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0
+                  );
+                  const completedForMonth = Math.min(Number(cls.completedSessions || 0), monthlyTotalSessions || Number(cls.completedSessions || 0));
                   return (
                     <TableRow
                       key={cls.id}
@@ -311,7 +323,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" fontWeight={700} sx={{ fontSize: '0.85rem' }}>
-                          {cls.completedSessions} / {cls.totalSessions}
+                          {completedForMonth} / {monthlyTotalSessions}
                         </Typography>
                       </TableCell>
                     </TableRow>

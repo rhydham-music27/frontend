@@ -60,31 +60,31 @@ export default function VerificationModal({ open, onClose, tutor, onSubmit }: Pr
             <Typography variant="h6" sx={{ mb: 1 }}>{tutor.user.name}</Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
-                 <Typography variant="subtitle2" color="text.secondary">Contact Info</Typography>
-                 <Typography variant="body2"><strong>Email:</strong> {tutor.user.email}</Typography>
-                 <Typography variant="body2"><strong>Phone:</strong> {tutor.user.phone || '-'}</Typography>
-                 <Typography variant="body2"><strong>City:</strong> {tutor.user.city || '-'}</Typography>
+                <Typography variant="subtitle2" color="text.secondary">Contact Info</Typography>
+                <Typography variant="body2"><strong>Email:</strong> {tutor.user.email}</Typography>
+                <Typography variant="body2"><strong>Phone:</strong> {tutor.user.phone || '-'}</Typography>
+                <Typography variant="body2"><strong>City:</strong> {tutor.user.city || '-'}</Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                 <Typography variant="subtitle2" color="text.secondary">Professional Info</Typography>
-                 <Typography variant="body2"><strong>Experience:</strong> {tutor.yearsOfExperience ? `${tutor.yearsOfExperience} years` : `${tutor.experienceHours} teaching hours`}</Typography>
-                 <Typography variant="body2"><strong>Qualifications:</strong> {(tutor.qualifications || []).join(', ')}</Typography>
-                 <Typography variant="body2"><strong>Mode:</strong> {tutor.preferredMode}</Typography>
-                 <Typography variant="body2"><strong>Verification Fee:</strong> 
-                    <Box component="span" sx={{ ml: 1, px: 1, py: 0.5, borderRadius: 1, bgcolor: tutor.verificationFeeStatus === 'PAID' ? 'success.light' : tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'warning.light' : 'error.light', color: 'black', fontSize: '0.75rem', fontWeight: 600 }}>
-                        {tutor.verificationFeeStatus?.replace(/_/g, ' ') || 'PENDING'}
-                    </Box>
-                 </Typography>
-                 {tutor.verificationFeePaymentProof && (
-                    <Box mt={0.5}>
-                        <a href={tutor.verificationFeePaymentProof} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', textDecoration: 'underline', color: 'blue' }}>View Payment Proof</a>
-                    </Box>
-                 )}
+                <Typography variant="subtitle2" color="text.secondary">Professional Info</Typography>
+                <Typography variant="body2"><strong>Experience:</strong> {tutor.yearsOfExperience ? `${tutor.yearsOfExperience} years` : `${tutor.experienceHours} teaching hours`}</Typography>
+                <Typography variant="body2"><strong>Qualifications:</strong> {(tutor.qualifications || []).join(', ')}</Typography>
+                <Typography variant="body2"><strong>Mode:</strong> {tutor.preferredMode}</Typography>
+                <Typography variant="body2"><strong>Verification Fee:</strong>
+                  <Box component="span" sx={{ ml: 1, px: 1, py: 0.5, borderRadius: 1, bgcolor: tutor.verificationFeeStatus === 'PAID' ? 'success.light' : tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'warning.light' : 'error.light', color: 'black', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {tutor.verificationFeeStatus?.replace(/_/g, ' ') || 'PENDING'}
+                  </Box>
+                </Typography>
+                {tutor.verificationFeePaymentProof && (
+                  <Box mt={0.5}>
+                    <a href={tutor.verificationFeePaymentProof} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', textDecoration: 'underline', color: 'blue' }}>View Payment Proof</a>
+                  </Box>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="subtitle2" color="text.secondary">Subjects & Skills</Typography>
-                <Typography variant="body2" mt={0.5}><strong>Subjects:</strong> {(tutor.subjects || []).join(', ')}</Typography>
+                <Typography variant="body2" mt={0.5}><strong>Subjects:</strong> {(tutor.subject || []).join(', ')}</Typography>
                 <Typography variant="body2"><strong>Skills:</strong> {(tutor.skills || []).join(', ')}</Typography>
                 <Typography variant="body2"><strong>Languages:</strong> {(tutor.languagesKnown || []).join(', ')}</Typography>
               </Grid>
@@ -92,14 +92,14 @@ export default function VerificationModal({ open, onClose, tutor, onSubmit }: Pr
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="subtitle2" color="text.secondary">Addresses</Typography>
                 <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <Typography variant="caption" display="block">Residential</Typography>
-                        <Typography variant="body2">{tutor.residentialAddress || 'Not provided'}</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant="caption" display="block">Permanent</Typography>
-                        <Typography variant="body2">{tutor.permanentAddress || 'Not provided'}</Typography>
-                    </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" display="block">Residential</Typography>
+                    <Typography variant="body2">{tutor.residentialAddress || 'Not provided'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" display="block">Permanent</Typography>
+                    <Typography variant="body2">{tutor.permanentAddress || 'Not provided'}</Typography>
+                  </Grid>
                 </Grid>
               </Grid>
               <Grid item xs={12}>
@@ -111,19 +111,19 @@ export default function VerificationModal({ open, onClose, tutor, onSubmit }: Pr
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>Documents</Typography>
                 <Box display="flex" gap={1} flexWrap="wrap">
-                    {tutor.documents?.map((doc, idx) => (
-                        <Button 
-                            key={idx} 
-                            variant="outlined" 
-                            size="small" 
-                            href={doc.documentUrl} 
-                            target="_blank"
-                            color={doc.verifiedAt ? 'success' : 'primary'}
-                        >
-                            {doc.documentType} {doc.verifiedAt && '✓'}
-                        </Button>
-                    ))}
-                    {(!tutor.documents || tutor.documents.length === 0) && <Typography variant="caption">No documents uploaded.</Typography>}
+                  {tutor.documents?.map((doc, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outlined"
+                      size="small"
+                      href={doc.documentUrl}
+                      target="_blank"
+                      color={doc.verifiedAt ? 'success' : 'primary'}
+                    >
+                      {doc.documentType} {doc.verifiedAt && '✓'}
+                    </Button>
+                  ))}
+                  {(!tutor.documents || tutor.documents.length === 0) && <Typography variant="caption">No documents uploaded.</Typography>}
                 </Box>
               </Grid>
             </Grid>

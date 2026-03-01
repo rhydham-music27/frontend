@@ -281,6 +281,28 @@ export const updateMyProfile = async (payload: any): Promise<ApiResponse<ITutor>
   return data as ApiResponse<ITutor>;
 };
 
+export const getMyClasses = async (tutorId: string, status?: string): Promise<ApiResponse<any[]>> => {
+  const params = new URLSearchParams();
+  if (status) params.append('status', status);
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/${tutorId}/classes?${params.toString()}`);
+  return data as ApiResponse<any[]>;
+};
+
+export const getAttendanceByClass = async (classId: string): Promise<ApiResponse<any[]>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/classes/${classId}/attendance`);
+  return data as ApiResponse<any[]>;
+};
+
+export const upsertAttendanceSheet = async (classId: string, month: number, year: number): Promise<ApiResponse<any>> => {
+  const { data } = await api.post(`${API_ENDPOINTS.TUTORS}/classes/${classId}/attendance-sheet`, { month, year });
+  return data as ApiResponse<any>;
+};
+
+export const submitAttendanceSheet = async (sheetId: string): Promise<ApiResponse<any>> => {
+  const { data } = await api.post(`${API_ENDPOINTS.TUTORS}/attendance-sheets/${sheetId}/submit`);
+  return data as ApiResponse<any>;
+};
+
 export default {
   getTutors,
   getTutorById,
@@ -309,4 +331,8 @@ export default {
   getTutorStats,
   getSubjects,
   getVerifiers,
+  getMyClasses,
+  getAttendanceByClass,
+  upsertAttendanceSheet,
+  submitAttendanceSheet,
 };

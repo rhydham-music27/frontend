@@ -39,23 +39,25 @@ const StudentLoginPage: React.FC = () => {
         // Debug logging
         console.log('Student login result:', result);
         console.log('Token being stored:', result.accessToken);
-        
+
         // Store student credentials (you might want to create a separate student auth slice)
-        dispatch(setCredentials({ 
-          user: { 
-            ...result.student, 
+        dispatch(setCredentials({
+          user: {
+            ...result.student,
+            gender: result.student.gender as any,
             role: 'STUDENT',
             email: '', // Students don't have email
+            acceptedTerms: true,
             createdAt: new Date(),
             updatedAt: new Date()
-          }, 
+          },
           token: result.accessToken // Use actual JWT token
         }));
-        
+
         // Debug after dispatch
         console.log('After dispatch - Token in localStorage:', localStorage.getItem('token'));
         console.log('After dispatch - User in localStorage:', localStorage.getItem('user'));
-        
+
         dispatch(setError(null));
         navigate('/student-dashboard');
       }
@@ -106,15 +108,17 @@ const StudentLoginPage: React.FC = () => {
 
       // After successful password change, login with new password
       const result = await studentLogin({ studentId: studentId.trim(), password: newPassword.trim() });
-      
-      dispatch(setCredentials({ 
-        user: { 
-          ...result.student, 
+
+      dispatch(setCredentials({
+        user: {
+          ...result.student,
+          gender: result.student.gender as any,
           role: 'STUDENT',
           email: '', // Students don't have email
+          acceptedTerms: true,
           createdAt: new Date(),
           updatedAt: new Date()
-        }, 
+        },
         token: result.accessToken // Use actual JWT token
       }));
       dispatch(setError(null));
@@ -248,7 +252,7 @@ const StudentLoginPage: React.FC = () => {
                 fontSize: { xs: '0.8125rem', sm: '0.875rem' },
               }}
             >
-              {step === 'login' 
+              {step === 'login'
                 ? 'Use your student ID and password to login'
                 : 'You must change your password on first login'
               }
@@ -381,7 +385,7 @@ const StudentLoginPage: React.FC = () => {
           </CardContent>
         </Card>
       </Container>
-    </Box>
+    </Box >
   );
 };
 

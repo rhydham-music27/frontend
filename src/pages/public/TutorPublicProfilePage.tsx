@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Container, CircularProgress } from '@mui/material';
-import { ITutor, IPublicTutorReview, PaginatedResponse } from '../../types';
-import tutorService, { getPublicTutorReviews } from '../../services/tutorService';
+import { ITutor } from '../../types';
+import tutorService from '../../services/tutorService';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import PublicTutorProfileCard from '../../components/tutors/PublicTutorProfileCard';
+import TutorLeadNavbar from '../../components/tutors/TutorLeadNavbar';
 
 const TutorPublicProfilePage: React.FC = () => {
   const { teacherId } = useParams<{ teacherId: string }>();
   const [tutor, setTutor] = useState<ITutor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reviews, setReviews] = useState<IPublicTutorReview[]>([]);
 
   useEffect(() => {
     const fetchTutorAndReviews = async () => {
@@ -25,15 +25,6 @@ const TutorPublicProfilePage: React.FC = () => {
         setError(null);
         const res = await tutorService.getPublicTutorProfile(teacherId);
         setTutor(res.data);
-        try {
-          const reviewRes: PaginatedResponse<IPublicTutorReview[]> = await getPublicTutorReviews(teacherId, {
-            page: 1,
-            limit: 6,
-          });
-          setReviews(reviewRes.data || []);
-        } catch {
-          setReviews([]);
-        }
       } catch (e: any) {
         const msg = e?.response?.data?.message || e?.message || 'Failed to load tutor profile.';
         setError(msg);
@@ -77,11 +68,11 @@ const TutorPublicProfilePage: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #EEF2FF 0%, #F9FAFB 40%, #ECFDF5 100%)',
-        py: { xs: 4, sm: 6 },
       }}
     >
-      <Container maxWidth="md">
-        <PublicTutorProfileCard tutor={tutor} reviews={reviews} />
+      <TutorLeadNavbar />
+      <Container maxWidth="md" sx={{ py: { xs: 4, sm: 6 } }}>
+        <PublicTutorProfileCard tutor={tutor} />
       </Container>
     </Box>
   );

@@ -1,0 +1,1324 @@
+﻿[96msrc/components/admin/CoordinatorVerificationModal.tsx[0m:[93m22[0m:[93m29[0m - [91merror[0m[90m TS6133: [0m'setVerifyingDocUrl' is declared but its value is never read.
+
+[7m22[0m     const [verifyingDocUrl, setVerifyingDocUrl] = useState<string | null>(null);
+[7m  [0m [91m                            ~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/attendance/AttendanceApprovalCard.tsx[0m:[93m1[0m:[93m46[0m - [91merror[0m[90m TS6133: [0m'Button' is declared but its value is never read.
+
+[7m1[0m import { Card, CardContent, Typography, Box, Button, Grid, Divider, Alert, Chip } from '@mui/material';
+[7m [0m [91m                                             ~~~~~~[0m
+
+[96msrc/components/attendance/AttendanceApprovalCard.tsx[0m:[93m16[0m:[93m62[0m - [91merror[0m[90m TS6133: [0m'userRole' is declared but its value is never read.
+
+[7m16[0m export default function AttendanceApprovalCard({ attendance, userRole }: Props) {
+[7m  [0m [91m                                                             ~~~~~~~~[0m
+
+[96msrc/components/attendance/AttendanceStatusChip.tsx[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React from 'react';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/attendance/RejectAttendanceModal.tsx[0m:[93m1[0m:[93m8[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useState } from 'react';
+[7m [0m [91m       ~~~~~[0m
+
+[96msrc/components/classLeads/ClassLeadForm.tsx[0m:[93m9[0m:[93m19[0m - [91merror[0m[90m TS6133: [0m'Stack' is declared but its value is never read.
+
+[7m9[0m   Divider, alpha, Stack
+[7m [0m [91m                  ~~~~~[0m
+
+[96msrc/components/classLeads/ClassLeadForm.tsx[0m:[93m1014[0m:[93m51[0m - [91merror[0m[90m TS2769: [0mNo overload matches this call.
+  Overload 1 of 4, '(names: readonly ("notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`)[], defaultValue?: { ...; } | undefined): readonly (string | ... 4 more ... | undefined)[]', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'readonly ("notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`)[]'.
+  Overload 2 of 4, '(name: "notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`, defaultValue?: string | ... 4 more ... | undefined): string | ... 4 more ... | undefined', gave the following error.
+    Argument of type '"weekdays"' is not assignable to parameter of type '"notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`'.
+  Overload 3 of 4, '(callback: WatchObserver<IClassLeadFormData>, defaultValues?: { studentType?: StudentType | undefined; studentName?: string | undefined; ... 21 more ...; studentDetails?: ({ ...; } | undefined)[] | undefined; } | undefined): Subscription', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'WatchObserver<IClassLeadFormData>'.
+
+[7m1014[0m                     const currentWeekdays = watch('weekdays') || [];
+[7m    [0m [91m                                                  ~~~~~~~~~~[0m
+
+
+[96msrc/components/classLeads/ClassLeadForm.tsx[0m:[93m1031[0m:[93m73[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | number | string[] | { name: string; gender: "M" | "F"; fees: number; tutorFees: number; parentName?: string | undefined; parentEmail?: string | undefined; parentPhone?: string | undefined; board?: string | undefined; grade?: string | undefined; subject?: string[] | undefined; } | { ...; }[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m1031[0m                             newWeekdays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+[7m    [0m [91m                                                                        ~[0m
+
+[96msrc/components/classLeads/ClassLeadForm.tsx[0m:[93m1031[0m:[93m95[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | number | string[] | { name: string; gender: "M" | "F"; fees: number; tutorFees: number; parentName?: string | undefined; parentEmail?: string | undefined; parentPhone?: string | undefined; board?: string | undefined; grade?: string | undefined; subject?: string[] | undefined; } | { ...; }[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m1031[0m                             newWeekdays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+[7m    [0m [91m                                                                                              ~[0m
+
+[96msrc/components/classLeads/ClassLeadForm.tsx[0m:[93m1033[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type '"weekdays"' is not assignable to parameter of type '"notes" | "city" | "mode" | "address" | "area" | "location" | "studentName" | "grade" | "subject" | "board" | "studentType" | "studentGender" | "parentName" | "parentEmail" | ... 22 more ... | `studentDetails.${number}.subject.${number}`'.
+
+[7m1033[0m                           setValue('weekdays', newWeekdays, { shouldValidate: true });
+[7m    [0m [91m                                   ~~~~~~~~~~[0m
+
+[96msrc/components/classLeads/ClassLeadStatusChip.tsx[0m:[93m1[0m:[93m16[0m - [91merror[0m[90m TS6133: [0m'alpha' is declared but its value is never read.
+
+[7m1[0m import { Chip, alpha } from '@mui/material';
+[7m [0m [91m               ~~~~~[0m
+
+[96msrc/components/classLeads/StatusTimeline.tsx[0m:[93m18[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'hasDemoScheduled' is declared but its value is never read.
+
+[7m18[0m   const hasDemoScheduled = demoHistory.some((h) => h.status === 'SCHEDULED');
+[7m  [0m [91m        ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/classLeads/StatusTimeline.tsx[0m:[93m19[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'hasDemoCompleted' is declared but its value is never read.
+
+[7m19[0m   const hasDemoCompleted = demoHistory.some((h) => h.status === 'COMPLETED');
+[7m  [0m [91m        ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/common/ChangePasswordOtpModal.tsx[0m:[93m38[0m:[93m13[0m - [91merror[0m[90m TS7030: [0mNot all code paths return a value.
+
+[7m38[0m   useEffect(() => {
+[7m  [0m [91m            ~~~~~~~[0m
+
+[96msrc/components/common/ErrorBoundary.tsx[0m:[93m1[0m:[93m8[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { Component, ErrorInfo, ReactNode } from 'react';
+[7m [0m [91m       ~~~~~[0m
+
+[96msrc/components/coordinator/ClassDetailCard.tsx[0m:[93m30[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'user' is declared but its value is never read.
+
+[7m30[0m   const { user } = useAuth();
+[7m  [0m [91m        ~~~~~~~~[0m
+
+[96msrc/components/coordinator/TaskCard.tsx[0m:[93m14[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'ATTENDANCE_STATUS' is declared but its value is never read.
+
+[7m14[0m import { ATTENDANCE_STATUS, PAYMENT_STATUS } from '../../constants';
+[7m  [0m [91m         ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/coordinator/TaskCard.tsx[0m:[93m176[0m:[93m44[0m - [91merror[0m[90m TS2532: [0mObject is possibly 'undefined'.
+
+[7m176[0m               <Typography variant="body2">{(props.task as IPaymentReminder).tutor.name}</Typography>
+[7m   [0m [91m                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/dashboard/ConversionFunnelChart.tsx[0m:[93m2[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'Typography' is declared but its value is never read.
+
+[7m2[0m import { Typography, Box, Chip, Skeleton, useTheme } from '@mui/material';
+[7m [0m [91m         ~~~~~~~~~~[0m
+
+[96msrc/components/dashboard/ConversionFunnelChart.tsx[0m:[93m11[0m:[93m43[0m - [91merror[0m[90m TS6133: [0m'label' is declared but its value is never read.
+
+[7m11[0m const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+[7m  [0m [91m                                          ~~~~~[0m
+
+[96msrc/components/dashboard/DateWiseLeadsChart.tsx[0m:[93m2[0m:[93m68[0m - [91merror[0m[90m TS6133: [0m'Card' is declared but its value is never read.
+
+[7m2[0m import { Box, ToggleButtonGroup, ToggleButton, Skeleton, useTheme, Card, CardContent } from '@mui/material';
+[7m [0m [91m                                                                   ~~~~[0m
+
+[96msrc/components/dashboard/DateWiseLeadsChart.tsx[0m:[93m2[0m:[93m74[0m - [91merror[0m[90m TS6133: [0m'CardContent' is declared but its value is never read.
+
+[7m2[0m import { Box, ToggleButtonGroup, ToggleButton, Skeleton, useTheme, Card, CardContent } from '@mui/material';
+[7m [0m [91m                                                                         ~~~~~~~~~~~[0m
+
+[96msrc/components/dashboard/DateWiseLeadsChart.tsx[0m:[93m5[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'LineChart' is declared but its value is never read.
+
+[7m5[0m import { LineChart, BarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, TooltipProps } from 'recharts';
+[7m [0m [91m         ~~~~~~~~~[0m
+
+[96msrc/components/dashboard/DateWiseLeadsChart.tsx[0m:[93m5[0m:[93m31[0m - [91merror[0m[90m TS6133: [0m'Line' is declared but its value is never read.
+
+[7m5[0m import { LineChart, BarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, TooltipProps } from 'recharts';
+[7m [0m [91m                              ~~~~[0m
+
+[96msrc/components/dashboard/DateWiseLeadsChart.tsx[0m:[93m5[0m:[93m80[0m - [91merror[0m[90m TS6133: [0m'Legend' is declared but its value is never read.
+
+[7m5[0m import { LineChart, BarChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, TooltipProps } from 'recharts';
+[7m [0m [91m                                                                               ~~~~~~[0m
+
+[96msrc/components/dashboard/RoleDistributionChart.tsx[0m:[93m57[0m:[93m39[0m - [91merror[0m[90m TS6133: [0m'entry' is declared but its value is never read.
+
+[7m57[0m                     {transformed.map((entry, index) => (
+[7m  [0m [91m                                      ~~~~~[0m
+
+[96msrc/components/layout/Header.tsx[0m:[93m27[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'tutorProfile' is declared but its value is never read.
+
+[7m27[0m   const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
+[7m  [0m [91m         ~~~~~~~~~~~~[0m
+
+[96msrc/components/layout/NotificationsPanel.tsx[0m:[93m1[0m:[93m8[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useEffect } from 'react';
+[7m [0m [91m       ~~~~~[0m
+
+[96msrc/components/payments/CreatePaymentModal.tsx[0m:[93m18[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'ITutor' is declared but its value is never read.
+
+[7m18[0m import { ITutor } from '../../types';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/payments/PaymentHistoryTable.tsx[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React from 'react';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/AttendanceSheet.tsx[0m:[93m36[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'toCsvValue' is declared but its value is never read.
+
+[7m36[0m function toCsvValue(value: string | number | undefined): string {
+[7m  [0m [91m         ~~~~~~~~~~[0m
+
+[96msrc/components/tutors/CompletedLeadsTable.tsx[0m:[93m5[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'CardContent' is declared but its value is never read.
+
+[7m5[0m   CardContent,
+[7m [0m [91m  ~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/CompletedLeadsTable.tsx[0m:[93m27[0m:[93m13[0m - [91merror[0m[90m TS6133: [0m'PersonIcon' is declared but its value is never read.
+
+[7m27[0m   Person as PersonIcon,
+[7m  [0m [91m            ~~~~~~~~~~[0m
+
+[96msrc/components/tutors/CompletedLeadsTable.tsx[0m:[93m171[0m:[93m19[0m - [91merror[0m[90m TS6133: [0m'address' is declared but its value is never read.
+
+[7m171[0m             const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
+[7m   [0m [91m                  ~~~~~~~[0m
+
+[96msrc/components/tutors/DocumentViewer.tsx[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React from 'react';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/FeedbackPerformanceCard.tsx[0m:[93m157[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'attendanceApprovalRate' is declared but its value is never read.
+
+[7m157[0m   const attendanceApprovalRate = clamp(performanceMetrics?.attendanceApprovalRate ?? 0, 0, 100);
+[7m   [0m [91m        ~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MUIProfileCard.tsx[0m:[93m1[0m:[93m121[0m - [91merror[0m[90m TS6133: [0m'Tooltip' is declared but its value is never read.
+
+[7m1[0m import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box, Tooltip } from '@mui/material';
+[7m [0m [91m                                                                                                                        ~~~~~~~[0m
+
+[96msrc/components/tutors/MUIProfileCard.tsx[0m:[93m4[0m:[93m26[0m - [91merror[0m[90m TS6133: [0m'Star' is declared but its value is never read.
+
+[7m4[0m   FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles,
+[7m [0m [91m                         ~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m38[0m:[93m27[0m - [91merror[0m[90m TS6133: [0m'getTestById' is declared but its value is never read.
+
+[7m38[0m import { getTestsByClass, getTestById } from '../../services/testService';
+[7m  [0m [91m                          ~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m86[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'selectedTestIdByClassId' is declared but its value is never read.
+
+[7m86[0m   const [selectedTestIdByClassId, setSelectedTestIdByClassId] = useState<Record<string, string>>({});
+[7m  [0m [91m         ~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m86[0m:[93m35[0m - [91merror[0m[90m TS6133: [0m'setSelectedTestIdByClassId' is declared but its value is never read.
+
+[7m86[0m   const [selectedTestIdByClassId, setSelectedTestIdByClassId] = useState<Record<string, string>>({});
+[7m  [0m [91m                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m89[0m:[93m25[0m - [91merror[0m[90m TS6133: [0m'setReportLoading' is declared but its value is never read.
+
+[7m89[0m   const [reportLoading, setReportLoading] = useState(false);
+[7m  [0m [91m                        ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m90[0m:[93m23[0m - [91merror[0m[90m TS6133: [0m'setReportError' is declared but its value is never read.
+
+[7m90[0m   const [reportError, setReportError] = useState<string | null>(null);
+[7m  [0m [91m                      ~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m91[0m:[93m22[0m - [91merror[0m[90m TS6133: [0m'setReportTest' is declared but its value is never read.
+
+[7m91[0m   const [reportTest, setReportTest] = useState<ITest | null>(null);
+[7m  [0m [91m                     ~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m92[0m:[93m22[0m - [91merror[0m[90m TS6133: [0m'setReportSwot' is declared but its value is never read.
+
+[7m92[0m   const [reportSwot, setReportSwot] = useState<{ strengths: Array<{ label: string; count: number }>; improvements: Array<{ label: string; count: number }> } | null>(null);
+[7m  [0m [91m                     ~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m102[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'ensureTestsLoaded' is declared but its value is never read.
+
+[7m102[0m   const ensureTestsLoaded = async (classIdStr: string) => {
+[7m   [0m [91m        ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m107[0m:[93m13[0m - [91merror[0m[90m TS6133: [0m'dummy' is declared but its value is never read.
+
+[7m107[0m       const dummy = classIdStr;
+[7m   [0m [91m            ~~~~~[0m
+
+[96msrc/components/tutors/MyClassesCard.tsx[0m:[93m118[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'buildSwotFromTests' is declared but its value is never read.
+
+[7m118[0m   const buildSwotFromTests = (tests: ITest[]) => {
+[7m   [0m [91m        ~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/NotificationsCenterCard.tsx[0m:[93m32[0m:[93m5[0m - [91merror[0m[90m TS6133: [0m'pagination' is declared but its value is never read.
+
+[7m32[0m     pagination,
+[7m  [0m [91m    ~~~~~~~~~~[0m
+
+[96msrc/components/tutors/PaymentsEarningsCard.tsx[0m:[93m431[0m:[93m44[0m - [91merror[0m[90m TS6133: [0m'idx' is declared but its value is never read.
+
+[7m431[0m                   filteredPayments.map((p, idx) => (
+[7m   [0m [91m                                           ~~~[0m
+
+[96msrc/components/tutors/TodayScheduleCard.tsx[0m:[93m2[0m:[93m46[0m - [91merror[0m[90m TS6133: [0m'Button' is declared but its value is never read.
+
+[7m2[0m import { Box, Typography, Card, CardContent, Button, Chip, CircularProgress, alpha } from '@mui/material';
+[7m [0m [91m                                             ~~~~~~[0m
+
+[96msrc/components/tutors/TodayScheduleCard.tsx[0m:[93m17[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'navigate' is declared but its value is never read.
+
+[7m17[0m   const navigate = useNavigate();
+[7m  [0m [91m        ~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorAdvancedAnalyticsCards.tsx[0m:[93m6[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'GroupAddIcon' is declared but its value is never read.
+
+[7m6[0m import GroupAddIcon from '@mui/icons-material/GroupAdd';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorAdvancedAnalyticsCards.tsx[0m:[93m13[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'theme' is declared but its value is never read.
+
+[7m13[0m   const theme = useTheme();
+[7m  [0m [91m        ~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m251[0m:[93m67[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m251[0m                   helperText={errors.fullName || (isFieldReadOnly(initialData?.fullName) ? 'Cannot be changed' : '')}
+[7m   [0m [91m                                                                  ~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m252[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m252[0m                   disabled={isFieldReadOnly(initialData?.fullName)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m271[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'import("C:/Users/Rhydham/Desktop/projects/ys-final/v3/web-app/frontend/src/types/enums").Gender | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m271[0m                     disabled={isFieldReadOnly(initialData?.gender)}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m278[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'import("C:/Users/Rhydham/Desktop/projects/ys-final/v3/web-app/frontend/src/types/enums").Gender | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m278[0m                   {isFieldReadOnly(initialData?.gender) && !errors.gender && <FormHelperText>Cannot be changed</FormHelperText>}
+[7m   [0m [91m                                   ~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m291[0m:[93m70[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m291[0m                   helperText={errors.phoneNumber || (isFieldReadOnly(initialData?.phoneNumber) ? 'Cannot be changed' : '')}
+[7m   [0m [91m                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m292[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m292[0m                   disabled={isFieldReadOnly(initialData?.phoneNumber)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m312[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m312[0m                   helperText={isFieldReadOnly(initialData?.alternatePhone) ? 'Cannot be changed' : 'Optional secondary contact'}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m313[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m313[0m                   disabled={isFieldReadOnly(initialData?.alternatePhone)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m320[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m320[0m                     readOnly: isFieldReadOnly(initialData?.alternatePhone),
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m351[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m351[0m                   disabled={isFieldReadOnly(initialData?.bio)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m352[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m352[0m                   helperText={isFieldReadOnly(initialData?.bio) ? 'Cannot be changed' : 'A brief description that will be shown on your profile.'}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m354[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m354[0m                     readOnly: isFieldReadOnly(initialData?.bio),
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m370[0m:[93m72[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m370[0m                   helperText={errors.qualification || (isFieldReadOnly(initialData?.qualification) ? 'Cannot be changed' : '')}
+[7m   [0m [91m                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m371[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m371[0m                   disabled={isFieldReadOnly(initialData?.qualification)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m378[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m378[0m                     readOnly: isFieldReadOnly(initialData?.qualification),
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m390[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m390[0m                     disabled={isFieldReadOnly(initialData?.experience)}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m404[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m404[0m                   {isFieldReadOnly(initialData?.experience) && !errors.experience && <FormHelperText>Cannot be changed</FormHelperText>}
+[7m   [0m [91m                                   ~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m465[0m:[93m84[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m465[0m                         disabled={selectedSubjects.length === 0 || isFieldReadOnly(initialData?.subjects)}
+[7m   [0m [91m                                                                                   ~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m479[0m:[93m51[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m479[0m                         onDelete={isFieldReadOnly(initialData?.subjects) ? undefined : () => handleRemoveSubject(sub)}
+[7m   [0m [91m                                                  ~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m490[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m490[0m                   {isFieldReadOnly(initialData?.subjects) && <FormHelperText sx={{ mt: 1 }}>Cannot be changed</FormHelperText>}
+[7m   [0m [91m                                   ~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m510[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m510[0m                   disabled={isFieldReadOnly(initialData?.extracurricularActivities)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m521[0m:[93m51[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m521[0m                       helperText={isFieldReadOnly(initialData?.extracurricularActivities) ? 'Cannot be changed' : 'Select all activities you can teach or assist with'}
+[7m   [0m [91m                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m545[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m545[0m                   disabled={isFieldReadOnly(initialData?.languagesKnown)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m579[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m579[0m                   disabled={isFieldReadOnly(initialData?.skills)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m618[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m618[0m                     disabled={isFieldReadOnly(initialData?.preferredMode)}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m630[0m:[93m36[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m630[0m                   {isFieldReadOnly(initialData?.preferredMode) && !errors.preferredMode && <FormHelperText>Cannot be changed</FormHelperText>}
+[7m   [0m [91m                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m637[0m:[93m97[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m637[0m                   <FormControl fullWidth error={Boolean(errors.city)} disabled={isFieldReadOnly(initialData?.city)}>
+[7m   [0m [91m                                                                                                ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m653[0m:[93m38[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m653[0m                     {isFieldReadOnly(initialData?.city) && !errors.city && <FormHelperText>Cannot be changed</FormHelperText>}
+[7m   [0m [91m                                     ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m677[0m:[93m65[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m677[0m                     disabled={!formData.city || isFieldReadOnly(initialData?.preferredAreas)}
+[7m   [0m [91m                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m689[0m:[93m79[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m689[0m                         helperText={errors.preferredAreas || (isFieldReadOnly(initialData?.preferredAreas) ? 'Cannot be changed' : 'Select areas where you prefer to teach')}
+[7m   [0m [91m                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m703[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m703[0m                   disabled={isFieldReadOnly(initialData?.permanentAddress)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m714[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m714[0m                   helperText={isFieldReadOnly(initialData?.permanentAddress) ? 'Cannot be changed' : ''}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m725[0m:[93m45[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m725[0m                   disabled={isFieldReadOnly(initialData?.residentialAddress)}
+[7m   [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorLeadForm.tsx[0m:[93m736[0m:[93m47[0m - [91merror[0m[90m TS2345: [0mArgument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+
+[7m736[0m                   helperText={isFieldReadOnly(initialData?.residentialAddress) ? 'Cannot be changed' : 'Leave blank if same as permanent address'}
+[7m   [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/tutors/TutorProfileOverviewCard.tsx[0m:[93m18[0m:[93m23[0m - [91merror[0m[90m TS6133: [0m'orange' is declared but its value is never read.
+
+[7m18[0m import { blue, green, orange, red } from '@mui/material/colors';
+[7m  [0m [91m                      ~~~~~~[0m
+
+[96msrc/components/tutors/TutorTierProgressCard.tsx[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6133: [0m'Paper' is declared but its value is never read.
+
+[7m2[0m import { Box, Paper, Typography, LinearProgress, Chip, alpha } from '@mui/material';
+[7m [0m [91m              ~~~~~[0m
+
+[96msrc/components/tutors/TutorTierProgressCard.tsx[0m:[93m3[0m:[93m36[0m - [91merror[0m[90m TS6133: [0m'Award' is declared but its value is never read.
+
+[7m3[0m import { Trophy, Star, TrendingUp, Award, Zap } from 'lucide-react';
+[7m [0m [91m                                   ~~~~~[0m
+
+[96msrc/components/tutors/UpcomingTestsCard.tsx[0m:[93m176[0m:[93m42[0m - [91merror[0m[90m TS2339: [0mProperty '_id' does not exist on type 'IFinalClass'.
+
+[7m176[0m               `${String(test.finalClass?._id || '')}-${String(test.testDate || '')}-${String(test.testTime || '')}`;
+[7m   [0m [91m                                         ~~~[0m
+
+[96msrc/components/tutors/VerificationModal.tsx[0m:[93m1[0m:[93m8[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React, { useState } from 'react';
+[7m [0m [91m       ~~~~~[0m
+
+[96msrc/components/tutors/VerificationStatusChip.tsx[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'React' is declared but its value is never read.
+
+[7m1[0m import React from 'react';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/calendar.tsx[0m:[93m3[0m:[93m27[0m - [91merror[0m[90m TS2307: [0mCannot find module 'react-day-picker' or its corresponding type declarations.
+
+[7m3[0m import { DayPicker } from "react-day-picker";
+[7m [0m [91m                          ~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/calendar.tsx[0m:[93m55[0m:[93m20[0m - [91merror[0m[90m TS6133: [0m'_props' is declared but its value is never read.
+
+[7m55[0m         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
+[7m  [0m [91m                   ~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/calendar.tsx[0m:[93m56[0m:[93m21[0m - [91merror[0m[90m TS6133: [0m'_props' is declared but its value is never read.
+
+[7m56[0m         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+[7m  [0m [91m                    ~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/carousel.tsx[0m:[93m4[0m:[93m8[0m - [91merror[0m[90m TS2307: [0mCannot find module 'embla-carousel-react' or its corresponding type declarations.
+
+[7m4[0m } from "embla-carousel-react"
+[7m [0m [91m       ~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/chart.tsx[0m:[93m210[0m:[93m29[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ "h-2.5 w-2.5": boolean; "w-1": boolean; "w-0 border-[1.5px] border-dashed bg-transparent": boolean; "my-0.5": boolean; }' is not assignable to parameter of type 'string | false | null | undefined'.
+
+[7m210[0m                             {
+[7m   [0m [91m                            ~[0m
+[7m211[0m                               "h-2.5 w-2.5": indicator === "dot",
+[7m   [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[7m...[0m 
+[7m215[0m                               "my-0.5": nestLabel && indicator === "dashed",
+[7m   [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[7m216[0m                             }
+[7m   [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/drawer.tsx[0m:[93m2[0m:[93m43[0m - [91merror[0m[90m TS2307: [0mCannot find module 'vaul' or its corresponding type declarations.
+
+[7m2[0m import { Drawer as DrawerPrimitive } from "vaul"
+[7m [0m [91m                                          ~~~~~~[0m
+
+[96msrc/components/ui/input-otp.tsx[0m:[93m2[0m:[93m43[0m - [91merror[0m[90m TS2307: [0mCannot find module 'input-otp' or its corresponding type declarations.
+
+[7m2[0m import { OTPInput, OTPInputContext } from "input-otp"
+[7m [0m [91m                                          ~~~~~~~~~~~[0m
+
+[96msrc/components/ui/input-otp.tsx[0m:[93m36[0m:[93m44[0m - [91merror[0m[90m TS18046: [0m'inputOTPContext' is of type 'unknown'.
+
+[7m36[0m   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
+[7m  [0m [91m                                           ~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/resizable.tsx[0m:[93m2[0m:[93m37[0m - [91merror[0m[90m TS2307: [0mCannot find module 'react-resizable-panels' or its corresponding type declarations.
+
+[7m2[0m import * as ResizablePrimitive from "react-resizable-panels"
+[7m [0m [91m                                    ~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/sidebar.tsx[0m:[93m6[0m:[93m29[0m - [91merror[0m[90m TS2307: [0mCannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+
+[7m6[0m import { useIsMobile } from "@/hooks/use-mobile"
+[7m [0m [91m                            ~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/sonner.tsx[0m:[93m1[0m:[93m26[0m - [91merror[0m[90m TS2307: [0mCannot find module 'next-themes' or its corresponding type declarations.
+
+[7m1[0m import { useTheme } from "next-themes"
+[7m [0m [91m                         ~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/toaster.tsx[0m:[93m1[0m:[93m26[0m - [91merror[0m[90m TS2307: [0mCannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+[7m1[0m import { useToast } from "@/hooks/use-toast"
+[7m [0m [91m                         ~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/components/ui/toaster.tsx[0m:[93m16[0m:[93m31[0m - [91merror[0m[90m TS7031: [0mBinding element 'id' implicitly has an 'any' type.
+
+[7m16[0m       {toasts.map(function ({ id, title, description, action, ...props }) {
+[7m  [0m [91m                              ~~[0m
+
+[96msrc/components/ui/toaster.tsx[0m:[93m16[0m:[93m35[0m - [91merror[0m[90m TS7031: [0mBinding element 'title' implicitly has an 'any' type.
+
+[7m16[0m       {toasts.map(function ({ id, title, description, action, ...props }) {
+[7m  [0m [91m                                  ~~~~~[0m
+
+[96msrc/components/ui/toaster.tsx[0m:[93m16[0m:[93m42[0m - [91merror[0m[90m TS7031: [0mBinding element 'description' implicitly has an 'any' type.
+
+[7m16[0m       {toasts.map(function ({ id, title, description, action, ...props }) {
+[7m  [0m [91m                                         ~~~~~~~~~~~[0m
+
+[96msrc/components/ui/toaster.tsx[0m:[93m16[0m:[93m55[0m - [91merror[0m[90m TS7031: [0mBinding element 'action' implicitly has an 'any' type.
+
+[7m16[0m       {toasts.map(function ({ id, title, description, action, ...props }) {
+[7m  [0m [91m                                                      ~~~~~~[0m
+
+[96msrc/components/ui/use-toast.ts[0m:[93m1[0m:[93m33[0m - [91merror[0m[90m TS2307: [0mCannot find module '@/hooks/use-toast' or its corresponding type declarations.
+
+[7m1[0m import { useToast, toast } from "@/hooks/use-toast";
+[7m [0m [91m                                ~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/ApprovalsManagementPage.tsx[0m:[93m35[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'EventNoteIcon' is declared but its value is never read.
+
+[7m35[0m import EventNoteIcon from '@mui/icons-material/EventNote';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/CoordinatorVerificationPage.tsx[0m:[93m6[0m:[93m38[0m - [91merror[0m[90m TS6133: [0m'alpha' is declared but its value is never read.
+
+[7m6[0m     DialogActions, CircularProgress, alpha,
+[7m [0m [91m                                     ~~~~~[0m
+
+[96msrc/pages/auth/ParentLoginPage.tsx[0m:[93m2[0m:[93m76[0m - [91merror[0m[90m TS6133: [0m'ToggleButtonGroup' is declared but its value is never read.
+
+[7m2[0m import { Container, Box, Card, CardContent, Typography, TextField, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
+[7m [0m [91m                                                                           ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/auth/ParentLoginPage.tsx[0m:[93m2[0m:[93m95[0m - [91merror[0m[90m TS6133: [0m'ToggleButton' is declared but its value is never read.
+
+[7m2[0m import { Container, Box, Card, CardContent, Typography, TextField, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
+[7m [0m [91m                                                                                              ~~~~~~~~~~~~[0m
+
+[96msrc/pages/auth/ParentLoginPage.tsx[0m:[93m6[0m:[93m40[0m - [91merror[0m[90m TS6133: [0m'parentLoginLookup' is declared but its value is never read.
+
+[7m6[0m import { sendLoginOtp, verifyLoginOtp, parentLoginLookup } from '../../services/authService';
+[7m [0m [91m                                       ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/classLeads/ClassLeadDetailPage.tsx[0m:[93m833[0m:[93m32[0m - [91merror[0m[90m TS2304: [0mCannot find name 'handleRejectDemo'.
+
+[7m833[0m                       onClick={handleRejectDemo}
+[7m   [0m [91m                               ~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/classLeads/CreateClassLeadPage.tsx[0m:[93m2[0m:[93m38[0m - [91merror[0m[90m TS6133: [0m'Button' is declared but its value is never read.
+
+[7m2[0m import { Container, Box, Typography, Button, IconButton } from '@mui/material';
+[7m [0m [91m                                     ~~~~~~[0m
+
+[96msrc/pages/coordinator/AttendanceApprovalPage.tsx[0m:[93m27[0m:[93m17[0m - [91merror[0m[90m TS6133: [0m'setError' is declared but its value is never read.
+
+[7m27[0m   const [error, setError] = useState<string | null>(null);
+[7m  [0m [91m                ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/AttendanceApprovalPage.tsx[0m:[93m395[0m:[93m101[0m - [91merror[0m[90m TS2339: [0mProperty '_id' does not exist on type 'IFinalClass'.
+
+[7m395[0m                       onClick={() => handleOpenRenewModal(sheet.finalClass?.id || sheet.finalClass?._id || '')}
+[7m   [0m [91m                                                                                                    ~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m2[0m:[93m17[0m - [91merror[0m[90m TS6133: [0m'useState' is declared but its value is never read.
+
+[7m2[0m import React, { useState } from 'react';
+[7m [0m [91m                ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m3[0m:[93m44[0m - [91merror[0m[90m TS6133: [0m'Card' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
+[7m [0m [91m                                           ~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m3[0m:[93m50[0m - [91merror[0m[90m TS6133: [0m'CardContent' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
+[7m [0m [91m                                                 ~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m3[0m:[93m78[0m - [91merror[0m[90m TS6133: [0m'Grow' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
+[7m [0m [91m                                                                             ~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m3[0m:[93m115[0m - [91merror[0m[90m TS6133: [0m'Badge' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
+[7m [0m [91m                                                                                                                  ~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m8[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'TrendingUpIcon' is declared but its value is never read.
+
+[7m8[0m import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m10[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'ScheduleIcon' is declared but its value is never read.
+
+[7m10[0m import ScheduleIcon from '@mui/icons-material/Schedule';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m14[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'WarningIcon' is declared but its value is never read.
+
+[7m14[0m import WarningIcon from '@mui/icons-material/Warning';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m176[0m:[93m33[0m - [91merror[0m[90m TS2322: [0mType '{ title: string; value: number; icon: Element; gradient: string; loading: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+
+[7m176[0m                                 gradient="linear-gradient(135deg, #10B981 0%, #059669 100%)"
+[7m   [0m [91m                                ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorDashboardPage.tsx[0m:[93m185[0m:[93m33[0m - [91merror[0m[90m TS2322: [0mType '{ title: string; value: number; icon: Element; gradient: string; loading: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+
+[7m185[0m                                 gradient="linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)"
+[7m   [0m [91m                                ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorSettingsPage.tsx[0m:[93m5[0m:[93m34[0m - [91merror[0m[90m TS6133: [0m'updateCoordinator' is declared but its value is never read.
+
+[7m5[0m import { getCoordinatorByUserId, updateCoordinator } from '../../services/coordinatorService';
+[7m [0m [91m                                 ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/CoordinatorStudentProfilePage.tsx[0m:[93m6[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'studentId' is declared but its value is never read.
+
+[7m6[0m   const { studentId } = useParams<{ studentId: string }>();
+[7m [0m [91m        ~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/SendAnnouncementPage.tsx[0m:[93m80[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'navigate' is declared but its value is never read.
+
+[7m80[0m   const navigate = useNavigate();
+[7m  [0m [91m        ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/SendAnnouncementPage.tsx[0m:[93m91[0m:[93m21[0m - [91merror[0m[90m TS6133: [0m'pagination' is declared but its value is never read.
+
+[7m91[0m       const { data, pagination } = await getAssignedClasses(1, 100);
+[7m  [0m [91m                    ~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TestReportAnalysisPage.tsx[0m:[93m6[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'DownloadIcon' is declared but its value is never read.
+
+[7m6[0m import DownloadIcon from '@mui/icons-material/Download';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TestReportAnalysisPage.tsx[0m:[93m8[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'LineChart' is declared but its value is never read.
+
+[7m8[0m import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+[7m [0m [91m         ~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TestReportAnalysisPage.tsx[0m:[93m8[0m:[93m21[0m - [91merror[0m[90m TS6133: [0m'Line' is declared but its value is never read.
+
+[7m8[0m import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+[7m [0m [91m                    ~~~~[0m
+
+[96msrc/pages/coordinator/TestReportAnalysisPage.tsx[0m:[93m19[0m:[93m18[0m - [91merror[0m[90m TS6133: [0m'subDays' is declared but its value is never read.
+
+[7m19[0m import { format, subDays } from 'date-fns';
+[7m  [0m [91m                 ~~~~~~~[0m
+
+[96msrc/pages/coordinator/TestReportAnalysisPage.tsx[0m:[93m30[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'navigate' is declared but its value is never read.
+
+[7m30[0m   const navigate = useNavigate();
+[7m  [0m [91m        ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TestReportAnalysisPage.tsx[0m:[93m145[0m:[93m29[0m - [91merror[0m[90m TS6133: [0m'event' is declared but its value is never read.
+
+[7m145[0m   const handlePageChange = (event: any, page: number) => {
+[7m   [0m [91m                            ~~~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m3[0m:[93m38[0m - [91merror[0m[90m TS6133: [0m'Tabs' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, useTheme, alpha, IconButton, Avatar } from '@mui/material';
+[7m [0m [91m                                     ~~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m3[0m:[93m44[0m - [91merror[0m[90m TS6133: [0m'Tab' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, useTheme, alpha, IconButton, Avatar } from '@mui/material';
+[7m [0m [91m                                           ~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m3[0m:[93m82[0m - [91merror[0m[90m TS6133: [0m'Divider' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, useTheme, alpha, IconButton, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                 ~~~~~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m3[0m:[93m97[0m - [91merror[0m[90m TS6133: [0m'Badge' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, useTheme, alpha, IconButton, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                                ~~~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m3[0m:[93m121[0m - [91merror[0m[90m TS6133: [0m'IconButton' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Tabs, Tab, Grid, Card, CardContent, Button, Divider, Chip, Badge, useTheme, alpha, IconButton, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                                                        ~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m10[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'ScheduleIcon' is declared but its value is never read.
+
+[7m10[0m import ScheduleIcon from '@mui/icons-material/Schedule';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TodayTasksPage.tsx[0m:[93m45[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'navigate' is declared but its value is never read.
+
+[7m45[0m   const navigate = useNavigate();
+[7m  [0m [91m        ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TutorPerformancePage.tsx[0m:[93m1[0m:[93m41[0m - [91merror[0m[90m TS6133: [0m'useMemo' is declared but its value is never read.
+
+[7m1[0m import React, { useCallback, useEffect, useMemo, useState } from 'react';
+[7m [0m [91m                                        ~~~~~~~[0m
+
+[96msrc/pages/coordinator/TutorPerformancePage.tsx[0m:[93m25[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'AssessmentIcon' is declared but its value is never read.
+
+[7m25[0m import AssessmentIcon from '@mui/icons-material/Assessment';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TutorPerformancePage.tsx[0m:[93m59[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'snackbar' is declared but its value is never read.
+
+[7m59[0m   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'success' });
+[7m  [0m [91m         ~~~~~~~~[0m
+
+[96msrc/pages/coordinator/TutorPerformancePage.tsx[0m:[93m60[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'navigate' is declared but its value is never read.
+
+[7m60[0m   const navigate = useNavigate();
+[7m  [0m [91m        ~~~~~~~~[0m
+
+[96msrc/pages/manager/CoordinatorsPage.tsx[0m:[93m3[0m:[93m38[0m - [91merror[0m[90m TS6133: [0m'Card' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Card, CardContent, TextField, Button, Grid, Autocomplete, CircularProgress, Paper, Chip, Stack, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, useTheme, alpha, IconButton } from '@mui/material';
+[7m [0m [91m                                     ~~~~[0m
+
+[96msrc/pages/manager/CoordinatorsPage.tsx[0m:[93m3[0m:[93m44[0m - [91merror[0m[90m TS6133: [0m'CardContent' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Card, CardContent, TextField, Button, Grid, Autocomplete, CircularProgress, Paper, Chip, Stack, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, useTheme, alpha, IconButton } from '@mui/material';
+[7m [0m [91m                                           ~~~~~~~~~~~[0m
+
+[96msrc/pages/manager/CoordinatorsPage.tsx[0m:[93m3[0m:[93m127[0m - [91merror[0m[90m TS6133: [0m'Stack' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Card, CardContent, TextField, Button, Grid, Autocomplete, CircularProgress, Paper, Chip, Stack, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, useTheme, alpha, IconButton } from '@mui/material';
+[7m [0m [91m                                                                                                                              ~~~~~[0m
+
+[96msrc/pages/manager/CoordinatorsPage.tsx[0m:[93m3[0m:[93m134[0m - [91merror[0m[90m TS6133: [0m'Divider' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Card, CardContent, TextField, Button, Grid, Autocomplete, CircularProgress, Paper, Chip, Stack, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, useTheme, alpha, IconButton } from '@mui/material';
+[7m [0m [91m                                                                                                                                     ~~~~~~~[0m
+
+[96msrc/pages/manager/CoordinatorsPage.tsx[0m:[93m20[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'isXs' is declared but its value is never read.
+
+[7m20[0m   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
+[7m  [0m [91m        ~~~~[0m
+
+[96msrc/pages/manager/LeadCRMPage.tsx[0m:[93m44[0m:[93m22[0m - [91merror[0m[90m TS6133: [0m'IUser' is declared but its value is never read.
+
+[7m44[0m import { IClassLead, IUser } from '../../types';
+[7m  [0m [91m                     ~~~~~[0m
+
+[96msrc/pages/manager/LeadCRMPage.tsx[0m:[93m73[0m:[93m164[0m - [91merror[0m[90m TS6133: [0m'managers' is declared but its value is never read.
+
+[7m73[0m const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: string }[]; onRefresh: () => void; onReassign: (lead: IClassLead) => void }> = ({ lead, managers, onRefresh, onReassign }) => {
+[7m  [0m [91m                                                                                                                                                                   ~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m3[0m:[93m44[0m - [91merror[0m[90m TS6133: [0m'Card' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Table, TableHead, TableRow, TableCell, TableBody, Paper, useTheme, alpha, Avatar } from '@mui/material';
+[7m [0m [91m                                           ~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m3[0m:[93m50[0m - [91merror[0m[90m TS6133: [0m'CardContent' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Table, TableHead, TableRow, TableCell, TableBody, Paper, useTheme, alpha, Avatar } from '@mui/material';
+[7m [0m [91m                                                 ~~~~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m3[0m:[93m137[0m - [91merror[0m[90m TS6133: [0m'Avatar' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Grid, Card, CardContent, Table, TableHead, TableRow, TableCell, TableBody, Paper, useTheme, alpha, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                                                                        ~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m16[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'PeopleIcon' is declared but its value is never read.
+
+[7m16[0m import PeopleIcon from '@mui/icons-material/People';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m19[0m:[93m86[0m - [91merror[0m[90m TS6133: [0m'BarChart' is declared but its value is never read.
+
+[7m19[0m import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+[7m  [0m [91m                                                                                     ~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m19[0m:[93m96[0m - [91merror[0m[90m TS6133: [0m'Bar' is declared but its value is never read.
+
+[7m19[0m import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+[7m  [0m [91m                                                                                               ~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m146[0m:[93m123[0m - [91merror[0m[90m TS2322: [0mType '{ title: string; value: number; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+
+[7m146[0m                     <MetricsCard title="Leads Generated" value={metrics.classLeadsCreated ?? 0} icon={<AssignmentIcon />} gradient="linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)" />
+[7m   [0m [91m                                                                                                                          ~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m149[0m:[93m113[0m - [91merror[0m[90m TS2322: [0mType '{ title: string; value: number; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+
+[7m149[0m                     <MetricsCard title="Conversions" value={metrics.classesConverted ?? 0} icon={<ClassIcon />} gradient="linear-gradient(135deg, #10B981 0%, #059669 100%)" />
+[7m   [0m [91m                                                                                                                ~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m152[0m:[93m148[0m - [91merror[0m[90m TS2322: [0mType '{ title: string; value: string; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+
+[7m152[0m                     <MetricsCard title="Total Revenue" value={`Ôé╣${Number(metrics.revenueGenerated || 0).toLocaleString()}`} icon={<PaymentIcon />} gradient="linear-gradient(135deg, #F59E0B 0%, #D97706 100%)" />
+[7m   [0m [91m                                                                                                                                                   ~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m155[0m:[93m126[0m - [91merror[0m[90m TS2322: [0mType '{ title: string; value: string; icon: Element; gradient: string; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'gradient' does not exist on type 'IntrinsicAttributes & Props'.
+
+[7m155[0m                     <MetricsCard title="Conversion Rate" value={`${metrics.conversionRate ?? 0}%`} icon={<TrendingUpIcon />} gradient="linear-gradient(135deg, #EC4899 0%, #DB2777 100%)" />
+[7m   [0m [91m                                                                                                                             ~~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m194[0m:[93m27[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Stack'.
+
+[7m194[0m                          <Stack spacing={3}>
+[7m   [0m [91m                          ~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m201[0m:[93m31[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Divider'.
+
+[7m201[0m                              <Divider />
+[7m   [0m [91m                              ~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m208[0m:[93m31[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Divider'.
+
+[7m208[0m                              <Divider />
+[7m   [0m [91m                              ~~~~~~~[0m
+
+[96msrc/pages/manager/ManagerAnalyticsPage.tsx[0m:[93m215[0m:[93m28[0m - [91merror[0m[90m TS2304: [0mCannot find name 'Stack'.
+
+[7m215[0m                          </Stack>
+[7m   [0m [91m                           ~~~~~[0m
+
+[96msrc/pages/parent/ParentDashboardPage.tsx[0m:[93m44[0m:[93m10[0m - [91merror[0m[90m TS6133: [0m'primaryTutorId' is declared but its value is never read.
+
+[7m44[0m   const [primaryTutorId, setPrimaryTutorId] = useState<string | null>(null);
+[7m  [0m [91m         ~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/parent/ParentPaymentsPage.tsx[0m:[93m12[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'IconButton' is declared but its value is never read.
+
+[7m12[0m   IconButton,
+[7m  [0m [91m  ~~~~~~~~~~[0m
+
+[96msrc/pages/parent/ParentPaymentsPage.tsx[0m:[93m35[0m:[93m24[0m - [91merror[0m[90m TS6133: [0m'setIsProcessing' is declared but its value is never read.
+
+[7m35[0m   const [isProcessing, setIsProcessing] = useState(false);
+[7m  [0m [91m                       ~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/public/TutorPublicProfilePage.tsx[0m:[93m8[0m:[93m8[0m - [91merror[0m[90m TS2613: [0mModule '"C:/Users/Rhydham/Desktop/projects/ys-final/v3/web-app/frontend/src/components/tutors/TutorLeadNavbar"' has no default export. Did you mean to use 'import { TutorLeadNavbar } from "C:/Users/Rhydham/Desktop/projects/ys-final/v3/web-app/frontend/src/components/tutors/TutorLeadNavbar"' instead?
+
+[7m8[0m import TutorLeadNavbar from '../../components/tutors/TutorLeadNavbar';
+[7m [0m [91m       ~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/student/StudentAttendancePage.tsx[0m:[93m6[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'EventIcon' is declared but its value is never read.
+
+[7m6[0m import EventIcon from '@mui/icons-material/Event';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/student/StudentClassesPage.tsx[0m:[93m7[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'SchoolIcon' is declared but its value is never read.
+
+[7m7[0m import SchoolIcon from '@mui/icons-material/School';
+[7m [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/student/StudentTestDetailPage.tsx[0m:[93m29[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'id' is declared but its value is never read.
+
+[7m29[0m   const { id } = useParams<{ id: string }>();
+[7m  [0m [91m        ~~~~~~[0m
+
+[96msrc/pages/tutors/TutorDashboardPage.tsx[0m:[93m63[0m:[93m38[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m63[0m         const subjectsEmpty = !tutor.subjects || tutor.subjects.length === 0;
+[7m  [0m [91m                                     ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorDashboardPage.tsx[0m:[93m63[0m:[93m56[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m63[0m         const subjectsEmpty = !tutor.subjects || tutor.subjects.length === 0;
+[7m  [0m [91m                                                       ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorDashboardPage.tsx[0m:[93m113[0m:[93m58[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m113[0m   const isProfileComplete = tutorProfile && tutorProfile.subjects?.length > 0;
+[7m   [0m [91m                                                         ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorDashboardPage.tsx[0m:[93m348[0m:[93m20[0m - [91merror[0m[90m TS2304: [0mCannot find name 'TodayScheduleCard'.
+
+[7m348[0m                   <TodayScheduleCard />
+[7m   [0m [91m                   ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorDashboardPage.tsx[0m:[93m376[0m:[93m22[0m - [91merror[0m[90m TS2304: [0mCannot find name 'TodayScheduleCard'.
+
+[7m376[0m                     <TodayScheduleCard />
+[7m   [0m [91m                     ~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorLeadsPage.tsx[0m:[93m4[0m:[93m42[0m - [91merror[0m[90m TS6133: [0m'Stack' is declared but its value is never read.
+
+[7m4[0m   Chip, alpha, CircularProgress, Avatar, Stack,
+[7m [0m [91m                                         ~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m10[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'Button' is declared but its value is never read.
+
+[7m10[0m   Button,
+[7m  [0m [91m  ~~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m13[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'TextField' is declared but its value is never read.
+
+[7m13[0m   TextField,
+[7m  [0m [91m  ~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m14[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'Dialog' is declared but its value is never read.
+
+[7m14[0m   Dialog,
+[7m  [0m [91m  ~~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m15[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'DialogTitle' is declared but its value is never read.
+
+[7m15[0m   DialogTitle,
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m16[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'DialogContent' is declared but its value is never read.
+
+[7m16[0m   DialogContent,
+[7m  [0m [91m  ~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m17[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'DialogActions' is declared but its value is never read.
+
+[7m17[0m   DialogActions,
+[7m  [0m [91m  ~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m19[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'Stack' is declared but its value is never read.
+
+[7m19[0m   Stack,
+[7m  [0m [91m  ~~~~~[0m
+
+[96msrc/pages/tutors/TutorNotesPage.tsx[0m:[93m24[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'CreateNewFolderIcon' is declared but its value is never read.
+
+[7m24[0m import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m3[0m:[93m199[0m - [91merror[0m[90m TS6133: [0m'Divider' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Autocomplete, Chip, alpha, useTheme, Grid, Paper, Tabs, Tab, IconButton, Divider, Checkbox, Stack, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                                                                                                                                      ~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m3[0m:[93m218[0m - [91merror[0m[90m TS6133: [0m'Stack' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Autocomplete, Chip, alpha, useTheme, Grid, Paper, Tabs, Tab, IconButton, Divider, Checkbox, Stack, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                                                                                                                                                         ~~~~~[0m
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m3[0m:[93m225[0m - [91merror[0m[90m TS6133: [0m'Avatar' is declared but its value is never read.
+
+[7m3[0m import { Container, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Autocomplete, Chip, alpha, useTheme, Grid, Paper, Tabs, Tab, IconButton, Divider, Checkbox, Stack, Avatar } from '@mui/material';
+[7m [0m [91m                                                                                                                                                                                                                                ~~~~~~[0m
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m11[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'PersonIcon' is declared but its value is never read.
+
+[7m11[0m import PersonIcon from '@mui/icons-material/Person';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m83[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'theme' is declared but its value is never read.
+
+[7m83[0m   const theme = useTheme();
+[7m  [0m [91m        ~~~~~[0m
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m394[0m:[93m64[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m394[0m                 const hasSubjects = Array.isArray(tutorProfile.subjects) && tutorProfile.subjects.length > 0;
+[7m   [0m [91m                                                               ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorProfilePage.tsx[0m:[93m394[0m:[93m90[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m394[0m                 const hasSubjects = Array.isArray(tutorProfile.subjects) && tutorProfile.subjects.length > 0;
+[7m   [0m [91m                                                                                         ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorTimetablePage.tsx[0m:[93m33[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'TodayIcon' is declared but its value is never read.
+
+[7m33[0m import TodayIcon from '@mui/icons-material/Today';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorTimetablePage.tsx[0m:[93m35[0m:[93m1[0m - [91merror[0m[90m TS6133: [0m'SchoolIcon' is declared but its value is never read.
+
+[7m35[0m import SchoolIcon from '@mui/icons-material/School';
+[7m  [0m [91m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m1[0m:[93m51[0m - [91merror[0m[90m TS6133: [0m'useRef' is declared but its value is never read.
+
+[7m1[0m import React, { useEffect, useState, useCallback, useRef } from 'react';
+[7m [0m [91m                                                  ~~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m17[0m:[93m5[0m - [91merror[0m[90m TS6133: [0m'Tabs' is declared but its value is never read.
+
+[7m17[0m     Tabs,
+[7m  [0m [91m    ~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m18[0m:[93m5[0m - [91merror[0m[90m TS6133: [0m'Tab' is declared but its value is never read.
+
+[7m18[0m     Tab,
+[7m  [0m [91m    ~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m25[0m:[93m5[0m - [91merror[0m[90m TS6133: [0m'Card' is declared but its value is never read.
+
+[7m25[0m     Card,
+[7m  [0m [91m    ~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m26[0m:[93m5[0m - [91merror[0m[90m TS6133: [0m'CardContent' is declared but its value is never read.
+
+[7m26[0m     CardContent,
+[7m  [0m [91m    ~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m84[0m:[93m11[0m - [91merror[0m[90m TS6133: [0m'theme' is declared but its value is never read.
+
+[7m84[0m     const theme = useTheme();
+[7m  [0m [91m          ~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m89[0m:[93m12[0m - [91merror[0m[90m TS6133: [0m'tabValue' is declared but its value is never read.
+
+[7m89[0m     const [tabValue, setTabValue] = useState(0);
+[7m  [0m [91m           ~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m123[0m:[93m11[0m - [91merror[0m[90m TS6133: [0m'handleTabChange' is declared but its value is never read.
+
+[7m123[0m     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+[7m   [0m [91m          ~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m244[0m:[93m36[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m244[0m                             {tutor.subjects && tutor.subjects.length > 0 ? (
+[7m   [0m [91m                                   ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m244[0m:[93m54[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m244[0m                             {tutor.subjects && tutor.subjects.length > 0 ? (
+[7m   [0m [91m                                                     ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m245[0m:[93m39[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m245[0m                                 tutor.subjects.map((subj, index) => (
+[7m   [0m [91m                                      ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m245[0m:[93m53[0m - [91merror[0m[90m TS7006: [0mParameter 'subj' implicitly has an 'any' type.
+
+[7m245[0m                                 tutor.subjects.map((subj, index) => (
+[7m   [0m [91m                                                    ~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationDetailsPage.tsx[0m:[93m245[0m:[93m59[0m - [91merror[0m[90m TS7006: [0mParameter 'index' implicitly has an 'any' type.
+
+[7m245[0m                                 tutor.subjects.map((subj, index) => (
+[7m   [0m [91m                                                          ~~~~~[0m
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m127[0m:[93m46[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m127[0m               <strong>Subjects:</strong> {(t.subjects || []).join(', ') || '-'}
+[7m   [0m [91m                                             ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m629[0m:[93m70[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m629[0m                         <Typography variant="body2" noWrap title={(t.subjects || []).join(', ')}>
+[7m   [0m [91m                                                                     ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m630[0m:[93m31[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m630[0m                           {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+[7m   [0m [91m                              ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m630[0m:[93m74[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m630[0m                           {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+[7m   [0m [91m                                                                         ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m702[0m:[93m72[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m702[0m                           <Typography variant="body2" noWrap title={(t.subjects || []).join(', ')}>
+[7m   [0m [91m                                                                       ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m703[0m:[93m33[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m703[0m                             {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+[7m   [0m [91m                                ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/pages/tutors/TutorVerificationPage.tsx[0m:[93m703[0m:[93m76[0m - [91merror[0m[90m TS2551: [0mProperty 'subjects' does not exist on type 'ITutor'. Did you mean 'subject'?
+
+[7m703[0m                             {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+[7m   [0m [91m                                                                           ~~~~~~~~[0m
+
+  [96msrc/types/index.ts[0m:[93m97[0m:[93m3[0m
+    [7m97[0m   subject: string[];
+    [7m  [0m [96m  ~~~~~~~[0m
+    'subject' is declared here.
+
+[96msrc/services/adminService.ts[0m:[93m3[0m:[93m67[0m - [91merror[0m[90m TS6133: [0m'IUser' is declared but its value is never read.
+
+[7m3[0m import { ApiResponse, PaginatedResponse, IAdmin, IAdminAnalytics, IUser, IAdvancedAnalytics } from '../types';
+[7m [0m [91m                                                                  ~~~~~[0m
+
+
+Found 223 errors in 74 files.
+
+Errors  Files
+     1  src/components/admin/CoordinatorVerificationModal.tsx[90m:22[0m
+     2  src/components/attendance/AttendanceApprovalCard.tsx[90m:1[0m
+     1  src/components/attendance/AttendanceStatusChip.tsx[90m:1[0m
+     1  src/components/attendance/RejectAttendanceModal.tsx[90m:1[0m
+     5  src/components/classLeads/ClassLeadForm.tsx[90m:9[0m
+     1  src/components/classLeads/ClassLeadStatusChip.tsx[90m:1[0m
+     2  src/components/classLeads/StatusTimeline.tsx[90m:18[0m
+     1  src/components/common/ChangePasswordOtpModal.tsx[90m:38[0m
+     1  src/components/common/ErrorBoundary.tsx[90m:1[0m
+     1  src/components/coordinator/ClassDetailCard.tsx[90m:30[0m
+     2  src/components/coordinator/TaskCard.tsx[90m:14[0m
+     2  src/components/dashboard/ConversionFunnelChart.tsx[90m:2[0m
+     5  src/components/dashboard/DateWiseLeadsChart.tsx[90m:2[0m
+     1  src/components/dashboard/RoleDistributionChart.tsx[90m:57[0m
+     1  src/components/layout/Header.tsx[90m:27[0m
+     1  src/components/layout/NotificationsPanel.tsx[90m:1[0m
+     1  src/components/payments/CreatePaymentModal.tsx[90m:18[0m
+     1  src/components/payments/PaymentHistoryTable.tsx[90m:1[0m
+     1  src/components/tutors/AttendanceSheet.tsx[90m:36[0m
+     3  src/components/tutors/CompletedLeadsTable.tsx[90m:5[0m
+     1  src/components/tutors/DocumentViewer.tsx[90m:1[0m
+     1  src/components/tutors/FeedbackPerformanceCard.tsx[90m:157[0m
+     2  src/components/tutors/MUIProfileCard.tsx[90m:1[0m
+    10  src/components/tutors/MyClassesCard.tsx[90m:38[0m
+     1  src/components/tutors/NotificationsCenterCard.tsx[90m:32[0m
+     1  src/components/tutors/PaymentsEarningsCard.tsx[90m:431[0m
+     2  src/components/tutors/TodayScheduleCard.tsx[90m:2[0m
+     2  src/components/tutors/TutorAdvancedAnalyticsCards.tsx[90m:6[0m
+    34  src/components/tutors/TutorLeadForm.tsx[90m:251[0m
+     1  src/components/tutors/TutorProfileOverviewCard.tsx[90m:18[0m
+     2  src/components/tutors/TutorTierProgressCard.tsx[90m:2[0m
+     1  src/components/tutors/UpcomingTestsCard.tsx[90m:176[0m
+     1  src/components/tutors/VerificationModal.tsx[90m:1[0m
+     1  src/components/tutors/VerificationStatusChip.tsx[90m:1[0m
+     3  src/components/ui/calendar.tsx[90m:3[0m
+     1  src/components/ui/carousel.tsx[90m:4[0m
+     1  src/components/ui/chart.tsx[90m:210[0m
+     1  src/components/ui/drawer.tsx[90m:2[0m
+     2  src/components/ui/input-otp.tsx[90m:2[0m
+     1  src/components/ui/resizable.tsx[90m:2[0m
+     1  src/components/ui/sidebar.tsx[90m:6[0m
+     1  src/components/ui/sonner.tsx[90m:1[0m
+     5  src/components/ui/toaster.tsx[90m:1[0m
+     1  src/components/ui/use-toast.ts[90m:1[0m
+     1  src/pages/admin/ApprovalsManagementPage.tsx[90m:35[0m
+     1  src/pages/admin/CoordinatorVerificationPage.tsx[90m:6[0m
+     3  src/pages/auth/ParentLoginPage.tsx[90m:2[0m
+     1  src/pages/classLeads/ClassLeadDetailPage.tsx[90m:833[0m
+     1  src/pages/classLeads/CreateClassLeadPage.tsx[90m:2[0m
+     2  src/pages/coordinator/AttendanceApprovalPage.tsx[90m:27[0m
+    10  src/pages/coordinator/CoordinatorDashboardPage.tsx[90m:2[0m
+     1  src/pages/coordinator/CoordinatorSettingsPage.tsx[90m:5[0m
+     1  src/pages/coordinator/CoordinatorStudentProfilePage.tsx[90m:6[0m
+     2  src/pages/coordinator/SendAnnouncementPage.tsx[90m:80[0m
+     6  src/pages/coordinator/TestReportAnalysisPage.tsx[90m:6[0m
+     7  src/pages/coordinator/TodayTasksPage.tsx[90m:3[0m
+     4  src/pages/coordinator/TutorPerformancePage.tsx[90m:1[0m
+     5  src/pages/manager/CoordinatorsPage.tsx[90m:3[0m
+     2  src/pages/manager/LeadCRMPage.tsx[90m:44[0m
+    14  src/pages/manager/ManagerAnalyticsPage.tsx[90m:3[0m
+     1  src/pages/parent/ParentDashboardPage.tsx[90m:44[0m
+     2  src/pages/parent/ParentPaymentsPage.tsx[90m:12[0m
+     1  src/pages/public/TutorPublicProfilePage.tsx[90m:8[0m
+     1  src/pages/student/StudentAttendancePage.tsx[90m:6[0m
+     1  src/pages/student/StudentClassesPage.tsx[90m:7[0m
+     1  src/pages/student/StudentTestDetailPage.tsx[90m:29[0m
+     5  src/pages/tutors/TutorDashboardPage.tsx[90m:63[0m
+     1  src/pages/tutors/TutorLeadsPage.tsx[90m:4[0m
+     8  src/pages/tutors/TutorNotesPage.tsx[90m:10[0m
+     7  src/pages/tutors/TutorProfilePage.tsx[90m:3[0m
+     2  src/pages/tutors/TutorTimetablePage.tsx[90m:33[0m
+    13  src/pages/tutors/TutorVerificationDetailsPage.tsx[90m:1[0m
+     7  src/pages/tutors/TutorVerificationPage.tsx[90m:127[0m
+     1  src/services/adminService.ts[90m:3[0m

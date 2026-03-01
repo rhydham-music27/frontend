@@ -11,6 +11,7 @@ import {
     Link,
     Stack,
     TextField,
+    MenuItem,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -38,6 +39,8 @@ const ClassAttendanceSheetPage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
+    const [sheetNo, setSheetNo] = useState<number>(1);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
     const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
 
@@ -161,6 +164,25 @@ const ClassAttendanceSheetPage: React.FC = () => {
                             onChange={(e) => setSelectedMonth(e.target.value)}
                             sx={{ width: 160 }}
                         />
+                        <TextField
+                            select
+                            size="small"
+                            label="Sessions/Page"
+                            value={rowsPerPage}
+                            onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                            sx={{ width: 140 }}
+                        >
+                            <MenuItem value={10}>10 Sessions</MenuItem>
+                            <MenuItem value={20}>20 Sessions</MenuItem>
+                        </TextField>
+                        <TextField
+                            type="number"
+                            size="small"
+                            label="Sheet No."
+                            value={sheetNo}
+                            onChange={(e) => setSheetNo(Number(e.target.value))}
+                            sx={{ width: 100 }}
+                        />
                         <Button
                             variant="contained"
                             startIcon={<DownloadIcon />}
@@ -195,7 +217,8 @@ const ClassAttendanceSheetPage: React.FC = () => {
                         tutorData={sheetTutorData}
                         classInfo={sheetClassInfo}
                         range={sheetRange}
-                        sheetNo={1}
+                        sheetNo={sheetNo}
+                        rowsPerPage={rowsPerPage}
                     />
                 </Box>
             )}

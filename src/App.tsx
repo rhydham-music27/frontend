@@ -33,6 +33,9 @@ import ManagerProfilePage from "./pages/manager/ManagerProfilePage";
 import ManagerVerificationPage from "./pages/manager/ManagerVerificationPage";
 import CoordinatorDashboardPage from "./pages/coordinator/CoordinatorDashboardPage";
 import AssignedClassesPage from "./pages/coordinator/AssignedClassesPage";
+import ClassDetailPage from "./pages/coordinator/ClassDetailPage";
+import CoordinatorAttendancePage from "./pages/coordinator/CoordinatorAttendancePage";
+import CoordinatorPaymentsPage from "./pages/coordinator/CoordinatorPaymentsPage";
 import AttendanceApprovalPage from "./pages/coordinator/AttendanceApprovalPage";
 import TestSchedulingPage from "./pages/coordinator/TestSchedulingPage";
 import SendAnnouncementPage from "./pages/coordinator/SendAnnouncementPage";
@@ -316,6 +319,30 @@ const App: React.FC = () => {
                 }
               />
               <Route
+                path="classes/:classId"
+                element={
+                  <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                    <ClassDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="coordinator/attendance/:classId"
+                element={
+                  <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                    <CoordinatorAttendancePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="coordinator/payments/:classId"
+                element={
+                  <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                    <CoordinatorPaymentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="attendance-approvals"
                 element={
                   <ProtectedRoute
@@ -395,6 +422,7 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              
               <Route
                 path="admin-dashboard"
                 element={

@@ -248,17 +248,6 @@ export default function ClassLeadDetailPage() {
     setSelectedCoordinatorId('');
   };
 
-  const handleRejectDemo = async () => {
-    if (!id) return;
-    const reason = window.prompt('Enter rejection reason (optional):') || undefined;
-    try {
-      await demoService.updateDemoStatus(id as string, DEMO_STATUS.REJECTED, undefined, reason);
-      await refetchAll();
-      setSnack({ open: true, message: 'Demo rejected', severity: 'success' });
-    } catch (e: any) {
-      handleError(e);
-    }
-  };
 
   const handleMarkPaymentReceived = async () => {
     if (!id) return;
@@ -290,14 +279,14 @@ export default function ClassLeadDetailPage() {
   const demoDetailsToShow: any = (classLead as any).demoDetails ||
     (latestDemoFromHistory
       ? {
-          demoStatus: (latestDemoFromHistory as any).status,
-          demoDate: (latestDemoFromHistory as any).demoDate,
-          demoTime: (latestDemoFromHistory as any).demoTime,
-          notes: (latestDemoFromHistory as any).notes,
-          feedback: (latestDemoFromHistory as any).feedback,
-          rejectionReason: (latestDemoFromHistory as any).rejectionReason,
-          completedAt: (latestDemoFromHistory as any).completedAt,
-        }
+        demoStatus: (latestDemoFromHistory as any).status,
+        demoDate: (latestDemoFromHistory as any).demoDate,
+        demoTime: (latestDemoFromHistory as any).demoTime,
+        notes: (latestDemoFromHistory as any).notes,
+        feedback: (latestDemoFromHistory as any).feedback,
+        rejectionReason: (latestDemoFromHistory as any).rejectionReason,
+        completedAt: (latestDemoFromHistory as any).completedAt,
+      }
       : null);
 
   const demoTutorToShow: any = (classLead as any).demoTutor || (latestDemoFromHistory as any)?.tutor || null;

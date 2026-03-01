@@ -7,12 +7,13 @@ import PermissionDeniedDialog from '../common/PermissionDeniedDialog';
 import TutorBottomNav from '../tutors/TutorBottomNav';
 import { useSelector, useDispatch } from 'react-redux';
 import { hidePermissionDenied, selectPermissionDeniedOpen, selectSidebarWidth, setSidebarWidth } from '../../store/slices/uiSlice';
-import { selectCurrentUser, setAcceptedTerms } from '../../store/slices/authSlice';
+import { selectCurrentUser, setAcceptedTerms, updateUser } from '../../store/slices/authSlice';
 import TermsAndConditionsModal from '../common/TermsAndConditionsModal';
 import WhatsAppCommunityModal from '../common/WhatsAppCommunityModal';
 import ManagerProfileCompletionModal from '../manager/ManagerProfileCompletionModal';
 import { acceptTerms, } from '../../services/authService';
 import { expressInterest } from '../../services/announcementService';
+import { updateMyProfile } from '../../services/tutorService';
 import { useOptions } from '../../hooks/useOptions';
 import { toast } from 'sonner';
 import { USER_ROLES, TEACHING_MODE } from '../../constants';
@@ -164,7 +165,16 @@ const MainLayout: React.FC = () => {
       />
       <WhatsAppCommunityModal
         open={showWhatsapp}
-        onConfirm={() => setWhatsappConfirmed(true)}
+        onConfirm={async () => {
+          try {
+            await updateMyProfile({ whatsappCommunityJoined: true } as any);
+            dispatch(updateUser({ whatsappCommunityJoined: true }));
+            setWhatsappConfirmed(true);
+            toast.success('Community status updated');
+          } catch (err: any) {
+            toast.error(err?.response?.data?.message || err?.message || 'Failed to update community status');
+          }
+        }}
         link={communityLink}
       />
       <TermsAndConditionsModal

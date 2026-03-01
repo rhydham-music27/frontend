@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Container, Box, Typography, Grid, Button, Chip } from '@mui/material';
+import RenewClassModal from '../../components/classes/RenewClassModal';
+import finalClassService from '../../services/finalClassService';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -29,6 +31,34 @@ const AttendanceApprovalPage: React.FC = () => {
     severity: 'success' | 'error' | 'info';
   }>({ open: false, message: '', severity: 'success' });
   const [pendingSheets, setPendingSheets] = useState<IAttendanceSheet[]>([]);
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [renewClassId, setRenewClassId] = useState<string | null>(null);
+
+  const handleOpenRenewModal = (classId: string) => {
+    setRenewClassId(classId);
+    setRenewModalOpen(true);
+  };
+
+  const handleCloseRenewModal = () => {
+    setRenewModalOpen(false);
+    setRenewClassId(null);
+  };
+
+  const handleRenewClass = async (payload: { monthlyFee: number; sessionsPerMonth: number }) => {
+    if (!renewClassId) return;
+    setLoading(true);
+    try {
+      await finalClassService.renewClass(renewClassId, payload);
+      setSnackbar({ open: true, message: 'Class renewed successfully', severity: 'success' });
+      const res = await getCoordinatorPendingSheets();
+      setPendingSheets(res.data || []);
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e?.message || 'Failed to renew class', severity: 'error' });
+    } finally {
+      setLoading(false);
+      handleCloseRenewModal();
+    }
+  };
   const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
   const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
   const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
@@ -358,6 +388,21 @@ const AttendanceApprovalPage: React.FC = () => {
                     >
                       Approve
                     </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="primary"
+                      onClick={() => handleOpenRenewModal(sheet.finalClass?.id || sheet.finalClass?._id || '')}
+                      disabled={loading}
+                      sx={{ ml: 1 }}
+                    >
+                      Renew
+                    </Button>
+                        <RenewClassModal
+                          open={renewModalOpen}
+                          onClose={handleCloseRenewModal}
+                          onRenew={handleRenewClass}
+                        />
                   </Box>
                 </Box>
                 );

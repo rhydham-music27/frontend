@@ -378,7 +378,12 @@ const TutorTestsPage: React.FC = () => {
       <Grid container spacing={3}>
         {filteredTests.map((t) => {
           const testId = (t as any).id || (t as any)._id;
-          const hasCoordinator = Boolean((t as any).finalClass?.coordinator);
+          const finalClassAny: any = (t as any).finalClass;
+          const hasCoordinator = Boolean(
+            finalClassAny?.coordinator ||
+            finalClassAny?.coordinatorId ||
+            (typeof finalClassAny?.coordinator === 'string' && finalClassAny.coordinator.trim())
+          );
           const classDurationHours = (t as any).finalClass?.classLead?.classDurationHours as number | undefined;
           const marksValue = marksMap[String(testId)] || '';
           return (

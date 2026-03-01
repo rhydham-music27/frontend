@@ -6,6 +6,7 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import ClassDetailCard from '../../components/coordinator/ClassDetailCard';
+import AssignedClassesTable from '../../components/coordinator/AssignedClassesTable';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
@@ -19,9 +20,9 @@ const AssignedClassesPage: React.FC = () => {
   const [classes, setClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<{ status?: string; subject?: string; grade?: string; page: number; limit: number; sortBy?: string; sortOrder?: 'asc' | 'desc' }>({ page: 1, limit: 9 });
+  const [filters, setFilters] = useState<{ status?: string; subject?: string; grade?: string; page: number; limit: number; sortBy?: string; sortOrder?: 'asc' | 'desc' }>({ page: 1, limit: 25 });
   const [pagination, setPagination] = useState<{ total: number; pages: number }>({ total: 0, pages: 0 });
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('table');
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'success' });
   const navigate = useNavigate();
 
@@ -88,7 +89,15 @@ const AssignedClassesPage: React.FC = () => {
       setSnackbar({ open: true, message: msg, severity: 'error' });
     }
   };
-  const handleToggleView = () => setViewMode((v) => (v === 'grid' ? 'list' : 'grid'));
+  const handleToggleView = () => setViewMode((v) => {
+    if (v === 'table') return 'grid';
+    if (v === 'grid') return 'list';
+    return 'table';
+  });
+
+  // Table action handlers
+  const handleOpenAttendance = (_classId: string) => navigate(`/attendance-approvals`);
+  const handleOpenPayments = (_classId: string) => navigate(`/payment-tracking`);
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -241,7 +250,13 @@ const AssignedClassesPage: React.FC = () => {
         </Box>
       ) : (
         <>
-          {viewMode === 'list' ? (
+          {viewMode === 'table' ? (
+            <AssignedClassesTable
+              classes={classes}
+              onOpenAttendance={handleOpenAttendance}
+              onOpenPayments={handleOpenPayments}
+            />
+          ) : viewMode === 'list' ? (
             <Stack spacing={2}>
               {classes.map((cls, index) => (
                 <Grow in={true} timeout={300 + index * 50} key={cls.id}>

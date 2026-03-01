@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { 
+import {
   Container,
-  Box, 
-  Typography, 
-  Grid, 
-  TextField, 
-  MenuItem, 
-  Button, 
-  Stack, 
-  Divider, 
-  Autocomplete, 
-  Tabs, 
-  Tab, 
+  Box,
+  Typography,
+  Grid,
+  TextField,
+  MenuItem,
+  Button,
+  Stack,
+  Divider,
+  Autocomplete,
+  Tabs,
+  Tab,
   Paper,
   InputAdornment,
   alpha,
@@ -39,15 +39,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DescriptionIcon from '@mui/icons-material/Description';
+import ShieldCheckIcon from '@mui/icons-material/Shield';
 
 export default function PaymentsListPage() {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   const [filters, setFilters] = useState<{ status?: string; tutorId?: string; finalClassId?: string; fromDate?: string; toDate?: string; page: number; limit: number; paymentType?: string }>({ page: 1, limit: 10, paymentType: PAYMENT_TYPE.FEES_COLLECTED });
   const { payments, loading, error, pagination, updateStatus, statistics, fetchStatistics, refetch } = usePayments(filters);
   const { options: paymentStatusOptions } = useOptions('PAYMENT_STATUS');
-  
+
   const [selected, setSelected] = useState<IPayment | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -66,11 +67,14 @@ export default function PaymentsListPage() {
     let type = PAYMENT_TYPE.FEES_COLLECTED as string;
     if (newValue === 1) type = PAYMENT_TYPE.TUTOR_PAYOUT;
     if (newValue === 2) type = PAYMENT_TYPE.MISCELLANEOUS;
-    
+    if (newValue === 3) type = PAYMENT_TYPE.TUTOR_VERIFICATION_FEES;
+
     setFilters(prev => ({
       ...prev,
       page: 1,
       paymentType: type,
+      tutorId: undefined, // Clear other specific filters when changing tabs to avoid conflicting views
+      finalClassId: undefined,
     }));
   };
 
@@ -80,17 +84,17 @@ export default function PaymentsListPage() {
   }, [filters.fromDate, filters.toDate, filters.tutorId]);
 
   const handleUpdateClick = (p: IPayment) => { setSelected(p); setModalOpen(true); };
-  
+
   const handleUpdateSubmit = async (payload: { status: string; paymentMethod?: string; transactionId?: string; notes?: string }) => {
     if (!selected) return;
     try {
-        const paymentId = selected.id || (selected as any)._id;
-        await updateStatus(paymentId, payload);
-        setSnack({ open: true, message: 'Payment updated', severity: 'success' });
-        setModalOpen(false);
-        setSelected(null);
-    } catch(e: any) {
-        setSnack({ open: true, message: e.message || 'Update failed', severity: 'error' });
+      const paymentId = selected.id || (selected as any)._id;
+      await updateStatus(paymentId, payload);
+      setSnack({ open: true, message: 'Payment updated', severity: 'success' });
+      setModalOpen(false);
+      setSelected(null);
+    } catch (e: any) {
+      setSnack({ open: true, message: e.message || 'Update failed', severity: 'error' });
     }
   };
 
@@ -118,9 +122,9 @@ export default function PaymentsListPage() {
       const subject = Array.isArray(fc.subject)
         ? fc.subject.join(', ')
         : (fc.subject || '');
-      
+
       let classLabel = subject ? `${name} • ${subject}` : name;
-      
+
       // If payment is for a monthly sheet, append the period
       if (p.attendanceSheet?.periodLabel) {
         classLabel = `${classLabel} (${p.attendanceSheet.periodLabel})`;
@@ -194,8 +198,8 @@ export default function PaymentsListPage() {
   return (
     <Container maxWidth="xl" sx={{ pb: 5 }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #00695C 0%, #004D40 100%)',
           color: 'white',
           pt: { xs: 4, md: 5 },
@@ -214,17 +218,17 @@ export default function PaymentsListPage() {
             Financial Management
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600 }}>
-             Overview of fees collected, tutor payouts, and transaction history.
+            Overview of fees collected, tutor payouts, and transaction history.
           </Typography>
         </Box>
 
         <Stack direction="row" spacing={2} sx={{ position: { md: 'absolute' }, top: 40, right: 32, zIndex: 1, mb: { xs: 2, md: 0 } }}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
-            sx={{ 
-              color: 'white', 
+            sx={{
+              color: 'white',
               borderColor: alpha('#fff', 0.5),
               fontWeight: 700,
               '&:hover': { borderColor: 'white', bgcolor: alpha('#fff', 0.1) }
@@ -232,13 +236,13 @@ export default function PaymentsListPage() {
           >
             Refresh
           </Button>
-          <Button 
-            variant="contained" 
-            color="secondary" 
+          <Button
+            variant="contained"
+            color="secondary"
             startIcon={<AddIcon />}
             onClick={() => setCreateModalOpen(true)}
-            sx={{ 
-              bgcolor: 'white', 
+            sx={{
+              bgcolor: 'white',
               color: '#004D40',
               fontWeight: 700,
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
@@ -254,19 +258,21 @@ export default function PaymentsListPage() {
           {[
             { label: 'Monthly fees collected', value: statistics?.monthly?.feesCollected, color: '#4caf50' },
             { label: 'Monthly tutor payout', value: statistics?.monthly?.tutorPayouts, color: '#f44336' },
-            { label: 'Monthly service charge', value: statistics?.monthly?.serviceCharge, color: '#03a9f4' },
-            { label: 'Miscellaneous expenses', value: statistics?.miscellaneous, color: '#ff9800' },
-            { label: 'Net profit', value: statistics?.netProfit, color: '#ffffff', isProfit: true },
+            { label: 'Service fees', value: statistics?.monthly?.serviceCharge, color: '#03a9f4' },
+            { label: 'Verification fees', value: statistics?.monthly?.verificationFees, color: '#9c27b0' },
+            { label: 'Final Revenue', value: statistics?.monthly?.finalRevenue, color: '#ffffff', isHighlight: true },
+            { label: 'Misc expenses', value: statistics?.miscellaneous, color: '#ff9800' },
+            { label: 'Service changes', value: statistics?.netProfit, color: '#ffffff', isProfit: true },
           ].map((stat, i) => (
-            <Grid item xs={6} sm={4} md={2.4} key={i}>
-              <Box sx={{ 
-                bgcolor: stat.isProfit ? 'rgba(255,255,255,0.15)' : 'transparent',
-                p: 1.5, 
+            <Grid item xs={6} sm={4} md={1.7} key={i}>
+              <Box sx={{
+                bgcolor: stat.isProfit || stat.isHighlight ? 'rgba(255,255,255,0.15)' : 'transparent',
+                p: 1.5,
                 borderRadius: 2,
-                border: stat.isProfit ? '1px solid rgba(255,255,255,0.3)' : 'none'
+                border: stat.isProfit || stat.isHighlight ? '1px solid rgba(255,255,255,0.3)' : 'none'
               }}>
-                <Typography variant="caption" sx={{ opacity: 0.8, display: 'block', mb: 0.5 }}>{stat.label}</Typography>
-                <Typography variant="h6" fontWeight={700}>₹{stat.value?.toLocaleString() ?? '0'}</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.8, display: 'block', mb: 0.5, whiteSpace: 'nowrap' }}>{stat.label}</Typography>
+                <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>₹{stat.value?.toLocaleString() ?? '0'}</Typography>
               </Box>
             </Grid>
           ))}
@@ -274,10 +280,10 @@ export default function PaymentsListPage() {
 
         {/* Tabs Integrated in Hero */}
         <Box sx={{ position: 'relative', zIndex: 1, mt: 2 }}>
-          <Tabs 
-            value={tabIndex} 
+          <Tabs
+            value={tabIndex}
             onChange={handleTabChange}
-             sx={{
+            sx={{
               '& .MuiTab-root': {
                 color: 'rgba(255,255,255,0.7)',
                 fontWeight: 600,
@@ -294,11 +300,12 @@ export default function PaymentsListPage() {
             <Tab icon={<CallReceivedIcon fontSize="small" />} iconPosition="start" label="Received (Fees)" />
             <Tab icon={<CallMadeIcon fontSize="small" />} iconPosition="start" label="Sent (Payouts)" />
             <Tab icon={<DescriptionIcon fontSize="small" />} iconPosition="start" label="Miscellaneous" />
+            <Tab icon={<ShieldCheckIcon fontSize="small" />} iconPosition="start" label="Verification Fees" />
           </Tabs>
         </Box>
 
-         {/* Background Shapes */}
-         <Box sx={{
+        {/* Background Shapes */}
+        <Box sx={{
           position: 'absolute',
           top: -30, right: -30,
           width: 300, height: 300,
@@ -313,21 +320,21 @@ export default function PaymentsListPage() {
       <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={3}>
-             <TextField 
-               select 
-               fullWidth
-               label="Status" 
-               size="small" 
-               value={filters.status || ''} 
-               onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value || undefined, page: 1 }))}
-               InputProps={{
-                 startAdornment: <InputAdornment position="start"><FilterListIcon fontSize="small" /></InputAdornment>
-               }}
-             >
-                <MenuItem value="">All Statuses</MenuItem>
-                {paymentStatusOptions.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                ))}
+            <TextField
+              select
+              fullWidth
+              label="Status"
+              size="small"
+              value={filters.status || ''}
+              onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value || undefined, page: 1 }))}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><FilterListIcon fontSize="small" /></InputAdornment>
+              }}
+            >
+              <MenuItem value="">All Statuses</MenuItem>
+              {paymentStatusOptions.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+              ))}
             </TextField>
           </Grid>
           <Grid item xs={12} md={3}>
@@ -336,7 +343,7 @@ export default function PaymentsListPage() {
               getOptionLabel={(option) => option.label}
               value={classOptions.find((c) => c._id === filters.finalClassId) || null}
               onChange={(_, newVal) => setFilters((f) => ({ ...f, finalClassId: newVal?._id, page: 1 }))}
-              renderInput={(params) => <TextField {...params} label="Filter by Class" size="small" InputProps={{ ...params.InputProps, startAdornment: <><InputAdornment position="start"><SearchIcon fontSize="small"/></InputAdornment>{params.InputProps.startAdornment}</> }} />}
+              renderInput={(params) => <TextField {...params} label="Filter by Class" size="small" InputProps={{ ...params.InputProps, startAdornment: <><InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>{params.InputProps.startAdornment}</> }} />}
               isOptionEqualToValue={(option, value) => option._id === value._id}
             />
           </Grid>
@@ -347,7 +354,10 @@ export default function PaymentsListPage() {
             <TextField type="date" fullWidth label="To Date" size="small" InputLabelProps={{ shrink: true }} value={filters.toDate || ''} onChange={(e) => setFilters((f) => ({ ...f, toDate: e.target.value || undefined, page: 1 }))} />
           </Grid>
           <Grid item xs={12} md={2} display="flex" justifyContent="flex-end">
-             <Button variant="outlined" color="inherit" fullWidth onClick={() => setFilters({ page: 1, limit: 10 })}>Reset</Button>
+            <Button variant="outlined" color="inherit" fullWidth onClick={() => {
+              setTabIndex(0);
+              setFilters({ page: 1, limit: 10, paymentType: PAYMENT_TYPE.FEES_COLLECTED });
+            }}>Reset</Button>
           </Grid>
         </Grid>
       </Paper>
@@ -360,28 +370,28 @@ export default function PaymentsListPage() {
           <Stack spacing={0} divider={<Divider />}>
             {payments.map((p: IPayment | any) => (
               <Box key={(p as any).id || (p as any)._id} p={2}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="subtitle2" fontWeight={600}>{new Date(p.paymentDate || p.createdAt).toLocaleDateString()}</Typography>
-                    <PaymentStatusChip status={p.status} paymentType={p.paymentType} />
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="subtitle2" fontWeight={600}>{new Date(p.paymentDate || p.createdAt).toLocaleDateString()}</Typography>
+                  <PaymentStatusChip status={p.status} paymentType={p.paymentType} />
+                </Box>
+                <Box display="flex" justifyContent="space-between" mb={1}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">{p.finalClass?.studentName || (p.tutor?.name ? `Tutor: ${p.tutor.name}` : 'General')}</Typography>
+                    <Typography variant="caption" color="text.secondary">{(p.finalClass?.subject || []).join(', ') || p.paymentType}</Typography>
                   </Box>
-                  <Box display="flex" justifyContent="space-between" mb={1}>
-                     <Box>
-                       <Typography variant="body2" color="text.secondary">{p.finalClass?.studentName || (p.tutor?.name ? `Tutor: ${p.tutor.name}` : 'General')}</Typography>
-                       <Typography variant="caption" color="text.secondary">{(p.finalClass?.subject || []).join(', ') || p.paymentType}</Typography>
-                     </Box>
-                     <Typography variant="h6" color={p.paymentType === PAYMENT_TYPE.FEES_COLLECTED ? 'success.main' : 'error.main'}>
-                        {p.currency} {p.amount}
-                     </Typography>
+                  <Typography variant="h6" color={p.paymentType === PAYMENT_TYPE.FEES_COLLECTED ? 'success.main' : 'error.main'}>
+                    {p.currency} {p.amount}
+                  </Typography>
+                </Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                  <Typography variant="caption" sx={{ bgcolor: alpha(theme.palette.common.black, 0.05), px: 1, py: 0.5, borderRadius: 1 }}>{p.transactionId || 'No Txn ID'}</Typography>
+                  <Button size="small" variant="outlined" startIcon={<EditIcon />} onClick={() => handleUpdateClick(p)}>Edit</Button>
+                </Box>
+                {p.notes && (
+                  <Box mt={1}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>Note: {p.notes}</Typography>
                   </Box>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
-                     <Typography variant="caption" sx={{ bgcolor: alpha(theme.palette.common.black, 0.05), px: 1, py: 0.5, borderRadius: 1 }}>{p.transactionId || 'No Txn ID'}</Typography>
-                     <Button size="small" variant="outlined" startIcon={<EditIcon />} onClick={() => handleUpdateClick(p)}>Edit</Button>
-                  </Box>
-                  {p.notes && (
-                    <Box mt={1}>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>Note: {p.notes}</Typography>
-                    </Box>
-                  )}
+                )}
               </Box>
             ))}
           </Stack>
@@ -397,7 +407,7 @@ export default function PaymentsListPage() {
             onPaginationModelChange={(m: any) => setFilters((prev) => ({ ...prev, page: (m.page || 0) + 1 }))}
             disableRowSelectionOnClick
             autoHeight
-            sx={{ 
+            sx={{
               border: 'none',
               '& .MuiDataGrid-columnHeaders': {
                 bgcolor: alpha(theme.palette.primary.main, 0.05),

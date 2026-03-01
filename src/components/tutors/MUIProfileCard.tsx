@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box } from '@mui/material';
-import { 
-  User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock, 
-  FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles, 
-  BarChart2, ShieldCheck, Info, Heart, ExternalLink, CreditCard, Wallet, Handshake
+import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box, Tooltip } from '@mui/material';
+import {
+  User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock,
+  FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles,
+  BarChart2, ShieldCheck, Info, Heart, ExternalLink, CreditCard, Wallet, Handshake,
+  ShieldAlert
 } from 'lucide-react';
 import { ITutor } from '../../types';
 import { getMyProfile, uploadDocument, getTutorById, updateVerificationFeeStatus } from '../../services/tutorService';
+import { useAuth } from '../../hooks/useAuth';
+import { useEffect, useState } from 'react';
+
 
 interface MUIProfileCardProps {
   tutorId?: string;
 }
 
 const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
+  const { user: currentUser } = useAuth();
   const [tutor, setTutor] = useState<ITutor | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,10 +34,14 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
   // --- Verification Fee Logic ---
   const [feeModalOpen, setFeeModalOpen] = useState(false);
-  const [feeAction, setFeeAction] = useState<'PAY_NOW' | 'DEDUCT' | null>(null);
+  const [feeAction, setFeeAction] = useState<'PAY_NOW' | 'DEDUCT' | 'ADMIN_MARK_PAID' | null>(null);
   const [feeFile, setFeeFile] = useState<File | null>(null);
   const [submittingFee, setSubmittingFee] = useState(false);
   const [feeError, setFeeError] = useState<string | null>(null);
+
+  const isManager = Boolean(currentUser && currentUser.role === 'MANAGER');
+  const isTutorSelf = Boolean(!tutorId && currentUser && currentUser.role === 'TUTOR');
+  const VERIFICATION_FEE_AMOUNT = 500; // Matches backend constant
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -122,9 +130,9 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       setSelectedFile(null);
     } catch (e: any) {
       setUploadError(
-        e?.response?.data?.error || 
-        e?.response?.data?.message || 
-        e?.message || 
+        e?.response?.data?.error ||
+        e?.response?.data?.message ||
+        e?.message ||
         'Failed to upload profile image.'
       );
     } finally {
@@ -164,21 +172,21 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
   const handleUploadDocumentFile = async () => {
     if (!selectedDocumentFile || !selectedDocumentType) {
-        setDocumentUploadError('Please select a file.');
-        return;
+      setDocumentUploadError('Please select a file.');
+      return;
     }
     try {
-        setUploadingDocument(true);
-        setDocumentUploadError(null);
-        // Map frontend types to backend types if needed, or ensure they match
-        // In this case, 'DEGREE' was removed, others match enum in backend if consistent
-        const res = await uploadDocument((tutor as any).id || tutor._id, selectedDocumentType, selectedDocumentFile);
-        setTutor(res.data);
-        handleCloseDocumentModal();
+      setUploadingDocument(true);
+      setDocumentUploadError(null);
+      // Map frontend types to backend types if needed, or ensure they match
+      // In this case, 'DEGREE' was removed, others match enum in backend if consistent
+      const res = await uploadDocument((tutor as any).id || tutor._id, selectedDocumentType, selectedDocumentFile);
+      setTutor(res.data);
+      handleCloseDocumentModal();
     } catch (e: any) {
-        setDocumentUploadError(e?.response?.data?.message || 'Failed to upload document.');
+      setDocumentUploadError(e?.response?.data?.message || 'Failed to upload document.');
     } finally {
-        setUploadingDocument(false);
+      setUploadingDocument(false);
     }
   };
 
@@ -195,27 +203,38 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
 
   const handleFeeSubmit = async () => {
-    if (!tutor) return;
+    if (!tutor || !feeAction) return;
     try {
-        setSubmittingFee(true);
-        setFeeError(null);
-        
-        if (feeAction === 'PAY_NOW') {
-            if (!feeFile) {
-                setFeeError('Please upload the payment screenshot.');
-                return;
-            }
-            const res = await updateVerificationFeeStatus(tutor._id, 'PAID', feeFile);
-            setTutor(res.data);
-        } else if (feeAction === 'DEDUCT') {
-            const res = await updateVerificationFeeStatus(tutor._id, 'DEDUCT_FROM_FIRST_MONTH');
-            setTutor(res.data);
-        }
-        setFeeModalOpen(false);
+      setSubmittingFee(true);
+      setFeeError(null);
+
+      if ((feeAction === 'PAY_NOW' || feeAction === 'DEDUCT') && !isTutorSelf) {
+        setFeeError('Only tutors can update their own verification fee status.');
+        return;
+      }
+
+      if (feeAction === 'ADMIN_MARK_PAID' && !isManager) {
+        setFeeError('Only managers can mark verification fee as paid manually.');
+        return;
+      }
+
+
+      const feeStatus = (feeAction === 'PAY_NOW' || feeAction === 'ADMIN_MARK_PAID') ? 'PAID' : 'DEDUCT_FROM_FIRST_MONTH';
+
+      const res = await updateVerificationFeeStatus(
+        (tutor as any).id || tutor._id,
+        feeStatus,
+        feeFile || undefined
+      );
+
+      setTutor(res.data);
+      setFeeModalOpen(false);
+      setFeeAction(null);
+      setFeeFile(null);
     } catch (e: any) {
-        setFeeError(e?.response?.data?.message || 'Failed to update verification fee status');
+      setFeeError(e?.response?.data?.message || 'Failed to update verification fee status.');
     } finally {
-        setSubmittingFee(false);
+      setSubmittingFee(false);
     }
   };
 
@@ -226,14 +245,14 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
         {/* Animated Background Accents */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 animate-pulse" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
-        
+
         <div className="relative z-10 p-8 md:p-12">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             {/* Avatar & Tier */}
             <div className="flex flex-col items-center gap-6">
-              <div 
-                className={`group relative w-36 h-36 md:w-48 md:h-48 rounded-[2rem] overflow-hidden ring-8 ring-white/5 shadow-2xl transition-all duration-500 ${!tutorId ? 'cursor-pointer hover:ring-blue-500/30' : ''}`}
-                onClick={!tutorId ? handleOpenAvatarModal : undefined}
+              <div
+                className={`group relative w-36 h-36 md:w-48 md:h-48 rounded-[2rem] overflow-hidden ring-8 ring-white/5 shadow-2xl transition-all duration-500 ${isTutorSelf ? 'cursor-pointer hover:ring-blue-500/30' : ''}`}
+                onClick={isTutorSelf ? handleOpenAvatarModal : undefined}
               >
                 {profileImageUrl ? (
                   <img src={profileImageUrl} alt={user?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
@@ -242,20 +261,20 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                     <User className="w-16 h-16 text-white/90" />
                   </div>
                 )}
-                {!tutorId && (
+                {isTutorSelf && (
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300 backdrop-blur-[2px]">
                     <div className="text-center group-hover:scale-110 transition-transform">
-                       <Sparkles className="text-blue-400 w-10 h-10 mb-2 mx-auto drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                       <span className="text-white text-[10px] font-black tracking-widest uppercase">Update Photo</span>
+                      <Sparkles className="text-blue-400 w-10 h-10 mb-2 mx-auto drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                      <span className="text-white text-[10px] font-black tracking-widest uppercase">Update Photo</span>
                     </div>
                   </div>
                 )}
               </div>
               <div className="px-5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg">
                 <span className="text-xs font-black tracking-[0.2em] uppercase text-white/70">
-                   Tier: <span className={tutor.tier?.includes('GOLD') ? 'text-amber-400' : tutor.tier?.includes('SILVER') ? 'text-slate-300' : 'text-orange-400'}>
-                     {tutor.tier?.split('(')[1]?.replace(')', '') || 'Bronze'}
-                   </span>
+                  Tier: <span className={tutor.tier?.includes('GOLD') ? 'text-amber-400' : tutor.tier?.includes('SILVER') ? 'text-slate-300' : 'text-orange-400'}>
+                    {tutor.tier?.split('(')[1]?.replace(')', '') || 'Bronze'}
+                  </span>
                 </span>
               </div>
             </div>
@@ -288,19 +307,19 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                   <span className="text-xs font-black text-white tracking-widest uppercase">{tutor.teacherId || 'TUT-XXXX'}</span>
                 </div>
                 <div className="bg-white/5 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3 transition-colors hover:bg-white/10">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="text-lg font-black text-white">{tutor.ratings?.toFixed(1) || '0.0'}</span>
-                  <span className="text-[10px] font-bold text-white/40 border-l border-white/10 pl-3">({tutor.totalRatings} REVIEWS)</span>
+                  <Clock className="w-5 h-5 text-blue-400" />
+                  <span className="text-lg font-black text-white">{tutor.experienceHours || 0}</span>
+                  <span className="text-[10px] font-bold text-white/40 border-l border-white/10 pl-3">TOTAL HOURS</span>
                 </div>
                 {!tutorId && (
-                  <Button 
+                  <Button
                     startIcon={<ExternalLink size={18} />}
-                    variant="contained" 
+                    variant="contained"
                     size="large"
                     onClick={handleShareProfile}
-                    sx={{ 
-                      borderRadius: '18px', 
-                      bgcolor: 'rgba(255,255,255,0.1)', 
+                    sx={{
+                      borderRadius: '18px',
+                      bgcolor: 'rgba(255,255,255,0.1)',
                       backdropFilter: 'blur(10px)',
                       color: 'white',
                       fontWeight: 800,
@@ -327,7 +346,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               </div>
               <div className="text-center space-y-2">
                 <p className={`text-xl font-black ${tutor.isAvailable ? 'text-green-400' : 'text-red-400'}`}>
-                  {tutor.isAvailable ? 'READY FOR WORK' : 'OFF DUTY'}
+                  {tutor.isAvailable ? 'ACTIVE' : 'OFF DUTY'}
                 </p>
                 <Divider sx={{ borderColor: 'rgba(255,255,255,0.05)' }} />
                 <p className="text-xs text-white/40">Join community: {tutor.whatsappCommunityJoined ? '✅ Joined' : '❌ Pending'}</p>
@@ -345,7 +364,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               { label: 'Classes Assigned', value: tutor.classesAssigned, icon: BarChart2, color: 'text-blue-600', bg: 'bg-blue-50' },
               { label: 'Completed', value: tutor.classesCompleted, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
               { label: 'Demos Taken', value: tutor.demosTaken, icon: Clock, color: 'text-violet-600', bg: 'bg-violet-50' },
-              { label: 'Appreciation', value: tutor.demosApproved, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
+              { label: 'Teaching Hours', value: tutor.experienceHours || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
               { label: 'Interest', value: tutor.interestCount, icon: Heart, color: 'text-rose-600', bg: 'bg-rose-50' },
             ].map((stat, i) => (
               <div key={i} className="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col items-center text-center group hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
@@ -397,9 +416,8 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
                 <span className="font-bold text-slate-500">Global Status:</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase ${
-                  tutor.verificationStatus === 'VERIFIED' ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'
-                }`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase ${tutor.verificationStatus === 'VERIFIED' ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'
+                  }`}>
                   {tutor.verificationStatus}
                 </span>
               </div>
@@ -480,13 +498,13 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
               <Sparkles className="text-blue-400" size={24} /> Service Preferences
             </h3>
-            
+
             <Grid container spacing={4}>
               <Grid item xs={12} md={6} className="space-y-8">
                 <div>
                   <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Teaching Subjects</p>
                   <div className="flex flex-wrap gap-3">
-                    {tutor.subjects?.map((sub, i) => (
+                    {tutor.subject?.map((sub: string, i: number) => (
                       <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors border border-white/5">{sub}</span>
                     ))}
                   </div>
@@ -505,12 +523,12 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                   <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Preferred Cities/Areas</p>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
-                       {tutor.preferredCities?.map((city, i) => (
-                         <Chip key={i} label={city} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: 700 }} />
-                       ))}
-                       {tutor.preferredLocations?.map((loc, i) => (
-                         <Chip key={i} label={loc} size="small" variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.1)' }} />
-                       ))}
+                      {tutor.preferredCities?.map((city, i) => (
+                        <Chip key={i} label={city} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: 700 }} />
+                      ))}
+                      {tutor.preferredLocations?.map((loc, i) => (
+                        <Chip key={i} label={loc} size="small" variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.1)' }} />
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -553,74 +571,107 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             </div>
           </section>
         </Grid>
-      
-      {/* 5. DOCUMENTS SECTION + Verification Fees */}
+
         <Grid item xs={12}>
-           <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-             <div className="flex items-center justify-between mb-8">
-               <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                 <FileText className="text-indigo-500" size={24} /> Compliance Documents
-               </h3>
-               {tutor.verificationFeeStatus === 'PAID' && (
-                 <Chip icon={<CheckCircle size={14} />} label="Verification Fee Paid" color="success" size="small" />
-               )}
-               {tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' && (
-                 <Chip icon={<CheckCircle size={14} />} label="Fee: Deduct from Class" color="info" size="small" />
-               )}
-             </div>
-             
-             <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
-               {Object.entries(docLabels).map(([type, label], idx) => {
-                 const status = computeStatusForType(type);
-                 return (
-                 <div 
-                  key={idx} 
-                  onClick={() => handleOpenDocumentModal(type)}
-                  className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${
-                    status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
-                    status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
+          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                <FileText className="text-indigo-500" size={24} /> Compliance Documents
+              </h3>
+              {tutor.verificationStatus === 'VERIFIED' && (
+                <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-3 py-1 rounded-full">
+                  <ShieldCheck size={13} /> Documents locked after verification
+                </span>
+              )}
+              {tutor.verificationStatus === 'PENDING' && Array.isArray(tutor.documents) && tutor.documents.length > 0 && (
+                <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-3 py-1 rounded-full">
+                  <Info size={13} /> Documents submitted — awaiting review
+                </span>
+              )}
+              {tutor.verificationFeeStatus === 'PAID' && (
+                <Chip icon={<CheckCircle size={14} />} label="Verification Fee Paid" color="success" size="small" />
+              )}
+              {tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' && (
+                <Chip icon={<CheckCircle size={14} />} label="Fee: Deduct from Class" color="info" size="small" />
+              )}
+            </div>
+
+            {/* Item 27: Show upload-blocked notice for VERIFIED tutors */}
+            {tutor.verificationStatus === 'VERIFIED' && (
+              <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-100 flex items-start gap-3">
+                <ShieldCheck className="text-green-600 mt-0.5 flex-shrink-0" size={18} />
+                <p className="text-sm text-green-700 font-medium">
+                  Your identity documents are permanently locked after verification. Contact support if you need to make changes.
+                </p>
+              </div>
+            )}
+            {tutor.verificationStatus === 'REJECTED' && (
+              <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3">
+                <Info className="text-red-500 mt-0.5 flex-shrink-0" size={18} />
+                <p className="text-sm text-red-700 font-medium">
+                  Your submission was rejected. Please re-upload valid documents.
+                </p>
+              </div>
+            )}
+
+            <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
+              {Object.entries(docLabels).map(([type, label], idx) => {
+                const status = computeStatusForType(type);
+                const isVerified = tutor.verificationStatus === 'VERIFIED';
+                const isPendingWithDocs = tutor.verificationStatus === 'PENDING' && Array.isArray(tutor.documents) && tutor.documents.length > 0;
+                const isUploadBlocked = isVerified || (isPendingWithDocs && !tutorId) || isManager;
+                return (
+                  <div
+                    key={idx}
+                    onClick={isUploadBlocked ? undefined : () => handleOpenDocumentModal(type)}
+                    className={`relative p-5 rounded-3xl border-2 transition-all group ${isUploadBlocked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                      } ${status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
+                        status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
+                          'bg-slate-50 border-slate-100 hover:border-slate-300'
+                      }`}
+                  >
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${status === 'approved' ? 'bg-green-500 text-white' :
+                      status === 'pending' ? 'bg-amber-500 text-white' :
+                        'bg-slate-400 text-white'
+                      }`}>
+                      {status === 'approved' ? <ShieldCheck size={28} /> : <FileText size={28} />}
+                    </div>
+                    <p className="text-xs font-black text-slate-800 uppercase mb-1">{label}</p>
+                    <p className={`text-[10px] font-bold ${status === 'approved' ? 'text-green-600' :
+                      status === 'pending' ? 'text-amber-600' :
+                        'text-slate-500'
+                      }`}>
+                      {isVerified ? 'LOCKED' : isPendingWithDocs ? 'UNDER REVIEW' : status.replace('_', ' ').toUpperCase()}
+                    </p>
+                  </div>
+                )
+              })}
+              {/* Verification Fee Card */}
+              <div
+                onClick={handleOpenFeeModal}
+                className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
+                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-50/50 border-indigo-100 hover:border-indigo-300' :
                     'bg-slate-50 border-slate-100 hover:border-slate-300'
                   }`}
-                 >
-                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
-                     status === 'approved' ? 'bg-green-500 text-white' :
-                     status === 'pending' ? 'bg-amber-500 text-white' :
-                     'bg-slate-400 text-white'
-                   }`}>
-                     {status === 'approved' ? <ShieldCheck size={28} /> : <FileText size={28} />}
-                   </div>
-                   <p className="text-xs font-black text-slate-800 uppercase mb-1">{label}</p>
-                   <p className={`text-[10px] font-bold ${
-                     status === 'approved' ? 'text-green-600' :
-                     status === 'pending' ? 'text-amber-600' :
-                     'text-slate-500'
-                   }`}>
-                     {status.replace('_', ' ').toUpperCase()}
-                   </p>
-                 </div>
-               )})}
-
-               {/* Verification Fee Card */}
-               <div 
-                  onClick={handleOpenFeeModal}
-                  className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${
-                    tutor.verificationFeeStatus && tutor.verificationFeeStatus !== 'PENDING' ? 'bg-blue-50/50 border-blue-100 hover:border-blue-300' : 'bg-slate-50 border-slate-100 hover:border-slate-300'
-                  }`}
-                 >
-                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
-                     tutor.verificationFeeStatus && tutor.verificationFeeStatus !== 'PENDING' ? 'bg-blue-500 text-white' : 'bg-slate-400 text-white'
-                   }`}>
-                     <Award size={28} />
-                   </div>
-                   <p className="text-xs font-black text-slate-800 uppercase mb-1">Verification Fee</p>
-                   <p className={`text-[10px] font-bold ${
-                     tutor.verificationFeeStatus && tutor.verificationFeeStatus !== 'PENDING' ? 'text-blue-600' : 'text-slate-500'
-                   }`}>
-                     {tutor.verificationFeeStatus === 'PENDING' ? 'PAY NOW' : tutor.verificationFeeStatus?.replace(/_/g, ' ')}
-                   </p>
-                 </div>
-             </Box>
-           </section>
+              >
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:rotate-12 ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-500 text-white' :
+                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white' :
+                    'bg-slate-400 text-white'
+                  }`}>
+                  <CreditCard size={28} />
+                </div>
+                <p className="text-xs font-black text-slate-800 uppercase mb-1">Verification Fee</p>
+                <p className={`text-[10px] font-bold ${tutor.verificationFeeStatus === 'PAID' ? 'text-green-600' :
+                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'text-indigo-600' :
+                    'text-slate-500'
+                  }`}>
+                  {tutor.verificationFeeStatus === 'PAID' ? 'PAID (₹500)' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'PAY LATER (₹500)' :
+                      'NOT PAID (₹500)'}
+                </p>
+              </div>
+            </Box>
+          </section>
         </Grid>
       </Grid>
 
@@ -660,7 +711,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
         <DialogActions sx={{ px: 4, pb: 3 }}>
           <Button onClick={handleCloseDocumentModal}>Close</Button>
           <Button variant="contained" color="secondary" disabled={!selectedDocumentFile || uploadingDocument} onClick={handleUploadDocumentFile} sx={{ borderRadius: '16px' }}>
-             {uploadingDocument ? 'UPLOADING...' : 'UPLOAD NOW'}
+            {uploadingDocument ? 'UPLOADING...' : 'UPLOAD NOW'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -669,82 +720,118 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       <Dialog open={feeModalOpen} onClose={() => setFeeModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '32px', p: 2 } }}>
         <DialogTitle className="font-black text-center text-slate-800 text-2xl">Verification Fees</DialogTitle>
         <DialogContent className="space-y-6 pt-4">
-             {!feeAction ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div 
-                        onClick={() => setFeeAction('PAY_NOW')}
-                        className="p-6 rounded-3xl bg-blue-50 border-2 border-blue-100 hover:border-blue-400 cursor-pointer transition-all hover:scale-105 flex flex-col items-center text-center gap-4 group"
-                     >
-                         <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center group-hover:rotate-12 transition-transform">
-                             <CreditCard size={32} />
-                         </div>
-                         <div>
-                            <h4 className="font-black text-slate-800 text-lg">Pay Now</h4>
-                            <p className="text-xs text-slate-500 font-medium mt-1">Scan QR & Upload Screenshot</p>
-                         </div>
-                     </div>
-                     <div 
-                        onClick={() => setFeeAction('DEDUCT')}
-                        className="p-6 rounded-3xl bg-amber-50 border-2 border-amber-100 hover:border-amber-400 cursor-pointer transition-all hover:scale-105 flex flex-col items-center text-center gap-4 group"
-                     >
-                         <div className="w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center group-hover:-rotate-12 transition-transform">
-                             <Wallet size={32} />
-                         </div>
-                         <div>
-                            <h4 className="font-black text-slate-800 text-lg">Pay Later</h4>
-                            <p className="text-xs text-slate-500 font-medium mt-1">Deduct from 1st Month Salary</p>
-                         </div>
-                     </div>
-                 </div>
-             ) : feeAction === 'PAY_NOW' ? (
-                 <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                     <div className="p-4 bg-white rounded-2xl border border-slate-200 inline-block shadow-lg">
-                        {/* Placeholder QR */}
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=example@upi&pn=YourShikshak" alt="Payment QR" className="w-40 h-40 mx-auto" />
-                     </div>
-                     <p className="text-sm text-slate-500 font-bold">Scan to Pay Subscription Fee</p>
-                     
-                     <div className="p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                        <Button variant="outlined" component="label" fullWidth sx={{ borderRadius: '12px', height: '50px', borderStyle: 'dashed' }}>
-                            {feeFile ? 'CHANGE SCREENSHOT' : 'UPLOAD PAYMENT SCREENSHOT'} 
-                            <input hidden type="file" accept="image/*" onChange={(e) => setFeeFile(e.target.files?.[0] || null)} />
-                        </Button>
-                        {feeFile && <p className="mt-2 text-sm font-bold text-green-600 flex items-center justify-center gap-2"><CheckCircle size={14}/> {feeFile.name}</p>}
-                     </div>
-                 </div>
-             ) : (
-                 <div className="text-center space-y-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                     <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                         <Handshake size={40} />
-                     </div>
-                     <h4 className="text-xl font-bold text-slate-800">Confirm Deduction?</h4>
-                     <p className="text-slate-500 max-w-xs mx-auto">
-                        We will verify your documents and deduct the verification fee automatically from your first payout.
-                     </p>
-                 </div>
-             )}
+          {!feeAction ? (
+            <Box>
+              {isManager && (
+                <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-slate-800 font-black text-sm uppercase">
+                    <ShieldAlert size={18} className="text-indigo-600" /> Admin / Staff Action
+                  </div>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    fullWidth
+                    onClick={() => setFeeAction('ADMIN_MARK_PAID')}
+                    sx={{ borderRadius: '12px', py: 1.5, fontWeight: 800 }}
+                  >
+                    MARK AS PAID MANUALLY
+                  </Button>
+                </div>
+              )}
 
-             {feeError && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold text-center">{feeError}</div>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  onClick={isTutorSelf ? () => setFeeAction('PAY_NOW') : undefined}
+                  className={`p-6 rounded-3xl bg-blue-50 border-2 border-blue-100 transition-all flex flex-col items-center text-center gap-4 group ${isTutorSelf ? 'hover:border-blue-400 cursor-pointer hover:scale-105' : 'opacity-50 cursor-not-allowed'
+                    }`}
+                >
+                  <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center group-hover:rotate-12 transition-transform">
+                    <CreditCard size={32} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-800 text-lg">Pay Now (₹{VERIFICATION_FEE_AMOUNT})</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-1">Scan QR & Upload Screenshot</p>
+                  </div>
+                </div>
+                <div
+                  onClick={isTutorSelf ? () => setFeeAction('DEDUCT') : undefined}
+                  className={`p-6 rounded-3xl bg-amber-50 border-2 border-amber-100 transition-all flex flex-col items-center text-center gap-4 group ${isTutorSelf ? 'hover:border-amber-400 cursor-pointer hover:scale-105' : 'opacity-50 cursor-not-allowed'
+                    }`}
+                >
+                  <div className="w-16 h-16 rounded-full bg-amber-500 text-white flex items-center justify-center group-hover:-rotate-12 transition-transform">
+                    <Wallet size={32} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-800 text-lg">Pay Later (₹{VERIFICATION_FEE_AMOUNT})</h4>
+                    <p className="text-xs text-slate-500 font-medium mt-1">Deduct from 1st Month Salary</p>
+                  </div>
+                </div>
+              </div>
+            </Box>
+          ) : feeAction === 'PAY_NOW' ? (
+            <div className="space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="p-4 bg-white rounded-2xl border border-slate-200 inline-block shadow-lg">
+                {/* Placeholder QR */}
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=example@upi&pn=YourShikshak" alt="Payment QR" className="w-40 h-40 mx-auto" />
+              </div>
+              <p className="text-sm text-slate-500 font-bold">Scan to Pay Subscription Fee</p>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                <Button variant="outlined" component="label" fullWidth sx={{ borderRadius: '12px', height: '50px', borderStyle: 'dashed' }}>
+                  {feeFile ? 'CHANGE SCREENSHOT' : 'UPLOAD PAYMENT SCREENSHOT'}
+                  <input hidden type="file" accept="image/*" onChange={(e) => setFeeFile(e.target.files?.[0] || null)} />
+                </Button>
+                {feeFile && <p className="mt-2 text-sm font-bold text-green-600 flex items-center justify-center gap-2"><CheckCircle size={14} /> {feeFile.name}</p>}
+              </div>
+            </div>
+          ) : feeAction === 'DEDUCT' ? (
+            <div className="text-center space-y-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Handshake size={40} />
+              </div>
+              <h4 className="text-xl font-bold text-slate-800">Confirm Deduction?</h4>
+              <p className="text-slate-500 max-w-xs mx-auto">
+                We will verify your documents and deduct the verification fee automatically from your first payout.
+              </p>
+            </div>
+          ) : (
+            <div className="text-center space-y-4 py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck size={40} />
+              </div>
+              <h4 className="text-xl font-bold text-slate-800">Admin: Mark as Paid?</h4>
+              <p className="text-slate-500 max-w-xs mx-auto">
+                Confirm that this tutor has paid the verification fee of ₹{VERIFICATION_FEE_AMOUNT} through an offline channel or verified previous proof.
+              </p>
+            </div>
+          )}
+
+          {feeError && <div className="p-3 rounded-xl bg-red-50 text-red-600 text-xs font-bold text-center">{feeError}</div>}
         </DialogContent>
         <DialogActions sx={{ px: 4, pb: 4, justifyContent: 'center', gap: 2 }}>
           {feeAction ? (
-              <>
-                <Button onClick={() => setFeeAction(null)} sx={{ borderRadius: '12px', px: 3, color: 'slate.500' }}>Back</Button>
-                <Button 
-                    variant="contained" 
-                    onClick={handleFeeSubmit} 
-                    disabled={submittingFee || (feeAction === 'PAY_NOW' && !feeFile)}
-                    sx={{ borderRadius: '12px', px: 6, py: 1.5, fontWeight: 800, bgcolor: feeAction === 'PAY_NOW' ? 'primary.main' : 'warning.main' }}
-                >
-                    {submittingFee ? <CircularProgress size={20} color="inherit" /> : 'CONFIRM CHOICE'}
-                </Button>
-              </>
+            <>
+              <Button onClick={() => setFeeAction(null)} sx={{ borderRadius: '12px', px: 3, color: 'slate.500' }}>Back</Button>
+              <Button
+                variant="contained"
+                onClick={handleFeeSubmit}
+                disabled={
+                  submittingFee ||
+                  (feeAction === 'PAY_NOW' && !feeFile) ||
+                  ((feeAction === 'PAY_NOW' || feeAction === 'DEDUCT') && !isTutorSelf) ||
+                  (feeAction === 'ADMIN_MARK_PAID' && !isManager)
+                }
+                sx={{ borderRadius: '12px', px: 6, py: 1.5, fontWeight: 800, bgcolor: feeAction === 'PAY_NOW' ? 'primary.main' : feeAction === 'DEDUCT' ? 'warning.main' : 'success.main' }}
+              >
+                {submittingFee ? <CircularProgress size={20} color="inherit" /> : 'CONFIRM CHOICE'}
+              </Button>
+            </>
           ) : (
             <Button onClick={() => setFeeModalOpen(false)} sx={{ borderRadius: '12px', px: 4, color: 'slate.400' }}>Cancel</Button>
           )}
         </DialogActions>
       </Dialog>
-    </div>
+    </div >
   );
 };
 

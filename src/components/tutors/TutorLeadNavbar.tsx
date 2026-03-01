@@ -8,10 +8,10 @@ export const TutorLeadNavbar = () => {
   });
 
   return (
-    <AppBar 
-      position="fixed" 
-      elevation={trigger ? 4 : 0} 
-      sx={{ 
+    <AppBar
+      position="fixed"
+      elevation={trigger ? 4 : 0}
+      sx={{
         bgcolor: trigger ? alpha('#001F54', 0.95) : 'transparent',
         backdropFilter: trigger ? 'blur(10px)' : 'none',
         transition: 'all 0.3s ease-in-out',
@@ -22,13 +22,13 @@ export const TutorLeadNavbar = () => {
         <Toolbar disableGutters sx={{ py: trigger ? 0.5 : 1, transition: 'all 0.3s ease-in-out' }}>
           {/* Logo + Brand */}
           <Box component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none' }}>
-            <Avatar 
-                sx={{ 
-                    width: 44, 
-                    height: 44, 
-                    bgcolor: 'white',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}
+            <Avatar
+              sx={{
+                width: 44,
+                height: 44,
+                bgcolor: 'white',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
             >
               <Box
                 component="img"
@@ -64,22 +64,22 @@ export const TutorLeadNavbar = () => {
             <Button component={RouterLink} to="/#contact" color="inherit" sx={{ textTransform: 'none', fontWeight: 600, px: 2, borderRadius: 2 }}>
               Contact
             </Button>
-            <Button 
-                component={RouterLink} 
-                to="/login" 
-                variant="outlined" 
-                color="inherit" 
-                sx={{ 
-                    ml: 1, 
-                    textTransform: 'none', 
-                    fontWeight: 700, 
-                    borderRadius: 2,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    '&:hover': {
-                        borderColor: 'white',
-                        bgcolor: 'rgba(255, 255, 255, 0.1)'
-                    }
-                }}
+            <Button
+              component={RouterLink}
+              to="/login"
+              variant="outlined"
+              color="inherit"
+              sx={{
+                ml: 1,
+                textTransform: 'none',
+                fontWeight: 700,
+                borderRadius: 2,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                '&:hover': {
+                  borderColor: 'white',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
             >
               Partner Login
             </Button>
@@ -89,3 +89,5 @@ export const TutorLeadNavbar = () => {
     </AppBar>
   );
 };
+
+export default TutorLeadNavbar;

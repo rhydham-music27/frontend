@@ -42,8 +42,12 @@ import { motion } from 'framer-motion';
 export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create' }: TutorLeadFormProps) => {
   // Helper function to check if a field should be read-only
   // Only lock fields that have actual meaningful data in initialData
-  const isFieldReadOnly = (fieldValue: any) => {
-    return false;
+  const isFieldReadOnly = (fieldName: string) => {
+    if (mode === 'create') return false;
+    if (initialData?.verificationStatus !== 'VERIFIED') return false;
+
+    const lockedFields = ['fullName', 'phoneNumber', 'permanentAddress', 'residentialAddress', 'email', 'phone'];
+    return lockedFields.includes(fieldName);
   };
   const theme = useTheme();
   const [formData, setFormData] = useState<TutorLeadFormData>(initialData || {
@@ -241,15 +245,15 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   value={formData.fullName}
                   onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                   error={Boolean(errors.fullName)}
-                  helperText={errors.fullName || (isFieldReadOnly(initialData?.fullName) ? 'Cannot be changed' : '')}
-                  disabled={isFieldReadOnly(initialData?.fullName)}
+                  helperText={errors.fullName || (isFieldReadOnly('fullName') ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly('fullName')}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <PersonIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: isFieldReadOnly(initialData?.fullName),
+                    readOnly: isFieldReadOnly('fullName'),
                   }}
                 />
               </Grid>
@@ -261,14 +265,14 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     label="Gender"
                     value={formData.gender}
                     onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as any }))}
-                    disabled={isFieldReadOnly(initialData?.gender)}
+                    disabled={isFieldReadOnly('gender')}
                   >
                     <MenuItem value={Gender.MALE}>Male</MenuItem>
                     <MenuItem value={Gender.FEMALE}>Female</MenuItem>
                     <MenuItem value={Gender.OTHER}>Other</MenuItem>
                   </Select>
                   {errors.gender && <FormHelperText>{errors.gender}</FormHelperText>}
-                  {isFieldReadOnly(initialData?.gender) && !errors.gender && <FormHelperText>Cannot be changed</FormHelperText>}
+                  {isFieldReadOnly('gender') && !errors.gender && <FormHelperText>Cannot be changed</FormHelperText>}
                 </FormControl>
               </Grid>
 
@@ -281,15 +285,15 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value.replace(/\D/g, '') }))}
                   inputProps={{ maxLength: 10 }}
                   error={Boolean(errors.phoneNumber)}
-                  helperText={errors.phoneNumber || (isFieldReadOnly(initialData?.phoneNumber) ? 'Cannot be changed' : '')}
-                  disabled={isFieldReadOnly(initialData?.phoneNumber)}
+                  helperText={errors.phoneNumber || (isFieldReadOnly('phoneNumber') ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly('phoneNumber')}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <PhoneIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: isFieldReadOnly(initialData?.phoneNumber),
+                    readOnly: isFieldReadOnly('phoneNumber'),
                   }}
                 />
               </Grid>
@@ -302,15 +306,15 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   value={formData.alternatePhone || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, alternatePhone: e.target.value.replace(/\D/g, '') }))}
                   inputProps={{ maxLength: 10 }}
-                  helperText={isFieldReadOnly(initialData?.alternatePhone) ? 'Cannot be changed' : 'Optional secondary contact'}
-                  disabled={isFieldReadOnly(initialData?.alternatePhone)}
+                  helperText={isFieldReadOnly('phoneNumber') ? "Verified phone number cannot be changed" : 'Optional secondary contact'}
+                  disabled={isFieldReadOnly('phoneNumber')}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <PhoneIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: isFieldReadOnly(initialData?.alternatePhone),
+                    readOnly: isFieldReadOnly('alternatePhone'),
                   }}
                 />
               </Grid>
@@ -322,13 +326,15 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   error={Boolean(errors.email)}
-                  helperText={errors.email}
+                  helperText={errors.email || (isFieldReadOnly('email') ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly('email')}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <EmailIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
+                    readOnly: isFieldReadOnly('email'),
                   }}
                 />
               </Grid>
@@ -341,10 +347,10 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                   multiline
                   rows={3}
-                  disabled={isFieldReadOnly(initialData?.bio)}
-                  helperText={isFieldReadOnly(initialData?.bio) ? 'Cannot be changed' : 'A brief description that will be shown on your profile.'}
+                  disabled={isFieldReadOnly('bio')}
+                  helperText={isFieldReadOnly('bio') ? "This field cannot be edited after verification" : 'A brief description that will be shown on your profile.'}
                   InputProps={{
-                    readOnly: isFieldReadOnly(initialData?.bio),
+                    readOnly: isFieldReadOnly('bio'),
                   }}
                 />
               </Grid>
@@ -360,15 +366,15 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   value={formData.qualification}
                   onChange={(e) => setFormData(prev => ({ ...prev, qualification: e.target.value }))}
                   error={Boolean(errors.qualification)}
-                  helperText={errors.qualification || (isFieldReadOnly(initialData?.qualification) ? 'Cannot be changed' : '')}
-                  disabled={isFieldReadOnly(initialData?.qualification)}
+                  helperText={errors.qualification || (isFieldReadOnly('qualification') ? 'Cannot be changed' : '')}
+                  disabled={isFieldReadOnly('qualification')}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <SchoolIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: isFieldReadOnly(initialData?.qualification),
+                    readOnly: isFieldReadOnly('qualification'),
                   }}
                 />
               </Grid>
@@ -380,7 +386,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     label="Teaching Experience"
                     value={formData.experience}
                     onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
-                    disabled={isFieldReadOnly(initialData?.experience)}
+                    disabled={isFieldReadOnly('experience')}
                     startAdornment={
                       <InputAdornment position="start">
                         <WorkIcon color="action" fontSize="small" sx={{ ml: 0.5, mr: 1 }} />
@@ -394,7 +400,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     <MenuItem value="10+ Years">10+ Years</MenuItem>
                   </Select>
                   {errors.experience && <FormHelperText>{errors.experience}</FormHelperText>}
-                  {isFieldReadOnly(initialData?.experience) && !errors.experience && <FormHelperText>Cannot be changed</FormHelperText>}
+                  {isFieldReadOnly('experience') && !errors.experience && <FormHelperText>Cannot be changed</FormHelperText>}
                 </FormControl>
               </Grid>
 
@@ -693,7 +699,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   placeholder="Enter your permanent address"
                   value={formData.permanentAddress || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, permanentAddress: e.target.value }))}
-                  disabled={isFieldReadOnly(initialData?.permanentAddress)}
+                  disabled={isFieldReadOnly('permanentAddress')}
                   multiline
                   rows={2}
                   InputProps={{
@@ -702,9 +708,9 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                         <LocationCityIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: isFieldReadOnly(initialData?.permanentAddress),
+                    readOnly: isFieldReadOnly('permanentAddress'),
                   }}
-                  helperText={isFieldReadOnly(initialData?.permanentAddress) ? 'Cannot be changed' : ''}
+                  helperText={isFieldReadOnly('permanentAddress') ? 'Cannot be changed' : ''}
                 />
               </Grid>
 
@@ -715,7 +721,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   placeholder="Enter your current residential address"
                   value={formData.residentialAddress || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, residentialAddress: e.target.value }))}
-                  disabled={isFieldReadOnly(initialData?.residentialAddress)}
+                  disabled={isFieldReadOnly('residentialAddress')}
                   multiline
                   rows={2}
                   InputProps={{
@@ -724,9 +730,9 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                         <LocationCityIcon color="action" fontSize="small" />
                       </InputAdornment>
                     ),
-                    readOnly: isFieldReadOnly(initialData?.residentialAddress),
+                    readOnly: isFieldReadOnly('residentialAddress'),
                   }}
-                  helperText={isFieldReadOnly(initialData?.residentialAddress) ? 'Cannot be changed' : 'Leave blank if same as permanent address'}
+                  helperText={isFieldReadOnly('residentialAddress') ? 'Cannot be changed' : 'Leave blank if same as permanent address'}
                 />
               </Grid>
             </Grid>

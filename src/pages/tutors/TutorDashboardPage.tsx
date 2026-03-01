@@ -21,7 +21,6 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import TutorAdvancedAnalyticsCards from "../../components/tutors/TutorAdvancedAnalyticsCards";
 import TodayScheduleCard from "../../components/tutors/TodayScheduleCard";
-import UpcomingTestsCard from "../../components/tutors/UpcomingTestsCard";
 import ActiveClassesOverviewCard from "../../components/tutors/ActiveClassesOverviewCard";
 import ClassLeadsFeedCard from "../../components/tutors/ClassLeadsFeedCard";
 import DemoClassesCard from "../../components/tutors/DemoClassesCard";
@@ -52,13 +51,6 @@ const TutorDashboardPage: React.FC = () => {
 
     const checkProfileAndMaybeShow = async () => {
       try {
-        const shouldShowFlag =
-          typeof window !== "undefined" &&
-          window.localStorage.getItem("ys_tutor_show_complete_profile") === "true";
-        if (!shouldShowFlag) {
-          return;
-        }
-
         const resp = await getMyProfile();
         const data: any = (resp as any)?.data ?? resp;
         const tutor: ITutor | null = (data as ITutor) || null;
@@ -75,19 +67,22 @@ const TutorDashboardPage: React.FC = () => {
 
         const isIncomplete = subjectsEmpty || qualificationsEmpty || locationsEmpty;
 
-        if (isIncomplete && !cancelled) {
+        const alreadyShown =
+          typeof window !== 'undefined' &&
+          window.sessionStorage.getItem('ys_tutor_complete_profile_prompt_shown') === 'true';
+
+        if (isIncomplete && !cancelled && !alreadyShown) {
           setShowCompleteProfileModal(true);
+          try {
+            if (typeof window !== 'undefined') {
+              window.sessionStorage.setItem('ys_tutor_complete_profile_prompt_shown', 'true');
+            }
+          } catch {
+            // ignore storage errors
+          }
         }
       } catch (err: any) {
         setError(err.message || "Failed to fetch profile info");
-      } finally {
-        try {
-          if (typeof window !== "undefined") {
-            window.localStorage.removeItem("ys_tutor_show_complete_profile");
-          }
-        } catch {
-          // ignore storage errors
-        }
       }
     };
 
@@ -352,7 +347,6 @@ const TutorDashboardPage: React.FC = () => {
               <Box mb={3}>
                 <Box display="flex" flexDirection="column" gap={2}>
                   <TodayScheduleCard />
-                  <UpcomingTestsCard />
                   <ActiveClassesOverviewCard />
                 </Box>
               </Box>
@@ -381,7 +375,6 @@ const TutorDashboardPage: React.FC = () => {
                   <Box display="flex" flexDirection="column" gap={{ xs: 2, sm: 2.5, md: 3 }}>
                     <DemoClassesCard />
                     <TodayScheduleCard />
-                    <UpcomingTestsCard />
                   </Box>
                 </Grid2>
                 <Grid2 size={{ xs: 12, md: 5 }} sx={{ maxWidth: { md: '40%' } }}>

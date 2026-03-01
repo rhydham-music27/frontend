@@ -25,11 +25,12 @@ export interface TutorProfile {
   attendanceRecords: AttendanceRecord[];
 }
 
-interface AttendanceSheetProps {
+export interface AttendanceSheetProps {
   tutorData: TutorProfile;
   classInfo: AssignedClass;
-  range?: { start: string; end: string }; // inclusive ISO dates YYYY-MM-DD
+  range?: { start: string; end: string };
   sheetNo?: number;
+  rowsPerPage?: number;
 }
 
 function toCsvValue(value: string | number | undefined): string {
@@ -41,7 +42,7 @@ function toCsvValue(value: string | number | undefined): string {
 }
 
 const AttendanceSheet = forwardRef(function AttendanceSheet(
-  { tutorData, classInfo, range, sheetNo = 1 }: AttendanceSheetProps,
+  { tutorData, classInfo, range, sheetNo = 1, rowsPerPage = 10 }: AttendanceSheetProps,
   ref: React.Ref<{ exportPdf: () => Promise<void> }>
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,12 +55,12 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
 
   const chunks = useMemo(() => {
     const arr = [];
-    for (let i = 0; i < records.length; i += 10) {
-      arr.push(records.slice(i, i + 10));
+    for (let i = 0; i < records.length; i += rowsPerPage) {
+      arr.push(records.slice(i, i + rowsPerPage));
     }
     if (arr.length === 0) arr.push([]); // Show at least one empty sheet if no records
     return arr;
-  }, [records]);
+  }, [records, rowsPerPage]);
 
   const exportPdf = async () => {
     if (!containerRef.current) return;
@@ -112,20 +113,26 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
             className="physical-sheet"
             sx={{
               bgcolor: 'common.white',
-              p: 4,
-              borderRadius: 0, // PDF looks better without rounded corners in capture
+              p: 6,
+              borderRadius: 0,
               display: 'flex',
               flexDirection: 'column',
-              gap: 2.5,
+              gap: 3,
               border: '1px solid',
-              borderColor: 'grey.200',
-              boxShadow: 2,
-              width: 800, // Fixed width for consistent capture
-              minHeight: 1100, // Approximate A4 aspect ratio
+              borderColor: 'grey.100',
+              boxShadow: 'none',
+              width: '210mm',
+              minHeight: '297mm',
               position: 'relative',
+              boxSizing: 'border-box',
+              '*': {
+                letterSpacing: '0.01em !important',
+                lineHeight: '1.3 !important',
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif !important'
+              },
               '@media print': {
-                boxShadow: 'none',
-                border: 'none'
+                border: 'none',
+                p: 0
               }
             }}
           >
@@ -168,57 +175,76 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
 
             {/* Centered sheet title */}
             <Typography
-              variant="subtitle1"
+              variant="h6"
               align="center"
-              sx={{ fontWeight: 600, mt: 0.5, mb: 0.5, fontSize: '0.9rem' }}
+              sx={{
+                fontWeight: 700,
+                mt: 1,
+                mb: 1,
+                fontSize: '1.2rem',
+                textTransform: 'uppercase',
+                color: 'primary.main'
+              }}
             >
-              Your Shikshak   Home Tuition Attendance Sheet
+              Attendance Sheet
             </Typography>
 
             {/* Meta info */}
             <Box
               sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                columnGap: 2,
-                rowGap: 0.75,
-                fontSize: '0.8rem',
+                display: 'flex',
+                flexWrap: 'wrap',
+                rowGap: 1.5,
+                columnGap: 4,
+                px: 1,
               }}
             >
-              <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                Tutor Name: {classInfo.tutorName || '__________'}
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>Class ID: {classInfo.classId}</Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                Attendance Sheet No. {currentSheetNo}
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>Student Name: {classInfo.studentName}</Typography>
+              <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
+                <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                  <strong>Tutor Name:</strong> {classInfo.tutorName || '__________'}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
+                <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                  <strong>Class ID:</strong> {classInfo.classId}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
+                <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                  <strong>Sheet No:</strong> {currentSheetNo}
+                </Typography>
+              </Box>
+              <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
+                <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                  <strong>Student Name:</strong> {classInfo.studentName}
+                </Typography>
+              </Box>
               {range && (
-                <Box sx={{ gridColumn: '1 / -1' }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                    Period: {range.start} – {range.end}
+                <Box sx={{ width: '100%' }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                    <strong>Period:</strong> {range.start} – {range.end}
                   </Typography>
                 </Box>
               )}
             </Box>
 
             {/* Table */}
-            <Box component={Paper} variant="outlined" sx={{ overflow: 'hidden', borderRadius: 1 }}>
-              <Table size="small" sx={{ '& th': { bgcolor: 'grey.50', fontWeight: 600, borderBottom: '1px solid', borderColor: 'divider' }, '& td, & th': { fontSize: '0.8rem', borderRight: '1px solid', borderColor: 'divider' }, '& td:last-child, & th:last-child': { borderRight: 'none' } }}>
+            <Box component={Paper} variant="outlined" sx={{ overflow: 'hidden', borderRadius: 1, mt: 1 }}>
+              <Table size="small" sx={{ '& th': { bgcolor: 'grey.50', fontWeight: 700, borderBottom: '2px solid', borderColor: 'grey.300' }, '& td, & th': { fontSize: '0.85rem', py: 1, borderRight: '1px solid', borderColor: 'grey.200' }, '& td:last-child, & th:last-child': { borderRight: 'none' } }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell align="center" sx={{ width: 50 }}>S. No.</TableCell>
-                    <TableCell align="center" sx={{ width: 100 }}>Date</TableCell>
-                    <TableCell align="center" sx={{ width: 80 }}>Status</TableCell>
-                    <TableCell align="center" sx={{ width: 120 }}>Duration (mins)</TableCell>
+                    <TableCell align="center" sx={{ width: '8%', minWidth: '50px' }}>S. No.</TableCell>
+                    <TableCell align="center" sx={{ width: '15%', minWidth: '100px' }}>Date</TableCell>
+                    <TableCell align="center" sx={{ width: '12%', minWidth: '80px' }}>Status</TableCell>
+                    <TableCell align="center" sx={{ width: '15%', minWidth: '120px' }}>Duration (mins)</TableCell>
                     <TableCell align="center">Topic / Chapter Covered</TableCell>
-                    <TableCell align="center" sx={{ width: 140 }}>Marked At</TableCell>
+                    <TableCell align="center" sx={{ width: '18%', minWidth: '140px' }}>Marked At</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {chunk.map((r, idx) => (
                     <TableRow key={idx}>
-                      <TableCell align="center">{chunkIndex * 10 + idx + 1}</TableCell>
+                      <TableCell align="center">{chunkIndex * rowsPerPage + idx + 1}</TableCell>
                       <TableCell align="center">{r.date ?? ''}</TableCell>
                       <TableCell align="center">{r.status ?? ''}</TableCell>
                       <TableCell align="center">{r.duration ? r.duration * 60 : ''}</TableCell>
@@ -226,10 +252,10 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
                       <TableCell align="center">{r.markedAt ? r.markedAt.replace('T', ' ').slice(0, 16) : ''}</TableCell>
                     </TableRow>
                   ))}
-                  {/* Fill empty rows if less than 10 to keep height consistent */}
-                  {Array.from({ length: 10 - chunk.length }).map((_, i) => (
+                  {/* Fill empty rows if less than rowsPerPage to keep height consistent */}
+                  {Array.from({ length: rowsPerPage - chunk.length }).map((_, i) => (
                     <TableRow key={`empty-${i}`} sx={{ height: 33 }}>
-                      <TableCell align="center">{chunkIndex * 10 + chunk.length + i + 1}</TableCell>
+                      <TableCell align="center">{chunkIndex * rowsPerPage + chunk.length + i + 1}</TableCell>
                       <TableCell />
                       <TableCell />
                       <TableCell />

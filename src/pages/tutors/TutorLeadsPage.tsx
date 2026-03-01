@@ -174,7 +174,7 @@ const TutorLeadsPage: React.FC = () => {
               <Table sx={{ minWidth: 700 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'grey.50' }}>
-                    {['Student', 'Subjects / Grade', 'Demo Date & Time', 'Location', 'Fees', 'Status'].map(h => (
+                    {['Student', 'Subjects / Grade', 'Demo Date & Time', 'Location', 'Fees'].map(h => (
                       <TableCell key={h} sx={{ fontWeight: 800, fontSize: '0.68rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '2px solid', borderColor: alpha('#a855f7', 0.08), py: 1.5, whiteSpace: 'nowrap' }}>
                         {h}
                       </TableCell>
@@ -196,6 +196,9 @@ const TutorLeadsPage: React.FC = () => {
                             <Box>
                               <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.82rem' }}>{lead?.studentName}</Typography>
                               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>{lead?.parentName}</Typography>
+                              {demo.status === DEMO_STATUS.REJECTED && (
+                                <Chip label="Rejected" size="small" sx={{ ...getStatusSx(demo.status), fontSize: '0.62rem', height: 18, mt: 0.5 }} />
+                              )}
                             </Box>
                           </Box>
                         </TableCell>
@@ -233,23 +236,20 @@ const TutorLeadsPage: React.FC = () => {
                           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>{lead?.classesPerMonth} cls/mo</Typography>
                         </TableCell>
                         <TableCell>
-                          <Stack spacing={0.75}>
-                            <Chip label={demo.status} size="small" sx={{ ...getStatusSx(demo.status), fontSize: '0.62rem', height: 22, width: 'fit-content' }} />
-                            {(demo.feedback || demo.rejectionReason || demo.notes) && (
-                              <Tooltip title={
-                                <Box sx={{ p: 0.5 }}>
-                                  {demo.notes && <Typography variant="caption" display="block"><strong>Notes:</strong> {demo.notes}</Typography>}
-                                  {demo.feedback && <Typography variant="caption" display="block"><strong>Feedback:</strong> {demo.feedback}</Typography>}
-                                  {demo.rejectionReason && <Typography variant="caption" display="block" color="error.light"><strong>Reason:</strong> {demo.rejectionReason}</Typography>}
-                                </Box>
-                              }>
-                                <Box display="flex" alignItems="center" gap={0.25} sx={{ cursor: 'pointer', color: '#a855f7', width: 'fit-content' }}>
-                                  <InfoIcon sx={{ fontSize: 13 }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.62rem', fontWeight: 600, textDecoration: 'underline' }}>Details</Typography>
-                                </Box>
-                              </Tooltip>
-                            )}
-                          </Stack>
+                          {(demo.feedback || demo.rejectionReason || demo.notes) && (
+                            <Tooltip title={
+                              <Box sx={{ p: 0.5 }}>
+                                {demo.notes && <Typography variant="caption" display="block"><strong>Notes:</strong> {demo.notes}</Typography>}
+                                {demo.feedback && <Typography variant="caption" display="block"><strong>Feedback:</strong> {demo.feedback}</Typography>}
+                                {demo.rejectionReason && <Typography variant="caption" display="block" color="error.light"><strong>Reason:</strong> {demo.rejectionReason}</Typography>}
+                              </Box>
+                            }>
+                              <Box display="flex" alignItems="center" gap={0.25} sx={{ cursor: 'pointer', color: '#a855f7', width: 'fit-content' }}>
+                                <InfoIcon sx={{ fontSize: 13 }} />
+                                <Typography variant="caption" sx={{ fontSize: '0.62rem', fontWeight: 600, textDecoration: 'underline' }}>Details</Typography>
+                              </Box>
+                            </Tooltip>
+                          )}
                         </TableCell>
                       </TableRow>
                     );
@@ -291,7 +291,7 @@ const TutorLeadsPage: React.FC = () => {
               <Table sx={{ minWidth: 600 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'grey.50' }}>
-                    {['Student / Lead', 'Subjects', 'Grade & Board', 'Mode', 'Location', 'Status'].map(h => (
+                    {['Student / Lead', 'Subjects', 'Grade & Board', 'Mode', 'Location'].map(h => (
                       <TableCell key={h} sx={{ fontWeight: 800, fontSize: '0.68rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '2px solid', borderColor: alpha('#10b981', 0.08), py: 1.5, whiteSpace: 'nowrap' }}>
                         {h}
                       </TableCell>
@@ -332,17 +332,6 @@ const TutorLeadsPage: React.FC = () => {
                             {[lead?.area, lead?.city].filter(Boolean).join(', ') || '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={ann.status || lead?.status || 'OPEN'}
-                            size="small"
-                            sx={{
-                              height: 22, fontSize: '0.62rem', fontWeight: 700,
-                              bgcolor: ann.isActive !== false ? alpha('#10b981', 0.1) : alpha('#64748b', 0.1),
-                              color: ann.isActive !== false ? '#059669' : '#475569',
-                            }}
-                          />
-                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -352,7 +341,7 @@ const TutorLeadsPage: React.FC = () => {
           </Card>
         )}
       </Box>
-    </Container>
+    </Container >
   );
 };
 

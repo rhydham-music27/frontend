@@ -5,9 +5,10 @@ export interface IUser {
   role: string;
   phone?: string;
   acceptedTerms: boolean;
+  whatsappCommunityJoined?: boolean;
   preferredMode?: string;
   isProfileComplete?: boolean;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: 'MALE' | 'FEMALE' | 'OTHER' | 'M' | 'F';
   city?: string;
   verificationStatus?: string;
   permissions?: {
@@ -93,7 +94,7 @@ export interface ITutor {
   user: IUser;
   teacherId?: string;
   experienceHours: number;
-  subjects: string[];
+  subject: string[];
   extracurricularActivities?: string[];
   ratings: number;
   classesAssigned: number;
@@ -563,6 +564,7 @@ export interface ITutorAdvancedAnalytics {
     thisMonth: number;
     total: number;
   };
+  totalTeachingHours: number;
   newClassesCount: number;
   demos: {
     total: number;
@@ -679,12 +681,16 @@ export interface IPaymentStatistics {
   overdueAmount?: number;
   averagePaymentAmount?: number;
   miscellaneous?: number;
+  verificationFees?: number;
+  finalRevenue?: number;
   netProfit?: number;
   monthly?: {
     feesCollected: number;
     tutorPayouts: number;
     miscellaneous: number;
+    verificationFees: number;
     serviceCharge: number;
+    finalRevenue: number;
     netProfit: number;
   };
   paymentsByStatus?: Record<string, number>;

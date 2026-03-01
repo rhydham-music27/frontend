@@ -1,15 +1,13 @@
 import React from 'react';
 import { User, GraduationCap, Briefcase, Star } from 'lucide-react';
-import { ITutor, IPublicTutorReview } from '../../types';
+import { ITutor } from '../../types';
 
 interface PublicTutorProfileCardProps {
   tutor: ITutor;
-  reviews?: IPublicTutorReview[];
 }
 
-const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, reviews = [] }) => {
+const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }) => {
   const { user } = tutor;
-  const rating = tutor.ratings ?? 0;
   const totalHours = (tutor as any).experienceHours ?? 0;
   const classesAssigned = (tutor as any).classesAssigned ?? 0;
   const classesCompleted = (tutor as any).classesCompleted ?? 0;
@@ -48,7 +46,6 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
     education,
     workExperience,
     locationPreferences,
-    rating,
     totalTeachingHours: totalHours,
     activeClasses,
   };
@@ -73,7 +70,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
               )}
             </div>
             <div className={`absolute -bottom-2 -right-2 ${personalDetails.isAvailable ? 'bg-green-500' : 'bg-red-500'} rounded-xl px-2 py-0.5 shadow-lg`}>
-              <span className="text-[10px] font-bold">{personalDetails.isAvailable ? 'Available' : 'Unavailable'}</span>
+              <span className="text-[10px] font-bold">{personalDetails.isAvailable ? 'Active' : 'Unavailable'}</span>
             </div>
           </div>
 
@@ -96,10 +93,6 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
               <div className="text-xl font-bold">{tutorData.totalTeachingHours}</div>
               <div className="text-xs opacity-75">Total Hours</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
-              <div className="text-xl font-bold">{rating.toFixed(1)}</div>
-              <div className="text-xs opacity-75">Rating</div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
               <div className="text-xl font-bold">{tutorData.activeClasses}</div>
@@ -217,68 +210,6 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor, 
           </div>
         </div>
       </div>
-
-
-      {/* Reviews section */}
-      {reviews.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500" />
-            Reviews from Parents & Students
-          </h2>
-          <div className="space-y-4">
-            {reviews.map((rev) => {
-              const name = rev.studentName || 'Student';
-              const initials = name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase();
-              const date = new Date(rev.createdAt);
-              const dateLabel = date.toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              });
-              return (
-                <div
-                  key={rev.id}
-                  className="flex gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">
-                      {name ? initials : 'S'}
-                    </div>
-                    <p className="mt-1 text-[10px] uppercase tracking-wide text-gray-500">
-                      {rev.submitterRole === 'PARENT' ? 'Parent' : 'Student'}
-                    </p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{name}</p>
-                      <p className="text-xs text-gray-500">{dateLabel}</p>
-                    </div>
-                    <div className="flex items-center gap-1 mb-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3 h-3 ${i < rev.overallRating ? 'text-yellow-500' : 'text-gray-300'}`}
-                          fill={i < rev.overallRating ? 'currentColor' : 'none'}
-                        />
-                      ))}
-                      <p className="ml-1 text-xs text-gray-600">{rev.overallRating.toFixed(1)}/5</p>
-                    </div>
-                    {rev.comments && (
-                      <p className="text-sm text-gray-700 leading-snug">{rev.comments}</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

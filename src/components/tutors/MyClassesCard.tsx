@@ -1,70 +1,88 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Button,
-  Chip,
-  CardContent,
   Grid,
+  Card,
+  CardContent,
+  Chip,
+  alpha,
   LinearProgress,
-  Alert,
-  Tooltip,
   IconButton,
+  Tooltip,
+  Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  alpha,
-  useTheme,
-  Card,
+  Alert,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import SendIcon from '@mui/icons-material/Send';
-import ClassIcon from '@mui/icons-material/Class';
-import QuizIcon from '@mui/icons-material/Quiz';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import PersonIcon from '@mui/icons-material/Person';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
+import ClassIcon from '@mui/icons-material/Class';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import SendIcon from '@mui/icons-material/Send';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../store/slices/authSlice';
+import {
+  getMyClasses,
+  getAttendanceByClass,
+  upsertAttendanceSheet,
+  submitAttendanceSheet,
+} from '../../services/tutorService';
+import { getTestsByClass, getTestById } from '../../services/testService';
+import { IFinalClass, ITest } from '../../types';
+import { FINAL_CLASS_STATUS } from '../../constants';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
-import SubmitAttendanceModal from './SubmitAttendanceModal';
 import TutorClassesStatsBox from './TutorClassesStatsBox';
-import { getMyClasses } from '../../services/finalClassService';
-import { upsertAttendanceSheet, submitAttendanceSheet } from '../../services/attendanceSheetService';
-import { IFinalClass, ITest } from '../../types';
-import { FINAL_CLASS_STATUS } from '../../constants';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { selectCurrentUser } from '../../store/slices/authSlice';
-import { getTestsByClass, getTestById } from '../../services/testService';
-import TestReportCard from '../coordinator/TestReportCard';
-import { getAttendanceByClass } from '../../services/attendanceService';
-import AttendanceSheet, { AttendanceRecord, AssignedClass, TutorProfile } from './AttendanceSheet';
+import SubmitAttendanceModal from './SubmitAttendanceModal';
+import AttendanceSheet from './AttendanceSheet';
+import TestReportCard from './TestReportCard';
+
+// Dummy types for internal use if not in types.ts
+interface AttendanceRecord {
+  classId: string;
+  date: string;
+  status: string;
+  duration: number;
+  topicsCovered?: string;
+  markedAt: string;
+}
+
+interface TutorProfile {
+  attendanceRecords: AttendanceRecord[];
+}
+
+interface AssignedClass {
+  classId: string;
+  studentName: string;
+  subject: string;
+  tutorName?: string;
+}
 
 const MyClassesCard: React.FC = () => {
-  const theme = useTheme();
   const user = useSelector(selectCurrentUser);
   const navigate = useNavigate();
+
   const [classes, setClasses] = useState<IFinalClass[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
-  const [attendanceModalOpen, setAttendanceModalOpen] = useState<boolean>(false);
+  const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [sheetSubmittingClassId, setSheetSubmittingClassId] = useState<string | null>(null);
 
   const [attendanceMonthByClassId, setAttendanceMonthByClassId] = useState<Record<string, string>>({});
+  const [sheetSubmittingClassId, setSheetSubmittingClassId] = useState<string | null>(null);
+
   const [testsByClassId, setTestsByClassId] = useState<Record<string, ITest[]>>({});
-  const [testsLoadingByClassId, setTestsLoadingByClassId] = useState<Record<string, boolean>>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedTestIdByClassId, setSelectedTestIdByClassId] = useState<Record<string, string>>({});
 
   const [reportOpen, setReportOpen] = useState(false);
@@ -80,18 +98,20 @@ const MyClassesCard: React.FC = () => {
   const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
   const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const ensureTestsLoaded = async (classIdStr: string) => {
     if (!classIdStr) return;
     if (testsByClassId[classIdStr]) return;
     try {
-      setTestsLoadingByClassId((prev) => ({ ...prev, [classIdStr]: true }));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const dummy = classIdStr;
       const resp = await getTestsByClass(classIdStr);
       const list = (resp.data || []) as ITest[];
       setTestsByClassId((prev) => ({ ...prev, [classIdStr]: list }));
     } catch (e: any) {
       setTestsByClassId((prev) => ({ ...prev, [classIdStr]: [] }));
     } finally {
-      setTestsLoadingByClassId((prev) => ({ ...prev, [classIdStr]: false }));
+      // setLoading(false); // or just remove if not needed
     }
   };
 
@@ -103,10 +123,10 @@ const MyClassesCard: React.FC = () => {
       .forEach((t) => {
         const sRaw = ((t as any).report?.strengths || '').toString();
         const iRaw = ((t as any).report?.areasOfImprovement || '').toString();
-        const strengths = sRaw.split(/[\n,]/).map((x) => x.trim()).filter(Boolean);
-        const improvements = iRaw.split(/[\n,]/).map((x) => x.trim()).filter(Boolean);
-        strengths.forEach((x) => (strengthsMap[x] = (strengthsMap[x] || 0) + 1));
-        improvements.forEach((x) => (improvementsMap[x] = (improvementsMap[x] || 0) + 1));
+        const strengths = sRaw.split(/[\n,]/).map((x: string) => x.trim()).filter(Boolean);
+        const improvements = iRaw.split(/[\n,]/).map((x: string) => x.trim()).filter(Boolean);
+        strengths.forEach((x: string) => (strengthsMap[x] = (strengthsMap[x] || 0) + 1));
+        improvements.forEach((x: string) => (improvementsMap[x] = (improvementsMap[x] || 0) + 1));
       });
 
     const strengths = Object.entries(strengthsMap)
@@ -118,29 +138,6 @@ const MyClassesCard: React.FC = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
     return { strengths, improvements };
-  };
-
-  const openTestReport = async (classIdStr: string, testId: string) => {
-    if (!testId) return;
-    setReportOpen(true);
-    setReportLoading(true);
-    setReportError(null);
-    setReportTest(null);
-    try {
-      const [testResp] = await Promise.all([
-        getTestById(testId),
-        ensureTestsLoaded(classIdStr),
-      ]);
-      const t = (testResp.data || (testResp as any).data || null) as any;
-      setReportTest(t as ITest);
-
-      const list = testsByClassId[classIdStr] || [];
-      setReportSwot(buildSwotFromTests(list));
-    } catch (e: any) {
-      setReportError(e?.response?.data?.message || 'Failed to load test report');
-    } finally {
-      setReportLoading(false);
-    }
   };
 
   const fetchClasses = async () => {
@@ -178,11 +175,6 @@ const MyClassesCard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classes]);
-
-  const handleAttendanceClick = (cls: IFinalClass) => {
-    setSelectedClass(cls);
-    setAttendanceModalOpen(true);
-  };
 
   const openAttendanceSheetModal = async (cls: IFinalClass) => {
     setSelectedClass(cls);
@@ -222,8 +214,8 @@ const MyClassesCard: React.FC = () => {
           const dateObj = a.sessionDate ? new Date(a.sessionDate as any) : null;
           const yyyyMmDd = dateObj
             ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(
-                dateObj.getDate()
-              ).padStart(2, '0')}`
+              dateObj.getDate()
+            ).padStart(2, '0')}`
             : '';
 
           let durationHours =
@@ -285,16 +277,6 @@ const MyClassesCard: React.FC = () => {
     setTimeout(() => setActionSuccess(null), 5000);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case FINAL_CLASS_STATUS.ACTIVE: return 'success' as const;
-      case FINAL_CLASS_STATUS.COMPLETED: return 'info' as const;
-      case FINAL_CLASS_STATUS.PAUSED: return 'warning' as const;
-      case FINAL_CLASS_STATUS.CANCELLED: return 'error' as const;
-      default: return 'default' as const;
-    }
-  };
-
   const getStatusThemeColor = (status: string) => {
     switch (status) {
       case FINAL_CLASS_STATUS.ACTIVE: return '#10b981';
@@ -308,7 +290,9 @@ const MyClassesCard: React.FC = () => {
   const calculateProgress = (cls: IFinalClass) => {
     if ((cls as any).progressPercentage != null) return Math.round((cls as any).progressPercentage);
     const completed = Number(cls.completedSessions || 0);
-    const total = Number(cls.totalSessions || 0);
+    const monthlyTotal =
+      Number((cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0);
+    const total = Number(monthlyTotal || 0);
     if (!total) return 0;
     return Math.round((completed / total) * 100);
   };
@@ -457,8 +441,9 @@ const MyClassesCard: React.FC = () => {
                 const statusColor = getStatusThemeColor(cls.status);
                 const progressColor = progress >= 75 ? '#10b981' : progress >= 40 ? '#6366f1' : '#f59e0b';
                 const selectedMonth = attendanceMonthByClassId[classIdStr] || new Date().toISOString().slice(0, 7);
-                const tests = testsByClassId[classIdStr] || [];
-                const selectedTestId = selectedTestIdByClassId[classIdStr] || '';
+                const monthlyTotalSessions =
+                  Number((cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0);
+                const completedForMonth = Math.min(Number((cls as any).completedSessions || 0), Number(monthlyTotalSessions || 0) || Number((cls as any).completedSessions || 0));
 
                 return (
                   <Box
@@ -495,7 +480,7 @@ const MyClassesCard: React.FC = () => {
                         </Box>
                         <Box>
                           <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.92rem' }}>{cls.studentName}</Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Grade {cls.grade} • {cls.board} • ID: {classIdStr}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Grade {cls.grade} â€¢ {cls.board}</Typography>
                         </Box>
                       </Box>
                       <Chip
@@ -566,7 +551,7 @@ const MyClassesCard: React.FC = () => {
                     {/* Progress Bar */}
                     <Box sx={{ mb: 2 }}>
                       <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>Progress {cls.completedSessions}/{cls.totalSessions}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>Progress {completedForMonth}/{monthlyTotalSessions}</Typography>
                         <Typography variant="caption" fontWeight={700} sx={{ color: progressColor, fontSize: '0.72rem' }}>{progress}%</Typography>
                       </Box>
                       <LinearProgress
@@ -585,161 +570,67 @@ const MyClassesCard: React.FC = () => {
                     </Box>
 
                     {/* Action Row */}
-                    <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ pt: 2, borderTop: '1px solid', borderColor: alpha('#6366f1', 0.06) }}>
-                      <Box display="flex" gap={0.5}>
-                        <Button
+                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                      <Tooltip title="Notes">
+                        <IconButton
                           size="small"
-                          variant="contained"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAttendanceClick(cls);
-                          }}
-                          sx={{
-                            textTransform: 'none',
-                            fontWeight: 800,
-                            fontSize: '0.72rem',
-                            boxShadow: 'none',
-                            bgcolor: '#10b981',
-                            '&:hover': { bgcolor: '#059669', boxShadow: 'none' },
-                          }}
+                          onClick={(e) => { e.stopPropagation(); navigate('/tutor-notes'); }}
+                          sx={{ bgcolor: alpha('#3b82f6', 0.08), '&:hover': { bgcolor: alpha('#3b82f6', 0.15) }, width: 32, height: 32 }}
                         >
-                          Mark Attendance
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void openAttendanceSheetModal(cls);
-                          }}
-                          sx={{ textTransform: 'none', fontWeight: 800, fontSize: '0.72rem' }}
-                        >
-                          See Attendance Sheet
-                        </Button>
-                        <Tooltip title="Tests">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => { e.stopPropagation(); navigate('/tutor-tests'); }}
-                            sx={{ bgcolor: alpha('#6366f1', 0.08), '&:hover': { bgcolor: alpha('#6366f1', 0.15) }, width: 32, height: 32 }}
-                          >
-                            <QuizIcon sx={{ fontSize: 16, color: '#6366f1' }} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Notes">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => { e.stopPropagation(); navigate('/tutor-notes'); }}
-                            sx={{ bgcolor: alpha('#3b82f6', 0.08), '&:hover': { bgcolor: alpha('#3b82f6', 0.15) }, width: 32, height: 32 }}
-                          >
-                            <NoteAddIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <TextField
-                          type="month"
-                          size="small"
-                          value={selectedMonth}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            setAttendanceMonthByClassId((prev) => ({ ...prev, [classIdStr]: e.target.value }));
-                          }}
-                          sx={{ width: 150 }}
-                        />
-                        <Button
-                          size="small"
-                          onClick={(e) => { e.stopPropagation(); void openAttendanceSheetModal(cls); }}
-                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.72rem', minWidth: 'auto' }}
-                        >
-                          View Attendance
-                        </Button>
+                          <NoteAddIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
+                        </IconButton>
+                      </Tooltip>
 
-                        <FormControl
-                          size="small"
-                          sx={{ minWidth: 210 }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <InputLabel>Tests</InputLabel>
-                          <Select
-                            label="Tests"
-                            value={selectedTestId}
-                            onOpen={() => ensureTestsLoaded(classIdStr)}
-                            onChange={(e) => {
-                              setSelectedTestIdByClassId((prev) => ({ ...prev, [classIdStr]: String(e.target.value) }));
-                            }}
-                            renderValue={(val) => {
-                              if (!val) return testsLoadingByClassId[classIdStr] ? 'Loading...' : 'Select test';
-                              const t = tests.find((x) => String((x as any).id || (x as any)._id) === String(val));
-                              const tid = String((t as any)?.id || (t as any)?._id || val);
-                              const name = (t as any)?.topicName || (t as any)?.paperName || 'Test';
-                              return `${tid} • ${name}`;
-                            }}
-                          >
-                            {testsLoadingByClassId[classIdStr] && (
-                              <MenuItem value="" disabled>
-                                Loading...
-                              </MenuItem>
-                            )}
-                            {!testsLoadingByClassId[classIdStr] && tests.length === 0 && (
-                              <MenuItem value="" disabled>
-                                No tests found
-                              </MenuItem>
-                            )}
-                            {tests.map((t) => {
-                              const tid = String((t as any).id || (t as any)._id);
-                              const name = (t as any).topicName || (t as any).paperName || 'Test';
-                              return (
-                                <MenuItem key={tid} value={tid}>
-                                  {tid} — {name}
-                                </MenuItem>
-                              );
-                            })}
-                          </Select>
-                        </FormControl>
+                      <TextField
+                        type="month"
+                        size="small"
+                        value={selectedMonth}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setAttendanceMonthByClassId((prev) => ({ ...prev, [classIdStr]: e.target.value }));
+                        }}
+                        sx={{ width: 140, '& .MuiInputBase-input': { fontSize: '0.75rem', py: 0.5 } }}
+                      />
 
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          disabled={!selectedTestId}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void openTestReport(classIdStr, selectedTestId);
-                          }}
-                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.72rem' }}
-                        >
-                          View Report
-                        </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => { e.stopPropagation(); void openAttendanceSheetModal(cls); }}
+                        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', height: 32 }}
+                      >
+                        Attendance
+                      </Button>
 
-                        <Button
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={(e) => { e.stopPropagation(); handleSubmitMonthlySheet(cls); }}
+                        disabled={sheetSubmittingClassId === classIdStr}
+                        startIcon={<SendIcon sx={{ fontSize: 12 }} />}
+                        sx={{
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          boxShadow: 'none',
+                          height: 32,
+                          borderRadius: 2,
+                          bgcolor: '#6366f1',
+                          fontSize: '0.7rem',
+                          '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' },
+                        }}
+                      >
+                        {sheetSubmittingClassId === classIdStr ? '...' : 'Submit'}
+                      </Button>
+
+                      <Tooltip title={`Call ${cls.coordinator?.name || 'Coordinator'}`}>
+                        <IconButton
                           size="small"
-                          variant="contained"
-                          onClick={(e) => { e.stopPropagation(); handleSubmitMonthlySheet(cls); }}
-                          disabled={sheetSubmittingClassId === classIdStr}
-                          startIcon={<SendIcon sx={{ fontSize: 13 }} />}
-                          sx={{
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            boxShadow: 'none',
-                            px: 2,
-                            borderRadius: 2,
-                            bgcolor: '#6366f1',
-                            fontSize: '0.72rem',
-                            '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' },
-                          }}
+                          onClick={(e) => { e.stopPropagation(); handleCallCoordinator(cls); }}
+                          sx={{ bgcolor: alpha('#10b981', 0.08), '&:hover': { bgcolor: alpha('#10b981', 0.15) }, width: 32, height: 32 }}
                         >
-                          {sheetSubmittingClassId === classIdStr ? 'Submitting...' : 'Submit'}
-                        </Button>
-                        <Tooltip title={`Call ${cls.coordinator?.name || 'Coordinator'}`}>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => { e.stopPropagation(); handleCallCoordinator(cls); }}
-                            sx={{ bgcolor: alpha('#3b82f6', 0.08), '&:hover': { bgcolor: alpha('#3b82f6', 0.15) }, width: 32, height: 32 }}
-                          >
-                            <LocalPhoneIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
+                          <LocalPhoneIcon sx={{ fontSize: 16, color: '#10b981' }} />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </Box>
                 );
@@ -797,13 +688,23 @@ const MyClassesCard: React.FC = () => {
                     }}
                   >
                     <Typography variant="subtitle1" fontWeight={700} sx={{ position: 'relative', zIndex: 1 }}>{selectedClass.studentName}</Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8, position: 'relative', zIndex: 1, fontSize: '0.82rem' }}>Grade {selectedClass.grade} • {selectedClass.board}</Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8, position: 'relative', zIndex: 1, fontSize: '0.82rem' }}>Grade {selectedClass.grade} â€¢ {selectedClass.board}</Typography>
                   </Box>
                   <Box mb={2.5}>
                     {[
-                      { label: 'Total Sessions', value: selectedClass.totalSessions, color: 'text.primary' },
+                      {
+                        label: 'Total Sessions',
+                        value: Number((selectedClass as any)?.classLead?.classesPerMonth ?? (selectedClass as any)?.classesPerMonth ?? (selectedClass as any)?.totalSessions ?? 0),
+                        color: 'text.primary'
+                      },
                       { label: 'Completed', value: selectedClass.completedSessions, color: '#10b981' },
-                      { label: 'Remaining', value: (selectedClass.totalSessions || 0) - (selectedClass.completedSessions || 0), color: '#f59e0b' },
+                      {
+                        label: 'Remaining',
+                        value:
+                          Number((selectedClass as any)?.classLead?.classesPerMonth ?? (selectedClass as any)?.classesPerMonth ?? (selectedClass as any)?.totalSessions ?? 0) -
+                          Number(selectedClass.completedSessions || 0),
+                        color: '#f59e0b'
+                      },
                     ].map((item, i) => (
                       <Box key={i} display="flex" justifyContent="space-between" alignItems="center" py={1} sx={i < 2 ? { borderBottom: '1px solid', borderColor: alpha('#6366f1', 0.06) } : {}}>
                         <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>{item.label}</Typography>
@@ -830,23 +731,6 @@ const MyClassesCard: React.FC = () => {
                       />
                     </Box>
                   </Box>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<CheckCircleIcon />}
-                    onClick={() => handleAttendanceClick(selectedClass!)}
-                    sx={{
-                      borderRadius: 2.5,
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      py: 1.25,
-                      bgcolor: '#10b981',
-                      '&:hover': { bgcolor: '#059669' },
-                      boxShadow: 'none',
-                    }}
-                  >
-                    Mark Today's Attendance
-                  </Button>
                 </>
               ) : (
                 <Box textAlign="center" py={6}>
@@ -914,58 +798,51 @@ const MyClassesCard: React.FC = () => {
             <Button
               variant="outlined"
               onClick={() => {
-                if (selectedClass) {
-                  setSheetOpen(false);
-                  handleAttendanceClick(selectedClass);
-                }
+                setSheetOpen(false);
               }}
-              disabled={!selectedClass || sheetLoading}
             >
-              Mark Attendance
-            </Button>
-            <Button onClick={() => { setSheetOpen(false); setSheetError(null); setSheetTutorData(null); setSheetClassInfo(null); }} disabled={sheetLoading}>
               Close
             </Button>
           </DialogActions>
         </Dialog>
 
-        <Dialog open={reportOpen} onClose={reportLoading ? undefined : () => { setReportOpen(false); setReportTest(null); setReportSwot(null); setReportError(null); }} maxWidth="md" fullWidth>
-          <DialogTitle>Test Report & SWOT Analysis</DialogTitle>
+        <Dialog
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>Test Report</DialogTitle>
           <DialogContent>
             {reportError && <Alert severity="error" sx={{ mb: 2 }}>{reportError}</Alert>}
             {reportLoading && (
-              <Box py={6} display="flex" justifyContent="center">
+              <Box py={4} display="flex" justifyContent="center">
                 <LoadingSpinner message="Loading report..." />
               </Box>
             )}
             {!reportLoading && reportTest && (
               <Box>
                 <TestReportCard test={reportTest} showActions={false} />
-
                 {reportSwot && (
                   <Box mt={2} display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap={2}>
                     <Box>
-                      <Typography variant="subtitle2" fontWeight={800} gutterBottom>
-                        Strengths
-                      </Typography>
+                      <Typography variant="subtitle2" fontWeight={800} gutterBottom>Strengths</Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
                         {reportSwot.strengths.length === 0
-                          ? <Typography variant="body2" color="text.secondary">Not enough data yet.</Typography>
+                          ? <Typography variant="body2" color="text.secondary">No data.</Typography>
                           : reportSwot.strengths.map((s) => (
-                              <Chip key={s.label} label={s.label} color="success" variant="outlined" size="small" />
-                            ))}
+                            <Chip key={s.label} label={s.label} color="success" variant="outlined" size="small" />
+                          ))}
                       </Box>
                     </Box>
                     <Box>
-                      <Typography variant="subtitle2" fontWeight={800} gutterBottom>
-                        Areas for improvement
-                      </Typography>
+                      <Typography variant="subtitle2" fontWeight={800} gutterBottom>Improvements</Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
                         {reportSwot.improvements.length === 0
-                          ? <Typography variant="body2" color="text.secondary">Not enough data yet.</Typography>
+                          ? <Typography variant="body2" color="text.secondary">No data.</Typography>
                           : reportSwot.improvements.map((s) => (
-                              <Chip key={s.label} label={s.label} color="warning" variant="outlined" size="small" />
-                            ))}
+                            <Chip key={s.label} label={s.label} color="warning" variant="outlined" size="small" />
+                          ))}
                       </Box>
                     </Box>
                   </Box>
@@ -974,9 +851,7 @@ const MyClassesCard: React.FC = () => {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => { setReportOpen(false); setReportTest(null); setReportSwot(null); setReportError(null); }} disabled={reportLoading}>
-              Close
-            </Button>
+            <Button onClick={() => setReportOpen(false)}>Close</Button>
           </DialogActions>
         </Dialog>
       </CardContent>
@@ -984,4 +859,4 @@ const MyClassesCard: React.FC = () => {
   );
 };
 
-export default React.memo(MyClassesCard);
+export default MyClassesCard;

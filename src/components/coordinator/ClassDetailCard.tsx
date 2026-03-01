@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card, CardContent, Typography, Box, Grid, Chip, LinearProgress, Divider, Button, Tooltip, TextField, Collapse, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+﻿import React, { useState } from 'react';
+import { Card, CardContent, Typography, Box, Grid, Chip, LinearProgress, Divider, Button, Tooltip, TextField, Collapse, IconButton } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import PersonIcon from '@mui/icons-material/Person';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -10,37 +10,25 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { useAuth } from '../../hooks/useAuth';
-import TutorSelectionModal from '../common/TutorSelectionModal';
-import finalClassService from '../../services/finalClassService';
 
 interface ClassDetailCardProps {
   finalClass: IFinalClass;
   onViewDetails?: (classId: string) => void;
-  onGenerateAdvancePayment?: (classId: string) => void;
   onUpdate?: () => void;
   showActions?: boolean;
   onChangeTestsPerMonth?: (classId: string, value: number) => void;
+  onGenerateAdvancePayment?: (classId: string) => Promise<void>;
 }
 
-const ClassDetailCard: React.FC<ClassDetailCardProps> = ({ 
-  finalClass, 
-  onViewDetails, 
-  onGenerateAdvancePayment, 
-  onUpdate,
-  showActions = true, 
-  onChangeTestsPerMonth 
+const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
+  finalClass,
+  onViewDetails,
+  showActions = true,
+  onChangeTestsPerMonth,
+  onGenerateAdvancePayment
 }) => {
   const { user } = useAuth();
-  const isManagerOrAdmin = user?.role === 'MANAGER' || user?.role === 'ADMIN';
-  const isCoordinator = user?.role === 'COORDINATOR';
-
-  const [tutorModalOpen, setTutorModalOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [renewModalOpen, setRenewModalOpen] = useState(false);
-  const [renewMonthlyFee, setRenewMonthlyFee] = useState<string>('');
-  const [renewSessionsPerMonth, setRenewSessionsPerMonth] = useState<string>('');
-  const [renewError, setRenewError] = useState<string | null>(null);
 
   const getStatusColor = (status: string): 'success' | 'info' | 'warning' | 'error' | 'default' => {
     switch (status) {
@@ -68,62 +56,6 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
     Number(monthlyTotalSessions || 0) || Number(finalClass.completedSessions || 0)
   );
 
-  const openRenewModal = () => {
-    setRenewError(null);
-    setRenewMonthlyFee('');
-    setRenewSessionsPerMonth('');
-    setRenewModalOpen(true);
-  };
-
-  const closeRenewModal = () => {
-    if (loading) return;
-    setRenewModalOpen(false);
-    setRenewError(null);
-  };
-
-  const handleConfirmRenew = async () => {
-    setRenewError(null);
-
-    const payload: any = {};
-    const feeStr = renewMonthlyFee.trim();
-    const sessionsStr = renewSessionsPerMonth.trim();
-
-    if (feeStr.length > 0) {
-      const fee = Number(feeStr);
-      if (Number.isNaN(fee) || fee < 0) {
-        setRenewError('Monthly fee must be a valid non-negative number');
-        return;
-      }
-      payload.monthlyFee = fee;
-    }
-
-    if (sessionsStr.length > 0) {
-      const sessions = Number(sessionsStr);
-      if (Number.isNaN(sessions) || sessions <= 0) {
-        setRenewError('Sessions per month must be a valid number greater than 0');
-        return;
-      }
-      payload.sessionsPerMonth = sessions;
-    }
-
-    if ((payload.monthlyFee && !payload.sessionsPerMonth) || (!payload.monthlyFee && payload.sessionsPerMonth)) {
-      setRenewError('To update plan, provide both Monthly Fee and Sessions/Month (or leave both blank to keep current plan)');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await finalClassService.renewClass(finalClass.id, payload);
-      setRenewModalOpen(false);
-      onUpdate?.();
-    } catch (err) {
-      console.error('Failed to renew class:', err);
-      setRenewError('Failed to renew class');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const progress = monthlyTotalSessions > 0
     ? Math.round((completedForMonth / monthlyTotalSessions) * 100)
     : 0;
@@ -143,73 +75,19 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
     }
   }, [finalClass.testPerMonth]);
 
-  const handleChangeTutor = async (newTutorId: string, tutorName: string) => {
-    const reason = window.prompt(`Reason for changing tutor to ${tutorName}:`);
-    if (reason === null) return;
-
-    try {
-      setLoading(true);
-      await finalClassService.changeTutor(finalClass.id, newTutorId, reason);
-      setTutorModalOpen(false);
-      onUpdate?.();
-    } catch (err) {
-      console.error('Failed to change tutor:', err);
-      alert('Failed to change tutor');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTutorLeaving = async () => {
-    if (!window.confirm('Are you sure you want to mark the current tutor as LEFT? This will allow you to repost the class as a lead.')) {
-      return;
-    }
-
-    const reason = window.prompt('Reason for tutor leaving:');
-    if (reason === null) return;
-
-    try {
-      setLoading(true);
-      await finalClassService.recordTutorLeaving(finalClass.id, reason);
-      onUpdate?.();
-    } catch (err) {
-      console.error('Failed to record tutor leaving:', err);
-      alert('Failed to record tutor leaving');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRepostAsLead = async () => {
-    if (!window.confirm('Are you sure you want to repost this class as a new lead opportunity?')) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      await finalClassService.repostAsLead(finalClass.id);
-      alert('Class successfully reposted as a new lead!');
-    } catch (err) {
-      console.error('Failed to repost lead:', err);
-      alert('Failed to repost lead');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <Card 
-      elevation={0} 
-      sx={{ 
-        mb: 2, 
-        border: '1px solid', 
-        borderColor: 'divider', 
+    <Card
+      elevation={0}
+      sx={{
+        mb: 2,
+        border: '1px solid',
+        borderColor: 'divider',
         borderRadius: 2,
         transition: 'all 0.2s',
-        '&:hover': { 
+        '&:hover': {
           borderColor: 'primary.main',
           boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-        } 
+        }
       }}
     >
       <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
@@ -219,27 +97,27 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
               <Typography variant="h6" fontWeight={700} lineHeight={1.2}>
                 {finalClass.studentName}
               </Typography>
-              <Chip 
-                label={finalClass.status} 
-                color={getStatusColor(finalClass.status) as any} 
-                size="small" 
+              <Chip
+                label={finalClass.status}
+                color={getStatusColor(finalClass.status) as any}
+                size="small"
                 variant={finalClass.status === FINAL_CLASS_STATUS.ACTIVE ? 'filled' : 'outlined'}
                 sx={{ height: 20, fontSize: '0.625rem', fontWeight: 700 }}
               />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <SchoolIcon sx={{ fontSize: 16, opacity: 0.7 }} />
-              {finalClass.grade} • {finalClass.board} • {finalClass.mode}
+              {finalClass.grade} â€¢ {finalClass.board} â€¢ {finalClass.mode}
             </Typography>
           </Box>
           <Box textAlign="right">
             {finalClass.subject?.length ? (
-               <Box display="flex" gap={0.5} justifyContent="flex-end" flexWrap="wrap" maxWidth={150}>
+              <Box display="flex" gap={0.5} justifyContent="flex-end" flexWrap="wrap" maxWidth={150}>
                 {finalClass.subject.slice(0, 2).map(s => (
-                   <Chip key={s} label={s} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: 'action.hover' }} />
+                  <Chip key={s} label={s} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: 'action.hover' }} />
                 ))}
                 {finalClass.subject.length > 2 && <Chip label={`+${finalClass.subject.length - 2}`} size="small" sx={{ height: 20, fontSize: '0.7rem' }} />}
-               </Box>
+              </Box>
             ) : null}
           </Box>
         </Box>
@@ -253,11 +131,11 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
                 <Typography variant="caption" fontWeight={600} color="text.secondary">SESSION PROGRESS</Typography>
                 <Typography variant="caption" fontWeight={700} color={progressColor}>{progress}%</Typography>
               </Box>
-              <LinearProgress 
-                variant="determinate" 
-                value={Math.max(0, Math.min(100, progress))} 
-                color={progressColor as any} 
-                sx={{ height: 6, borderRadius: 3, bgcolor: 'action.selected' }} 
+              <LinearProgress
+                variant="determinate"
+                value={Math.max(0, Math.min(100, progress))}
+                color={progressColor as any}
+                sx={{ height: 6, borderRadius: 3, bgcolor: 'action.selected' }}
               />
               <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
                 {completedForMonth} / {monthlyTotalSessions} sessions completed
@@ -286,25 +164,20 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
                   <Typography variant="caption" display="block" color="text.secondary" lineHeight={1}>Tutor</Typography>
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="body2" fontWeight={500}>{finalClass.tutor?.name || 'Unassigned'}</Typography>
-                    {isManagerOrAdmin && finalClass.status === FINAL_CLASS_STATUS.ACTIVE && (
-                      <Button size="small" variant="text" sx={{ p: 0, minWidth: 'auto', fontSize: '0.625rem' }} onClick={() => setTutorModalOpen(true)}>
-                        Change
-                      </Button>
-                    )}
                   </Box>
                 </Box>
               </Box>
               <Box display="flex" gap={1.5} alignItems="center">
                 <AccessTimeIcon color="action" fontSize="small" />
-                 <Box>
+                <Box>
                   <Typography variant="caption" display="block" color="text.secondary" lineHeight={1}>Schedule</Typography>
-                  <Typography variant="body2" fontWeight={500}>{days} • {time}</Typography>
+                  <Typography variant="body2" fontWeight={500}>{days} â€¢ {time}</Typography>
                 </Box>
               </Box>
-               {typeof finalClass.ratePerSession === 'number' && (
+              {typeof finalClass.ratePerSession === 'number' && (
                 <Box display="flex" gap={1.5} alignItems="center">
-                  <Typography variant="body2" color="action.active" fontWeight={700} sx={{ width: 20, textAlign: 'center' }}>₹</Typography>
-                   <Box>
+                  <Typography variant="body2" color="action.active" fontWeight={700} sx={{ width: 20, textAlign: 'center' }}>â‚¹</Typography>
+                  <Box>
                     <Typography variant="caption" display="block" color="text.secondary" lineHeight={1}>Rate</Typography>
                     <Typography variant="body2" fontWeight={500}>{finalClass.ratePerSession}/session</Typography>
                   </Box>
@@ -342,72 +215,46 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
         )}
 
         {typeof finalClass.testPerMonth === 'number' && onChangeTestsPerMonth && (
-           <Box mt={2} pt={2} borderTop="1px solid" borderColor="divider">
-             <Box display="flex" alignItems="center" gap={2}>
-               <Typography variant="body2" sx={{ minWidth: 100 }}>Tests/Month:</Typography>
-                <TextField
-                  type="number"
-                  variant="standard"
-                  size="small"
-                  inputProps={{ min: 0, style: { textAlign: 'center' } }}
-                  sx={{ width: 60 }}
-                  value={localTestsPerMonth}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    if (!Number.isNaN(value) && value >= 0) setLocalTestsPerMonth(value);
-                  }}
-                />
-                <Button
-                  size="small"
-                  disabled={localTestsPerMonth === (finalClass.testPerMonth ?? 1)}
-                  onClick={() => onChangeTestsPerMonth(finalClass.id, localTestsPerMonth)}
-                  sx={{ textTransform: 'none' }}
-                >
-                  Save
-                </Button>
-             </Box>
-           </Box>
+          <Box mt={2} pt={2} borderTop="1px solid" borderColor="divider">
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography variant="body2" sx={{ minWidth: 100 }}>Tests/Month:</Typography>
+              <TextField
+                type="number"
+                variant="standard"
+                size="small"
+                inputProps={{ min: 0, style: { textAlign: 'center' } }}
+                sx={{ width: 60 }}
+                value={localTestsPerMonth}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (!Number.isNaN(value) && value >= 0) setLocalTestsPerMonth(value);
+                }}
+              />
+              <Button
+                size="small"
+                disabled={localTestsPerMonth === (finalClass.testPerMonth ?? 1)}
+                onClick={() => onChangeTestsPerMonth(finalClass.id, localTestsPerMonth)}
+                sx={{ textTransform: 'none' }}
+              >
+                Save
+              </Button>
+            </Box>
+          </Box>
         )}
 
         {showActions && (
           <Box mt={3} display="flex" justifyContent="flex-end" gap={1}>
-            {isCoordinator && finalClass.status === FINAL_CLASS_STATUS.ACTIVE && (
+            {onGenerateAdvancePayment && (
               <Button
-                variant="outlined"
+                variant="contained"
                 size="small"
-                color="secondary"
-                onClick={openRenewModal}
-                sx={{ borderRadius: 2, textTransform: 'none' }}
-                disabled={loading}
+                onClick={() => onGenerateAdvancePayment(finalClass.id)}
+                sx={{ borderRadius: 2, textTransform: 'none', bgcolor: 'primary.main', color: 'white' }}
               >
-                Renew
+                Advance Payment
               </Button>
             )}
-            {isManagerOrAdmin && finalClass.status === FINAL_CLASS_STATUS.ACTIVE && (
-              <>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="warning"
-                  onClick={handleTutorLeaving}
-                  sx={{ borderRadius: 2, textTransform: 'none' }}
-                  disabled={loading}
-                >
-                  Tutor Left
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="info"
-                  onClick={handleRepostAsLead}
-                  sx={{ borderRadius: 2, textTransform: 'none' }}
-                  disabled={loading}
-                >
-                  Repost as Lead
-                </Button>
-              </>
-            )}
-             <Button
+            <Button
               variant="outlined"
               size="small"
               onClick={() => onViewDetails?.(finalClass.id)}
@@ -415,69 +262,9 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
             >
               Details
             </Button>
-            <Button
-              variant="contained"
-              size="small"
-              disableElevation
-              onClick={() => onGenerateAdvancePayment?.(finalClass.id)}
-              sx={{ borderRadius: 2, textTransform: 'none' }}
-            >
-              Generate Advance
-            </Button>
           </Box>
         )}
       </CardContent>
-      
-      <TutorSelectionModal
-        open={tutorModalOpen}
-        onClose={() => setTutorModalOpen(false)}
-        onSelect={handleChangeTutor}
-        excludeTutorId={finalClass.tutor?.id}
-      />
-
-      <Dialog open={renewModalOpen} onClose={closeRenewModal} fullWidth maxWidth="xs">
-        <DialogTitle>Renew Class</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            This will reset progress to 0 and create advance payments for the next cycle. Optionally update the monthly plan.
-          </Typography>
-
-          <TextField
-            label="Monthly Fee (optional)"
-            fullWidth
-            margin="dense"
-            type="number"
-            value={renewMonthlyFee}
-            onChange={(e) => setRenewMonthlyFee(e.target.value)}
-            inputProps={{ min: 0 }}
-            disabled={loading}
-          />
-          <TextField
-            label="Sessions Per Month (optional)"
-            fullWidth
-            margin="dense"
-            type="number"
-            value={renewSessionsPerMonth}
-            onChange={(e) => setRenewSessionsPerMonth(e.target.value)}
-            inputProps={{ min: 1 }}
-            disabled={loading}
-          />
-
-          {renewError ? (
-            <Typography variant="caption" color="error" display="block" sx={{ mt: 1 }}>
-              {renewError}
-            </Typography>
-          ) : null}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeRenewModal} disabled={loading} sx={{ textTransform: 'none' }}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={handleConfirmRenew} disabled={loading} sx={{ textTransform: 'none' }}>
-            Confirm Renew
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Card>
   );
 };

@@ -133,6 +133,11 @@ const CoordinatorDashboardPage: React.FC = () => {
                         <Typography variant="body1" sx={{ opacity: 0.9 }}>
                             Welcome back, {user?.name || 'Coordinator'}. Here is your daily overview.
                         </Typography>
+                        <Box mt={2} display="flex" gap={2}>
+                          <Button variant="contained" color="primary" onClick={() => window.location.href='/attendance-approvals'}>Go to Attendance Approvals</Button>
+                          <Button variant="contained" color="secondary" onClick={() => window.location.href='/assigned-classes'}>Go to My Classes</Button>
+                          <Button variant="contained" color="success" onClick={() => window.location.href='/payment-tracking'}>Go to Payments follow-ups</Button>
+                        </Box>
                     </Box>
                     <Button
                         variant="contained"

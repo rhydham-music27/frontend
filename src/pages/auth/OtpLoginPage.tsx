@@ -102,7 +102,16 @@ const OtpLoginPage: React.FC = () => {
       } catch {
         // ignore storage errors
       }
-      dispatch(setCredentials({ user, token: accessToken }));
+      dispatch(setCredentials({
+        user: {
+          ...user,
+          gender: user.gender as any,
+          acceptedTerms: (user as any).acceptedTerms ?? true,
+          createdAt: (user as any).createdAt ? new Date((user as any).createdAt) : new Date(),
+          updatedAt: (user as any).updatedAt ? new Date((user as any).updatedAt) : new Date()
+        },
+        token: accessToken
+      }));
       dispatch(setError(null));
       navigate('/');
     } catch (e: any) {
