@@ -248,6 +248,17 @@ export default function ClassLeadDetailPage() {
     setSelectedCoordinatorId('');
   };
 
+  const handleRejectDemo = async () => {
+    if (!id) return;
+    try {
+      await demoService.updateDemoStatus(id, DEMO_STATUS.REJECTED);
+      await refetchAll();
+      setSnack({ open: true, message: 'Demo rejected', severity: 'success' });
+    } catch (e: any) {
+      handleError(e);
+    }
+  };
+
 
   const handleMarkPaymentReceived = async () => {
     if (!id) return;

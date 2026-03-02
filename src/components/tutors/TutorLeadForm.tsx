@@ -461,7 +461,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                       <Button
                         fullWidth
                         variant="contained"
-                        disabled={selectedSubjects.length === 0 || isFieldReadOnly(initialData?.subjects)}
+                        disabled={selectedSubjects.length === 0 || isFieldReadOnly('subjects')}
                         onClick={handleAddSubjects}
                         sx={{ height: 40, borderRadius: 2, fontSize: '0.75rem' }}
                       >
@@ -475,7 +475,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                       <Chip
                         key={sub}
                         label={formatSubjectLabel(sub)}
-                        onDelete={isFieldReadOnly(initialData?.subjects) ? undefined : () => handleRemoveSubject(sub)}
+                        onDelete={isFieldReadOnly('subjects') ? undefined : () => handleRemoveSubject(sub)}
                         sx={{ borderRadius: 1.5, fontWeight: 600 }}
                         color="primary"
                         variant="outlined"
@@ -486,7 +486,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     )}
                   </Box>
                   {errors.subjects && <FormHelperText error sx={{ mt: 1 }}>{errors.subjects}</FormHelperText>}
-                  {isFieldReadOnly(initialData?.subjects) && <FormHelperText sx={{ mt: 1 }}>Cannot be changed</FormHelperText>}
+                    {isFieldReadOnly('subjects') && <FormHelperText sx={{ mt: 1 }}>Cannot be changed</FormHelperText>}
                 </Box>
               </Grid>
 
@@ -506,7 +506,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                       setFormData((prev) => ({ ...prev, extracurricularActivities: value.filter((v) => v !== 'Select All') }));
                     }
                   }}
-                  disabled={isFieldReadOnly(initialData?.extracurricularActivities)}
+                  disabled={isFieldReadOnly('extracurricularActivities')}
                   renderTags={(value, getTagProps) =>
                     value.filter(v => v !== 'Select All').map((option, index) => (
                       <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} color="secondary" sx={{ borderRadius: 1.5 }} />
@@ -517,7 +517,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                       {...params}
                       label="Extracurricular Activities (Optional)"
                       placeholder="Select activities"
-                      helperText={isFieldReadOnly(initialData?.extracurricularActivities) ? 'Cannot be changed' : 'Select all activities you can teach or assist with'}
+                      helperText={isFieldReadOnly('extracurricularActivities') ? 'Cannot be changed' : 'Select all activities you can teach or assist with'}
                       InputProps={{
                         ...params.InputProps,
                         startAdornment: (
@@ -541,7 +541,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   options={['English', 'Hindi', 'Marathi', 'Bengali', 'Tamil', 'Telugu', 'Kannada', 'Gujarati', 'Punjabi']}
                   value={formData.languagesKnown || []}
                   onChange={(_, value) => setFormData(prev => ({ ...prev, languagesKnown: value }))}
-                  disabled={isFieldReadOnly(initialData?.languagesKnown)}
+                  disabled={isFieldReadOnly('languagesKnown')}
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
                       <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} size="small" />
@@ -575,7 +575,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   options={['Teaching', 'Communication', 'Online Tutoring', 'Lesson Planning', 'Subject Expertise', 'Mentoring']}
                   value={formData.skills || []}
                   onChange={(_, value) => setFormData(prev => ({ ...prev, skills: value }))}
-                  disabled={isFieldReadOnly(initialData?.skills)}
+                  disabled={isFieldReadOnly('skills')}
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
                       <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} size="small" />
@@ -614,7 +614,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     label="Preferred Mode"
                     value={formData.preferredMode}
                     onChange={(e) => handlePreferredModeChange(e.target.value as TeachingMode)}
-                    disabled={isFieldReadOnly(initialData?.preferredMode)}
+                    disabled={isFieldReadOnly('preferredMode')}
                     startAdornment={
                       <InputAdornment position="start">
                         <SettingsRemoteIcon color="action" fontSize="small" sx={{ ml: 0.5, mr: 1 }} />
@@ -626,14 +626,14 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                     <MenuItem value={TeachingMode.HYBRID}>Hybrid (Both)</MenuItem>
                   </Select>
                   {errors.preferredMode && <FormHelperText>{errors.preferredMode}</FormHelperText>}
-                  {isFieldReadOnly(initialData?.preferredMode) && !errors.preferredMode && <FormHelperText>Cannot be changed</FormHelperText>}
+                  {isFieldReadOnly('preferredMode') && !errors.preferredMode && <FormHelperText>Cannot be changed</FormHelperText>}
                 </FormControl>
               </Grid>
 
               {/* City - Only show for OFFLINE or HYBRID */}
               {(formData.preferredMode === TeachingMode.OFFLINE || formData.preferredMode === TeachingMode.HYBRID) && (
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth error={Boolean(errors.city)} disabled={isFieldReadOnly(initialData?.city)}>
+                  <FormControl fullWidth error={Boolean(errors.city)} disabled={isFieldReadOnly('city')}>
                     <InputLabel id="city-label">Current City</InputLabel>
                     <Select
                       labelId="city-label"
@@ -649,7 +649,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                       {cityOptions.map((opt) => <MenuItem key={opt.value} value={opt.label}>{opt.label}</MenuItem>)}
                     </Select>
                     {errors.city && <FormHelperText>{errors.city}</FormHelperText>}
-                    {isFieldReadOnly(initialData?.city) && !errors.city && <FormHelperText>Cannot be changed</FormHelperText>}
+                    {isFieldReadOnly('city') && !errors.city && <FormHelperText>Cannot be changed</FormHelperText>}
                   </FormControl>
                 </Grid>
               )}
@@ -673,7 +673,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                         setFormData((prev) => ({ ...prev, preferredAreas: value }));
                       }
                     }}
-                    disabled={!formData.city || isFieldReadOnly(initialData?.preferredAreas)}
+                    disabled={!formData.city || isFieldReadOnly('preferredAreas')}
                     renderTags={(value, getTagProps) =>
                       value.filter(v => v !== 'Select All').map((option, index) => (
                         <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} color="primary" sx={{ borderRadius: 1.5 }} />
@@ -685,7 +685,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                         label="Preferred Areas"
                         placeholder={formData.city ? 'Select areas' : 'Select city first'}
                         error={Boolean(errors.preferredAreas)}
-                        helperText={errors.preferredAreas || (isFieldReadOnly(initialData?.preferredAreas) ? 'Cannot be changed' : 'Select areas where you prefer to teach')}
+                        helperText={errors.preferredAreas || (isFieldReadOnly('preferredAreas') ? 'Cannot be changed' : 'Select areas where you prefer to teach')}
                       />
                     )}
                   />

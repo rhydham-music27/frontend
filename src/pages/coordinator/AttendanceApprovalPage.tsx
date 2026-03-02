@@ -392,7 +392,7 @@ const AttendanceApprovalPage: React.FC = () => {
                       variant="outlined"
                       size="small"
                       color="primary"
-                      onClick={() => handleOpenRenewModal(sheet.finalClass?.id || sheet.finalClass?._id || '')}
+                      onClick={() => handleOpenRenewModal((sheet.finalClass as any)?.id || (sheet.finalClass as any)?._id || '')}
                       disabled={loading}
                       sx={{ ml: 1 }}
                     >

@@ -111,7 +111,7 @@ const TutorDashboardPage: React.FC = () => {
     }
   };
 
-  const isProfileComplete = tutorProfile && tutorProfile.subjects?.length > 0;
+  const isProfileComplete = tutorProfile && ((tutorProfile.subjects?.length ?? 0) > 0);
   const showVerificationBanner = isProfileComplete && (!tutorProfile.verificationFeeStatus || tutorProfile.verificationFeeStatus === 'PENDING');
 
   // Greeting based on time of day

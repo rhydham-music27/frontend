@@ -173,7 +173,7 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
             </Box>
             <Box display="flex" alignItems="center" gap={1}>
               <PersonIcon fontSize="small" />
-              <Typography variant="body2">{(props.task as IPaymentReminder).tutor.name}</Typography>
+              <Typography variant="body2">{((props.task as IPaymentReminder).tutor as any)?.name || ''}</Typography>
             </Box>
           </Box>
         )}

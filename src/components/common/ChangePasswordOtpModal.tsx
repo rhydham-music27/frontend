@@ -36,12 +36,15 @@ const ChangePasswordOtpModal: React.FC<ChangePasswordOtpModalProps> = ({ open, o
 
   // Resend timer countdown
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
     if (step === 2 && resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setResendTimer((t) => t - 1), 1000);
     } else if (resendTimer === 0) {
       setCanResend(true);
     }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [resendTimer, step]);
 
   const resetState = () => {

@@ -1011,8 +1011,8 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={0.75}>
                   {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map((day) => {
-                    const currentWeekdays = watch('weekdays') || [];
-                    const isSelected = currentWeekdays.includes(day);
+                    const currentWeekdays = ((watch as any)('weekdays') as string[] | undefined) || [];
+                    const isSelected = (currentWeekdays || []).includes(day);
                     const displayLabel = day.charAt(0) + day.slice(1).toLowerCase().substring(0, 2);
                     return (
                       <Chip
@@ -1028,9 +1028,9 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                           } else {
                             newWeekdays.push(day);
                             const dayOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-                            newWeekdays.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+                            (newWeekdays as string[]).sort((a, b) => dayOrder.indexOf(a as string) - dayOrder.indexOf(b as string));
                           }
-                          setValue('weekdays', newWeekdays, { shouldValidate: true });
+                          (setValue as any)('weekdays', newWeekdays, { shouldValidate: true });
                         }}
                         clickable
                         sx={{

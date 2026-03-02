@@ -173,7 +173,7 @@ const UpcomingTestsCard: React.FC = () => {
             const key =
               (test as any).id ||
               (test as any)._id ||
-              `${String(test.finalClass?._id || '')}-${String(test.testDate || '')}-${String(test.testTime || '')}`;
+              `${String((test.finalClass as any)?.id || (test.finalClass as any)?._id || '')}-${String(test.testDate || '')}-${String(test.testTime || '')}`;
 
             return (
               <Box

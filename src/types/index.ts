@@ -95,6 +95,8 @@ export interface ITutor {
   teacherId?: string;
   experienceHours: number;
   subject: string[];
+  // backward-compatible alias: some components use `subjects`
+  subjects?: string[];
   extracurricularActivities?: string[];
   ratings: number;
   classesAssigned: number;

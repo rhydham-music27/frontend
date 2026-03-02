@@ -9,12 +9,13 @@ type Props = {
   subtitle?: string;
   icon?: React.ReactNode;
   color?: string;
+  gradient?: string;
   trend?: number;
   loading?: boolean;
   onClick?: () => void;
 };
 
-const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'primary.main', trend, loading = false, onClick }) => {
+const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'primary.main', gradient, trend, loading = false, onClick }) => {
   const theme = useTheme();
 
   const resolveColor = (c: string): string => {
@@ -82,7 +83,7 @@ const MetricsCard: React.FC<Props> = ({ title, value, subtitle, icon, color = 'p
           height: '100%',
           borderRadius: '24px',
           padding: '2px', // border width
-          background: `linear-gradient(135deg, ${resolvedColor}, ${alpha(resolvedColor, 0.1)})`, 
+          background: gradient ? gradient : `linear-gradient(135deg, ${resolvedColor}, ${alpha(resolvedColor, 0.1)})`, 
           mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
           maskComposite: 'exclude',
           WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
