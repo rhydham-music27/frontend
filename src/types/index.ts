@@ -571,7 +571,9 @@ export interface ITutorAdvancedAnalytics {
   demos: {
     total: number;
     approved: number;
+    removed: number;
     approvalRate: number;
+    removalRate: number;
   };
   classWiseEarnings: Array<{
     className: string;

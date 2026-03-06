@@ -96,9 +96,12 @@ const PaymentsEarningsCard: React.FC = () => {
       {/* ─── KPI Stat Cards Row ──────────────────── */}
       <Grid container spacing={{ xs: 1, sm: 2.5 }} mb={{ xs: 2.5, sm: 4 }}>
         {/* Total Earnings */}
-        <Grid item xs={4}>
+        <Grid item xs={4} sx={{ display: 'flex' }}>
           <Box
             sx={{
+              width: '100%',
+              height: '100%',
+              minHeight: { xs: 112, sm: 180 },
               borderRadius: { xs: 2.5, sm: 3 },
               p: { xs: 1.5, sm: 3 },
               position: 'relative',
@@ -148,9 +151,12 @@ const PaymentsEarningsCard: React.FC = () => {
         </Grid>
 
         {/* Received */}
-        <Grid item xs={4}>
+        <Grid item xs={4} sx={{ display: 'flex' }}>
           <Box
             sx={{
+              width: '100%',
+              height: '100%',
+              minHeight: { xs: 112, sm: 180 },
               borderRadius: { xs: 2.5, sm: 3 },
               p: { xs: 1.5, sm: 3 },
               position: 'relative',
@@ -217,9 +223,12 @@ const PaymentsEarningsCard: React.FC = () => {
         </Grid>
 
         {/* Pending */}
-        <Grid item xs={4}>
+        <Grid item xs={4} sx={{ display: 'flex' }}>
           <Box
             sx={{
+              width: '100%',
+              height: '100%',
+              minHeight: { xs: 112, sm: 180 },
               borderRadius: { xs: 2.5, sm: 3 },
               p: { xs: 1.5, sm: 3 },
               position: 'relative',

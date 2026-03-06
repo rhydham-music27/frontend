@@ -114,6 +114,8 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
     if (file) setUploadError(null);
+    // Allow selecting the same file again to re-trigger onChange
+    e.target.value = '';
   };
 
   const handleUploadAvatar = async () => {
@@ -648,15 +650,19 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               })}
               {/* Verification Fee Card */}
               <div
-                onClick={handleOpenFeeModal}
-                className={`relative p-5 rounded-3xl border-2 transition-all cursor-pointer group ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
-                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-50/50 border-indigo-100 hover:border-indigo-300' :
-                    'bg-slate-50 border-slate-100 hover:border-slate-300'
+                onClick={(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? undefined : handleOpenFeeModal}
+                className={`relative p-5 rounded-3xl border-2 transition-all group ${(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager
+                    ? 'cursor-not-allowed opacity-70'
+                    : 'cursor-pointer'
+                  } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-50/50 border-indigo-100 hover:border-indigo-300' :
+                      'bg-slate-50 border-slate-100 hover:border-slate-300'
                   }`}
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:rotate-12 ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-500 text-white' :
-                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white' :
-                    'bg-slate-400 text-white'
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform ${(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? '' : 'group-hover:rotate-12'
+                  } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-500 text-white' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white' :
+                      'bg-slate-400 text-white'
                   }`}>
                   <CreditCard size={28} />
                 </div>
@@ -762,7 +768,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                     <Wallet size={32} />
                   </div>
                   <div>
-                    <h4 className="font-black text-slate-800 text-lg">Pay Later (₹{VERIFICATION_FEE_AMOUNT})</h4>
+                    <h4 className="font-black text-slate-800 text-lg">Pay Later (₹{VERIFICATION_FEE_AMOUNT+200})</h4>
                     <p className="text-xs text-slate-500 font-medium mt-1">Deduct from 1st Month Salary</p>
                   </div>
                 </div>

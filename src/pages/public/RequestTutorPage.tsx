@@ -45,6 +45,15 @@ export default function RequestTutorPage() {
   // Fetch root options
   const { options: boardOptions } = useOptions('BOARD');
   const { options: modeOptions } = useOptions('TEACHING_MODE');
+
+  const { options: cityOptions } = useOptions('CITY');
+  const selectedCityValue = form.city
+    ? (cityOptions.find((c) => c.label === form.city)?.value || form.city)
+    : '';
+  const areaType = selectedCityValue
+    ? `area_${selectedCityValue.toUpperCase().replace(/\s+/g, '_')}`
+    : '';
+  const { options: areaOptions } = useOptions(areaType);
   
   // Find board ID to fetch dependent grades
   const selectedBoardOption = boardOptions.find(b => b.value === form.board);
@@ -57,6 +66,10 @@ export default function RequestTutorPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCityChange = (city: string) => {
+    setForm((prev) => ({ ...prev, city, area: '' }));
   };
 
   const handleSubjectsChange = (event: SelectChangeEvent<unknown>) => {
@@ -353,23 +366,38 @@ export default function RequestTutorPage() {
 
               <Grid item xs={12} md={6}>
                 <TextField
+                  select
                   label="City"
                   name="city"
                   value={form.city}
-                  onChange={handleChange}
+                  onChange={(e) => handleCityChange(e.target.value)}
                   fullWidth
                   size="small"
-                />
+                >
+                  {cityOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.label}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
+                  select
                   label="Area / Locality"
                   name="area"
                   value={form.area}
                   onChange={handleChange}
                   fullWidth
                   size="small"
-                />
+                  disabled={!form.city}
+                >
+                  {areaOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.label}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
 
               <Grid item xs={12}>

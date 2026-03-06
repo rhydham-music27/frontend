@@ -3,29 +3,33 @@ import React, { useEffect, useState } from 'react';
 import { Container, Box, Typography, Grid, Card, CardContent, Paper } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../store/slices/authSlice';
+import { useNavigate } from 'react-router-dom';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PeopleIcon from '@mui/icons-material/People';
 import PaymentIcon from '@mui/icons-material/Payment';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import WarningIcon from '@mui/icons-material/Warning';
 import { subDays, format } from 'date-fns';
 
 import useDashboard from '../hooks/useDashboard';
 import DateRangePicker from '../components/dashboard/DateRangePicker';
 import ExportButtons from '../components/dashboard/ExportButtons';
 import RefreshButton from '../components/dashboard/RefreshButton';
-import DateWiseLeadsChart from '../components/dashboard/DateWiseLeadsChart';
 import ConversionFunnelChart from '../components/dashboard/ConversionFunnelChart';
 import CumulativeGrowthChart from '../components/dashboard/CumulativeGrowthChart';
 import StatusDistributionChart from '../components/dashboard/StatusDistributionChart';
 import RevenueChart from '../components/dashboard/RevenueChart';
 import TutorProgressTable from '../components/dashboard/TutorProgressTable';
-import TodaysTasks from '../components/dashboard/TodaysTasks';
 import ErrorAlert from '../components/common/ErrorAlert';
 import SnackbarNotification from '../components/common/SnackbarNotification';
+import { ManagerLeadCRMBoard } from './manager/LeadCRMPage';
 
 const DashboardPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
+  const navigate = useNavigate();
 
   const defaultFrom = format(subDays(new Date(), 30), 'yyyy-MM-dd');
   const defaultTo = format(new Date(), 'yyyy-MM-dd');
@@ -40,7 +44,6 @@ const DashboardPage: React.FC = () => {
 
   const {
     overallStats,
-    dateWiseLeads,
     statusDistribution,
     conversionFunnel,
     cumulativeGrowth,
@@ -75,7 +78,13 @@ const DashboardPage: React.FC = () => {
   const handleTutorReportPageChange = (p: number) => setTutorReportPage(p);
   const handleTutorReportSortChange = (sortBy?: string, sortOrder?: 'asc' | 'desc') => setTutorReportSort({ sortBy, sortOrder });
 
-  const renderStatCard = (title: string, value: string | number, icon: React.ReactNode, gradient: string) => (
+  const renderStatCard = (
+    title: string,
+    value: string | number,
+    icon: React.ReactNode,
+    gradient: string,
+    onClick?: () => void
+  ) => (
     <Grid item xs={12} sm={6} md={3}>
       <Card
         elevation={0}
@@ -89,8 +98,10 @@ const DashboardPage: React.FC = () => {
           '&:hover': {
             transform: 'translateY(-4px)',
             boxShadow: '0 12px 24px -10px rgba(0,0,0,0.3)'
-          }
+          },
+          cursor: onClick ? 'pointer' : 'default',
         }}
+        onClick={onClick}
       >
         <Box sx={{
             position: 'absolute',
@@ -210,10 +221,24 @@ const DashboardPage: React.FC = () => {
                 'linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)'
             )}
             {renderStatCard(
+                'New Leads from Website',
+                overallStats?.todaysTasks?.websiteLeadsCount ?? '-',
+                <CampaignIcon />,
+                'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
+                () => navigate('/manager-today-tasks')
+            )}
+            {renderStatCard(
                 'Fees Collected', 
                 `₹${Number(overallStats?.payments.feesCollected || 0).toLocaleString()}`, 
                 <AttachMoneyIcon />, 
                 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+            )}
+            {renderStatCard(
+                'Pending Tutor Verifications',
+                overallStats?.todaysTasks?.pendingTutorVerificationCount ?? '-',
+                <VerifiedUserIcon />,
+                'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                () => navigate('/tutors?verificationStatus=PENDING')
             )}
              {renderStatCard(
                 'Verified Tutors', 
@@ -221,31 +246,37 @@ const DashboardPage: React.FC = () => {
                 <PeopleIcon />, 
                 'linear-gradient(135deg, #EA580C 0%, #C2410C 100%)'
             )}
+            {renderStatCard(
+                'Leads Not Closed',
+                overallStats?.todaysTasks?.leadsNotClosedCount ?? '-',
+                <WarningIcon />,
+                'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
+                () => navigate('/class-leads?status=active')
+            )}
              {renderStatCard(
                 'Tutor Payouts', 
                 `₹${Number(overallStats?.payments.tutorPayout || 0).toLocaleString()}`, 
                 <PaymentIcon />, 
                 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)'
             )}
+            {renderStatCard(
+                'Lead CRM',
+                'Open',
+                <TrendingUpIcon />,
+                'linear-gradient(135deg, #0F766E 0%, #0D9488 100%)',
+                () => navigate('/manager/leads-crm')
+            )}
         </Grid>
       </Box>
 
-      {/* Today's Tasks Widget */}
       <Box mb={5}>
-          <Grid container spacing={4}>
-             <Grid item xs={12} lg={4}>
-                 <TodaysTasks stats={overallStats} loading={loading} />
-             </Grid>
-             <Grid item xs={12} lg={8}>
-                 <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: '1px solid', borderColor: 'divider' }}>
-                     <Box display="flex" alignItems="center" gap={1} mb={3}>
-                        <Box width={4} height={20} bgcolor="primary.main" borderRadius={1} />
-                        <Typography variant="h6" fontWeight={700}>Lead Generation Growth</Typography>
-                     </Box>
-                     <DateWiseLeadsChart data={dateWiseLeads} loading={loading} />
-                 </Paper>
-             </Grid>
-          </Grid>
+        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Box display="flex" alignItems="center" gap={1} mb={3}>
+            <Box width={4} height={20} bgcolor="primary.main" borderRadius={1} />
+            <Typography variant="h6" fontWeight={700}>Lead CRM</Typography>
+          </Box>
+          <ManagerLeadCRMBoard showHeader={false} showBackground={false} />
+        </Paper>
       </Box>
 
       {/* Main Charts Grid */}

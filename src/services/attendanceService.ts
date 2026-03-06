@@ -140,6 +140,7 @@ export const getAttendanceByClass = async (
                  coordinator: sheet.coordinator,
                  _sheetMonth: sheet.month,
                  _sheetYear: sheet.year,
+                 _sheetCycle: sheet.cycleNumber,
                  // Ensure dates are Dates if needed, though usually string from JSON
              });
           });

@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogActions,
   Alert,
+  MenuItem,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -31,10 +32,10 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import {
   getMyClasses,
-  getAttendanceByClass,
   upsertAttendanceSheet,
   submitAttendanceSheet,
 } from '../../services/tutorService';
+import { getAttendanceByClass } from '../../services/attendanceService';
 import { getTestsByClass, getTestById } from '../../services/testService';
 import { IFinalClass, ITest } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
@@ -99,19 +100,59 @@ const MyClassesCard: React.FC = () => {
   const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>(undefined);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const ensureTestsLoaded = async (classIdStr: string) => {
-    if (!classIdStr) return;
-    if (testsByClassId[classIdStr]) return;
+  const ensureTestsLoaded = async (classIdStr: string): Promise<ITest[]> => {
+    if (!classIdStr) return [];
+    if (testsByClassId[classIdStr]) return testsByClassId[classIdStr] || [];
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const dummy = classIdStr;
       const resp = await getTestsByClass(classIdStr);
       const list = (resp.data || []) as ITest[];
       setTestsByClassId((prev) => ({ ...prev, [classIdStr]: list }));
+
+      const firstId = list.length ? String((list[0] as any).id || (list[0] as any)._id || '') : '';
+      if (firstId && !selectedTestIdByClassId[classIdStr]) {
+        setSelectedTestIdByClassId((prev) => ({ ...prev, [classIdStr]: firstId }));
+      }
+
+      return list;
     } catch (e: any) {
       setTestsByClassId((prev) => ({ ...prev, [classIdStr]: [] }));
+      return [];
     } finally {
       // setLoading(false); // or just remove if not needed
+    }
+  };
+
+  const openSelectedTestReport = async (cls: IFinalClass) => {
+    const classIdStr = String((cls as any).id || (cls as any)._id || '');
+    if (!classIdStr) return;
+
+    setReportOpen(true);
+    setReportLoading(true);
+    setReportError(null);
+    setReportTest(null);
+    setReportSwot(null);
+
+    try {
+      const tests = await ensureTestsLoaded(classIdStr);
+      const selectedTestId =
+        selectedTestIdByClassId[classIdStr] ||
+        (tests[0] as any)?.id ||
+        (tests[0] as any)?._id;
+      if (!selectedTestId) {
+        setReportError('No tests found for this class');
+        return;
+      }
+
+      const full = await getTestById(String(selectedTestId));
+      const test = (full.data || null) as any;
+      setReportTest(test);
+      setReportSwot(buildSwotFromTests(test ? [test] : []));
+    } catch (e: any) {
+      setReportError(e?.response?.data?.message || e?.message || 'Failed to load test report');
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -168,7 +209,7 @@ const MyClassesCard: React.FC = () => {
     classes.forEach((cls) => {
       const classIdStr = String((cls as any).id || (cls as any)._id || '');
       if (!classIdStr) return;
-      next[classIdStr] = attendanceMonthByClassId[classIdStr] || new Date().toISOString().slice(0, 7);
+      next[classIdStr] = attendanceMonthByClassId[classIdStr] || '1';
     });
     if (Object.keys(next).length) {
       setAttendanceMonthByClassId((prev) => ({ ...next, ...prev }));
@@ -179,12 +220,9 @@ const MyClassesCard: React.FC = () => {
   const openAttendanceSheetModal = async (cls: IFinalClass) => {
     setSelectedClass(cls);
     const classIdStr = String((cls as any).id || (cls as any)._id || '');
-    const monthStr = attendanceMonthByClassId[classIdStr] || new Date().toISOString().slice(0, 7);
-    const [yRaw, mRaw] = monthStr.split('-');
-    const year = Number(yRaw);
-    const month = Number(mRaw);
-    if (!Number.isFinite(year) || !Number.isFinite(month)) {
-      setSheetError('Invalid month selected');
+    const cycleNumber = Number(attendanceMonthByClassId[classIdStr]) || 1;
+    if (!Number.isFinite(cycleNumber) || cycleNumber < 1 || cycleNumber > 12) {
+      setSheetError('Invalid cycle selected');
       setSheetOpen(true);
       return;
     }
@@ -202,13 +240,12 @@ const MyClassesCard: React.FC = () => {
 
       const mapped: AttendanceRecord[] = attendances
         .filter((a) => {
-          const sm = Number((a as any)._sheetMonth);
-          const sy = Number((a as any)._sheetYear);
-          if (Number.isFinite(sm) && Number.isFinite(sy)) {
-            return sm === month && sy === year;
+          const sc = Number((a as any)._sheetCycle);
+          if (Number.isFinite(sc)) {
+            return sc === cycleNumber;
           }
-          // fallback if backend doesn't provide sheet month/year
-          return a.sessionDate && String(a.sessionDate).slice(0, 7) === monthStr;
+          // fallback if backend doesn't provide sheet cycle
+          return a.sessionDate && Number((a as any)._sheetCycle) === cycleNumber;
         })
         .map((a: any) => {
           const dateObj = a.sessionDate ? new Date(a.sessionDate as any) : null;
@@ -234,11 +271,6 @@ const MyClassesCard: React.FC = () => {
         })
         .filter((r) => r.date);
 
-      const monthPadded = String(month).padStart(2, '0');
-      const firstDay = `${year}-${monthPadded}-01`;
-      const lastDate = new Date(year, month, 0).getDate();
-      const lastDay = `${year}-${monthPadded}-${String(lastDate).padStart(2, '0')}`;
-
       setSheetTutorData({ attendanceRecords: mapped });
       setSheetClassInfo({
         classId: (cls as any).className || classIdStr,
@@ -246,10 +278,10 @@ const MyClassesCard: React.FC = () => {
         subject: Array.isArray((cls as any).subject) ? (cls as any).subject.join(', ') : String((cls as any).subject || ''),
         tutorName: user?.name,
       });
-      setSheetRange({ start: firstDay, end: lastDay });
+      // Remove date range since we're using cycle-based filtering
 
       if (!mapped.length) {
-        setSheetError(`No attendance records found for ${monthStr}.`);
+        setSheetError(`No attendance records found for Cycle ${cycleNumber}.`);
       }
     } catch (e: any) {
       setSheetError(e?.response?.data?.message || e?.message || 'Failed to load attendance sheet');
@@ -582,7 +614,7 @@ const MyClassesCard: React.FC = () => {
                       </Tooltip>
 
                       <TextField
-                        type="month"
+                        select
                         size="small"
                         value={selectedMonth}
                         onClick={(e) => e.stopPropagation()}
@@ -590,8 +622,50 @@ const MyClassesCard: React.FC = () => {
                           e.stopPropagation();
                           setAttendanceMonthByClassId((prev) => ({ ...prev, [classIdStr]: e.target.value }));
                         }}
-                        sx={{ width: 140, '& .MuiInputBase-input': { fontSize: '0.75rem', py: 0.5 } }}
-                      />
+                        sx={{ width: 100, '& .MuiInputBase-input': { fontSize: '0.75rem', py: 0.5 } }}
+                      >
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <MenuItem key={i + 1} value={(i + 1).toString()}>
+                            Cycle {i + 1}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      <TextField
+                        select
+                        size="small"
+                        value={selectedTestIdByClassId[classIdStr] || ''}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void ensureTestsLoaded(classIdStr);
+                        }}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setSelectedTestIdByClassId((prev) => ({ ...prev, [classIdStr]: e.target.value }));
+                        }}
+                        sx={{ width: 95, '& .MuiInputBase-input': { fontSize: '0.75rem', py: 0.5 } }}
+                      >
+                        {(testsByClassId[classIdStr] || []).map((t, idx) => (
+                          <MenuItem
+                            key={String((t as any).id || (t as any)._id || idx)}
+                            value={String((t as any).id || (t as any)._id)}
+                          >
+                            Test {idx + 1}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void openSelectedTestReport(cls);
+                        }}
+                        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', height: 32 }}
+                      >
+                        Show Test
+                      </Button>
 
                       <Button
                         size="small"
@@ -599,38 +673,8 @@ const MyClassesCard: React.FC = () => {
                         onClick={(e) => { e.stopPropagation(); void openAttendanceSheetModal(cls); }}
                         sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', height: 32 }}
                       >
-                        Attendance
+                        Show Attendance
                       </Button>
-
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={(e) => { e.stopPropagation(); handleSubmitMonthlySheet(cls); }}
-                        disabled={sheetSubmittingClassId === classIdStr}
-                        startIcon={<SendIcon sx={{ fontSize: 12 }} />}
-                        sx={{
-                          textTransform: 'none',
-                          fontWeight: 700,
-                          boxShadow: 'none',
-                          height: 32,
-                          borderRadius: 2,
-                          bgcolor: '#6366f1',
-                          fontSize: '0.7rem',
-                          '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' },
-                        }}
-                      >
-                        {sheetSubmittingClassId === classIdStr ? '...' : 'Submit'}
-                      </Button>
-
-                      <Tooltip title={`Call ${cls.coordinator?.name || 'Coordinator'}`}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => { e.stopPropagation(); handleCallCoordinator(cls); }}
-                          sx={{ bgcolor: alpha('#10b981', 0.08), '&:hover': { bgcolor: alpha('#10b981', 0.15) }, width: 32, height: 32 }}
-                        >
-                          <LocalPhoneIcon sx={{ fontSize: 16, color: '#10b981' }} />
-                        </IconButton>
-                      </Tooltip>
                     </Box>
                   </Box>
                 );

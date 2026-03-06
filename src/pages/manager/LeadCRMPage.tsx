@@ -308,15 +308,18 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
   );
 };
 
-const ManagerLeadCRMPage: React.FC = () => {
-  const navigate = useNavigate();
+export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackground?: boolean }> = ({
+  showHeader = true,
+  showBackground = true,
+}) => {
+  const theme = useTheme();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const user = useSelector(selectCurrentUser);
   const isAdmin = user?.role === USER_ROLES.ADMIN;
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const highlightColumnRaw = searchParams.get('column');
   const highlightColumn = highlightColumnRaw === 'demoPending' ? 'demoCompleted' : highlightColumnRaw;
-  const theme = useTheme();
-  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -460,9 +463,8 @@ const ManagerLeadCRMPage: React.FC = () => {
 
   if (loading && Object.keys(groups).length === 0) return <LoadingSpinner />;
 
-  return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F1F5F9' }}>
-      {/* Reassign Modal */}
+  const body = (
+    <>
       <Menu
         anchorEl={null}
         open={reassignModalOpen}
@@ -502,92 +504,94 @@ const ManagerLeadCRMPage: React.FC = () => {
           </Button>
         </Box>
       </Menu>
-      {/* Hero Section */}
-      <Box 
-        sx={{ 
-          background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-          color: 'white',
-          pt: { xs: 4, md: 5 },
-          pb: { xs: 8, md: 9 },
-          px: { xs: 2, md: 4 },
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <Container maxWidth={false} sx={{ position: 'relative', zIndex: 2 }}>
-          <Breadcrumbs 
-            separator={<NavigateNextIcon fontSize="small" />} 
-            sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
-          >
-            <Link 
-              underline="hover" 
-              color="inherit" 
-              sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-              onClick={() => navigate(isAdmin ? '/admin-dashboard' : '/manager-today-tasks')}
+
+      {showHeader && (
+        <Box 
+          sx={{ 
+            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+            color: 'white',
+            pt: { xs: 4, md: 5 },
+            pb: { xs: 8, md: 9 },
+            px: { xs: 2, md: 4 },
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <Container maxWidth={false} sx={{ position: 'relative', zIndex: 2 }}>
+            <Breadcrumbs 
+              separator={<NavigateNextIcon fontSize="small" />} 
+              sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
             >
-              <DashboardIcon sx={{ mr: 0.5, fontSize: 16 }} />
-              Dashboard
-            </Link>
-            <Typography color="white" sx={{ display: 'flex', alignItems: 'center' }}>
-              <LeadIcon sx={{ mr: 0.5, fontSize: 16 }} />
-              Lead CRM
-            </Typography>
-          </Breadcrumbs>
-
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Box>
-              <Typography variant="h4" fontWeight={800} gutterBottom sx={{ letterSpacing: '-0.02em' }}>
-                Lead Tracker CRM
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.8, fontWeight: 400, maxWidth: 600 }}>
-                {isAdmin 
-                  ? "Monitor all manager leads through the CRM funnel to oversee team performance."
-                  : "Manage and track your leads through the sales funnel with real-time interest tracking."}
-              </Typography>
-            </Box>
-            <Box display="flex" gap={2} alignItems="center">
-              <TextField
-                placeholder="Search leads..."
-                size="small"
-                value={searchQuery}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }} />,
-                  sx: { 
-                    bgcolor: 'rgba(255,255,255,0.1)', 
-                    borderRadius: 2,
-                    color: 'white',
-                    width: { xs: 200, md: 300 },
-                    '& fieldset': { border: 'none' },
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
-                    '&.Mui-focused': { bgcolor: 'rgba(255,255,255,0.15)' }
-                  }
-                }}
-              />
-              <Button 
-                  variant="contained" 
-                  startIcon={<RefreshIcon />} 
-                  onClick={fetchLeads}
-                  disabled={loading}
-                  sx={{ 
-                      bgcolor: 'rgba(255,255,255,0.1)', 
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-                      px: 3,
-                      py: 1,
-                      borderRadius: 2,
-                      height: 40
-                  }}
+              <Link 
+                underline="hover" 
+                color="inherit" 
+                sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                onClick={() => navigate(isAdmin ? '/admin-dashboard' : '/manager-today-tasks')}
               >
-                {loading ? 'Refreshing...' : 'Refresh Board'}
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+                <DashboardIcon sx={{ mr: 0.5, fontSize: 16 }} />
+                Dashboard
+              </Link>
+              <Typography color="white" sx={{ display: 'flex', alignItems: 'center' }}>
+                <LeadIcon sx={{ mr: 0.5, fontSize: 16 }} />
+                Lead CRM
+              </Typography>
+            </Breadcrumbs>
 
-      <Container maxWidth={false} sx={{ mt: -6, pb: 4 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="h4" fontWeight={800} gutterBottom sx={{ letterSpacing: '-0.02em' }}>
+                  Lead Tracker CRM
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.8, fontWeight: 400, maxWidth: 600 }}>
+                  {isAdmin 
+                    ? "Monitor all manager leads through the CRM funnel to oversee team performance."
+                    : "Manage and track your leads through the sales funnel with real-time interest tracking."}
+                </Typography>
+              </Box>
+              <Box display="flex" gap={2} alignItems="center">
+                <TextField
+                  placeholder="Search leads..."
+                  size="small"
+                  value={searchQuery}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }} />,
+                    sx: { 
+                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      borderRadius: 2,
+                      color: 'white',
+                      width: { xs: 200, md: 300 },
+                      '& fieldset': { border: 'none' },
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
+                      '&.Mui-focused': { bgcolor: 'rgba(255,255,255,0.15)' }
+                    }
+                  }}
+                />
+                <Button 
+                    variant="contained" 
+                    startIcon={<RefreshIcon />} 
+                    onClick={fetchLeads}
+                    disabled={loading}
+                    sx={{ 
+                        bgcolor: 'rgba(255,255,255,0.1)', 
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
+                        px: 3,
+                        py: 1,
+                        borderRadius: 2,
+                        height: 40
+                    }}
+                >
+                  {loading ? 'Refreshing...' : 'Refresh Board'}
+                </Button>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
+      )}
+
+      <Container maxWidth={false} sx={{ mt: showHeader ? -6 : 0, pb: 4 }}>
 
         <Box mb={3} display="flex" gap={2} alignItems="center" flexWrap="wrap">
           <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -812,8 +816,18 @@ const ManagerLeadCRMPage: React.FC = () => {
         </Grid>
         </Box>
       </Container>
-    </Box>
+    </>
   );
+
+  if (!showBackground) {
+    return body;
+  }
+
+  return <Box sx={{ minHeight: '100vh', bgcolor: '#F1F5F9' }}>{body}</Box>;
+};
+
+const ManagerLeadCRMPage: React.FC = () => {
+  return <ManagerLeadCRMBoard showHeader showBackground />;
 };
 
 export default ManagerLeadCRMPage;

@@ -4,6 +4,7 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { getTutorAdvancedAnalytics } from '../../services/tutorService';
 import { ITutorAdvancedAnalytics } from '../../types';
 import { useSelector } from 'react-redux';
@@ -67,6 +68,14 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
       icon: <CheckCircleOutlineIcon />,
       color: '#ec4899',
       lightBg: alpha('#ec4899', 0.08),
+    },
+    {
+      title: 'Demo Removal Rate',
+      value: `${Number(analytics.demos.removalRate || 0).toFixed(2)}%`,
+      subValue: `${analytics.demos.removed || 0} removed`,
+      icon: <RemoveCircleOutlineIcon />,
+      color: '#f97316',
+      lightBg: alpha('#f97316', 0.08),
     },
   ];
 

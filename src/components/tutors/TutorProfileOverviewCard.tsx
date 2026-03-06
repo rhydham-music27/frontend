@@ -84,6 +84,8 @@ const TutorProfileOverviewCard: React.FC = () => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
     if (file) setUploadError(null);
+    // Allow selecting the same file again to re-trigger onChange
+    e.target.value = '';
   };
 
   const handleUploadAvatar = async () => {
