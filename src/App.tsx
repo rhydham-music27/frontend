@@ -288,6 +288,7 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute
                     allowedRoles={[
+                      USER_ROLES.ADMIN
                       USER_ROLES.TUTOR,
                       USER_ROLES.COORDINATOR,
                       USER_ROLES.STUDENT,
@@ -422,7 +423,7 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
-              
+
               <Route
                 path="admin-dashboard"
                 element={
