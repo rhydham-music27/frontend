@@ -35,7 +35,7 @@ export default function RequestTutorPage() {
     area: '',
     address: '',
     timing: '',
-    preferredTutorGender: '',
+    preferredTutorGender: 'NO_PREFERENCE',
     notes: '',
   });
   const [submitting, setSubmitting] = useState(false);
@@ -51,7 +51,7 @@ export default function RequestTutorPage() {
     ? (cityOptions.find((c) => c.label === form.city)?.value || form.city)
     : '';
   const areaType = selectedCityValue
-    ? `area_${selectedCityValue.toUpperCase().replace(/\s+/g, '_')}`
+    ? `AREA_${selectedCityValue.toUpperCase().replace(/\s+/g, '_')}`
     : '';
   const { options: areaOptions } = useOptions(areaType);
   
@@ -113,7 +113,7 @@ export default function RequestTutorPage() {
         area: form.area || undefined,
         address: form.address || undefined,
         timing: form.timing,
-        preferredTutorGender: form.preferredTutorGender || undefined,
+        preferredTutorGender: form.preferredTutorGender || 'NO_PREFERENCE',
         notes: form.notes || undefined,
       };
 
@@ -137,13 +137,13 @@ export default function RequestTutorPage() {
         parentPhone: '',
         grade: '',
         subjects: [],
-        board: '',
-        mode: '',
+        board: 'CBSE',
+        mode: 'OFFLINE',
         city: '',
         area: '',
         address: '',
         timing: '',
-        preferredTutorGender: '',
+        preferredTutorGender: 'NO_PREFERENCE',
         notes: '',
       });
     } catch (err: any) {
@@ -203,7 +203,6 @@ export default function RequestTutorPage() {
                   <MenuItem value="">Select</MenuItem>
                   <MenuItem value="M">Male</MenuItem>
                   <MenuItem value="F">Female</MenuItem>
-                  <MenuItem value="OTHER">Other</MenuItem>
                 </TextField>
               </Grid>
 
@@ -435,7 +434,7 @@ export default function RequestTutorPage() {
                   fullWidth
                   size="small"
                 >
-                    <MenuItem value="">No preference</MenuItem>
+                    <MenuItem value="NO_PREFERENCE">No preference</MenuItem>
                     <MenuItem value="MALE">Male</MenuItem>
                     <MenuItem value="FEMALE">Female</MenuItem>
                     <MenuItem value="OTHER">Other</MenuItem>

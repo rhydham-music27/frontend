@@ -514,6 +514,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       tutorFees: initialStudentType === 'SINGLE' ? ((initialData as any)?.tutorFees ?? undefined) : undefined,
       classesPerMonth: (initialData as any)?.classesPerMonth ?? undefined,
       classDurationHours: (initialData as any)?.classDurationHours ?? undefined,
+      preferredTutorGender: (initialData as any)?.preferredTutorGender || 'NO_PREFERENCE',
       leadSource: (initialData as any)?.leadSource || '',
       notes: (initialData as any)?.notes || '',
       internalNotes: (initialData as any)?.internalNotes || '',
@@ -632,8 +633,8 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
   const handleFormSubmit: SubmitHandler<IClassLeadFormData> = (formData) => {
     const payload: IClassLeadFormData = { ...formData };
 
-    if ((payload as any).preferredTutorGender === '') {
-      delete (payload as any).preferredTutorGender;
+    if (!(payload as any).preferredTutorGender || (payload as any).preferredTutorGender === '') {
+      (payload as any).preferredTutorGender = 'NO_PREFERENCE';
     }
 
     if (payload.studentType === 'SINGLE') {
@@ -1322,10 +1323,10 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
               select
               label="Preferred Tutor Gender"
               fullWidth
-              defaultValue={(initialData as any)?.preferredTutorGender || ''}
+              defaultValue={(defaultValues as any).preferredTutorGender || 'NO_PREFERENCE'}
               {...register('preferredTutorGender')}
             >
-              <MenuItem value="">No preference</MenuItem>
+              <MenuItem value="NO_PREFERENCE">No preference</MenuItem>
               <MenuItem value="MALE">Male</MenuItem>
               <MenuItem value="FEMALE">Female</MenuItem>
               <MenuItem value="OTHER">Other</MenuItem>

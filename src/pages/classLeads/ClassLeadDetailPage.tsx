@@ -279,6 +279,81 @@ export default function ClassLeadDetailPage() {
   const isManagerOrAdmin = user?.role === USER_ROLES.MANAGER || user?.role === USER_ROLES.ADMIN;
   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
+  const subjectList = (() => {
+    const r: any = classLead as any;
+    let subj: any = r.subject ?? r.subjects ?? r.subjectList ?? r.subject_names ?? r.subjectName ?? r.subject_name;
+    if (subj == null) return [] as string[];
+    if (Array.isArray(subj)) return subj.map((s: any) => String(s));
+    const s = String(subj).trim();
+    return s ? (s.includes(',') ? s.split(',').map((x) => x.trim()).filter(Boolean) : [s]) : [];
+  })();
+
+  const buildShareText = () => {
+    const r: any = classLead as any;
+
+    const gradeLabel = classLead.grade ? String(classLead.grade) : '';
+    const boardLabel = classLead.board ? String(classLead.board) : '';
+    const subjectsLabel = subjectList.length > 0
+      ? subjectList.join(', ').replace(/,([^,]*)$/, ' &$1')
+      : '';
+
+    const tutorGender = String(r.preferredTutorGender || '').toUpperCase();
+    const tutorGenderLabel = tutorGender === 'MALE'
+      ? 'Male'
+      : tutorGender === 'FEMALE'
+        ? 'Female'
+        : tutorGender === 'OTHER'
+          ? 'Other'
+          : 'Any';
+
+    const fees = r.paymentAmount != null ? `₹${Number(r.paymentAmount).toLocaleString()}` : '';
+
+    const weekdays = Array.isArray(r.weekdays) ? r.weekdays.filter(Boolean) : [];
+    const daysPerWeek = weekdays.length > 0 ? `${weekdays.length} days/week` : '';
+    const durationHours = r.classDurationHours != null ? `${r.classDurationHours} hour each` : '';
+    const sessionsPerMonth = r.classesPerMonth != null ? `Total: ${r.classesPerMonth} sessions/month` : '';
+    const sessionLine = [daysPerWeek, durationHours].filter(Boolean).join(', ');
+    const sessionSuffix = sessionsPerMonth ? ` (${sessionsPerMonth})` : '';
+
+    const timing = classLead.timing ? String(classLead.timing) : 'any time';
+
+    const locationParts = [r.location, r.area, r.city, r.address]
+      .map((x: any) => (x ? String(x).trim() : ''))
+      .filter(Boolean);
+    const locationText = locationParts.join(', ');
+    const mapsUrl = locationText ? `https://www.google.com/maps?q=${encodeURIComponent(locationText)}` : '';
+
+    const noteText = r.notes ? String(r.notes).trim() : '';
+    const publicUrl = `${window.location.origin}/leads/public/${id}`;
+
+    const lines: string[] = [];
+    lines.push('📢 Your Shikshak Requirement');
+    lines.push('');
+    if (gradeLabel) lines.push(`📚 Class: ${gradeLabel}`);
+    if (boardLabel) lines.push(`📋 Board: ${boardLabel}`);
+    if (subjectsLabel) lines.push(`📖 Subject: ${subjectsLabel}.`);
+    lines.push(`🚻 Gender:  ${tutorGenderLabel}`);
+    if (fees) lines.push(`💰 Fees: ${fees}`);
+    if (sessionLine) lines.push(`⏳ Session: ${sessionLine}${sessionSuffix}`);
+    lines.push(`🕒 Time: ${timing}`);
+    lines.push('');
+    if (locationText) {
+      lines.push(`📌 Location: ${locationText}.`);
+      if (mapsUrl) lines.push(mapsUrl);
+      lines.push('');
+    }
+    if (noteText) {
+      lines.push(`🗒️Note: ${noteText}`);
+      lines.push('');
+    }
+    lines.push('📞 For More Details, Contact:');
+    lines.push('📱 +91-9244947668');
+    lines.push('');
+    lines.push('Share with your friends too!');
+    lines.push(publicUrl);
+    return lines.join('\n');
+  };
+
   const latestDemoFromHistory = demoHistory
     .slice()
     .sort((a, b) => {
@@ -300,21 +375,17 @@ export default function ClassLeadDetailPage() {
       }
       : null);
 
-  const demoTutorToShow: any = (classLead as any).demoTutor || (latestDemoFromHistory as any)?.tutor || null;
-  const demoStatus = (demoDetailsToShow as any)?.demoStatus as string | undefined;
-  const canApproveOrRejectDemo = isManagerOrAdmin && demoStatus === DEMO_STATUS.COMPLETED;
+  const demoTutorToShow: any =
+    (demoDetailsToShow as any)?.tutor ||
+    (demoDetailsToShow as any)?.assignedTutor ||
+    (latestDemoFromHistory as any)?.tutor ||
+    (latestDemoFromHistory as any)?.assignedTutor ||
+    null;
 
-  /* ─── Subject list helpers ───────────────────────────────────────────── */
-  const getSubjectList = (): string[] => {
-    const r: any = classLead as any;
-    let subj: any = r.subject ?? r.subjects ?? r.subjectList ?? r.subject_names ?? r.subjectName ?? r.subject_name;
-    if (subj == null) return [];
-    if (Array.isArray(subj)) return subj.map((s: any) => String(s));
-    const s = String(subj).trim();
-    return s ? (s.includes(',') ? s.split(',').map((x) => x.trim()).filter(Boolean) : [s]) : [];
-  };
-
-  const subjectList = getSubjectList();
+  const canApproveOrRejectDemo =
+    isManagerOrAdmin &&
+    !!demoDetailsToShow &&
+    ((demoDetailsToShow as any).demoStatus === DEMO_STATUS.COMPLETED || (demoDetailsToShow as any).demoStatus === 'COMPLETED');
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
@@ -490,7 +561,7 @@ export default function ClassLeadDetailPage() {
                     label="Subjects"
                     chip={
                       <Box display="flex" flexWrap="wrap" gap={0.75} mt={0.5}>
-                        {subjectList.map((s) => (
+                        {subjectList.map((s: string) => (
                           <Chip
                             key={s}
                             label={s}
@@ -966,8 +1037,7 @@ export default function ClassLeadDetailPage() {
                   fullWidth
                   disableElevation
                   onClick={() => {
-                    const url = `${window.location.origin}/leads/public/${id}`;
-                    const text = `Check out this new tuition opportunity: ${url}`;
+                    const text = buildShareText();
                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                   }}
                   sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700, justifyContent: 'flex-start', py: 1.25 }}
