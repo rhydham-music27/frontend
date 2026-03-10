@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { getMyClasses } from '../../services/finalClassService';
+import { getAttendances } from '../../services/attendanceService';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
@@ -33,8 +34,30 @@ const TodayScheduleCard: React.FC = () => {
       const todayIndex = new Date().getDay();
       const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
       const todayName = dayNames[todayIndex];
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+      const tomorrowDate = new Date(todayDate);
+      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+
+      // Fetch today's attendance to filter out already marked classes
+      const attendanceResp = await getAttendances({
+        tutorId,
+        fromDate: todayDate.toISOString(),
+        toDate: tomorrowDate.toISOString(),
+      });
+      const markedClassIds = new Set(
+        (attendanceResp.data || []).map((att: any) => {
+          if (typeof att.finalClass === 'string') return att.finalClass;
+          return att.finalClass?.id || att.finalClass?._id;
+        })
+      );
 
       const todayClasses = all.filter((cls: any) => {
+        // Exclude if attendance already marked
+        if (markedClassIds.has(cls.id || cls._id)) {
+          return false;
+        }
+
         const schedule = cls.schedule || (cls as any).schedule;
         if (!schedule || !Array.isArray(schedule.daysOfWeek) || schedule.daysOfWeek.length === 0) {
           return true;

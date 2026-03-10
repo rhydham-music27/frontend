@@ -266,7 +266,6 @@ const TutorTimetablePage: React.FC = () => {
   const [scheduleModalClass, setScheduleModalClass] = useState<IFinalClass | null>(null);
   const [scheduleDays, setScheduleDays] = useState<string[]>([]);
   const [scheduleStartTime, setScheduleStartTime] = useState('');
-  const [scheduleEndTime, setScheduleEndTime] = useState('');
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null);
@@ -393,9 +392,51 @@ const TutorTimetablePage: React.FC = () => {
     return daysOfWeek.includes(weekdayName);
   };
 
+  const allowedDatesByClass = useMemo(() => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const mapping: Record<string, Set<number>> = {};
+
+    classes.forEach((cls) => {
+      const limit = cls.classesPerMonth;
+      if (typeof limit !== 'number' || limit <= 0) {
+        return; // No limit
+      }
+
+      // 1. Find all potential sessions for this class in this month
+      const potentialSessions: Date[] = [];
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month, d);
+        if (isClassOnDate(cls, date)) {
+          potentialSessions.push(date);
+        }
+      }
+
+      // 2. Sort chronologically
+      potentialSessions.sort((a, b) => a.getTime() - b.getTime());
+
+      // 3. Take the first 'limit' sessions
+      const allowed = potentialSessions.slice(0, limit);
+      mapping[cls.id] = new Set(allowed.map((d) => d.getTime()));
+    });
+
+    return mapping;
+  }, [classes, currentMonth]);
+
+  const isClassAllowedOnDate = (cls: IFinalClass, date: Date): boolean => {
+    const allowedSet = allowedDatesByClass[cls.id];
+    if (!allowedSet) return true; // No limit applied for this class
+
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return allowedSet.has(d.getTime());
+  };
+
   const mobileSelectedDayClasses = useMemo(() => {
     return classes
-      .filter((cls) => isClassOnDate(cls, mobileSelectedDay))
+      .filter((cls) => isClassOnDate(cls, mobileSelectedDay) && isClassAllowedOnDate(cls, mobileSelectedDay))
       .map((cls) => {
         const normalize = (dd: Date) => {
           const nd = new Date(dd);
@@ -436,23 +477,44 @@ const TutorTimetablePage: React.FC = () => {
     });
   }, [classes]);
 
+  const parseTimeToMinutes = (t: string): number | null => {
+    if (!t || !t.includes(':')) return null;
+    const [hh, mm] = t.split(':').map((x) => x.trim());
+    const h = Number(hh);
+    const m = Number(mm);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+    return h * 60 + m;
+  };
+
+  const minutesToTime = (mins: number): string => {
+    const safe = ((mins % (24 * 60)) + (24 * 60)) % (24 * 60);
+    const h = Math.floor(safe / 60);
+    const m = safe % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  const getComputedEndTime = (cls: IFinalClass | null, start: string): string => {
+    const durationHoursRaw = (cls as any)?.classLead?.classDurationHours;
+    const durationHours = typeof durationHoursRaw === 'number' && durationHoursRaw > 0 ? durationHoursRaw : 1;
+    const startMinutes = parseTimeToMinutes(start);
+    if (startMinutes == null) return '';
+    const endMinutes = startMinutes + Math.round(durationHours * 60);
+    return minutesToTime(endMinutes);
+  };
+
   const openScheduleModal = (cls: IFinalClass) => {
     const sched: any = (cls as any).schedule || {};
     const days: string[] = Array.isArray(sched.daysOfWeek) ? sched.daysOfWeek : [];
     const timeSlot: string = sched.timeSlot || '';
     let start = '';
-    let end = '';
     if (timeSlot && timeSlot.includes('-')) {
       const parts = timeSlot.split('-');
-      if (parts.length === 2) {
-        start = parts[0].trim();
-        end = parts[1].trim();
-      }
+      if (parts[0]) start = parts[0].trim();
     }
     setScheduleModalClass(cls);
     setScheduleDays(days);
     setScheduleStartTime(start);
-    setScheduleEndTime(end);
     setScheduleError(null);
     setScheduleSuccess(null);
     setScheduleModalOpen(true);
@@ -475,27 +537,20 @@ const TutorTimetablePage: React.FC = () => {
       setScheduleError('Please select at least one day.');
       return;
     }
-    if (!scheduleStartTime || !scheduleEndTime) {
-      setScheduleError('Please select both start and end time.');
+    if (!scheduleStartTime) {
+      setScheduleError('Please select a start time.');
       return;
     }
 
-    const parseTimeToMinutes = (value: string): number | null => {
-      const v = value.trim();
-      if (!v) return null;
-      const [h, m] = v.split(':').map((n) => Number(n));
-      if (Number.isNaN(h) || Number.isNaN(m)) return null;
-      return h * 60 + m;
-    };
-
+    const computedEndTime = getComputedEndTime(scheduleModalClass, scheduleStartTime);
     const startMinutes = parseTimeToMinutes(scheduleStartTime);
-    const endMinutes = parseTimeToMinutes(scheduleEndTime);
+    const endMinutes = parseTimeToMinutes(computedEndTime);
     if (startMinutes == null || endMinutes == null) {
       setScheduleError('Invalid time format.');
       return;
     }
     if (endMinutes <= startMinutes) {
-      setScheduleError('End time must be after start time.');
+      setScheduleError('Computed end time must be after start time.');
       return;
     }
 
@@ -508,12 +563,11 @@ const TutorTimetablePage: React.FC = () => {
       if (!intersects) return false;
       const slot: string = sched.timeSlot || '';
       if (!slot || !slot.includes('-')) return false;
-      const [s1, s2] = slot.split('-');
-      if (!s1 || !s2) return false;
-      const otherStart = parseTimeToMinutes(s1.trim());
-      const otherEnd = parseTimeToMinutes(s2.trim());
-      if (otherStart == null || otherEnd == null) return false;
-      return Math.max(startMinutes, otherStart) < Math.min(endMinutes, otherEnd);
+      const parts = slot.split('-');
+      const cStart = parseTimeToMinutes(parts[0].trim());
+      const cEnd = parseTimeToMinutes((parts[1] || '').trim());
+      if (cStart == null || cEnd == null) return false;
+      return startMinutes < cEnd && endMinutes > cStart;
     });
 
     if (hasClash) {
@@ -524,7 +578,7 @@ const TutorTimetablePage: React.FC = () => {
       setScheduleSaving(true);
       setScheduleError(null);
       setScheduleSuccess(null);
-      const timeSlot = `${scheduleStartTime} - ${scheduleEndTime}`;
+      const timeSlot = `${scheduleStartTime} - ${computedEndTime}`;
       const resp = await updateFinalClassSchedule(scheduleModalClass.id, {
         daysOfWeek: scheduleDays,
         timeSlot,
@@ -574,6 +628,10 @@ const TutorTimetablePage: React.FC = () => {
     });
   };
 
+
+
+
+
   const formatMonthYear = (date: Date) =>
     date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
@@ -585,7 +643,7 @@ const TutorTimetablePage: React.FC = () => {
     };
 
     return classes
-      .filter((cls) => isClassOnDate(cls, date))
+      .filter((cls) => isClassOnDate(cls, date) && isClassAllowedOnDate(cls, date))
       .map((cls) => {
         const anyCls: any = { ...(cls as any) };
         const reschedules: any[] = (anyCls.oneTimeReschedules || []).map((r: any) => ({ ...r }));
@@ -647,7 +705,7 @@ const TutorTimetablePage: React.FC = () => {
         sx={{
           position: 'relative',
           borderRadius: { xs: 3, sm: 4 },
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
           p: { xs: 2.5, sm: 3.5 },
           mb: { xs: 2.5, sm: 4 },
           overflow: 'hidden',
@@ -848,7 +906,7 @@ const TutorTimetablePage: React.FC = () => {
           {mobileWeekDays.map((day, i) => {
             const isSelected = isSameDay(day, mobileSelectedDay);
             const today = isDateToday(day);
-            const dayClasses = classes.filter((cls) => isClassOnDate(cls, day));
+            const dayClasses = classes.filter((cls) => isClassOnDate(cls, day) && isClassAllowedOnDate(cls, day));
             const hasClass = dayClasses.length > 0;
             return (
               <Box
@@ -1555,17 +1613,14 @@ const TutorTimetablePage: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="End time"
-                type="time"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 300 }}
-                value={scheduleEndTime}
-                onChange={(e) => setScheduleEndTime(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              />
+              <Box sx={{ pt: 0.5 }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  End time (auto)
+                </Typography>
+                <Typography variant="body2" fontWeight={700} sx={{ mt: 0.5 }}>
+                  {getComputedEndTime(scheduleModalClass, scheduleStartTime) || '--:--'}
+                </Typography>
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>

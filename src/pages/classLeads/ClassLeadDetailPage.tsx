@@ -635,7 +635,7 @@ export default function ClassLeadDetailPage() {
                       }}
                     >
                       <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        Net Revenue
+                        Service Charge
                       </Typography>
                       <Typography variant="h6" fontWeight={800} color="success.main">
                         ₹{(((classLead as any).paymentAmount || 0) - ((classLead as any).tutorFees || 0)).toLocaleString()}
@@ -733,7 +733,7 @@ export default function ClassLeadDetailPage() {
                       </Box>
                       <Box>
                         <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          Net Revenue
+                          Service Charge
                         </Typography>
                         <Typography variant="h6" fontWeight={800} color="success.main">₹{(totalFees - totalTutorFees).toLocaleString()}</Typography>
                       </Box>
@@ -752,6 +752,16 @@ export default function ClassLeadDetailPage() {
                 </Typography>
               </SectionCard>
             )}
+
+            {((user as any)?.role === USER_ROLES.ADMIN || (user as any)?.role === USER_ROLES.MANAGER || (user as any)?.role === USER_ROLES.COORDINATOR) &&
+              (classLead as any).internalNotes && (
+                <SectionCard>
+                  <SectionHeader icon={<NoteIcon sx={{ fontSize: 18 }} />} title="Internal Notes" />
+                  <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+                    {(classLead as any).internalNotes}
+                  </Typography>
+                </SectionCard>
+              )}
 
             {/* ─── Demo Details Card ─── */}
             {demoDetailsToShow && (

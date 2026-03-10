@@ -70,9 +70,9 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
       lightBg: alpha('#ec4899', 0.08),
     },
     {
-      title: 'Demo Removal Rate',
-      value: `${Number(analytics.demos.removalRate || 0).toFixed(2)}%`,
-      subValue: `${analytics.demos.removed || 0} removed`,
+      title: 'Demo Approval Rate',
+      value: `${Number(analytics.demos.approvalRate || 0).toFixed(2)}%`,
+      subValue: `${analytics.demos.approved || 0}/${analytics.demos.total || 0} approved`,
       icon: <RemoveCircleOutlineIcon />,
       color: '#f97316',
       lightBg: alpha('#f97316', 0.08),

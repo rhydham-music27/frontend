@@ -216,6 +216,7 @@ const schema = yup.object({
   timing: yup.string().required().min(2).max(100),
   weekdays: yup.array().of(yup.string()).optional(),
   notes: yup.string().max(500).optional(),
+  internalNotes: yup.string().max(2000).optional(),
 });
 
 
@@ -515,6 +516,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       classDurationHours: (initialData as any)?.classDurationHours ?? undefined,
       leadSource: (initialData as any)?.leadSource || '',
       notes: (initialData as any)?.notes || '',
+      internalNotes: (initialData as any)?.internalNotes || '',
       numberOfStudents: (initialData as any)?.numberOfStudents ?? 1,
       studentDetails: (initialData as any)?.studentDetails?.length > 0
         ? (initialData as any).studentDetails
@@ -552,6 +554,8 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
 
   const selectedGradeOption = useMemo(() => gradeOptions.find(g => g.value === selectedGrade), [gradeOptions, selectedGrade]);
   const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeOption ? selectedGradeOption._id : null);
+
+  const { options: leadSourceOptions } = useOptions('LEAD_SOURCE');
 
   const { options: cityOptionItems } = useOptions('CITY');
   const cityLabels = useMemo(() => cityOptionItems.map((o) => o.label), [cityOptionItems]);
@@ -948,7 +952,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
               </Grid>
               <Grid item xs={12} sm={4}>
                 <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Net Revenue
+                  Service Charge
                 </Typography>
                 <Typography variant="h6" fontWeight={800} color="success.main">₹{(totalFees - totalTutorFees).toLocaleString()}</Typography>
               </Grid>
@@ -1295,10 +1299,22 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
               {...register('leadSource')}
             >
               <MenuItem value="">Select source</MenuItem>
-              <MenuItem value="GOOGLE_PROFILE">Google profile</MenuItem>
-              <MenuItem value="WHATSAPP">WhatsApp</MenuItem>
-              <MenuItem value="REFERRED">Referred</MenuItem>
-              <MenuItem value="OTHER">Other</MenuItem>
+              {(leadSourceOptions && leadSourceOptions.length > 0
+                ? leadSourceOptions.map((o: any) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {o.label}
+                  </MenuItem>
+                ))
+                : [
+                  { value: 'GOOGLE_PROFILE', label: 'Google profile' },
+                  { value: 'WHATSAPP', label: 'WhatsApp' },
+                  { value: 'REFERRED', label: 'Referred' },
+                  { value: 'OTHER', label: 'Other' },
+                ].map((o) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {o.label}
+                  </MenuItem>
+                ))) as any}
             </TextField>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -1321,9 +1337,9 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
               multiline
               rows={3}
               fullWidth
-              {...register('notes')}
-              error={!!errors.notes}
-              helperText={errors.notes?.message}
+              {...register('internalNotes')}
+              error={!!(errors as any).internalNotes}
+              helperText={(errors as any).internalNotes?.message}
               placeholder="Add any special requirements or notes about this lead..."
             />
           </Grid>

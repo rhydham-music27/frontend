@@ -71,6 +71,7 @@ export interface IClassLead {
     subject?: string[];
   }>;
   notes?: string;
+  internalNotes?: string;
   associatedStudents?: Array<{
     name: string;
     studentId: string;
@@ -631,6 +632,7 @@ export interface IClassLeadFormData {
   paymentAmount?: number;
   tutorFees?: number;
   notes?: string;
+  internalNotes?: string;
   // Group specific fields
   numberOfStudents?: number;
   studentDetails?: Array<{

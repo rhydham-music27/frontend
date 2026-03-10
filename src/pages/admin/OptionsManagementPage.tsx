@@ -60,24 +60,24 @@ interface OptionColumnProps {
   onSaveSuccess: (msg: string) => void;
 }
 
-const OptionColumn: React.FC<OptionColumnProps> = ({ 
-  title, type, parentId, selectedId, onSelect, disabled, onSaveError, onSaveSuccess 
+const OptionColumn: React.FC<OptionColumnProps> = ({
+  title, type, parentId, selectedId, onSelect, disabled, onSaveError, onSaveSuccess
 }) => {
   const theme = useTheme();
   // Fetch options for this column. Only fetch if not disabled (meaning parent is selected if required)
   const { options: fetchedOptions, loading: fetchedLoading, refetch } = useOptions(type, parentId);
-  
+
   // If disabled (e.g. no parent selected), force empty list so we don't show "All items"
   const options = disabled ? [] : fetchedOptions;
   const loading = disabled ? false : fetchedLoading;
-  
+
   // Local state for inline creation/editing
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [extraValue, setExtraValue] = useState(''); // for metadata.Link
   const [saving, setSaving] = useState(false);
-  
+
   // Deletion Multi-step Confirmation
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deletionStep, setDeletionStep] = useState(1);
@@ -88,11 +88,11 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
 
   useEffect(() => {
-     // If disabled (e.g. parent deselected), clear local editing state
-     if (disabled) {
-        setIsAdding(false);
-        setEditingId(null);
-     }
+    // If disabled (e.g. parent deselected), clear local editing state
+    if (disabled) {
+      setIsAdding(false);
+      setEditingId(null);
+    }
   }, [disabled]);
 
   const handleSave = async () => {
@@ -109,15 +109,15 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
       setSaving(true);
       const svc = await import('@/services/optionsService');
       const payload: any = {
-         type,
-         label: trimmed,
-         value: trimmed.toUpperCase().replace(/\s+/g, '_'),
-         parent: parentId, // Link to the parent from the previous column
-         metadata: type === 'CITY' ? { whatsappLink: extraValue.trim() } : {}
+        type,
+        label: trimmed,
+        value: trimmed.toUpperCase().replace(/\s+/g, '_'),
+        parent: parentId, // Link to the parent from the previous column
+        metadata: type === 'CITY' ? { whatsappLink: extraValue.trim() } : {}
       };
 
       await svc.createOrUpdateOption(editingId || undefined, payload);
-      
+
       onSaveSuccess(editingId ? 'Updated successfully' : 'Created successfully');
       setInputValue('');
       setExtraValue('');
@@ -185,11 +185,11 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
   const isFormOpen = isAdding || !!editingId;
 
   return (
-    <Paper 
+    <Paper
       elevation={0}
-      sx={{ 
-        height: '65vh', 
-        display: 'flex', 
+      sx={{
+        height: '65vh',
+        display: 'flex',
         flexDirection: 'column',
         border: '1px solid',
         borderColor: 'divider',
@@ -201,10 +201,10 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
       }}
     >
       {/* Header */}
-      <Box 
-        sx={{ 
-          p: 2, 
-          borderBottom: '1px solid', 
+      <Box
+        sx={{
+          p: 2,
+          borderBottom: '1px solid',
           borderColor: 'divider',
           bgcolor: alpha(theme.palette.primary.main, 0.05),
           display: 'flex',
@@ -215,14 +215,14 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
         <Typography variant="subtitle1" fontWeight={700} color="primary.main">
           {title}
         </Typography>
-        <IconButton 
-          size="small" 
-          color="primary" 
+        <IconButton
+          size="small"
+          color="primary"
           disabled={disabled || isFormOpen}
-          onClick={() => { 
-             setIsAdding(true); 
-             setInputValue(''); 
-             setExtraValue(''); // Reset link field for new city
+          onClick={() => {
+            setIsAdding(true);
+            setInputValue('');
+            setExtraValue(''); // Reset link field for new city
           }}
         >
           <AddIcon fontSize="small" />
@@ -231,87 +231,87 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
 
       {/* Inline Form */}
       {isFormOpen && (
-         <Box p={2} borderBottom="1px solid" borderColor="divider" bgcolor="action.hover">
-            <TextField 
-               autoFocus
-               fullWidth 
-               size="small" 
-               placeholder="Enter Name" 
-               value={inputValue}
-               onChange={(e) => setInputValue(e.target.value)}
-               sx={{ mb: 1, bgcolor: 'white' }}
+        <Box p={2} borderBottom="1px solid" borderColor="divider" bgcolor="action.hover">
+          <TextField
+            autoFocus
+            fullWidth
+            size="small"
+            placeholder="Enter Name"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            sx={{ mb: 1, bgcolor: 'white' }}
+          />
+          {type.toUpperCase() === 'CITY' && (
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="WhatsApp Group Link"
+              value={extraValue}
+              onChange={(e) => setExtraValue(e.target.value)}
+              sx={{ mb: 1, bgcolor: 'white' }}
             />
-            {type.toUpperCase() === 'CITY' && (
-               <TextField 
-                  fullWidth 
-                  size="small" 
-                  placeholder="WhatsApp Group Link" 
-                  value={extraValue}
-                  onChange={(e) => setExtraValue(e.target.value)}
-                  sx={{ mb: 1, bgcolor: 'white' }}
-               />
-            )}
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
-               <Button size="small" onClick={() => { setIsAdding(false); setEditingId(null); setExtraValue(''); }}>Cancel</Button>
-               <Button size="small" variant="contained" disabled={saving || !inputValue.trim()} onClick={handleSave}>
-                  {saving ? '...' : 'Save'}
-               </Button>
-            </Stack>
-         </Box>
+          )}
+          <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Button size="small" onClick={() => { setIsAdding(false); setEditingId(null); setExtraValue(''); }}>Cancel</Button>
+            <Button size="small" variant="contained" disabled={saving || !inputValue.trim()} onClick={handleSave}>
+              {saving ? '...' : 'Save'}
+            </Button>
+          </Stack>
+        </Box>
       )}
 
       {/* List */}
       <List sx={{ flexGrow: 1, overflowY: 'auto', py: 0 }}>
         {loading ? (
-           <Box display="flex" justifyContent="center" p={4}><CircularProgress size={20}/></Box>
+          <Box display="flex" justifyContent="center" p={4}><CircularProgress size={20} /></Box>
         ) : options.length === 0 ? (
-           <Box p={3} textAlign="center">
-              <Typography variant="body2" color="text.secondary">
-                 {disabled ? 'Select parent first' : 'No items found'}
-              </Typography>
-           </Box>
+          <Box p={3} textAlign="center">
+            <Typography variant="body2" color="text.secondary">
+              {disabled ? 'Select parent first' : 'No items found'}
+            </Typography>
+          </Box>
         ) : (
-            options.map((opt) => (
-             <ListItem 
-               key={opt._id} 
-               disablePadding
-               sx={{ 
-                  borderBottom: '1px solid', 
-                  borderColor: 'divider',
-                  '&.Mui-selected': {
-                     bgcolor: alpha(theme.palette.primary.main, 0.1),
-                     '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.15) },
-                     borderLeft: `4px solid ${theme.palette.primary.main}`
-                  }
-               }}
-               secondaryAction={
-                 <Box>
-                    <IconButton size="small" onClick={(e) => handleStartEdit(e, opt)}>
-                       <EditIcon fontSize="small" sx={{ fontSize: 16 }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={(e) => handleDelete(e, opt._id)} color="error">
-                       <DeleteIcon fontSize="small" sx={{ fontSize: 16 }} />
-                    </IconButton>
-                    {selectedId === opt._id && (
-                       <ArrowForwardIosIcon fontSize="small" sx={{ fontSize: 12, ml: 1, color: 'primary.main' }} />
-                    )}
-                 </Box>
-               }
-             >
-               <ListItemButton
-                 selected={selectedId === opt._id}
-                 onClick={() => !disabled && onSelect(opt)}
-               >
-                 <ListItemText 
-                    primary={opt.label} 
-                    primaryTypographyProps={{ fontWeight: selectedId === opt._id ? 600 : 400 }}
-                 />
-               </ListItemButton>
-             </ListItem>
-           ))
+          options.map((opt) => (
+            <ListItem
+              key={opt._id}
+              disablePadding
+              sx={{
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                '&.Mui-selected': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.15) },
+                  borderLeft: `4px solid ${theme.palette.primary.main}`
+                }
+              }}
+              secondaryAction={
+                <Box>
+                  <IconButton size="small" onClick={(e) => handleStartEdit(e, opt)}>
+                    <EditIcon fontSize="small" sx={{ fontSize: 16 }} />
+                  </IconButton>
+                  <IconButton size="small" onClick={(e) => handleDelete(e, opt._id)} color="error">
+                    <DeleteIcon fontSize="small" sx={{ fontSize: 16 }} />
+                  </IconButton>
+                  {selectedId === opt._id && (
+                    <ArrowForwardIosIcon fontSize="small" sx={{ fontSize: 12, ml: 1, color: 'primary.main' }} />
+                  )}
+                </Box>
+              }
+            >
+              <ListItemButton
+                selected={selectedId === opt._id}
+                onClick={() => !disabled && onSelect(opt)}
+              >
+                <ListItemText
+                  primary={opt.label}
+                  primaryTypographyProps={{ fontWeight: selectedId === opt._id ? 600 : 400 }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))
         )}
       </List>
-      
+
       <ConfirmDialog
         open={confirmDeleteOpen}
         onClose={() => { setConfirmDeleteOpen(false); setDeletionStep(1); }}
@@ -349,7 +349,7 @@ const OptionsManagementPage: React.FC = () => {
   const [selectedBoardId, setSelectedBoardId] = useState<string>('');
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-  
+
   // --- City Hierarchy State ---
   const [selectedCityId, setSelectedCityId] = useState<string>('');
   const [selectedCityValue, setSelectedCityValue] = useState<string>('');
@@ -357,12 +357,12 @@ const OptionsManagementPage: React.FC = () => {
   // --- Flat List State (Legacy) --- 
   // Re-using the same generic `useOptions` for flat lists (City etc)
   // const [selectedFlatListId, setSelectedFlatListId] = useState<string>(''); // Not really used, flat lists are flat
-  
+
   // Legacy Data Hook for non-Curriculum/City tabs
   const { options: flatOptions, refetch: flatRefetch } = useOptions(
-     (currentType === 'CURRICULUM' || currentType === 'CITY') ? '' : currentType
+    (currentType === 'CURRICULUM' || currentType === 'CITY') ? '' : currentType
   );
-  
+
   // -- Flat List Editing State --
   const [editingOption, setEditingOption] = useState<OptionItem | null>(null);
   const [label, setLabel] = useState('');
@@ -382,14 +382,16 @@ const OptionsManagementPage: React.FC = () => {
           const existing = new Set(prev.map((t) => t.value));
           // Filter out BOARD/GRADE/CLASS/SUBJECT/CHAPTER from the tabs list since they are now in Curriculum
           const hiddenTypes = new Set(['BOARD', 'GRADE', 'CLASS', 'SUBJECT', 'CHAPTER']);
-          
+
           const merged = [...prev];
-          remoteTypes.forEach((t) => {
-            // Only add if not customized and not hidden
-            if (!existing.has(t.value) && !hiddenTypes.has(t.value)) {
-              merged.push(t);
-            }
-          });
+          remoteTypes
+            .filter((t) => !String(t.value || '').toUpperCase().startsWith('AREA_'))
+            .forEach((t) => {
+              // Only add if not customized and not hidden
+              if (!existing.has(t.value) && !hiddenTypes.has(t.value)) {
+                merged.push(t);
+              }
+            });
           return merged;
         });
       } catch { /* ignore */ }
@@ -402,18 +404,22 @@ const OptionsManagementPage: React.FC = () => {
     setSelectedCityId('');
     setSelectedCityValue('');
   };
-  
-  const resetFlatForm = () => {
-      setEditingOption(null);
-      setLabel('');
-      setValue('');
-      setSortOrder(0);
-   };
 
-  const handleAddNewType = () => {
+  const resetFlatForm = () => {
+    setEditingOption(null);
+    setLabel('');
+    setValue('');
+    setSortOrder(0);
+  };
+
+  const addType = () => {
     const trimmed = newTypeInput.trim();
     if (!trimmed) return;
     const upper = trimmed.toUpperCase().replace(/\s+/g, '_');
+    if (upper.startsWith('AREA_')) {
+      setSnackbar({ open: true, message: 'AREA_* types are hidden. Please add areas under the Cities section.', severity: 'info' });
+      return;
+    }
     if (!knownTypes.some(t => t.value === upper)) {
       setKnownTypes(prev => [...prev, { value: upper, label: trimmed }]);
     }
@@ -443,45 +449,45 @@ const OptionsManagementPage: React.FC = () => {
       setSavingFlat(false);
     }
   };
-  
+
   const handleDeleteFlat = async (id: string) => {
-     setDeletingFlatId(id);
-     setConfirmDeleteFlatOpen(true);
+    setDeletingFlatId(id);
+    setConfirmDeleteFlatOpen(true);
   };
 
   const performDeleteFlat = async () => {
     if (!deletingFlatId) return;
     try {
-       setDeletingFlatLoading(true);
-       const svc = await import('@/services/optionsService');
-       await svc.deleteOption(deletingFlatId);
-       setConfirmDeleteFlatOpen(false);
-       setDeletingFlatId(null);
-       flatRefetch();
-       setSnackbar({ open: true, message: 'Deleted successfully', severity: 'success' });
-    } catch(err: any) {
-       setSnackbar({ open: true, message: err.message, severity: 'error' });
+      setDeletingFlatLoading(true);
+      const svc = await import('@/services/optionsService');
+      await svc.deleteOption(deletingFlatId);
+      setConfirmDeleteFlatOpen(false);
+      setDeletingFlatId(null);
+      flatRefetch();
+      setSnackbar({ open: true, message: 'Deleted successfully', severity: 'success' });
+    } catch (err: any) {
+      setSnackbar({ open: true, message: err.message, severity: 'error' });
     } finally {
-       setDeletingFlatLoading(false);
+      setDeletingFlatLoading(false);
     }
   };
 
   // --- Curriculum Actions ---
   const handleBoardSelect = (item: OptionItem) => {
-     setSelectedBoardId(item._id);
-     setSelectedClassId('');
-     setSelectedSubjectId('');
+    setSelectedBoardId(item._id);
+    setSelectedClassId('');
+    setSelectedSubjectId('');
   };
   const handleClassSelect = (item: OptionItem) => {
-     setSelectedClassId(item._id);
-     setSelectedSubjectId('');
+    setSelectedClassId(item._id);
+    setSelectedSubjectId('');
   };
   const handleSubjectSelect = (item: OptionItem) => {
-     setSelectedSubjectId(item._id);
+    setSelectedSubjectId(item._id);
   };
-  
-  const showSnackbar = (msg: string, severity: 'success'|'error' = 'success') => 
-     setSnackbar({ open: true, message: msg, severity });
+
+  const showSnackbar = (msg: string, severity: 'success' | 'error' = 'success') =>
+    setSnackbar({ open: true, message: msg, severity });
 
   return (
     <Container maxWidth="xl" sx={{ pb: 5 }}>
@@ -563,130 +569,130 @@ const OptionsManagementPage: React.FC = () => {
       {/* --- CONTENT AREA --- */}
 
       {currentType === 'CURRICULUM' || currentType === 'CITY' ? (
-         // MILLER COLUMNS VIEW
-         <Box sx={{ overflowX: 'auto', pb: 2 }}>
-            <Grid container spacing={2} sx={{ minWidth: 1000, flexWrap: 'nowrap' }}>
-               {currentType === 'CURRICULUM' ? (
-                  <>
-                     {/* 1. BOARDS */}
-                     <Grid item xs={3}>
-                        <OptionColumn 
-                           title="Boards" 
-                           type="BOARD" 
-                           selectedId={selectedBoardId}
-                           onSelect={handleBoardSelect}
-                           onSaveError={(m) => showSnackbar(m, 'error')}
-                           onSaveSuccess={(m) => showSnackbar(m, 'success')}
-                        />
-                     </Grid>
-                     {/* 2. CLASSES */}
-                     <Grid item xs={3}>
-                        <OptionColumn 
-                           title="Classes" 
-                           type="GRADE" 
-                           parentId={selectedBoardId}
-                           selectedId={selectedClassId}
-                           disabled={!selectedBoardId}
-                           onSelect={handleClassSelect}
-                           onSaveError={(m) => showSnackbar(m, 'error')}
-                           onSaveSuccess={(m) => showSnackbar(m, 'success')}
-                        />
-                     </Grid>
-                     {/* 3. SUBJECTS */}
-                     <Grid item xs={3}>
-                        <OptionColumn 
-                           title="Subjects" 
-                           type="SUBJECT" 
-                           parentId={selectedClassId}
-                           selectedId={selectedSubjectId}
-                           disabled={!selectedClassId}
-                           onSelect={handleSubjectSelect}
-                           onSaveError={(m) => showSnackbar(m, 'error')}
-                           onSaveSuccess={(m) => showSnackbar(m, 'success')}
-                        />
-                     </Grid>
-                     {/* 4. CHAPTERS */}
-                     <Grid item xs={3}>
-                        <OptionColumn 
-                           title="Chapters" 
-                           type="CHAPTER" 
-                           parentId={selectedSubjectId}
-                           selectedId={undefined} // Leaf node
-                           disabled={!selectedSubjectId}
-                           onSelect={() => {}} 
-                           onSaveError={(m) => showSnackbar(m, 'error')}
-                           onSaveSuccess={(m) => showSnackbar(m, 'success')}
-                        />
-                     </Grid>
-                  </>
-               ) : (
-                  <>
-                     {/* 1. CITIES */}
-                     <Grid item xs={6}>
-                        <OptionColumn 
-                           title="Cities" 
-                           type="CITY" 
-                           selectedId={selectedCityId}
-                           onSelect={(item) => {
-                              setSelectedCityId(item._id);
-                              setSelectedCityValue(item.value);
-                           }}
-                           onSaveError={(m) => showSnackbar(m, 'error')}
-                           onSaveSuccess={(m) => showSnackbar(m, 'success')}
-                        />
-                     </Grid>
-                     {/* 2. AREAS */}
-                     <Grid item xs={6}>
-                        <OptionColumn 
-                           title="Areas" 
-                           type={selectedCityValue ? `AREA_${selectedCityValue}` : 'NONE'}
-                           parentId={selectedCityId}
-                           disabled={!selectedCityId}
-                           onSelect={() => {}} 
-                           onSaveError={(m) => showSnackbar(m, 'error')}
-                           onSaveSuccess={(m) => showSnackbar(m, 'success')}
-                        />
-                     </Grid>
-                  </>
-               )}
-            </Grid>
-         </Box>
+        // MILLER COLUMNS VIEW
+        <Box sx={{ overflowX: 'auto', pb: 2 }}>
+          <Grid container spacing={2} sx={{ minWidth: 1000, flexWrap: 'nowrap' }}>
+            {currentType === 'CURRICULUM' ? (
+              <>
+                {/* 1. BOARDS */}
+                <Grid item xs={3}>
+                  <OptionColumn
+                    title="Boards"
+                    type="BOARD"
+                    selectedId={selectedBoardId}
+                    onSelect={handleBoardSelect}
+                    onSaveError={(m) => showSnackbar(m, 'error')}
+                    onSaveSuccess={(m) => showSnackbar(m, 'success')}
+                  />
+                </Grid>
+                {/* 2. CLASSES */}
+                <Grid item xs={3}>
+                  <OptionColumn
+                    title="Classes"
+                    type="GRADE"
+                    parentId={selectedBoardId}
+                    selectedId={selectedClassId}
+                    disabled={!selectedBoardId}
+                    onSelect={handleClassSelect}
+                    onSaveError={(m) => showSnackbar(m, 'error')}
+                    onSaveSuccess={(m) => showSnackbar(m, 'success')}
+                  />
+                </Grid>
+                {/* 3. SUBJECTS */}
+                <Grid item xs={3}>
+                  <OptionColumn
+                    title="Subjects"
+                    type="SUBJECT"
+                    parentId={selectedClassId}
+                    selectedId={selectedSubjectId}
+                    disabled={!selectedClassId}
+                    onSelect={handleSubjectSelect}
+                    onSaveError={(m) => showSnackbar(m, 'error')}
+                    onSaveSuccess={(m) => showSnackbar(m, 'success')}
+                  />
+                </Grid>
+                {/* 4. CHAPTERS */}
+                <Grid item xs={3}>
+                  <OptionColumn
+                    title="Chapters"
+                    type="CHAPTER"
+                    parentId={selectedSubjectId}
+                    selectedId={undefined} // Leaf node
+                    disabled={!selectedSubjectId}
+                    onSelect={() => { }}
+                    onSaveError={(m) => showSnackbar(m, 'error')}
+                    onSaveSuccess={(m) => showSnackbar(m, 'success')}
+                  />
+                </Grid>
+              </>
+            ) : (
+              <>
+                {/* 1. CITIES */}
+                <Grid item xs={6}>
+                  <OptionColumn
+                    title="Cities"
+                    type="CITY"
+                    selectedId={selectedCityId}
+                    onSelect={(item) => {
+                      setSelectedCityId(item._id);
+                      setSelectedCityValue(item.value);
+                    }}
+                    onSaveError={(m) => showSnackbar(m, 'error')}
+                    onSaveSuccess={(m) => showSnackbar(m, 'success')}
+                  />
+                </Grid>
+                {/* 2. AREAS */}
+                <Grid item xs={6}>
+                  <OptionColumn
+                    title="Areas"
+                    type={selectedCityValue ? `AREA_${selectedCityValue}` : 'NONE'}
+                    parentId={selectedCityId}
+                    disabled={!selectedCityId}
+                    onSelect={() => { }}
+                    onSaveError={(m) => showSnackbar(m, 'error')}
+                    onSaveSuccess={(m) => showSnackbar(m, 'success')}
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </Box>
       ) : (
-         // FLAT LIST VIEW (Legacy for Categories, Modes, etc)
-         <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-               <Paper sx={{ p: 3 }}>
-                  <Typography variant="h6" gutterBottom>{editingOption ? 'Edit' : 'Add New'}</Typography>
-                  <Stack spacing={2}>
-                     <TextField label="Label" value={label} onChange={e=>setLabel(e.target.value)} fullWidth />
-                     <TextField label="Code" value={value} onChange={e=>setValue(e.target.value)} fullWidth />
-                     <Stack direction="row" spacing={1}>
-                        {editingOption && <Button onClick={resetFlatForm} fullWidth>Cancel</Button>}
-                        <Button variant="contained" onClick={handleSaveFlat} disabled={savingFlat} fullWidth>Save</Button>
-                     </Stack>
-                  </Stack>
-               </Paper>
-            </Grid>
-            <Grid item xs={12} md={8}>
-               <Paper>
-                  <List>
-                     {flatOptions.map(o => (
-                        <ListItem key={o._id} divider>
-                           <ListItemText primary={o.label} secondary={o.value} />
-                           <ListItemSecondaryAction>
-                              <IconButton onClick={() => { 
-                                 setEditingOption(o); 
-                                 setLabel(o.label); 
-                                 setValue(o.value); 
-                              }}><EditIcon /></IconButton>
-                              <IconButton onClick={() => handleDeleteFlat(o._id)}><DeleteIcon /></IconButton>
-                           </ListItemSecondaryAction>
-                        </ListItem>
-                     ))}
-                  </List>
-               </Paper>
-            </Grid>
-         </Grid>
+        // FLAT LIST VIEW (Legacy for Categories, Modes, etc)
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>{editingOption ? 'Edit' : 'Add New'}</Typography>
+              <Stack spacing={2}>
+                <TextField label="Label" value={label} onChange={e => setLabel(e.target.value)} fullWidth />
+                <TextField label="Code" value={value} onChange={e => setValue(e.target.value)} fullWidth />
+                <Stack direction="row" spacing={1}>
+                  {editingOption && <Button onClick={resetFlatForm} fullWidth>Cancel</Button>}
+                  <Button variant="contained" onClick={handleSaveFlat} disabled={savingFlat} fullWidth>Save</Button>
+                </Stack>
+              </Stack>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <Paper>
+              <List>
+                {flatOptions.map(o => (
+                  <ListItem key={o._id} divider>
+                    <ListItemText primary={o.label} secondary={o.value} />
+                    <ListItemSecondaryAction>
+                      <IconButton onClick={() => {
+                        setEditingOption(o);
+                        setLabel(o.label);
+                        setValue(o.value);
+                      }}><EditIcon /></IconButton>
+                      <IconButton onClick={() => handleDeleteFlat(o._id)}><DeleteIcon /></IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
+        </Grid>
       )}
 
       {/* Add Type Dialog */}
@@ -705,7 +711,7 @@ const OptionsManagementPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsAddingType(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAddNewType} disabled={!newTypeInput.trim()}>Add & Switch</Button>
+          <Button variant="contained" onClick={addType} disabled={!newTypeInput.trim()}>Add & Switch</Button>
         </DialogActions>
       </Dialog>
 

@@ -1,16 +1,16 @@
 
 import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  Grid, 
-  Typography, 
-  Card, 
-  CardContent, 
-  IconButton, 
-  Tooltip, 
-  CircularProgress, 
-  alpha, 
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+  alpha,
   useTheme,
   Paper,
   LinearProgress
@@ -130,7 +130,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
       category: 'growth'
     },
     {
-      title: 'Net Revenue Churn',
+      title: 'Service Charge Churn',
       key: 'netRevenueChurn',
       icon: <TrendingDownIcon />,
       color: '#ef4444',
@@ -187,10 +187,10 @@ const AdvancedAnalyticsPage: React.FC = () => {
     const value = data ? (m.key in (data as any) ? (data as any)[m.key] : 0) : 0;
     return (
       <Grid item xs={12} sm={6} md={3} key={m.title}>
-        <Card 
+        <Card
           elevation={0}
-          sx={{ 
-            borderRadius: 3, 
+          sx={{
+            borderRadius: 3,
             border: '1px solid',
             borderColor: 'divider',
             height: '100%',
@@ -204,7 +204,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
             }
           }}
         >
-           <Box sx={{
+          <Box sx={{
             position: 'absolute',
             top: -20, right: -20,
             width: 80, height: 80,
@@ -213,11 +213,11 @@ const AdvancedAnalyticsPage: React.FC = () => {
           }} />
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-              <Box 
-                sx={{ 
-                  p: 1.25, 
-                  borderRadius: 2, 
-                  bgcolor: alpha(m.color, 0.1), 
+              <Box
+                sx={{
+                  p: 1.25,
+                  borderRadius: 2,
+                  bgcolor: alpha(m.color, 0.1),
                   color: m.color,
                   display: 'flex',
                   alignItems: 'center',
@@ -226,7 +226,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
               >
                 {m.icon}
               </Box>
-              <Tooltip 
+              <Tooltip
                 title={
                   <Box sx={{ p: 0.5 }}>
                     <Typography variant="caption" fontWeight={700} display="block" gutterBottom>
@@ -269,8 +269,8 @@ const AdvancedAnalyticsPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 4, pb: 8 }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #312E81 0%, #4338CA 100%)',
           color: 'white',
           py: 4,
@@ -287,11 +287,11 @@ const AdvancedAnalyticsPage: React.FC = () => {
             Advanced Analytics
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 800 }}>
-             Comprehensive insights into unit economics, growth trajectories, and operational efficiency.
+            Comprehensive insights into unit economics, growth trajectories, and operational efficiency.
           </Typography>
         </Box>
         {/* Background Shapes */}
-         <Box sx={{
+        <Box sx={{
           position: 'absolute',
           top: -50, right: -50,
           width: 300, height: 300,
@@ -316,11 +316,11 @@ const AdvancedAnalyticsPage: React.FC = () => {
             { label: 'Day 365', value: data?.retention.d365, color: '#10B981', icon: <PeopleIcon /> },
           ].map((bench: { label: string; value: number | undefined; color: string; icon: React.ReactNode }) => (
             <Grid item xs={12} sm={6} md={3} key={bench.label}>
-              <Paper 
+              <Paper
                 elevation={0}
-                sx={{ 
-                  p: 2.5, 
-                  borderRadius: 3, 
+                sx={{
+                  p: 2.5,
+                  borderRadius: 3,
                   border: '1px solid',
                   borderColor: 'divider',
                   bgcolor: 'background.paper',
@@ -362,58 +362,58 @@ const AdvancedAnalyticsPage: React.FC = () => {
           Growth & Retention
         </Typography>
         <Grid container spacing={3}>
-           {/* Retention Box */}
-           <Grid item xs={12} md={3}>
-             <Paper 
-                elevation={0}
-                sx={{ 
-                  p: 3, 
-                  height: '100%', 
-                  borderRadius: 3, 
-                  bgcolor: alpha(theme.palette.primary.main, 0.04), // darker standout
-                  border: '1px solid',
-                  borderColor: alpha(theme.palette.primary.main, 0.1)
-                }}
-             >
-                <Typography variant="subtitle1" fontWeight={700} gutterBottom>Retention Benchmarks</Typography>
-                <Box mt={3} display="flex" flexDirection="column" gap={3}>
-                  <Box>
-                    <Box display="flex" justifyContent="space-between" mb={0.5}>
-                       <Typography variant="caption" fontWeight={600}>Day 30</Typography>
-                       <Typography variant="caption" fontWeight={700}>{data?.retention.d30.toFixed(1)}%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={data?.retention.d30 || 0} sx={{ height: 6, borderRadius: 3 }} />
+          {/* Retention Box */}
+          <Grid item xs={12} md={3}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                height: '100%',
+                borderRadius: 3,
+                bgcolor: alpha(theme.palette.primary.main, 0.04), // darker standout
+                border: '1px solid',
+                borderColor: alpha(theme.palette.primary.main, 0.1)
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom>Retention Benchmarks</Typography>
+              <Box mt={3} display="flex" flexDirection="column" gap={3}>
+                <Box>
+                  <Box display="flex" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="caption" fontWeight={600}>Day 30</Typography>
+                    <Typography variant="caption" fontWeight={700}>{data?.retention.d30.toFixed(1)}%</Typography>
                   </Box>
-                  <Box>
-                    <Box display="flex" justifyContent="space-between" mb={0.5}>
-                       <Typography variant="caption" fontWeight={600}>Day 60</Typography>
-                       <Typography variant="caption" fontWeight={700}>{data?.retention.d60.toFixed(1)}%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={data?.retention.d60 || 0} color="secondary" sx={{ height: 6, borderRadius: 3 }} />
-                  </Box>
-                  <Box>
-                    <Box display="flex" justifyContent="space-between" mb={0.5}>
-                       <Typography variant="caption" fontWeight={600}>Day 90</Typography>
-                       <Typography variant="caption" fontWeight={700}>{data?.retention.d90.toFixed(1)}%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={data?.retention.d90 || 0} color="warning" sx={{ height: 6, borderRadius: 3 }} />
-                  </Box>
-                  <Box>
-                    <Box display="flex" justifyContent="space-between" mb={0.5}>
-                       <Typography variant="caption" fontWeight={600}>Day 365</Typography>
-                       <Typography variant="caption" fontWeight={700}>{data?.retention.d365.toFixed(1)}%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={data?.retention.d365 || 0} color="success" sx={{ height: 6, borderRadius: 3 }} />
-                  </Box>
+                  <LinearProgress variant="determinate" value={data?.retention.d30 || 0} sx={{ height: 6, borderRadius: 3 }} />
                 </Box>
-             </Paper>
-           </Grid>
-           {/* Growth Metrics */}
-           <Grid item xs={12} md={9}>
-             <Grid container spacing={3}>
-                {metrics.filter(m => m.category === 'growth').map(renderMetricCard)}
-             </Grid>
-           </Grid>
+                <Box>
+                  <Box display="flex" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="caption" fontWeight={600}>Day 60</Typography>
+                    <Typography variant="caption" fontWeight={700}>{data?.retention.d60.toFixed(1)}%</Typography>
+                  </Box>
+                  <LinearProgress variant="determinate" value={data?.retention.d60 || 0} color="secondary" sx={{ height: 6, borderRadius: 3 }} />
+                </Box>
+                <Box>
+                  <Box display="flex" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="caption" fontWeight={600}>Day 90</Typography>
+                    <Typography variant="caption" fontWeight={700}>{data?.retention.d90.toFixed(1)}%</Typography>
+                  </Box>
+                  <LinearProgress variant="determinate" value={data?.retention.d90 || 0} color="warning" sx={{ height: 6, borderRadius: 3 }} />
+                </Box>
+                <Box>
+                  <Box display="flex" justifyContent="space-between" mb={0.5}>
+                    <Typography variant="caption" fontWeight={600}>Day 365</Typography>
+                    <Typography variant="caption" fontWeight={700}>{data?.retention.d365.toFixed(1)}%</Typography>
+                  </Box>
+                  <LinearProgress variant="determinate" value={data?.retention.d365 || 0} color="success" sx={{ height: 6, borderRadius: 3 }} />
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+          {/* Growth Metrics */}
+          <Grid item xs={12} md={9}>
+            <Grid container spacing={3}>
+              {metrics.filter(m => m.category === 'growth').map(renderMetricCard)}
+            </Grid>
+          </Grid>
         </Grid>
       </Box>
 
