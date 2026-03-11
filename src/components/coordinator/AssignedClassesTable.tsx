@@ -2,15 +2,17 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip } from '@mui/material';
 import PaymentIcon from '@mui/icons-material/Payment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import EditIcon from '@mui/icons-material/Edit';
 
 // Define the props type for the table
 interface AssignedClassesTableProps {
   classes: any[];
   onOpenAttendance: (classId: string) => void;
   onOpenPayments: (classId: string) => void;
+  onEditClass?: (cls: any) => void;
 }
 
-const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, onOpenAttendance, onOpenPayments }) => {
+const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, onOpenAttendance, onOpenPayments, onEditClass }) => {
   return (
     <TableContainer component={Paper}>
       <Table size="small">
@@ -47,6 +49,11 @@ const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, on
                 <Tooltip title="Payments">
                   <IconButton onClick={(e) => { e.stopPropagation(); onOpenPayments(cls.id); }} size="small"><PaymentIcon /></IconButton>
                 </Tooltip>
+                {onEditClass && (
+                  <Tooltip title="Edit Class">
+                    <IconButton onClick={(e) => { e.stopPropagation(); onEditClass(cls); }} size="small"><EditIcon /></IconButton>
+                  </Tooltip>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -46,59 +46,64 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
 
   const cards = [
     {
+      title: 'Tutor Earnings',
+      value: `₹${analytics.earnings.total.toLocaleString()}`,
+      subValue: `₹${analytics.earnings.thisMonth.toLocaleString()} this month`,
+      icon: <TrendingUpIcon />,
+      color: '#10b981',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #6366f1 100%)',
+      lightBg: alpha('#10b981', 0.1),
+    },
+    {
       title: 'Sessions This Week',
       value: analytics.sessions.completedThisWeek,
       subValue: `${analytics.sessions.completedThisMonth} this month`,
       icon: <TimelineIcon />,
       color: '#6366f1',
-      lightBg: alpha('#6366f1', 0.08),
-    },
-    {
-      title: 'Earnings This Week',
-      value: `₹${analytics.earnings.thisWeek.toLocaleString()}`,
-      subValue: `₹${analytics.earnings.thisMonth.toLocaleString()} this month`,
-      icon: <TrendingUpIcon />,
-      color: '#10b981',
-      lightBg: alpha('#10b981', 0.08),
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)',
+      lightBg: alpha('#6366f1', 0.1),
     },
     {
       title: 'Teaching Hours',
       value: analytics.totalTeachingHours,
       subValue: 'Total hours this month',
       icon: <CheckCircleOutlineIcon />,
-      color: '#ec4899',
-      lightBg: alpha('#ec4899', 0.08),
+      color: '#1e293b',
+      gradient: 'linear-gradient(135deg, #1e293b 0%, #6366f1 100%)',
+      lightBg: alpha('#1e293b', 0.1),
     },
     {
       title: 'Demo Approval Rate',
       value: `${Number(analytics.demos.approvalRate || 0).toFixed(2)}%`,
       subValue: `${analytics.demos.approved || 0}/${analytics.demos.total || 0} approved`,
       icon: <RemoveCircleOutlineIcon />,
-      color: '#f97316',
-      lightBg: alpha('#f97316', 0.08),
+      color: '#6366f1',
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+      lightBg: alpha('#6366f1', 0.1),
     },
   ];
 
   return (
     <Grid2 container spacing={{ xs: 1.5, sm: 2 }} mb={{ xs: 2, sm: 3 }}>
       {cards.map((card, index) => (
-        <Grid2 key={index} size={{ xs: 6, sm: 6, md: 3 }}>
+        <Grid2 key={index} size={{ xs: 6, sm: 4, md: 3 }}>
           <Box
             sx={{
               height: '100%',
-              borderRadius: 3,
+              borderRadius: 4,
               bgcolor: '#fff',
               border: '1px solid',
-              borderColor: alpha(card.color, 0.12),
-              p: { xs: 2, sm: 2.5 },
+              borderColor: alpha(card.color, 0.1),
+              p: { xs: 2.25, sm: 2.5 },
               position: 'relative',
               overflow: 'hidden',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: `0 4px 20px ${alpha(card.color, 0.05)}`,
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
               cursor: 'default',
               '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: `0 8px 24px ${alpha(card.color, 0.15)}`,
-                borderColor: alpha(card.color, 0.25),
+                transform: 'translateY(-6px)',
+                boxShadow: `0 12px 30px ${alpha(card.color, 0.18)}`,
+                borderColor: alpha(card.color, 0.3),
               },
               '&::before': {
                 content: '""',
@@ -106,22 +111,22 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 3,
-                background: `linear-gradient(90deg, ${card.color}, ${alpha(card.color, 0.4)})`,
-                borderRadius: '12px 12px 0 0',
+                height: 5,
+                background: card.gradient,
               },
             }}
           >
-            <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
+            <Box display="flex" alignItems="center" gap={1.25} mb={2}>
               <Box
                 sx={{
-                  p: 0.75,
-                  borderRadius: 2,
+                  p: 0.8,
+                  borderRadius: '10px',
                   bgcolor: card.lightBg,
                   color: card.color,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  boxShadow: `inset 0 0 0 1px ${alpha(card.color, 0.1)}`,
                 }}
               >
                 {React.cloneElement(card.icon as React.ReactElement, { sx: { fontSize: { xs: 18, sm: 20 } } })}
@@ -129,11 +134,12 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
               <Typography
                 variant="body2"
                 sx={{
-                  color: 'text.secondary',
-                  fontWeight: 600,
-                  fontSize: { xs: '0.68rem', sm: '0.78rem' },
-                  lineHeight: 1.2,
-                  letterSpacing: '0.01em',
+                  color: '#475569',
+                  fontWeight: 700,
+                  fontSize: { xs: '0.62rem', sm: '0.72rem' },
+                  lineHeight: 1.1,
+                  letterSpacing: '0.02em',
+                  textTransform: 'uppercase',
                 }}
               >
                 {card.title}
@@ -143,10 +149,11 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
               variant="h4"
               sx={{
                 fontWeight: 800,
-                color: 'text.primary',
-                fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.7rem' },
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
+                color: '#0f172a',
+                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+                mb: 0.75,
               }}
             >
               {card.value}
@@ -154,11 +161,12 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
             <Typography
               variant="caption"
               sx={{
-                mt: 0.75,
                 display: 'block',
-                fontSize: { xs: '0.6rem', sm: '0.68rem' },
-                fontWeight: 500,
-                color: alpha(card.color, 0.8),
+                fontSize: { xs: '0.62rem', sm: '0.68rem' },
+                fontWeight: 600,
+                color: card.color,
+                opacity: 0.9,
+                letterSpacing: '0.01em',
               }}
             >
               {card.subValue}

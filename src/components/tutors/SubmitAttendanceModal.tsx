@@ -172,7 +172,7 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
               {' '}• Grade: {finalClass.grade}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Progress: {finalClass.completedSessions}/{finalClass.totalSessions} sessions completed
+              Progress: {finalClass.completedSessions}/{finalClass.classesPerMonth || finalClass.totalSessions} sessions completed
             </Typography>
           </Box>
 

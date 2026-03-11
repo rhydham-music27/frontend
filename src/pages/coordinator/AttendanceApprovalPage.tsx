@@ -16,6 +16,8 @@ import {
   getCoordinatorPendingSheets,
   approveAttendanceSheet,
   rejectAttendanceSheet,
+  getAttendanceSheetPayments,
+  updateAttendanceSheetPaymentStatus,
 } from '../../services/attendanceSheetService';
 import { IAttendanceSheet } from '../../types';
 import useAuth from '../../hooks/useAuth';
@@ -63,6 +65,8 @@ const AttendanceApprovalPage: React.FC = () => {
   const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
   const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
   const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>();
+  const [sheetPayments, setSheetPayments] = useState<{ classFees?: any | null; tutorPayout?: any | null } | null>(null);
+  const [activeSheetId, setActiveSheetId] = useState<string>('');
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -112,11 +116,22 @@ const AttendanceApprovalPage: React.FC = () => {
   const handleViewMonthlySheet = useCallback(
     async (sheet: IAttendanceSheet) => {
       try {
+        const sheetIdStr = String((sheet as any)?.id || (sheet as any)?._id || '');
+        setActiveSheetId(sheetIdStr);
         const finalClass: any = sheet.finalClass || {};
         const classIdStr = String(finalClass.id || finalClass._id || '');
         if (!classIdStr) {
           setSnackbar({ open: true, message: 'Class information missing for this sheet', severity: 'error' });
           return;
+        }
+
+        if (sheetIdStr) {
+          try {
+            const payRes = await getAttendanceSheetPayments(sheetIdStr);
+            setSheetPayments(payRes.data || null);
+          } catch {
+            setSheetPayments(null);
+          }
         }
 
         const res = await getAttendanceByClass(classIdStr);
@@ -196,6 +211,19 @@ const AttendanceApprovalPage: React.FC = () => {
     },
     [user?.name]
   );
+
+  const handleUpdatePaymentStatus = useCallback(async (paymentId: string, status: string) => {
+    if (!activeSheetId) return;
+
+    try {
+      await updateAttendanceSheetPaymentStatus(activeSheetId, paymentId, status);
+      const payRes = await getAttendanceSheetPayments(activeSheetId);
+      setSheetPayments(payRes.data || null);
+      setSnackbar({ open: true, message: 'Payment status updated', severity: 'success' });
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e?.response?.data?.message || 'Failed to update payment status', severity: 'error' });
+    }
+  }, [activeSheetId]);
 
   const handleRejectSheet = useCallback(
     async (sheetId: string) => {
@@ -426,6 +454,9 @@ const AttendanceApprovalPage: React.FC = () => {
             classInfo={sheetClassInfo}
             range={sheetRange}
             sheetNo={1}
+            payments={sheetPayments || undefined}
+            canEditPayments={true}
+            onUpdatePaymentStatus={handleUpdatePaymentStatus}
           />
         </Box>
       )}

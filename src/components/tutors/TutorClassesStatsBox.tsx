@@ -9,11 +9,13 @@ import { IFinalClass } from '../../types';
 interface TutorClassesStatsBoxProps {
   classes: IFinalClass[];
   newClassLeads?: number;
+  onNewLeadsClick?: () => void;
 }
 
 export const TutorClassesStatsBox: React.FC<TutorClassesStatsBoxProps> = ({
   classes,
   newClassLeads = 0,
+  onNewLeadsClick,
 }) => {
   const stats = useMemo(() => {
     const now = new Date();
@@ -110,6 +112,7 @@ export const TutorClassesStatsBox: React.FC<TutorClassesStatsBoxProps> = ({
       {cards.map((card, idx) => (
         <Grid item xs={6} sm={6} md={3} key={idx}>
           <Box
+            onClick={card.title === 'New Leads' ? onNewLeadsClick : undefined}
             sx={{
               height: '100%',
               borderRadius: 3,
@@ -120,12 +123,19 @@ export const TutorClassesStatsBox: React.FC<TutorClassesStatsBoxProps> = ({
               position: 'relative',
               overflow: 'hidden',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              cursor: 'default',
+              cursor: card.title === 'New Leads' && onNewLeadsClick ? 'pointer' : 'default',
               '&:hover': {
                 transform: 'translateY(-2px)',
                 boxShadow: `0 8px 24px ${alpha(card.color, 0.12)}`,
                 borderColor: alpha(card.color, 0.25),
               },
+              ...(card.title === 'New Leads' && onNewLeadsClick
+                ? {
+                    '&:active': {
+                      transform: 'translateY(0px)',
+                    },
+                  }
+                : null),
               '&::before': {
                 content: '""',
                 position: 'absolute',

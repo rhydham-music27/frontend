@@ -228,7 +228,8 @@ const TodayScheduleCard: React.FC = () => {
                     topic={(cls as any).topic || 'N/A'}
                     schedule={timeSlot}
                     completedSessions={cls.completedSessions}
-                    totalSessions={monthlyClasses}
+                    totalSessions={cls.totalSessions}
+                    classesPerMonth={monthlyClasses}
                     onMarkClick={() => handleMarkClick(cls)}
                   />
                 </Box>

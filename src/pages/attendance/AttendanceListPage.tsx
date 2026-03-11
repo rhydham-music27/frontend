@@ -38,6 +38,7 @@ import {
   approveAttendanceSheet,
   rejectAttendanceSheet
 } from '../../services/attendanceSheetService';
+import { getAttendanceSheetPayments, updateAttendanceSheetPaymentStatus } from '../../services/attendanceSheetService';
 import AttendanceSheetComponent, { AttendanceRecord, AssignedClass, TutorProfile } from '../../components/tutors/AttendanceSheet';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -69,6 +70,8 @@ export default function AttendanceListPage() {
   const [sheetTutorData, setSheetTutorData] = useState<TutorProfile | null>(null);
   const [sheetClassInfo, setSheetClassInfo] = useState<AssignedClass | null>(null);
   const [sheetRange, setSheetRange] = useState<{ start: string; end: string } | undefined>();
+  const [sheetPayments, setSheetPayments] = useState<{ classFees?: any | null; tutorPayout?: any | null } | null>(null);
+  const [activeSheetId, setActiveSheetId] = useState<string>('');
   const sheetRef = React.useRef<{ exportPdf: () => Promise<void> } | null>(null);
 
   const isAdmin = role === USER_ROLES.ADMIN;
@@ -179,6 +182,17 @@ export default function AttendanceListPage() {
 
   const handleViewMonthlySheet = async (sheet: IAttendanceSheet) => {
     try {
+      const sheetIdStr = String((sheet as any)?.id || (sheet as any)?._id || '');
+      setActiveSheetId(sheetIdStr);
+      if (sheetIdStr) {
+        try {
+          const payRes = await getAttendanceSheetPayments(sheetIdStr);
+          setSheetPayments(payRes.data || null);
+        } catch {
+          setSheetPayments(null);
+        }
+      }
+
       const finalClass: any = sheet.finalClass || {};
       const classIdStr = String(finalClass.id || finalClass._id || '');
       if (!classIdStr) {
@@ -244,6 +258,19 @@ export default function AttendanceListPage() {
       }, 0);
     } catch (e: any) {
       setSnack({ open: true, message: e.message || 'Failed to prepare PDF', severity: 'error' });
+    }
+  };
+
+  const handleUpdatePaymentStatus = async (paymentId: string, status: string) => {
+    if (!isCoordinator) return;
+    if (!activeSheetId) return;
+    try {
+      await updateAttendanceSheetPaymentStatus(activeSheetId, paymentId, status);
+      const payRes = await getAttendanceSheetPayments(activeSheetId);
+      setSheetPayments(payRes.data || null);
+      setSnack({ open: true, message: 'Payment status updated', severity: 'success' });
+    } catch (e: any) {
+      setSnack({ open: true, message: e?.response?.data?.message || 'Failed to update payment status', severity: 'error' });
     }
   };
 
@@ -566,6 +593,9 @@ export default function AttendanceListPage() {
             classInfo={sheetClassInfo}
             range={sheetRange}
             sheetNo={1}
+            payments={sheetPayments || undefined}
+            canEditPayments={isCoordinator}
+            onUpdatePaymentStatus={handleUpdatePaymentStatus}
           />
         </Box>
       )}

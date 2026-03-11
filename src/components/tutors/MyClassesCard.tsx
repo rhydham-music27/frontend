@@ -35,10 +35,11 @@ import {
   upsertAttendanceSheet,
   submitAttendanceSheet,
 } from '../../services/tutorService';
+import { getMyTutorLeads } from '../../services/leadService';
 import { getAttendanceByClass } from '../../services/attendanceService';
 import { getTestsByClass, getTestById } from '../../services/testService';
 import { IFinalClass, ITest } from '../../types';
-import { FINAL_CLASS_STATUS } from '../../constants';
+import { CLASS_LEAD_STATUS, FINAL_CLASS_STATUS } from '../../constants';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
@@ -85,6 +86,8 @@ const MyClassesCard: React.FC = () => {
   const [testsByClassId, setTestsByClassId] = useState<Record<string, ITest[]>>({});
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedTestIdByClassId, setSelectedTestIdByClassId] = useState<Record<string, string>>({});
+
+  const [newLeadsCount, setNewLeadsCount] = useState<number>(0);
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
@@ -200,8 +203,22 @@ const MyClassesCard: React.FC = () => {
     }
   };
 
+  const fetchNewLeadsCount = async () => {
+    try {
+      const resp = await getMyTutorLeads();
+      const leads = (resp as any)?.data || [];
+      const count = Array.isArray(leads)
+        ? leads.filter((l: any) => String(l?.status) === CLASS_LEAD_STATUS.ANNOUNCED).length
+        : 0;
+      setNewLeadsCount(count);
+    } catch {
+      setNewLeadsCount(0);
+    }
+  };
+
   useEffect(() => {
     fetchClasses();
+    fetchNewLeadsCount();
   }, [user]);
 
   useEffect(() => {
@@ -434,7 +451,11 @@ const MyClassesCard: React.FC = () => {
         )}
 
         {/* Stats */}
-        <TutorClassesStatsBox classes={classes} newClassLeads={0} />
+        <TutorClassesStatsBox
+          classes={classes}
+          newClassLeads={newLeadsCount}
+          onNewLeadsClick={() => navigate('/tutor-leads')}
+        />
 
         {/* Content Grid */}
         <Grid container spacing={3}>

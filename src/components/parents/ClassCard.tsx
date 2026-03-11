@@ -18,12 +18,13 @@ interface ClassCardProps {
   schedule: string;
   completedSessions: number;
   totalSessions: number;
+  classesPerMonth?: number;
   onMarkClick?: (classId: string) => void;
 }
 
-const subjectConfig: Record<string, { 
-  color: string; 
-  gradient: string; 
+const subjectConfig: Record<string, {
+  color: string;
+  gradient: string;
   bgGradient: string;
   lightBg: string;
   textColor: string;
@@ -96,11 +97,13 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   schedule,
   completedSessions,
   totalSessions,
+  classesPerMonth,
   onMarkClick,
 }) => {
   const config = subjectConfig[subject] || defaultConfig;
-  const progressPercentage = totalSessions > 0 ? (completedSessions / totalSessions) * 100 : 0;
-  const isCompleted = totalSessions > 0 && completedSessions >= totalSessions;
+  const targetSessions = classesPerMonth || totalSessions || 0;
+  const progressPercentage = targetSessions > 0 ? (completedSessions / targetSessions) * 100 : 0;
+  const isCompleted = targetSessions > 0 && completedSessions >= targetSessions;
 
   return (
     <Card
@@ -116,13 +119,13 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         },
       }}
     >
-      <CardContent 
-        sx={{ 
-          display: 'flex', 
+      <CardContent
+        sx={{
+          display: 'flex',
           flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 2.5, sm: 2 }, 
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
-          p: { xs: 2, sm: 2.5 } 
+          gap: { xs: 2.5, sm: 2 },
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          p: { xs: 2, sm: 2.5 }
         }}
       >
         {/* Icon with gradient background */}
@@ -232,7 +235,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               letterSpacing: '0.02em'
             }}
           >
-            {completedSessions} / {totalSessions} sessions
+            {completedSessions} / {classesPerMonth || totalSessions} sessions
           </Typography>
         </Box>
 

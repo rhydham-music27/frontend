@@ -76,6 +76,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [extraValue, setExtraValue] = useState(''); // for metadata.Link
+  const [cityCodeValue, setCityCodeValue] = useState(''); // for metadata.cityCode
   const [saving, setSaving] = useState(false);
 
   // Deletion Multi-step Confirmation
@@ -113,7 +114,9 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
         label: trimmed,
         value: trimmed.toUpperCase().replace(/\s+/g, '_'),
         parent: parentId, // Link to the parent from the previous column
-        metadata: type === 'CITY' ? { whatsappLink: extraValue.trim() } : {}
+        metadata: type === 'CITY'
+          ? { whatsappLink: extraValue.trim(), cityCode: cityCodeValue.trim().toUpperCase() }
+          : {}
       };
 
       await svc.createOrUpdateOption(editingId || undefined, payload);
@@ -121,6 +124,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
       onSaveSuccess(editingId ? 'Updated successfully' : 'Created successfully');
       setInputValue('');
       setExtraValue('');
+      setCityCodeValue('');
       setIsAdding(false);
       setEditingId(null);
       setConfirmSaveOpen(false);
@@ -137,6 +141,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
     setEditingId(item._id);
     setInputValue(item.label);
     setExtraValue(item.metadata?.whatsappLink || '');
+    setCityCodeValue(item.metadata?.cityCode || '');
     setIsAdding(false);
   };
 
@@ -223,6 +228,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
             setIsAdding(true);
             setInputValue('');
             setExtraValue(''); // Reset link field for new city
+            setCityCodeValue('');
           }}
         >
           <AddIcon fontSize="small" />
@@ -251,8 +257,18 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
               sx={{ mb: 1, bgcolor: 'white' }}
             />
           )}
+          {type.toUpperCase() === 'CITY' && (
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="City Code (e.g. BPL)"
+              value={cityCodeValue}
+              onChange={(e) => setCityCodeValue(e.target.value)}
+              sx={{ mb: 1, bgcolor: 'white' }}
+            />
+          )}
           <Stack direction="row" spacing={1} justifyContent="flex-end">
-            <Button size="small" onClick={() => { setIsAdding(false); setEditingId(null); setExtraValue(''); }}>Cancel</Button>
+            <Button size="small" onClick={() => { setIsAdding(false); setEditingId(null); setExtraValue(''); setCityCodeValue(''); }}>Cancel</Button>
             <Button size="small" variant="contained" disabled={saving || !inputValue.trim()} onClick={handleSave}>
               {saving ? '...' : 'Save'}
             </Button>
@@ -304,6 +320,9 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
               >
                 <ListItemText
                   primary={opt.label}
+                  secondary={type.toUpperCase() === 'CITY'
+                    ? `${opt.metadata?.cityCode ? `Code: ${opt.metadata.cityCode}   ` : ''}${opt.metadata?.whatsappLink ? `Link: ${opt.metadata.whatsappLink}` : ''}`
+                    : undefined}
                   primaryTypographyProps={{ fontWeight: selectedId === opt._id ? 600 : 400 }}
                 />
               </ListItemButton>

@@ -508,7 +508,7 @@ const FinalClassesManagementPage: React.FC = () => {
                         ) : 'Not Assigned'}
                       </TableCell>
                       <TableCell align="right">
-                        {cls.completedSessions} / {cls.totalSessions}
+                        {cls.completedSessions} / {cls.classesPerMonth || cls.totalSessions}
                         <Typography variant="caption" display="block" color="text.secondary">
                           {Math.round(cls.progressPercentage || 0)}%
                         </Typography>
@@ -578,7 +578,7 @@ const FinalClassesManagementPage: React.FC = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="caption" color="text.secondary">Progress</Typography>
-                    <Typography variant="body2">{cls.completedSessions}/{cls.totalSessions} ({Math.round(cls.progressPercentage || 0)}%)</Typography>
+                    <Typography variant="body2">{cls.completedSessions}/{cls.classesPerMonth || cls.totalSessions} ({Math.round(cls.progressPercentage || 0)}%)</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="caption" color="text.secondary">Tutor</Typography>
@@ -644,7 +644,7 @@ const FinalClassesManagementPage: React.FC = () => {
                     />
                   </Box>
                   <Typography variant="body2" fontWeight={600}>
-                    {selectedClass.completedSessions} / {selectedClass.totalSessions}
+                    {selectedClass.completedSessions} / {selectedClass.classesPerMonth}
                   </Typography>
                 </Box>
               </Box>
@@ -709,7 +709,7 @@ const FinalClassesManagementPage: React.FC = () => {
                       color="secondary"
                       startIcon={<AutorenewIcon />}
                       onClick={handleRenewMonthlyClass}
-                      disabled={actionLoading || (selectedClass.completedSessions || 0) < (selectedClass.totalSessions || 0)}
+                      disabled={actionLoading || (selectedClass.completedSessions || 0) < (selectedClass.classesPerMonth || selectedClass.totalSessions || 0)}
                     >
                       Renew Monthly Class
                     </Button>

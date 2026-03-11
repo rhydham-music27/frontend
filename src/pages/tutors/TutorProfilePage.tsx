@@ -255,7 +255,7 @@ const TutorProfilePage: React.FC = () => {
       width: 150,
       renderCell: (params: any) => (
         <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>
-          {params.row.completedSessions}/{params.row.totalSessions} sessions
+          {params.row.completedSessions}/{params.row.classesPerMonth || params.row.totalSessions} sessions
         </Typography>
       )
     },
@@ -992,7 +992,7 @@ const TutorProfilePage: React.FC = () => {
                 { label: 'Start Date', value: new Date(selectedClass.startDate).toLocaleDateString() },
                 { label: 'Timing', value: selectedClass.schedule?.timeSlot || 'N/A' },
                 { label: 'Days', value: selectedClass.schedule?.daysOfWeek?.join(', ') || 'N/A' },
-                { label: 'Total Sessions', value: selectedClass.totalSessions },
+                { label: 'Total Sessions', value: selectedClass.classesPerMonth || selectedClass.totalSessions },
                 { label: 'Rate per Session', value: selectedClass.ratePerSession ? `₹${selectedClass.ratePerSession}` : 'N/A' },
                 { label: 'Status', value: <Chip label={selectedClass.status} size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', height: 22, bgcolor: selectedClass.status === 'ACTIVE' ? alpha('#10b981', 0.1) : alpha('#64748b', 0.08), color: selectedClass.status === 'ACTIVE' ? '#059669' : '#475569' }} /> }
               ].map((item, idx) => (

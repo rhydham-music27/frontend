@@ -42,6 +42,22 @@ export const rejectAttendanceSheet = async (
   return data as ApiResponse<IAttendanceSheet>;
 };
 
+export const getAttendanceSheetPayments = async (
+  sheetId: string
+): Promise<ApiResponse<{ classFees?: any; tutorPayout?: any }>> => {
+  const { data } = await api.get(`/api/attendance-sheets/${sheetId}/payments`);
+  return data as ApiResponse<{ classFees?: any; tutorPayout?: any }>;
+};
+
+export const updateAttendanceSheetPaymentStatus = async (
+  sheetId: string,
+  paymentId: string,
+  status: string
+): Promise<ApiResponse<any>> => {
+  const { data } = await api.patch(`/api/attendance-sheets/${sheetId}/payments/${paymentId}/status`, { status });
+  return data as ApiResponse<any>;
+};
+
 export default {
   upsertAttendanceSheet,
   submitAttendanceSheet,
@@ -49,4 +65,6 @@ export default {
   getAllPendingSheets,
   approveAttendanceSheet,
   rejectAttendanceSheet,
+  getAttendanceSheetPayments,
+  updateAttendanceSheetPaymentStatus,
 };

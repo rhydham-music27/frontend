@@ -4,6 +4,7 @@ export interface IUser {
   name: string;
   role: string;
   phone?: string;
+  dob?: string | Date;
   acceptedTerms: boolean;
   whatsappCommunityJoined?: boolean;
   preferredMode?: string;

@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Container, Box, Typography, Card, CardContent, TextField, MenuItem, Button, Grid, Pagination, CircularProgress, Stack, IconButton, Grow, Tabs, Tab, InputAdornment } from '@mui/material';
+import { Container, Box, Typography, Card, CardContent, TextField, MenuItem, Button, Grid, Pagination, CircularProgress, Stack, IconButton, Grow, Tabs, Tab, InputAdornment, Dialog, DialogTitle, DialogContent, DialogActions, Divider } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import ClassDetailCard from '../../components/coordinator/ClassDetailCard';
 import AssignedClassesTable from '../../components/coordinator/AssignedClassesTable';
@@ -12,7 +13,8 @@ import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { getAssignedClasses } from '../../services/coordinatorService';
 import api from '../../services/api';
-import { updateClassTestsPerMonth } from '../../services/finalClassService';
+import { changeTutor, downloadAttendancePdf, updateAttendanceSubmissionWindow, updateClassStatus, updateClassTestsPerMonth } from '../../services/finalClassService';
+import { getCoordinatorTutors } from '../../services/tutorService';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 
@@ -24,6 +26,16 @@ const AssignedClassesPage: React.FC = () => {
   const [pagination, setPagination] = useState<{ total: number; pages: number }>({ total: 0, pages: 0 });
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('table');
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ open: false, message: '', severity: 'success' });
+
+  const [selectedClass, setSelectedClass] = useState<IFinalClass | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [windowValue, setWindowValue] = useState<number>(2);
+  const [testsPerMonthValue, setTestsPerMonthValue] = useState<number>(2);
+  const [statusValue, setStatusValue] = useState<string>(FINAL_CLASS_STATUS.ACTIVE);
+  const [tutors, setTutors] = useState<any[]>([]);
+  const [newTutorUserId, setNewTutorUserId] = useState<string>('');
+  const [changeTutorReason, setChangeTutorReason] = useState<string>('');
   const navigate = useNavigate();
 
   const activeFilterCount = useMemo(() => {
@@ -98,6 +110,110 @@ const AssignedClassesPage: React.FC = () => {
   // Table action handlers
   const handleOpenAttendance = (_classId: string) => navigate(`/attendance-approvals`);
   const handleOpenPayments = (_classId: string) => navigate(`/payment-tracking`);
+
+  const handleEditClass = (cls: any) => {
+    setSelectedClass(cls as IFinalClass);
+    setWindowValue((cls as any)?.attendanceSubmissionWindow ?? 2);
+    setTestsPerMonthValue((cls as any)?.testPerMonth ?? 2);
+    setStatusValue((cls as any)?.status || FINAL_CLASS_STATUS.ACTIVE);
+    setNewTutorUserId('');
+    setChangeTutorReason('');
+    setEditOpen(true);
+  };
+
+  useEffect(() => {
+    const fetchTutors = async () => {
+      if (!editOpen) return;
+      try {
+        const res = await getCoordinatorTutors({ page: 1, limit: 200 });
+        setTutors(Array.isArray((res as any)?.data) ? (res as any).data : []);
+      } catch {
+        setTutors([]);
+      }
+    };
+    fetchTutors();
+  }, [editOpen]);
+
+  const handleUpdateStatus = async () => {
+    if (!selectedClass?.id) return;
+    try {
+      setActionLoading(true);
+      await updateClassStatus(selectedClass.id, statusValue);
+      setSnackbar({ open: true, message: 'Class status updated', severity: 'success' });
+      setEditOpen(false);
+      fetchClasses();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to update class status';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleChangeTutor = async () => {
+    if (!selectedClass?.id) return;
+    if (!newTutorUserId) {
+      setSnackbar({ open: true, message: 'Please select a tutor', severity: 'error' });
+      return;
+    }
+    try {
+      setActionLoading(true);
+      await changeTutor(selectedClass.id, newTutorUserId, changeTutorReason || undefined);
+      setSnackbar({ open: true, message: 'Tutor changed successfully', severity: 'success' });
+      setEditOpen(false);
+      fetchClasses();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to change tutor';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateWindow = async () => {
+    if (!selectedClass?.id) return;
+    try {
+      setActionLoading(true);
+      await updateAttendanceSubmissionWindow(selectedClass.id, windowValue);
+      setSnackbar({ open: true, message: 'Submission window updated', severity: 'success' });
+      setEditOpen(false);
+      fetchClasses();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to update submission window';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateTestsPerMonth = async () => {
+    if (!selectedClass?.id) return;
+    try {
+      setActionLoading(true);
+      await updateClassTestsPerMonth(selectedClass.id, testsPerMonthValue);
+      setSnackbar({ open: true, message: 'Tests per month updated', severity: 'success' });
+      setEditOpen(false);
+      fetchClasses();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to update tests per month';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDownloadAttendance = async () => {
+    if (!selectedClass?.id) return;
+    try {
+      setActionLoading(true);
+      await downloadAttendancePdf(selectedClass.id);
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || 'Failed to download attendance';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -255,6 +371,7 @@ const AssignedClassesPage: React.FC = () => {
               classes={classes}
               onOpenAttendance={handleOpenAttendance}
               onOpenPayments={handleOpenPayments}
+              onEditClass={handleEditClass}
             />
           ) : viewMode === 'list' ? (
             <Stack spacing={2}>
@@ -312,6 +429,186 @@ const AssignedClassesPage: React.FC = () => {
         severity={snackbar.severity}
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       />
+
+      <Dialog
+        open={editOpen}
+        onClose={() => !actionLoading && setEditOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">Edit Class: {selectedClass?.className || selectedClass?.studentName || ''}</Typography>
+            <IconButton onClick={() => setEditOpen(false)} disabled={actionLoading}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedClass && (
+            <Stack spacing={2.5}>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">Student</Typography>
+                <Typography variant="body2" fontWeight={700}>{selectedClass.studentName}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {(selectedClass as any).grade} • {(selectedClass as any).board} • {(selectedClass as any).mode}
+                </Typography>
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Class Status</Typography>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={8}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      label="Status"
+                      value={statusValue}
+                      onChange={(e) => setStatusValue(e.target.value)}
+                      disabled={actionLoading}
+                    >
+                      <MenuItem value={FINAL_CLASS_STATUS.ACTIVE}>Active</MenuItem>
+                      <MenuItem value={FINAL_CLASS_STATUS.PAUSED}>Paused</MenuItem>
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleUpdateStatus}
+                      disabled={actionLoading || statusValue === ((selectedClass as any)?.status || FINAL_CLASS_STATUS.ACTIVE)}
+                    >
+                      Update
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Change Tutor</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      label="New Tutor"
+                      value={newTutorUserId}
+                      onChange={(e) => setNewTutorUserId(e.target.value)}
+                      disabled={actionLoading}
+                    >
+                      <MenuItem value=""><em>Select tutor</em></MenuItem>
+                      {tutors.map((t: any) => (
+                        <MenuItem key={t?.user?.id || t?.user?._id || t?.id || t?._id} value={t?.user?.id || t?.user?._id || t?.userId || t?.user || t?.id || t?._id}>
+                          {t?.user?.name || t?.name || 'Tutor'}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Reason (optional)"
+                      value={changeTutorReason}
+                      onChange={(e) => setChangeTutorReason(e.target.value)}
+                      disabled={actionLoading}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleChangeTutor}
+                      disabled={actionLoading || !newTutorUserId}
+                    >
+                      Change Tutor
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Attendance Settings</Typography>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={8}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      type="number"
+                      label="Submission Window (Days)"
+                      value={windowValue}
+                      onChange={(e) => setWindowValue(Number(e.target.value))}
+                      disabled={actionLoading}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleUpdateWindow}
+                      disabled={actionLoading || windowValue === ((selectedClass as any).attendanceSubmissionWindow ?? 2)}
+                    >
+                      Update
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Test Settings</Typography>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={8}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      type="number"
+                      label="Tests / Month"
+                      value={testsPerMonthValue}
+                      onChange={(e) => setTestsPerMonthValue(Number(e.target.value))}
+                      disabled={actionLoading}
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={handleUpdateTestsPerMonth}
+                      disabled={actionLoading || testsPerMonthValue === ((selectedClass as any).testPerMonth ?? 2)}
+                    >
+                      Update
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Downloads</Typography>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={handleDownloadAttendance}
+                  disabled={actionLoading}
+                >
+                  Download Attendance PDF
+                </Button>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditOpen(false)} disabled={actionLoading}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

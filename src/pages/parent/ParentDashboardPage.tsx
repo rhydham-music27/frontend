@@ -137,18 +137,18 @@ const ParentDashboardPage: React.FC = () => {
     return <LoadingSpinner fullScreen message="Loading your dashboard..." />;
   }
 
-   const alerts: string[] = [];
-   if (stats) {
-     const att = stats.attendanceSummary;
-     if (att && att.totalSessions > 0 && att.approvalRate < 90) {
-       alerts.push('Attendance approval rate is below 90%. Please review recent sessions.');
-     }
+  const alerts: string[] = [];
+  if (stats) {
+    const att = stats.attendanceSummary;
+    if (att && att.totalSessions > 0 && att.approvalRate < 90) {
+      alerts.push('Attendance approval rate is below 90%. Please review recent sessions.');
+    }
 
-     const pay = stats.paymentSummary;
-     if (pay && pay.overdueAmount > 0) {
-       alerts.push(`You have overdue payments totaling ₹${pay.overdueAmount}.`);
-     }
-   }
+    const pay = stats.paymentSummary;
+    if (pay && pay.overdueAmount > 0) {
+      alerts.push(`You have overdue payments totaling ₹${pay.overdueAmount}.`);
+    }
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -186,7 +186,7 @@ const ParentDashboardPage: React.FC = () => {
                   {primaryClass.schedule?.timeSlot || 'N/A'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Sessions: {primaryClass.completedSessions}/{primaryClass.totalSessions}  Status:{' '}
+                  Sessions: {primaryClass.completedSessions}/{primaryClass.classesPerMonth || primaryClass.totalSessions}  Status:{' '}
                   {primaryClass.status}
                 </Typography>
                 {primaryClass.location && (
@@ -234,7 +234,7 @@ const ParentDashboardPage: React.FC = () => {
                       </Typography>
                     )}
                     {/* Temporary debug info */}
-                   
+
                     {primaryClass.tutor?.email && (
                       <Typography variant="body2" color="text.secondary">
                         {primaryClass.tutor.email}
@@ -434,8 +434,8 @@ const ParentDashboardPage: React.FC = () => {
                         primary={
                           att.finalClass
                             ? `${att.finalClass.studentName} - ${Array.isArray(att.finalClass.subject)
-                                ? att.finalClass.subject.join(', ')
-                                : att.finalClass.subject}`
+                              ? att.finalClass.subject.join(', ')
+                              : att.finalClass.subject}`
                             : 'Class'
                         }
                         secondary={new Date(att.sessionDate).toLocaleDateString()}
@@ -469,8 +469,8 @@ const ParentDashboardPage: React.FC = () => {
                         secondary={
                           p.finalClass
                             ? `${p.finalClass.studentName} - ${Array.isArray(p.finalClass.subject)
-                                ? p.finalClass.subject.join(', ')
-                                : p.finalClass.subject}`
+                              ? p.finalClass.subject.join(', ')
+                              : p.finalClass.subject}`
                             : undefined
                         }
                       />
@@ -482,16 +482,16 @@ const ParentDashboardPage: React.FC = () => {
                             p.status === PAYMENT_STATUS.PAID
                               ? 'success'
                               : p.status === PAYMENT_STATUS.OVERDUE
-                              ? 'error'
-                              : 'warning'
+                                ? 'error'
+                                : 'warning'
                           }
                         />
                         <Typography variant="caption" color="text.secondary">
                           {p.paymentDate
                             ? new Date(p.paymentDate).toLocaleDateString()
                             : p.dueDate
-                            ? `Due ${new Date(p.dueDate).toLocaleDateString()}`
-                            : ''}
+                              ? `Due ${new Date(p.dueDate).toLocaleDateString()}`
+                              : ''}
                         </Typography>
                         {p.status === PAYMENT_STATUS.OVERDUE && <ErrorOutlineIcon color="error" />}
                       </Stack>

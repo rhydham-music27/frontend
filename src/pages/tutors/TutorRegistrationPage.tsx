@@ -6,7 +6,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { tutorLeadAPI } from '@/api/client';
 import { tutorLeadRegistrationSchema } from '@/schemas/applicationschema';
-import generateTeacherId from '@/utils/generateTeacherId';
 import { Box, Container, Typography, alpha, useTheme, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { getMyProfileForEdit, updateMyProfile } from '@/services/tutorService';
@@ -54,14 +53,19 @@ const TutorLeadRegistration = () => {
       } else {
         // Create new tutor lead
         const payload = tutorLeadRegistrationSchema.parse(data);
-        const generatedTeacherId = generateTeacherId(data.gender as string, data.city as string);
-        const toSend = { ...payload, teacherId: generatedTeacherId };
+        const resp = await tutorLeadAPI.create(payload as any);
+        const returnedTeacherId = resp?.teacherId;
 
-        const resp = await tutorLeadAPI.create(toSend);
-        const returnedTeacherId = resp?.teacherId || generatedTeacherId;
-
-        toast.success(`Registration successful! Your Teacher ID: ${returnedTeacherId}`);
-        navigate(`/login?email=${encodeURIComponent(data.email)}&teacherId=${encodeURIComponent(returnedTeacherId)}`);
+        toast.success(
+          returnedTeacherId
+            ? `Registration successful! Your Teacher ID: ${returnedTeacherId}`
+            : 'Registration successful!'
+        );
+        navigate(
+          returnedTeacherId
+            ? `/login?email=${encodeURIComponent(data.email)}&teacherId=${encodeURIComponent(returnedTeacherId)}`
+            : `/login?email=${encodeURIComponent(data.email)}`
+        );
       }
     } catch (error: any) {
       console.error('Operation failed:', error);

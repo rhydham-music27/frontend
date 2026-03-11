@@ -1,6 +1,4 @@
-export const CITY_CODE: Record<string, string> = {
-  Bhopal: 'BPL',
-};
+export const CITY_CODE: Record<string, string> = {};
 
 function randChars(length = 6) {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -26,9 +24,20 @@ export function generateTeacherId(gender?: string, city?: string) {
   const prefix = 'T';
   const g = (gender || '').toString().trim();
   const genderInitial = g ? g[0].toUpperCase() : 'X';
-  const cityCode = (city && CITY_CODE[city]) ? CITY_CODE[city] : (city ? city.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 3) : 'XXX');
+  const cityCode = (city ? city.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 3) : 'XXX');
   const random = randChars(6);
   return `${prefix}${genderInitial}${cityCode}${random}`;
+}
+
+export function generateTeacherIdWithCityCode(gender?: string, cityCode?: string, city?: string) {
+  const prefix = 'T';
+  const g = (gender || '').toString().trim();
+  const genderInitial = g ? g[0].toUpperCase() : 'X';
+  const code = (cityCode && String(cityCode).trim())
+    ? String(cityCode).trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3)
+    : (city ? city.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 3) : 'XXX');
+  const random = randChars(6);
+  return `${prefix}${genderInitial}${code}${random}`;
 }
 
 export default generateTeacherId;

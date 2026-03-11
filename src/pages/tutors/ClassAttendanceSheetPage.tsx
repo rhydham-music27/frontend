@@ -18,6 +18,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import { getFinalClass } from '../../services/finalClassService';
 import { getAttendanceByClass } from '../../services/attendanceService';
+import { getAttendanceSheetPayments } from '../../services/attendanceSheetService';
+import api from '../../services/api';
 import AttendanceSheet, {
     AttendanceRecord,
     AssignedClass,
@@ -41,6 +43,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
     const [sheetNo, setSheetNo] = useState<number>(1);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [payments, setPayments] = useState<{ classFees?: any | null; tutorPayout?: any | null } | null>(null);
 
     const sheetRef = useRef<{ exportPdf: () => Promise<void> } | null>(null);
 
@@ -62,6 +65,23 @@ const ClassAttendanceSheetPage: React.FC = () => {
                 ]);
                 setFinalClass(classRes.data);
                 setAttendances(attendanceRes.data || []);
+
+                try {
+                    const monthNum = Number(selectedMonth.slice(5, 7));
+                    const yearNum = Number(selectedMonth.slice(0, 4));
+                    const sheetsRes = await api.get(`/api/attendance-sheets/class/${classId}?month=${monthNum}&year=${yearNum}`);
+                    const sheets = (sheetsRes as any)?.data?.data || (sheetsRes as any)?.data || [];
+                    const latestSheet = Array.isArray(sheets) ? sheets[0] : null;
+                    const sheetId = latestSheet?._id || latestSheet?.id;
+                    if (sheetId) {
+                        const payRes = await getAttendanceSheetPayments(String(sheetId));
+                        setPayments(payRes.data || null);
+                    } else {
+                        setPayments(null);
+                    }
+                } catch {
+                    setPayments(null);
+                }
             } catch (e: any) {
                 setError(e?.response?.data?.message || 'Failed to load attendance data');
             } finally {
@@ -69,7 +89,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
             }
         };
         fetchData();
-    }, [classId]);
+    }, [classId, selectedMonth]);
 
     const filteredAttendances = attendances.filter((a: any) => {
         if (!selectedMonth) return true;
@@ -219,6 +239,8 @@ const ClassAttendanceSheetPage: React.FC = () => {
                         range={sheetRange}
                         sheetNo={sheetNo}
                         rowsPerPage={rowsPerPage}
+                        payments={payments || undefined}
+                        canEditPayments={false}
                     />
                 </Box>
             )}

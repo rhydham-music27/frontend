@@ -46,14 +46,15 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
   };
 
   const monthlyTotalSessions =
+    (finalClass as any)?.metrics?.totalSessionsThisMonth ??
     (finalClass as any)?.classLead?.classesPerMonth ??
     (finalClass as any)?.classesPerMonth ??
     finalClass.totalSessions ??
     0;
 
   const completedForMonth = Math.min(
-    Number(finalClass.completedSessions || 0),
-    Number(monthlyTotalSessions || 0) || Number(finalClass.completedSessions || 0)
+    Number((finalClass as any)?.metrics?.completedSessionsThisMonth ?? finalClass.completedSessions ?? 0),
+    Number(monthlyTotalSessions || 0) || Number((finalClass as any)?.metrics?.completedSessionsThisMonth ?? finalClass.completedSessions ?? 0)
   );
 
   const progress = monthlyTotalSessions > 0

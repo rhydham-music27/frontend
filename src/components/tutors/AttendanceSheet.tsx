@@ -1,7 +1,8 @@
 import React, { useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Box, Typography, Table, TableHead, TableBody, TableRow, TableCell, Paper } from '@mui/material';
+import { Box, Typography, Table, TableHead, TableBody, TableRow, TableCell, Paper, Chip, TextField, MenuItem, Stack } from '@mui/material';
+import { PAYMENT_STATUS } from '../../constants';
 
 // Local, minimal types matching the template structure.
 // You can later swap these to your central types if needed.
@@ -31,6 +32,9 @@ export interface AttendanceSheetProps {
   range?: { start: string; end: string };
   sheetNo?: number;
   rowsPerPage?: number;
+  payments?: { classFees?: any | null; tutorPayout?: any | null };
+  canEditPayments?: boolean;
+  onUpdatePaymentStatus?: (paymentId: string, status: string) => Promise<void> | void;
 }
 
 function toCsvValue(value: string | number | undefined): string {
@@ -42,7 +46,7 @@ function toCsvValue(value: string | number | undefined): string {
 }
 
 const AttendanceSheet = forwardRef(function AttendanceSheet(
-  { tutorData, classInfo, range, sheetNo = 1, rowsPerPage = 10 }: AttendanceSheetProps,
+  { tutorData, classInfo, range, sheetNo = 1, rowsPerPage = 10, payments, canEditPayments = false, onUpdatePaymentStatus }: AttendanceSheetProps,
   ref: React.Ref<{ exportPdf: () => Promise<void> }>
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -228,6 +232,83 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
               )}
             </Box>
 
+            {(payments?.classFees || payments?.tutorPayout) && (
+              <Box sx={{ px: 1, mt: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                  Payment Status
+                </Typography>
+                <Stack direction="column" spacing={1.25}>
+                  {payments?.classFees && (
+                    <Box display="flex" alignItems="center" justifyContent="space-between" gap={2}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Class Fees</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Amount: {payments.classFees?.amount ?? '—'} {payments.classFees?.currency || ''}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Chip
+                          size="small"
+                          label={String(payments.classFees?.status || PAYMENT_STATUS.PENDING)}
+                          color={String(payments.classFees?.status) === PAYMENT_STATUS.PAID ? 'success' : String(payments.classFees?.status) === PAYMENT_STATUS.OVERDUE ? 'error' : 'warning'}
+                          variant="outlined"
+                        />
+                        {canEditPayments && (payments.classFees?.id || payments.classFees?._id) && (
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <TextField
+                              select
+                              size="small"
+                              value={String(payments.classFees?.status || PAYMENT_STATUS.PENDING)}
+                              onChange={(e) => onUpdatePaymentStatus?.(String(payments.classFees?.id || payments.classFees?._id), e.target.value)}
+                              sx={{ minWidth: 140 }}
+                            >
+                              {Object.values(PAYMENT_STATUS).map((s) => (
+                                <MenuItem key={s} value={s}>{s}</MenuItem>
+                              ))}
+                            </TextField>
+                          </Box>
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+
+                  {payments?.tutorPayout && (
+                    <Box display="flex" alignItems="center" justifyContent="space-between" gap={2}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>Tutor Payout</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Amount: {payments.tutorPayout?.amount ?? '—'} {payments.tutorPayout?.currency || ''}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Chip
+                          size="small"
+                          label={String(payments.tutorPayout?.status || PAYMENT_STATUS.PENDING)}
+                          color={String(payments.tutorPayout?.status) === PAYMENT_STATUS.PAID ? 'success' : String(payments.tutorPayout?.status) === PAYMENT_STATUS.OVERDUE ? 'error' : 'warning'}
+                          variant="outlined"
+                        />
+                        {canEditPayments && (payments.tutorPayout?.id || payments.tutorPayout?._id) && (
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <TextField
+                              select
+                              size="small"
+                              value={String(payments.tutorPayout?.status || PAYMENT_STATUS.PENDING)}
+                              onChange={(e) => onUpdatePaymentStatus?.(String(payments.tutorPayout?.id || payments.tutorPayout?._id), e.target.value)}
+                              sx={{ minWidth: 140 }}
+                            >
+                              {Object.values(PAYMENT_STATUS).map((s) => (
+                                <MenuItem key={s} value={s}>{s}</MenuItem>
+                              ))}
+                            </TextField>
+                          </Box>
+                        )}
+                      </Box>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
+            )}
+
             {/* Table */}
             <Box component={Paper} variant="outlined" sx={{ overflow: 'hidden', borderRadius: 1, mt: 1 }}>
               <Table size="small" sx={{ '& th': { bgcolor: 'grey.50', fontWeight: 700, borderBottom: '2px solid', borderColor: 'grey.300' }, '& td, & th': { fontSize: '0.85rem', py: 1, borderRight: '1px solid', borderColor: 'grey.200' }, '& td:last-child, & th:last-child': { borderRight: 'none' } }}>
@@ -250,17 +331,6 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
                       <TableCell align="center">{r.duration ? r.duration * 60 : ''}</TableCell>
                       <TableCell sx={{ px: 2 }}>{r.topicsCovered ?? ''}</TableCell>
                       <TableCell align="center">{r.markedAt ? r.markedAt.replace('T', ' ').slice(0, 16) : ''}</TableCell>
-                    </TableRow>
-                  ))}
-                  {/* Fill empty rows if less than rowsPerPage to keep height consistent */}
-                  {Array.from({ length: rowsPerPage - chunk.length }).map((_, i) => (
-                    <TableRow key={`empty-${i}`} sx={{ height: 33 }}>
-                      <TableCell align="center">{chunkIndex * rowsPerPage + chunk.length + i + 1}</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
                     </TableRow>
                   ))}
                 </TableBody>

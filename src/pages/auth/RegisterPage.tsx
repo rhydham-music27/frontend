@@ -43,6 +43,7 @@ interface RegisterFormValues {
   password: string;
   confirmPassword: string;
   phone?: string;
+  dob?: string;
   city?: string;
   gender?: 'MALE' | 'FEMALE' | 'OTHER';
   role: string;
@@ -66,6 +67,14 @@ const schema = yup.object({
     .optional()
     .transform((v) => (typeof v === 'string' ? v.replace(/\D/g, '') : v))
     .test('phone-10-digits', 'Phone number must be 10 digits', (v) => !v || v.length === 10),
+  dob: yup
+    .string()
+    .optional()
+    .transform((v) => (typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined))
+    .test('dob-iso-date', 'DOB must be a valid date', (v) => {
+      if (!v) return true;
+      return !Number.isNaN(new Date(v).getTime());
+    }),
   city: yup
     .string()
     .transform((v) => (typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined))
@@ -127,6 +136,7 @@ const RegisterPage: React.FC = () => {
         submitData.email,
         submitData.password,
         submitData.phone,
+        submitData.dob,
         submitData.city,
         submitData.gender,
         submitData.role,
@@ -325,6 +335,18 @@ const RegisterPage: React.FC = () => {
                             </InputAdornment>
                           ),
                         }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Date of Birth"
+                        type="date"
+                        fullWidth
+                        error={!!errors.dob}
+                        helperText={errors.dob?.message}
+                        {...register('dob')}
+                        InputLabelProps={{ shrink: true }}
                       />
                     </Grid>
 

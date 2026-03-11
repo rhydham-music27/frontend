@@ -160,6 +160,9 @@ const App: React.FC = () => {
       return <Navigate to="/student-dashboard" replace />;
     }
     return <DashboardPage />;
+
+
+    
   };
 
   const RoleBasedProfile: React.FC = () => {
@@ -372,6 +375,10 @@ const App: React.FC = () => {
                     <SendAnnouncementPage />
                   </ProtectedRoute>
                 }
+              />
+              <Route
+                path="announcement"
+                element={<Navigate to="/announcements" replace />}
               />
               <Route
                 path="test-reports"

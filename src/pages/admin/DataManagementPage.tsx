@@ -169,24 +169,28 @@ const DataManagementPage: React.FC = () => {
   }), []);
 
   const classLeadColumns: GridColDef[] = useMemo(() => [
-    { field: 'studentName', headerName: 'Student', width: 220, renderCell: (p: GridRenderCellParams) => (
-      <Typography 
-        color="primary" 
-        sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
-        onClick={() => handleStudentNameClick((p as any).row)}
-      >
-        {(p as any).row?.studentName || (p as any).row?.student?.name}
-        {(p as any).row?.studentType === 'GROUP' && ` (${(p as any).row?.numberOfStudents || (p as any).row?.studentDetails?.length || 0} students)`}
-      </Typography>
-    )},
+    {
+      field: 'studentName', headerName: 'Student', width: 220, renderCell: (p: GridRenderCellParams) => (
+        <Typography
+          color="primary"
+          sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+          onClick={() => handleStudentNameClick((p as any).row)}
+        >
+          {(p as any).row?.studentName || (p as any).row?.student?.name}
+          {(p as any).row?.studentType === 'GROUP' && ` (${(p as any).row?.numberOfStudents || (p as any).row?.studentDetails?.length || 0} students)`}
+        </Typography>
+      )
+    },
     { field: 'grade', headerName: 'Grade', width: 100 },
-    { field: 'subject', headerName: 'Subjects', width: 200, renderCell: (p: GridRenderCellParams) => (
-      <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
-        {formatSubjects((p as any).row?.subject).slice(0, 3).map((s, i) => (
-          <Chip key={`${(p as any).id}-sub-${i}`} size="small" label={s} />
-        ))}
-      </Stack>
-    ) },
+    {
+      field: 'subject', headerName: 'Subjects', width: 200, renderCell: (p: GridRenderCellParams) => (
+        <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
+          {formatSubjects((p as any).row?.subject).slice(0, 3).map((s, i) => (
+            <Chip key={`${(p as any).id}-sub-${i}`} size="small" label={s} />
+          ))}
+        </Stack>
+      )
+    },
     { field: 'board', headerName: 'Board', width: 120, valueGetter: (p: any) => p.row?.board || p.row?.student?.board },
     { field: 'mode', headerName: 'Mode', width: 100 },
     { field: 'status', headerName: 'Status', width: 150, renderCell: (p: any) => <ClassLeadStatusChip status={p.value} /> },
@@ -242,13 +246,15 @@ const DataManagementPage: React.FC = () => {
   const tutorColumns: GridColDef[] = useMemo(() => [
     { field: 'name', headerName: 'Name', width: 180, valueGetter: (p: any) => p.row?.user?.name || p.row?.name },
     { field: 'email', headerName: 'Email', width: 200, valueGetter: (p: any) => p.row?.user?.email || p.row?.email },
-    { field: 'subjects', headerName: 'Subjects', width: 200, renderCell: (p: any) => (
-      <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
-        {formatSubjects(p.row?.subjects).slice(0, 3).map((s, i) => (
-          <Chip key={`${p.id}-t-sub-${i}`} size="small" label={s} />
-        ))}
-      </Stack>
-    ) },
+    {
+      field: 'subjects', headerName: 'Subjects', width: 200, renderCell: (p: any) => (
+        <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
+          {formatSubjects(p.row?.subjects).slice(0, 3).map((s, i) => (
+            <Chip key={`${p.id}-t-sub-${i}`} size="small" label={s} />
+          ))}
+        </Stack>
+      )
+    },
     { field: 'experienceHours', headerName: 'Hours', width: 120 },
     { field: 'verificationStatus', headerName: 'Verification', width: 150, renderCell: (p: any) => <Chip size="small" color={p.value === 'VERIFIED' ? 'success' as any : p.value === 'REJECTED' ? 'error' as any : 'warning' as any} label={p.value} /> },
     { field: 'classesAssigned', headerName: 'Classes', width: 120, valueGetter: (p: any) => p.row?.classesAssigned ?? p.row?.classesCount },
@@ -264,27 +270,31 @@ const DataManagementPage: React.FC = () => {
   ], []);
 
   const finalClassColumns: GridColDef[] = useMemo(() => [
-    { field: 'studentName', headerName: 'Student', width: 220, renderCell: (p: any) => (
-      <Typography 
-        color="primary" 
-        sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
-        onClick={() => handleStudentNameClick(p.row)}
-      >
-        {p.row?.studentName}
-      </Typography>
-    )},
+    {
+      field: 'studentName', headerName: 'Student', width: 220, renderCell: (p: any) => (
+        <Typography
+          color="primary"
+          sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
+          onClick={() => handleStudentNameClick(p.row)}
+        >
+          {p.row?.studentName}
+        </Typography>
+      )
+    },
     { field: 'tutor', headerName: 'Tutor', width: 180, valueGetter: (p: any) => p.row?.tutor?.name },
     { field: 'coordinator', headerName: 'Coordinator', width: 180, valueGetter: (p: any) => p.row?.coordinator?.name },
-    { field: 'subject', headerName: 'Subject', width: 200, renderCell: (p: any) => (
-      <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
-        {formatSubjects(p.row?.subject).slice(0, 3).map((s, i) => (
-          <Chip key={`${p.id}-fc-sub-${i}`} size="small" label={s} />
-        ))}
-      </Stack>
-    ) },
+    {
+      field: 'subject', headerName: 'Subject', width: 200, renderCell: (p: any) => (
+        <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
+          {formatSubjects(p.row?.subject).slice(0, 3).map((s, i) => (
+            <Chip key={`${p.id}-fc-sub-${i}`} size="small" label={s} />
+          ))}
+        </Stack>
+      )
+    },
     { field: 'status', headerName: 'Status', width: 120, renderCell: (p: any) => <Chip size="small" label={p.value} /> },
     { field: 'startDate', headerName: 'Start', width: 140, valueGetter: (p: any) => formatDate(p.row?.startDate) },
-    { field: 'sessions', headerName: 'Sessions', width: 120, valueGetter: (p: any) => `${p.row?.completedSessions ?? 0}/${p.row?.totalSessions ?? 0}` },
+    { field: 'sessions', headerName: 'Sessions', width: 120, valueGetter: (p: any) => `${p.row?.completedSessions ?? 0}/${p.row?.classesPerMonth ?? p.row?.totalSessions ?? 0}` },
     {
       field: 'actions', headerName: 'Actions', width: 120, sortable: false, filterable: false,
       renderCell: () => (
@@ -328,8 +338,8 @@ const DataManagementPage: React.FC = () => {
     } catch (e: any) {
       const msg = e?.response?.status === 404 ? "Records not found" :
         e?.response?.status === 403 ? "You don't have permission to perform this action" :
-        e?.response?.status === 400 ? "Invalid request. Please check your input." :
-        e?.message || 'Server error. Please try again later.';
+          e?.response?.status === 400 ? "Invalid request. Please check your input." :
+            e?.message || 'Server error. Please try again later.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -461,10 +471,10 @@ const DataManagementPage: React.FC = () => {
                   <MenuItem value="">All</MenuItem>
                   {(entityType === 'ClassLead' ? Object.values(CLASS_LEAD_STATUS)
                     : entityType === 'Payment' ? Object.values(PAYMENT_STATUS)
-                    : entityType === 'Attendance' ? Object.values(ATTENDANCE_STATUS)
-                    : []).map((s: any) => (
-                      <MenuItem key={String(s)} value={String(s)}>{String(s)}</MenuItem>
-                  ))}
+                      : entityType === 'Attendance' ? Object.values(ATTENDANCE_STATUS)
+                        : []).map((s: any) => (
+                          <MenuItem key={String(s)} value={String(s)}>{String(s)}</MenuItem>
+                        ))}
                 </TextField>
               </Grid>
             )}
@@ -577,7 +587,7 @@ const DataManagementPage: React.FC = () => {
             <Grid item xs={12} md="auto">
               <Stack direction="row" spacing={1} alignItems="center">
                 <Button startIcon={<FilterListIcon />} variant="outlined" onClick={handleClearFilters}>Clear</Button>
-                <Chip label={`Active filters: ${Object.keys(filters).filter(k => filters[k] !== undefined && filters[k] !== '' ).length}`} />
+                <Chip label={`Active filters: ${Object.keys(filters).filter(k => filters[k] !== undefined && filters[k] !== '').length}`} />
               </Stack>
             </Grid>
           </Grid>
@@ -680,9 +690,9 @@ const DataManagementPage: React.FC = () => {
                   <CardContent>
                     <Stack spacing={1}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography 
-                          variant="subtitle1" 
-                          color="primary" 
+                        <Typography
+                          variant="subtitle1"
+                          color="primary"
                           sx={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 600 }}
                           onClick={() => handleStudentNameClick(item)}
                         >

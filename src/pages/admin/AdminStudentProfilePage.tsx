@@ -280,7 +280,7 @@ const AdminStudentProfilePage: React.FC = () => {
 
                           <Grid item xs={12} md={4}>
                             <Box p={2} bgcolor="action.hover" borderRadius={2} textAlign="center">
-                              <Typography variant="h5" fontWeight={700} color="success.main">{cls.completedSessions}/{cls.totalSessions}</Typography>
+                              <Typography variant="h5" fontWeight={700} color="success.main">{cls.completedSessions}/{cls.classesPerMonth || cls.totalSessions}</Typography>
                               <Typography variant="caption" fontWeight={600}>Sessions Completed</Typography>
                             </Box>
                           </Grid>

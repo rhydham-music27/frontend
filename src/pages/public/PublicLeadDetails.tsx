@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import {
     Box,
     Container,
@@ -22,6 +21,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { getAnnouncementByLeadId } from '../../services/announcementService';
+import api from '../../services/api';
 
 interface PublicLead {
     _id: string;
@@ -66,7 +66,7 @@ const PublicLeadDetails: React.FC = () => {
     useEffect(() => {
         const fetchLeadAndAnnouncement = async () => {
             try {
-                const response = await axios.get(`/api/public/leads/${id}`);
+                const response = await api.get(`/public/leads/${id}`);
                 if (response.data && response.data.success) {
                     setLead(response.data.data);
 
