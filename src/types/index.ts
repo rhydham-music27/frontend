@@ -224,6 +224,27 @@ export interface ITutorHistory {
   replacedBy?: IUser;
 }
 
+export interface ISchedule {
+  startDate?: string | Date;
+  daysOfWeek?: string[];
+  timeSlot?: string;
+}
+
+export interface IClassSession {
+  id: string;
+  finalClass: IFinalClass;
+  tutor: IUser;
+  coordinator?: IUser;
+  sessionDate: string | Date;
+  timeSlot: string;
+  cycleMonth: number;
+  cycleYear: number;
+  sessionNumber: number;
+  status: 'PLANNED' | 'COMPLETED' | 'CANCELLED' | string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 export interface IFinalClass {
   id: string;
   className: string;
@@ -234,7 +255,7 @@ export interface IFinalClass {
   startDate: Date;
   endDate?: Date;
   status: string;
-  schedule: { daysOfWeek: string[]; timeSlot: string };
+  schedule: ISchedule;
   classesPerMonth?: number;
   totalSessions: number;
   completedSessions: number;

@@ -25,12 +25,17 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { listTutorNotes, NoteItemDto } from '../../services/notesService';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import api from '../../services/api';
 
 const TutorNotesPage: React.FC = () => {
   const [items, setItems] = useState<NoteItemDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [path, setPath] = useState<{ id: string | null; name: string }[]>([{ id: null, name: 'My Notes' }]);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<NoteItemDto | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const currentParentId = path[path.length - 1].id;
 
@@ -58,6 +63,36 @@ const TutorNotesPage: React.FC = () => {
   const handleBreadcrumbClick = (index: number) => {
     setPath(path.slice(0, index + 1));
   };
+
+  const handleFileClick = (item: NoteItemDto) => {
+    setSelectedFile(item);
+    setViewerOpen(true);
+  };
+
+  useEffect(() => {
+    const loadPreview = async () => {
+      if (!viewerOpen || !selectedFile?.url) return;
+      try {
+        setPreviewLoading(true);
+        const res = await api.get(selectedFile.url, { responseType: 'blob' });
+        const objectUrl = URL.createObjectURL(res.data);
+        setPreviewUrl(objectUrl);
+      } catch (e: any) {
+        setPreviewUrl(null);
+        setError(e?.response?.data?.message || e?.message || 'Failed to load preview');
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+
+    void loadPreview();
+  }, [viewerOpen, selectedFile?.url]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -124,7 +159,7 @@ const TutorNotesPage: React.FC = () => {
                       </Box>
                       {item.type === 'FILE' && item.url && (
                         <Tooltip title="View File">
-                          <IconButton size="small" component="a" href={item.url} target="_blank">
+                          <IconButton size="small" onClick={() => handleFileClick(item)}>
                             <UploadFileIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -137,6 +172,54 @@ const TutorNotesPage: React.FC = () => {
           )}
         </Grid2>
       )}
+      <Dialog
+        open={viewerOpen}
+        onClose={() => {
+          setViewerOpen(false);
+          setSelectedFile(null);
+          if (previewUrl) URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>{selectedFile?.name || 'Document'}</DialogTitle>
+        <DialogContent dividers sx={{ height: '80vh', p: 0 }}>
+          {previewLoading ? (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Loading preview...
+              </Typography>
+            </Box>
+          ) : previewUrl ? (
+            <Box sx={{ width: '100%', height: '100%' }}>
+              <iframe
+                src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                title={selectedFile?.name || 'Document'}
+                style={{ border: 'none', width: '100%', height: '100%' }}
+              />
+            </Box>
+          ) : (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                This file does not have a preview URL.
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setViewerOpen(false);
+              setSelectedFile(null);
+              if (previewUrl) URL.revokeObjectURL(previewUrl);
+              setPreviewUrl(null);
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -37,6 +37,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import { getMyClasses, updateFinalClassSchedule } from '../../services/finalClassService';
 import { IFinalClass } from '../../types';
+import { getMyTutorSessionsForCycle } from '../../services/classSessionService';
 import ScheduleTestModal from '../../components/tutors/ScheduleTestModal';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { useSelector } from 'react-redux';
@@ -266,9 +267,14 @@ const TutorTimetablePage: React.FC = () => {
   const [scheduleModalClass, setScheduleModalClass] = useState<IFinalClass | null>(null);
   const [scheduleDays, setScheduleDays] = useState<string[]>([]);
   const [scheduleStartTime, setScheduleStartTime] = useState('');
+  const [scheduleStartDate, setScheduleStartDate] = useState('');
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [scheduleSuccess, setScheduleSuccess] = useState<string | null>(null);
+
+  const [sessionsLoading, setSessionsLoading] = useState<boolean>(false);
+  const [sessionsError, setSessionsError] = useState<string | null>(null);
+  const [cycleSessions, setCycleSessions] = useState<any[]>([]);
 
   const [testModalOpen, setTestModalOpen] = useState(false);
   const [testModalClass, setTestModalClass] = useState<IFinalClass | null>(null);
@@ -346,6 +352,28 @@ const TutorTimetablePage: React.FC = () => {
     fetchClasses();
   }, [user]);
 
+  useEffect(() => {
+    const fetchSessions = async () => {
+      if (!user) return;
+      try {
+        setSessionsLoading(true);
+        setSessionsError(null);
+        const month = currentMonth.getMonth() + 1;
+        const year = currentMonth.getFullYear();
+        const resp = await getMyTutorSessionsForCycle({ month, year, ensure: true });
+        setCycleSessions(Array.isArray(resp.data) ? resp.data : []);
+      } catch (e: any) {
+        const msg = e?.response?.data?.message || 'Failed to load sessions';
+        setSessionsError(msg);
+        setCycleSessions([]);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+
+    void fetchSessions();
+  }, [user, currentMonth]);
+
   const isClassOnDate = (cls: IFinalClass, date: Date): boolean => {
     const normalize = (d: Date) => {
       const nd = new Date(d);
@@ -392,69 +420,72 @@ const TutorTimetablePage: React.FC = () => {
     return daysOfWeek.includes(weekdayName);
   };
 
-  const allowedDatesByClass = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const mapping: Record<string, Set<number>> = {};
+  const sessionsByDay = useMemo(() => {
+    const normalize = (d: Date) => {
+      const nd = new Date(d);
+      nd.setHours(0, 0, 0, 0);
+      return nd.getTime();
+    };
 
-    classes.forEach((cls) => {
-      const limit = cls.classesPerMonth;
-      if (typeof limit !== 'number' || limit <= 0) {
-        return; // No limit
-      }
-
-      // 1. Find all potential sessions for this class in this month
-      const potentialSessions: Date[] = [];
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(year, month, d);
-        if (isClassOnDate(cls, date)) {
-          potentialSessions.push(date);
-        }
-      }
-
-      // 2. Sort chronologically
-      potentialSessions.sort((a, b) => a.getTime() - b.getTime());
-
-      // 3. Take the first 'limit' sessions
-      const allowed = potentialSessions.slice(0, limit);
-      mapping[cls.id] = new Set(allowed.map((d) => d.getTime()));
+    const map = new Map<number, any[]>();
+    (cycleSessions || []).forEach((s: any) => {
+      const dt = new Date(s.sessionDate);
+      if (Number.isNaN(dt.getTime())) return;
+      const key = normalize(dt);
+      const arr = map.get(key) || [];
+      arr.push(s);
+      map.set(key, arr);
     });
 
-    return mapping;
-  }, [classes, currentMonth]);
+    return map;
+  }, [cycleSessions]);
 
-  const isClassAllowedOnDate = (cls: IFinalClass, date: Date): boolean => {
-    const allowedSet = allowedDatesByClass[cls.id];
-    if (!allowedSet) return true; // No limit applied for this class
+  const getClassesForDate = (date: Date) => {
+    const normalize = (d: Date) => {
+      const nd = new Date(d);
+      nd.setHours(0, 0, 0, 0);
+      return nd.getTime();
+    };
 
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return allowedSet.has(d.getTime());
+    const key = normalize(date);
+    const sessions = sessionsByDay.get(key) || [];
+
+    const classesFromSessions = sessions
+      .map((s: any) => {
+        const cls = (s.finalClass || null) as any;
+        if (!cls) return null;
+
+        // Respect legacy one-time reschedule behavior for display.
+        const reschedules: any[] = ((cls as any).oneTimeReschedules || []).map((r: any) => ({ ...r }));
+
+        const isMovedFromDate = reschedules.some(
+          (r) => normalize(new Date(r.fromDate)) === key && normalize(new Date(r.toDate)) !== normalize(new Date(r.fromDate))
+        );
+        if (isMovedFromDate) return null;
+
+        const anyCls: any = { ...cls };
+        const sched = anyCls.schedule || {};
+        anyCls.schedule = { ...sched, timeSlot: String(s.timeSlot || sched.timeSlot || '') };
+
+        const match = reschedules.find((r) => normalize(new Date(r.toDate)) === key);
+        if (match) {
+          anyCls.schedule = { ...anyCls.schedule, timeSlot: match.timeSlot };
+          anyCls.__isRescheduledForDate = true;
+        }
+
+        return anyCls as IFinalClass;
+      })
+      .filter(Boolean) as IFinalClass[];
+
+    return classesFromSessions;
   };
 
   const mobileSelectedDayClasses = useMemo(() => {
-    return classes
-      .filter((cls) => isClassOnDate(cls, mobileSelectedDay) && isClassAllowedOnDate(cls, mobileSelectedDay))
-      .map((cls) => {
-        const normalize = (dd: Date) => {
-          const nd = new Date(dd);
-          nd.setHours(0, 0, 0, 0);
-          return nd.getTime();
-        };
-        const anyCls: any = { ...(cls as any) };
-        const reschedules: any[] = (anyCls.oneTimeReschedules || []).map((r: any) => ({ ...r }));
-        const match = reschedules.find((r) => normalize(new Date(r.toDate)) === normalize(mobileSelectedDay));
-        if (match) {
-          const sched = anyCls.schedule || {};
-          anyCls.schedule = { ...sched, timeSlot: match.timeSlot };
-          (anyCls as any).__isRescheduledForDate = true;
-          return anyCls;
-        }
-        return cls;
-      });
-  }, [classes, mobileSelectedDay]);
+    return getClassesForDate(mobileSelectedDay);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobileSelectedDay, sessionsByDay]);
+
+  const mobileSelectedDayClassCount = mobileSelectedDayClasses.length;
 
   const mobileWeekLabel = useMemo(() => {
     const start = mobileWeekDays[0];
@@ -507,6 +538,8 @@ const TutorTimetablePage: React.FC = () => {
     const sched: any = (cls as any).schedule || {};
     const days: string[] = Array.isArray(sched.daysOfWeek) ? sched.daysOfWeek : [];
     const timeSlot: string = sched.timeSlot || '';
+    const rawStartDate = sched.startDate || (cls as any).startDate;
+    const startDateIso = rawStartDate ? new Date(rawStartDate).toISOString().slice(0, 10) : '';
     let start = '';
     if (timeSlot && timeSlot.includes('-')) {
       const parts = timeSlot.split('-');
@@ -515,6 +548,7 @@ const TutorTimetablePage: React.FC = () => {
     setScheduleModalClass(cls);
     setScheduleDays(days);
     setScheduleStartTime(start);
+    setScheduleStartDate(startDateIso);
     setScheduleError(null);
     setScheduleSuccess(null);
     setScheduleModalOpen(true);
@@ -533,6 +567,10 @@ const TutorTimetablePage: React.FC = () => {
 
   const handleSaveSchedule = async () => {
     if (!scheduleModalClass) return;
+    if (!scheduleStartDate) {
+      setScheduleError('Please select a start date.');
+      return;
+    }
     if (!scheduleDays.length) {
       setScheduleError('Please select at least one day.');
       return;
@@ -580,12 +618,23 @@ const TutorTimetablePage: React.FC = () => {
       setScheduleSuccess(null);
       const timeSlot = `${scheduleStartTime} - ${computedEndTime}`;
       const resp = await updateFinalClassSchedule(scheduleModalClass.id, {
+        startDate: scheduleStartDate,
         daysOfWeek: scheduleDays,
         timeSlot,
       });
       const updated = resp.data;
       setClasses((prev) => prev.map((c) => (c.id === updated.id ? (updated as any) : c)));
       setScheduleSuccess('Timetable updated successfully.');
+
+      // Refresh sessions for this cycle (best-effort)
+      try {
+        const month = currentMonth.getMonth() + 1;
+        const year = currentMonth.getFullYear();
+        const sResp = await getMyTutorSessionsForCycle({ month, year, ensure: true });
+        setCycleSessions(Array.isArray(sResp.data) ? sResp.data : []);
+      } catch {
+        // ignore
+      }
     } catch (e: any) {
       const msg = e?.response?.data?.message || 'Failed to update timetable.';
       setScheduleError(msg);
@@ -635,31 +684,6 @@ const TutorTimetablePage: React.FC = () => {
   const formatMonthYear = (date: Date) =>
     date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
-  const getClassesForDate = (date: Date) => {
-    const normalize = (d: Date) => {
-      const nd = new Date(d);
-      nd.setHours(0, 0, 0, 0);
-      return nd.getTime();
-    };
-
-    return classes
-      .filter((cls) => isClassOnDate(cls, date) && isClassAllowedOnDate(cls, date))
-      .map((cls) => {
-        const anyCls: any = { ...(cls as any) };
-        const reschedules: any[] = (anyCls.oneTimeReschedules || []).map((r: any) => ({ ...r }));
-        const match = reschedules.find((r) => normalize(new Date(r.toDate)) === normalize(date));
-
-        if (match) {
-          const sched = anyCls.schedule || {};
-          anyCls.schedule = { ...sched, timeSlot: match.timeSlot };
-          (anyCls as any).__isRescheduledForDate = true;
-          return anyCls;
-        }
-
-        return cls;
-      });
-  };
-
   const handleDayClick = (date: Date, dayClasses: IFinalClass[]) => {
     setSelectedDate(date);
     setSelectedClasses(dayClasses);
@@ -680,7 +704,7 @@ const TutorTimetablePage: React.FC = () => {
     setTestModalClass(null);
   };
 
-  if (loading) {
+  if (loading || sessionsLoading) {
     return (
       <Container maxWidth="xl" disableGutters>
         <Box display="flex" justifyContent="center" py={8}>
@@ -690,10 +714,10 @@ const TutorTimetablePage: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error || sessionsError) {
     return (
       <Container maxWidth="xl" disableGutters>
-        <ErrorAlert error={error} />
+        <ErrorAlert error={error || sessionsError} />
       </Container>
     );
   }
@@ -906,7 +930,7 @@ const TutorTimetablePage: React.FC = () => {
           {mobileWeekDays.map((day, i) => {
             const isSelected = isSameDay(day, mobileSelectedDay);
             const today = isDateToday(day);
-            const dayClasses = classes.filter((cls) => isClassOnDate(cls, day) && isClassAllowedOnDate(cls, day));
+            const dayClasses = getClassesForDate(day);
             const hasClass = dayClasses.length > 0;
             return (
               <Box
@@ -993,7 +1017,7 @@ const TutorTimetablePage: React.FC = () => {
             {mobileSelectedDay.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </Typography>
 
-          {mobileSelectedDayClasses.length === 0 ? (
+          {mobileSelectedDayClassCount === 0 ? (
             <Box
               sx={{
                 textAlign: 'center',
@@ -1571,6 +1595,19 @@ const TutorTimetablePage: React.FC = () => {
               )}
             </Box>
           )}
+
+          <Box mb={2}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Start Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              value={scheduleStartDate}
+              onChange={(e) => setScheduleStartDate(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+          </Box>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, fontSize: '0.82rem' }}>
             Days of week
           </Typography>

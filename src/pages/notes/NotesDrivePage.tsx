@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { listNotes, createFolder, uploadNoteFile } from '../../services/notesService';
 import { USER_ROLES } from '../../constants';
+import api from '../../services/api';
 
 interface NoteItem {
   id: string;
@@ -30,6 +31,8 @@ const NotesDrivePage: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<NoteItem | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const currentFolderId = path[path.length - 1]?.id || null;
 
@@ -60,6 +63,31 @@ const NotesDrivePage: React.FC = () => {
     setSelectedFile(item);
     setViewerOpen(true);
   };
+
+  useEffect(() => {
+    const loadPreview = async () => {
+      if (!viewerOpen || !selectedFile?.url) return;
+      try {
+        setPreviewLoading(true);
+        const res = await api.get(selectedFile.url, { responseType: 'blob' });
+        const objectUrl = URL.createObjectURL(res.data);
+        setPreviewUrl(objectUrl);
+      } catch (e: any) {
+        setPreviewUrl(null);
+        setError(e?.response?.data?.message || e?.message || 'Failed to load preview');
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+
+    void loadPreview();
+  }, [viewerOpen, selectedFile?.url]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const handleBreadcrumbClick = (index: number) => {
     setPath((prev) => prev.slice(0, index + 1));
@@ -240,7 +268,12 @@ const NotesDrivePage: React.FC = () => {
 
       <Dialog
         open={viewerOpen}
-        onClose={() => { setViewerOpen(false); setSelectedFile(null); }}
+        onClose={() => {
+          setViewerOpen(false);
+          setSelectedFile(null);
+          if (previewUrl) URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+        }}
         maxWidth="lg"
         fullWidth
       >
@@ -248,11 +281,17 @@ const NotesDrivePage: React.FC = () => {
           {selectedFile?.name || 'Document'}
         </DialogTitle>
         <DialogContent dividers sx={{ height: '80vh', p: 0 }}>
-          {selectedFile?.url ? (
+          {previewLoading ? (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Loading preview...
+              </Typography>
+            </Box>
+          ) : previewUrl ? (
             <Box sx={{ width: '100%', height: '100%' }}>
               <iframe
-                src={`${selectedFile.url}#toolbar=0&navpanes=0&scrollbar=0`}
-                title={selectedFile.name}
+                src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                title={selectedFile?.name || 'Document'}
                 style={{ border: 'none', width: '100%', height: '100%' }}
               />
             </Box>
@@ -265,7 +304,16 @@ const NotesDrivePage: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setViewerOpen(false); setSelectedFile(null); }}>Close</Button>
+          <Button
+            onClick={() => {
+              setViewerOpen(false);
+              setSelectedFile(null);
+              if (previewUrl) URL.revokeObjectURL(previewUrl);
+              setPreviewUrl(null);
+            }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

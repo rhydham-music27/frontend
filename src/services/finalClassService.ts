@@ -39,7 +39,7 @@ export const getFinalClasses = async (
 
 export const updateFinalClassSchedule = async (
   classId: string,
-  schedule: { daysOfWeek: string[]; timeSlot: string }
+  schedule: { startDate?: string; daysOfWeek: string[]; timeSlot: string }
 ): Promise<ApiResponse<IFinalClass>> => {
   const { data } = await api.put(`/api/final-classes/${classId}`, { schedule });
   return data as ApiResponse<IFinalClass>;
