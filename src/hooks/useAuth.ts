@@ -10,6 +10,7 @@ import {
   selectAuthLoading,
   selectCurrentUser,
   selectIsAuthenticated,
+  updateUser,
 } from '../store/slices/authSlice';
 import * as authService from '../services/authService';
 import { setAuthToken, removeAuthToken } from '../services/api';
@@ -105,7 +106,19 @@ export const useAuth = () => {
     dispatch(setError(null));
   }, [dispatch]);
 
-  return { user, isAuthenticated, loading, error, login, register, logout, clearError };
+  const refreshProfile = useCallback(async () => {
+    try {
+      const resp = await authService.getCurrentUser();
+      const userData = resp.data as IUser;
+      if (userData) {
+        dispatch(updateUser(userData));
+      }
+    } catch (e) {
+      console.error('Failed to refresh profile', e);
+    }
+  }, [dispatch]);
+
+  return { user, isAuthenticated, loading, error, login, register, logout, clearError, refreshProfile };
 };
 
 export default useAuth;

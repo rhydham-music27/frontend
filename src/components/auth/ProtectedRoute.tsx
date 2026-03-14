@@ -1,8 +1,9 @@
 import React, { ReactNode, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectAuthLoading, selectCurrentUser, selectIsAuthenticated } from '../../store/slices/authSlice';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { USER_ROLES, VERIFICATION_STATUS } from '../../constants';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles,
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const loading = useSelector(selectAuthLoading);
   const user = useSelector(selectCurrentUser);
+  const location = useLocation();
 
   useEffect(() => {
     // Persistent logging that survives reloads
@@ -93,6 +95,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles,
         </div>
       </div>
     );
+  }
+
+  if (user?.role === USER_ROLES.MANAGER && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED) {
+    if (location.pathname !== '/manager-verification') {
+      return <Navigate to="/manager-verification" replace />;
+    }
+  }
+
+  if (user?.role === USER_ROLES.COORDINATOR && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED) {
+    if (location.pathname !== '/coordinator-verification') {
+      return <Navigate to="/coordinator-verification" replace />;
+    }
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {

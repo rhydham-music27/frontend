@@ -33,12 +33,14 @@ const VerificationFeeModal: React.FC<VerificationFeeModalProps> = ({
   open,
   onClose,
   onSubmit,
-  feeAmount = 499,
+  feeAmount = 500,
 }) => {
   const [tabValue, setTabValue] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [deductAgreed, setDeductAgreed] = useState(false);
+
+  const deductFeeAmount = feeAmount + 200;
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -106,7 +108,7 @@ const VerificationFeeModal: React.FC<VerificationFeeModalProps> = ({
 
               <Box
                 component="img"
-                src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=rhydham.sharma@okaxis&pn=Rhydham%20Sharma&am=499&cu=INR" // Placeholder QR - replace with real static asset or dynamic generator if needed
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=rhydham.sharma@okaxis&pn=Rhydham%20Sharma&am=${feeAmount}&cu=INR`} // Placeholder QR - replace with real static asset or dynamic generator if needed
                 alt="Payment QR Code"
                 sx={{ width: 200, height: 200, border: '1px solid #eee', borderRadius: 2, p: 1 }}
               />
@@ -146,7 +148,7 @@ const VerificationFeeModal: React.FC<VerificationFeeModalProps> = ({
                     Terms of Deduction:
                   </Typography>
                   <Box component="ul" sx={{ pl: 2, m: 0, typography: 'body2', color: 'text.secondary' }}>
-                    <li>Verification fee of ₹{feeAmount} will be marked as "Pending".</li>
+                    <li>Verification fee of ₹{deductFeeAmount} will be marked as "Pending".</li>
                     <li>Once you complete your first month/classes, this amount will be automatically deducted from your total earnings.</li>
                     <li>If you do not earn within 60 days, your profile may be actively paused.</li>
                   </Box>
@@ -162,7 +164,7 @@ const VerificationFeeModal: React.FC<VerificationFeeModalProps> = ({
                 }
                 label={
                   <Typography variant="body2" fontWeight={500}>
-                    I agree to deduct ₹{feeAmount} from my first month's earnings.
+                    I agree to deduct ₹{deductFeeAmount} from my first month's earnings.
                   </Typography>
                 }
               />

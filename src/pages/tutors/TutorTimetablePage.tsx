@@ -538,7 +538,7 @@ const TutorTimetablePage: React.FC = () => {
     const sched: any = (cls as any).schedule || {};
     const days: string[] = Array.isArray(sched.daysOfWeek) ? sched.daysOfWeek : [];
     const timeSlot: string = sched.timeSlot || '';
-    const rawStartDate = sched.startDate || (cls as any).startDate;
+    const rawStartDate = sched.startDate;
     const startDateIso = rawStartDate ? new Date(rawStartDate).toISOString().slice(0, 10) : '';
     let start = '';
     if (timeSlot && timeSlot.includes('-')) {
@@ -628,8 +628,16 @@ const TutorTimetablePage: React.FC = () => {
 
       // Refresh sessions for this cycle (best-effort)
       try {
-        const month = currentMonth.getMonth() + 1;
-        const year = currentMonth.getFullYear();
+        const anchor = new Date(scheduleStartDate);
+        anchor.setHours(0, 0, 0, 0);
+        setCurrentMonth(() => {
+          const d = new Date(anchor);
+          d.setDate(1);
+          d.setHours(0, 0, 0, 0);
+          return d;
+        });
+        const month = anchor.getMonth() + 1;
+        const year = anchor.getFullYear();
         const sResp = await getMyTutorSessionsForCycle({ month, year, ensure: true });
         setCycleSessions(Array.isArray(sResp.data) ? sResp.data : []);
       } catch {

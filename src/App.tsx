@@ -9,9 +9,6 @@ import {
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "./store/slices/authSlice";
 import { USER_ROLES } from "./constants";
-import AppThemeProvider from "./theme/ThemeProvider";
-import { Provider } from "react-redux";
-import { store } from "./store";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import LoginPage from "./pages/auth/LoginPage";
@@ -33,6 +30,7 @@ import ManagerProfilePage from "./pages/manager/ManagerProfilePage";
 import ManagerVerificationPage from "./pages/manager/ManagerVerificationPage";
 import CoordinatorDashboardPage from "./pages/coordinator/CoordinatorDashboardPage";
 import AssignedClassesPage from "./pages/coordinator/AssignedClassesPage";
+import AttendanceSheetApprovalsPage from "./pages/coordinator/AttendanceSheetApprovalsPage";
 import ClassDetailPage from "./pages/coordinator/ClassDetailPage";
 import CoordinatorAttendancePage from "./pages/coordinator/CoordinatorAttendancePage";
 import CoordinatorPaymentsPage from "./pages/coordinator/CoordinatorPaymentsPage";
@@ -74,6 +72,7 @@ import TutorPublicProfilePage from "./pages/public/TutorPublicProfilePage";
 import RequestTutorPage from "./pages/public/RequestTutorPage";
 import PublicLeadDetails from "./pages/public/PublicLeadDetails";
 import CoordinatorSettingsPage from "./pages/coordinator/CoordinatorSettingsPage";
+import CoordinatorVerificationPageSelf from "./pages/coordinator/CoordinatorVerificationPage";
 import ParentDashboardPage from "./pages/parent/ParentDashboardPage";
 import ParentAttendancePage from "./pages/parent/ParentAttendancePage";
 import ParentPaymentsPage from "./pages/parent/ParentPaymentsPage";
@@ -92,8 +91,10 @@ import StudentTestDetailPage from "./pages/student/StudentTestDetailPage";
 import OptionsManagementPage from "./pages/admin/OptionsManagementPage";
 import AdminStudentProfilePage from "./pages/admin/AdminStudentProfilePage";
 import ApprovalsManagementPage from "./pages/admin/ApprovalsManagementPage";
+import { useAuth } from "./hooks/useAuth";
 
 const App: React.FC = () => {
+  const { refreshProfile, isAuthenticated } = useAuth();
   React.useEffect(() => {
     // Disable right-click
     const handleContextMenu = (e: MouseEvent) => {
@@ -133,6 +134,12 @@ const App: React.FC = () => {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      refreshProfile();
+    }
+  }, [isAuthenticated, refreshProfile]);
+
   const RoleBasedDashboard: React.FC = () => {
     const user = useSelector(selectCurrentUser);
     const role = user?.role;
@@ -143,6 +150,14 @@ const App: React.FC = () => {
       (user?.verificationStatus === "PENDING" || !user?.verificationStatus)
     ) {
       return <Navigate to="/manager-verification" replace />;
+    }
+
+    // Redirect unverified coordinators
+    if (
+      role === USER_ROLES.COORDINATOR &&
+      (user?.verificationStatus === "PENDING" || !user?.verificationStatus)
+    ) {
+      return <Navigate to="/coordinator-verification" replace />;
     }
 
     if (role === USER_ROLES.ADMIN) {
@@ -184,10 +199,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <AppThemeProvider>
-      <Provider store={store}>
-        <BrowserRouter>
-          <Routes>
+    <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/login-otp" element={<OtpLoginPage />} />
             <Route path="/parent-login" element={<ParentLoginPage />} />
@@ -204,14 +216,30 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<RoleBasedDashboard />} />
-              <Route
-                path="coordinator-dashboard"
+                <Route
+                  path="attendance-sheet-approvals"
+                  element={
+                    <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR]}>
+                      <AttendanceSheetApprovalsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="coordinator-dashboard"
                 element={
                   <ProtectedRoute
                     allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}
                   >
                     <CoordinatorDashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="coordinator-verification"
+                element={
+                  <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR]}>
+                    <CoordinatorVerificationPageSelf />
                   </ProtectedRoute>
                 }
               />
@@ -342,7 +370,7 @@ const App: React.FC = () => {
               <Route
                 path="coordinator/attendance/:classId"
                 element={
-                  <ProtectedRoute allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}>
+                  <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
                     <CoordinatorAttendancePage />
                   </ProtectedRoute>
                 }
@@ -359,7 +387,7 @@ const App: React.FC = () => {
                 path="attendance-approvals"
                 element={
                   <ProtectedRoute
-                    allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}
+                    allowedRoles={[USER_ROLES.ADMIN]}
                   >
                     <AttendanceApprovalPage />
                   </ProtectedRoute>
@@ -589,7 +617,7 @@ const App: React.FC = () => {
                 path="attendance"
                 element={
                   <ProtectedRoute
-                    allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN, USER_ROLES.COORDINATOR]}
+                    allowedRoles={[USER_ROLES.MANAGER, USER_ROLES.ADMIN]}
                   >
                     <AttendanceListPage />
                   </ProtectedRoute>
@@ -756,9 +784,6 @@ const App: React.FC = () => {
             <Route path="/leads/public/:id" element={<PublicLeadDetails />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
-      </Provider>
-    </AppThemeProvider>
   );
 };
 

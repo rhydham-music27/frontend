@@ -36,6 +36,7 @@ import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { subDays, format } from 'date-fns';
 import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import { getMyProfile } from '../../services/adminService';
 
 const AdminProfilePage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -59,12 +60,9 @@ const AdminProfilePage: React.FC = () => {
   );
   const [activityLog, setActivityLog] = useState<any[]>([]);
 
-  // Placeholder service structure for future integration
   const adminService = {
     async getMyProfile() {
-      const err: any = new Error('Not Found');
-      err.status = 404;
-      throw err;
+      return getMyProfile();
     },
     async getMyActivityLog(_page: number, _limit: number) {
       return { data: [] };
@@ -87,7 +85,7 @@ const AdminProfilePage: React.FC = () => {
         setProfileMissing(false);
       } catch (e: any) {
         if (!isMounted) return;
-        if (e?.status === 404) {
+        if (e?.response?.status === 404 || e?.status === 404) {
           setProfileMissing(true);
           setAdminProfile(null);
         } else {

@@ -169,7 +169,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Data Management', path: '/admin/options', allowedRoles: [USER_ROLES.ADMIN], description: 'Configure system options and dropdowns' },
   { label: 'Notes', path: '/notes', allowedRoles: [USER_ROLES.ADMIN, USER_ROLES.COORDINATOR], description: 'Shared notes and documentation' },
   { label: 'Register New Member', path: '/register', allowedRoles: [USER_ROLES.ADMIN], description: 'Create new user accounts' },
-  { label: 'Attendance', path: '/attendance', allowedRoles: [USER_ROLES.COORDINATOR, USER_ROLES.ADMIN], description: 'Monitor attendance across classes' },
+  { label: 'Attendance', path: '/attendance', allowedRoles: [USER_ROLES.ADMIN, USER_ROLES.MANAGER], description: 'Monitor attendance across classes' },
   // Parent-specific navigation
   { label: 'Parent Dashboard', path: '/parent-dashboard', allowedRoles: [USER_ROLES.PARENT], description: 'Overview of your child\'s progress' },
   { label: 'Attendance', path: '/parent-attendance', allowedRoles: [USER_ROLES.PARENT], description: 'View your child\'s attendance records' },
@@ -177,7 +177,7 @@ export const NAVIGATION_ITEMS = [
   { label: 'Tests', path: '/parent-test', allowedRoles: [USER_ROLES.PARENT], description: 'Check test results and reports' },
   { label: 'Notes', path: '/parent-notes', allowedRoles: [USER_ROLES.PARENT], description: 'View notes shared by tutors' },
   { label: 'My Classes', path: '/assigned-classes', allowedRoles: [USER_ROLES.COORDINATOR], description: 'View classes assigned to you' },
-  { label: 'Attendance Approvals', path: '/attendance-approvals', allowedRoles: [USER_ROLES.COORDINATOR], description: 'Review and approve attendance sheets' },
+  { label: 'Sheet Approvals', path: '/attendance-sheet-approvals', allowedRoles: [USER_ROLES.COORDINATOR], description: 'Review and approve/reject class attendance sheets' },
   { label: 'Test Scheduling', path: '/test-scheduling', allowedRoles: [USER_ROLES.COORDINATOR], description: 'Schedule upcoming tests for classes' },
   { label: 'Announcements', path: '/announcements', allowedRoles: [USER_ROLES.COORDINATOR], description: 'View and post announcements' },
   { label: 'Test Reports', path: '/test-reports', allowedRoles: [USER_ROLES.COORDINATOR], description: 'Access detailed test performance reports' },
@@ -224,6 +224,9 @@ export const API_ENDPOINTS = {
   DEMOS_MY_DEMOS: '/api/demos/tutor/my-demos',
   // Attendance extended endpoints
   ATTENDANCE_SHEETS: '/api/attendance-sheets',
+  ATTENDANCE_SHEETS_COORDINATOR_ALL: '/api/attendance-sheets/coordinator/all',
+  ATTENDANCE_SHEETS_APPROVE: (id: string) => `/api/attendance-sheets/${id}/approve`,
+  ATTENDANCE_SHEETS_REJECT: (id: string) => `/api/attendance-sheets/${id}/reject`,
   ATTENDANCE_COORDINATOR_PENDING: '/api/attendance/coordinator/pending',
   ATTENDANCE_PARENT_PENDING: '/api/attendance/parent/pending',
   ATTENDANCE_TUTOR_SUMMARY: '/api/attendance/tutor/summary',

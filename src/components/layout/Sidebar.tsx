@@ -203,8 +203,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           }
 
           const selected = location.pathname === resolvedPath || location.pathname.startsWith(resolvedPath + '/');
-          const isUnverifiedManager = userRole === USER_ROLES.MANAGER && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED;
-          const isItemDisabled = isUnverifiedManager && !['Dashboard', 'Profile', 'My Profile'].includes(item.label);
+          const isUnverifiedManager = userRole === USER_ROLES.MANAGER && (user?.verificationStatus === VERIFICATION_STATUS.PENDING || !user?.verificationStatus);
+          const isUnverifiedCoordinator = userRole === USER_ROLES.COORDINATOR && (user?.verificationStatus === VERIFICATION_STATUS.PENDING || !user?.verificationStatus);
+          const isItemDisabled = (isUnverifiedManager || isUnverifiedCoordinator) && !['Dashboard', 'Profile', 'My Profile'].includes(item.label);
 
           return (
             <ListItem key={item.path} disablePadding sx={{ mb: { xs: 0.25, sm: 0.5 }, display: 'block' }}>

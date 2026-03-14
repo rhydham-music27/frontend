@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
+import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Fade, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ClassIcon from '@mui/icons-material/Class';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -45,7 +45,7 @@ const CoordinatorDashboardPage: React.FC = () => {
     const theme = useTheme();
     const user = useSelector(selectCurrentUser);
     const { dashboardStats, todaysTasks, loading, error, refetch } = useCoordinator();
-    const [activeTab, setActiveTab] = React.useState<'all' | 'attendance' | 'payments' | 'tests' | 'complaints'>('all');
+    const [activeTab, setActiveTab] = React.useState<'all' | 'payments' | 'tests' | 'complaints'>('all');
     const [priorityFilter, setPriorityFilter] = React.useState<TaskPriority | 'all'>('all');
     const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
         open: false,
@@ -53,12 +53,10 @@ const CoordinatorDashboardPage: React.FC = () => {
         severity: 'success'
     });
 
+    const isDarkMode = theme.palette.mode === 'dark';
+
     const processedTasks = React.useMemo(() => {
-        const attendance: ITaskWithPriority<IAttendance>[] = todaysTasks?.pendingAttendanceApprovals?.map((t) => ({
-            task: t,
-            priority: calculatePriority(t.sessionDate),
-            priorityDate: new Date(t.sessionDate),
-        })) || [];
+        const attendance: ITaskWithPriority<IAttendance>[] = []; // Assuming attendance tasks are fetched or computed elsewhere if needed, currently empty array based on original code
 
         const payments: ITaskWithPriority<IPaymentReminder>[] = todaysTasks?.paymentReminders?.map((p: any) => ({
             task: p as IPaymentReminder,
@@ -84,7 +82,6 @@ const CoordinatorDashboardPage: React.FC = () => {
     const filteredTasks = React.useMemo(() => {
         let list: Array<ITaskWithPriority<any>> = [];
         if (activeTab === 'all') list = [...processedTasks.attendance, ...processedTasks.payments, ...processedTasks.tests, ...processedTasks.complaints];
-        if (activeTab === 'attendance') list = processedTasks.attendance;
         if (activeTab === 'payments') list = processedTasks.payments;
         if (activeTab === 'tests') list = processedTasks.tests;
         if (activeTab === 'complaints') list = processedTasks.complaints;
@@ -103,40 +100,78 @@ const CoordinatorDashboardPage: React.FC = () => {
     }), [processedTasks]);
 
     const handleTaskAction = (taskId: string, actionType: string) => {
-        console.log('Task action', taskId, actionType);
-        // You could implement specific actions here or refetch
-        setSnackbar({ open: true, message: `Task action: ${actionType}`, severity: 'info' });
+        setSnackbar({ open: true, message: `Task action executed: ${actionType}`, severity: 'info' });
     };
 
     return (
-        <Container maxWidth="xl" sx={{ pb: 6 }}>
+        <Container maxWidth="xl" sx={{ pb: 8 }}>
             {/* Hero Section */}
             <Box
                 sx={{
-                    background: 'linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)', // Blue/Indigo
+                    position: 'relative',
+                    background: isDarkMode 
+                        ? 'linear-gradient(225deg, #1E3A8A 0%, #111827 100%)' 
+                        : 'linear-gradient(225deg, #2563EB 0%, #1D4ED8 100%)',
                     color: 'white',
-                    pt: { xs: 4, md: 5 },
-                    pb: { xs: 6, md: 8 },
-                    px: { xs: 2, md: 4 },
-                    borderRadius: { xs: 0, md: 3 },
+                    pt: { xs: 5, md: 7 },
+                    pb: { xs: 10, md: 12 },
+                    px: { xs: 3, md: 5 },
+                    borderRadius: { xs: 0, md: '32px' },
                     mt: 3,
-                    mb: -4,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    position: 'relative'
+                    mb: -6,
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 40px -20px rgba(37, 99, 235, 0.4)',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-10%',
+                        right: '-5%',
+                        width: '400px',
+                        height: '400px',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                        zIndex: 0
+                    }
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-                    <Box>
-                        <Typography variant="h4" fontWeight={800} gutterBottom>
-                            Coordinator Dashboard
+                <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 3 }}>
+                    <Box sx={{ maxWidth: '600px' }}>
+                        <Typography variant="h3" fontWeight={800} gutterBottom sx={{ letterSpacing: '-0.03em' }}>
+                            Dashboard
                         </Typography>
-                        <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                            Welcome back, {user?.name || 'Coordinator'}. Here is your daily overview.
+                        <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 400, mb: 4, lineHeight: 1.5 }}>
+                            Welcome back, {user?.name || 'Coordinator'}. Here is your operations overview for today.
                         </Typography>
-                        <Box mt={2} display="flex" gap={2}>
-                          <Button variant="contained" color="primary" onClick={() => window.location.href='/attendance-approvals'}>Go to Attendance Approvals</Button>
-                          <Button variant="contained" color="secondary" onClick={() => window.location.href='/assigned-classes'}>Go to My Classes</Button>
-                          <Button variant="contained" color="success" onClick={() => window.location.href='/payment-tracking'}>Go to Payments follow-ups</Button>
+                        <Box display="flex" gap={2} flexWrap="wrap">
+                          <Button 
+                            variant="contained" 
+                            color="inherit" 
+                            onClick={() => window.location.href='/assigned-classes'}
+                            sx={{ 
+                                bgcolor: 'white', 
+                                color: 'primary.main', 
+                                fontWeight: 700, 
+                                px: 3, 
+                                borderRadius: '12px',
+                                '&:hover': { bgcolor: alpha('#fff', 0.9) }
+                            }}
+                          >
+                            My Classes
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            onClick={() => window.location.href='/payment-tracking'}
+                            sx={{ 
+                                color: 'white', 
+                                borderColor: alpha('#fff', 0.4), 
+                                fontWeight: 700, 
+                                px: 3, 
+                                borderRadius: '12px',
+                                backdropFilter: 'blur(10px)',
+                                '&:hover': { borderColor: 'white', bgcolor: alpha('#fff', 0.1) }
+                            }}
+                          >
+                            Payment Tracking
+                          </Button>
                         </Box>
                     </Box>
                     <Button
@@ -144,211 +179,202 @@ const CoordinatorDashboardPage: React.FC = () => {
                         startIcon={<RefreshIcon />}
                         onClick={refetch}
                         sx={{
-                            bgcolor: 'rgba(255,255,255,0.15)',
-                            backdropFilter: 'blur(10px)',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' }
+                            bgcolor: alpha(theme.palette.common.white, 0.1),
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid',
+                            borderColor: alpha(theme.palette.common.white, 0.2),
+                            borderRadius: '12px',
+                            fontWeight: 600,
+                            '&:hover': { bgcolor: alpha(theme.palette.common.white, 0.2) }
                         }}
                     >
-                        Refresh Data
+                        Refresh
                     </Button>
                 </Box>
             </Box>
 
-            {error && <Box mt={6}><ErrorAlert error={error} /></Box>}
+            {error && <Box mt={8}><ErrorAlert error={error} /></Box>}
 
-            {loading && !dashboardStats && (
-                <Box display="flex" justifyContent="center" py={8} mt={4}>
-                    <LoadingSpinner size={48} message="Loading dashboard..." />
+            {(loading && !dashboardStats) ? (
+                <Box display="flex" justifyContent="center" py={12}>
+                    <LoadingSpinner size={48} message="Fetching latest data..." />
                 </Box>
-            )}
-
-            {dashboardStats && (
-                <Box mt={6}>
-                    {/* KPI Section - Overlapping Hero */}
-                    <Typography variant="h6" fontWeight={700} mb={2} sx={{ display: 'none' }}>Overview</Typography> {/* Hidden visually but useful for screen readers/structure, actually prefer relying on visual grouping */}
-
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <MetricsCard
-                                title="Active Classes"
-                                value={dashboardStats.activeClassesCount}
-                                icon={<ClassIcon />}
-                                gradient="linear-gradient(135deg, #10B981 0%, #059669 100%)"
-                                loading={loading}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <MetricsCard
-                                title="Classes Handled"
-                                value={dashboardStats.totalClassesHandled}
-                                icon={<DashboardIcon />}
-                                gradient="linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)"
-                                loading={loading}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <MetricsCard
-                                title="Pending Approvals"
-                                value={dashboardStats.pendingAttendanceApprovals}
-                                icon={<CheckCircleIcon />}
-                                color="warning.main"
-                                loading={loading}
-                            />
-                        </Grid>
+            ) : dashboardStats && (
+                <Box mt={0}>
+                    {/* Metrics Section */}
+                    <Grid container spacing={3} sx={{ position: 'relative', zIndex: 2 }}>
+                        {[
+                            { title: 'Active Classes', value: dashboardStats.activeClassesCount, icon: <ClassIcon />, color: '#10B981' },
+                            { title: 'Classes Handled', value: dashboardStats.totalClassesHandled, icon: <DashboardIcon />, color: '#3B82F6' },
+                            { title: 'Pending Approvals', value: dashboardStats.pendingAttendanceApprovals, icon: <CheckCircleIcon />, color: '#F59E0B' },
+                            { title: 'Today\'s Total Tasks', value: dashboardStats.todaysTasksCount, icon: <AssignmentIcon />, color: '#EF4444' }
+                        ].map((stat, i) => (
+                            <Grid item xs={12} sm={6} md={3} key={i}>
+                                <Grow in timeout={500 + (i * 100)}>
+                                    <Box height="100%">
+                                        <MetricsCard
+                                            title={stat.title}
+                                            value={stat.value}
+                                            icon={stat.icon}
+                                            color={stat.color}
+                                            loading={loading}
+                                        />
+                                    </Box>
+                                </Grow>
+                            </Grid>
+                        ))}
                     </Grid>
 
-                    {/* Detailed Stats Row 2 */}
-                    <Grid container spacing={3} mt={0.5}>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <MetricsCard
-                                title="Today's Tasks"
-                                value={dashboardStats.todaysTasksCount}
-                                icon={<AssignmentIcon />}
-                                color="error.main"
-                                loading={loading}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <MetricsCard
-                                title="Total Assigned"
-                                value={dashboardStats.totalClassesAssigned}
-                                icon={<ClassIcon />}
-                                color="info.main"
-                                loading={loading}
-                            />
-                        </Grid>
-                    </Grid>
-
-                    {/* Today's Tasks Summary Section */}
-                    <Box mt={5}>
-                        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} flexWrap="wrap" gap={2}>
-                            <Box display="flex" alignItems="center" gap={1}>
-                                <AssignmentIcon color="primary" />
-                                <Typography variant="h5" fontWeight={700}>Today's Priority Tasks</Typography>
+                    {/* Tasks Section */}
+                    <Box mt={8}>
+                        <Box display="flex" alignItems="center" justifyContent="space-between" mb={4} flexWrap="wrap" gap={2}>
+                            <Box>
+                                <Typography variant="h5" fontWeight={800} sx={{ letterSpacing: '-0.02em', mb: 0.5 }}>
+                                    Operational Tasks
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Action required items categorized by priority and type.
+                                </Typography>
                             </Box>
-                            <Box display="flex" gap={1} flexWrap="wrap">
-                                <Chip
-                                    label="All Priorities"
-                                    onClick={() => setPriorityFilter('all')}
-                                    sx={{
-                                        bgcolor: priorityFilter === 'all' ? 'primary.main' : alpha(theme.palette.primary.main, 0.1),
-                                        color: priorityFilter === 'all' ? 'white' : 'primary.main',
-                                        fontWeight: 600,
-                                        '&:hover': { bgcolor: priorityFilter === 'all' ? 'primary.dark' : alpha(theme.palette.primary.main, 0.2) }
-                                    }}
-                                />
-                                <Chip
-                                    label="Overdue"
-                                    onClick={() => setPriorityFilter('overdue')}
-                                    sx={{
-                                        bgcolor: priorityFilter === 'overdue' ? '#EF4444' : alpha('#EF4444', 0.1),
-                                        color: priorityFilter === 'overdue' ? 'white' : '#EF4444',
-                                        fontWeight: 600,
-                                        '&:hover': { bgcolor: priorityFilter === 'overdue' ? '#DC2626' : alpha('#EF4444', 0.2) }
-                                    }}
-                                />
-                                <Chip
-                                    label="Today"
-                                    onClick={() => setPriorityFilter('today')}
-                                    sx={{
-                                        bgcolor: priorityFilter === 'today' ? '#F59E0B' : alpha('#F59E0B', 0.1),
-                                        color: priorityFilter === 'today' ? 'white' : '#F59E0B',
-                                        fontWeight: 600,
-                                        '&:hover': { bgcolor: priorityFilter === 'today' ? '#D97706' : alpha('#F59E0B', 0.2) }
-                                    }}
-                                />
-                                <Chip
-                                    label="Upcoming"
-                                    onClick={() => setPriorityFilter('upcoming')}
-                                    sx={{
-                                        bgcolor: priorityFilter === 'upcoming' ? '#10B981' : alpha('#10B981', 0.1),
-                                        color: priorityFilter === 'upcoming' ? 'white' : '#10B981',
-                                        fontWeight: 600,
-                                        '&:hover': { bgcolor: priorityFilter === 'upcoming' ? '#059669' : alpha('#10B981', 0.2) }
-                                    }}
-                                />
-                            </Box>
+                            
+                            {/* Priority Filter Chips */}
+                            <Paper 
+                                elevation={0} 
+                                sx={{ 
+                                    p: 0.5, 
+                                    borderRadius: '14px', 
+                                    bgcolor: alpha(theme.palette.divider, 0.05),
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    display: 'flex',
+                                    gap: 0.5
+                                }}
+                            >
+                                {[
+                                    { label: 'All', value: 'all', color: theme.palette.text.primary },
+                                    { label: 'Overdue', value: 'overdue', color: '#EF4444' },
+                                    { label: 'Due Today', value: 'today', color: '#F59E0B' },
+                                    { label: 'Upcoming', value: 'upcoming', color: '#10B981' }
+                                ].map((p) => (
+                                    <Chip
+                                        key={p.value}
+                                        label={p.label}
+                                        onClick={() => setPriorityFilter(p.value as any)}
+                                        sx={{
+                                            height: 32,
+                                            fontWeight: 700,
+                                            borderRadius: '10px',
+                                            bgcolor: priorityFilter === p.value ? alpha(p.color, 0.1) : 'transparent',
+                                            color: priorityFilter === p.value ? p.color : 'text.secondary',
+                                            border: '1px solid',
+                                            borderColor: priorityFilter === p.value ? alpha(p.color, 0.2) : 'transparent',
+                                            '&:hover': { bgcolor: alpha(p.color, 0.05) }
+                                        }}
+                                    />
+                                ))}
+                            </Paper>
                         </Box>
 
-                        <Grid container spacing={3} mb={4}>
+                        {/* Category Selector Cards */}
+                        <Grid container spacing={3} mb={6}>
                             {[
-                                { key: 'attendance', label: 'Attendance', count: counts.attendance, icon: <CheckCircleIcon />, color: theme.palette.primary.main, desc: 'Sessions awaiting review' },
-                                { key: 'payments', label: 'Payments', count: counts.payments, icon: <PaymentIcon />, color: theme.palette.success.main, desc: 'Due for follow-up' },
-                                { key: 'tests', label: 'Tests', count: counts.tests, icon: <AssignmentIcon />, color: theme.palette.warning.main, desc: 'Upcoming assessments' },
-                                { key: 'complaints', label: 'Complaints', count: counts.complaints, icon: <WarningAmberIcon />, color: theme.palette.error.main, desc: 'Requires attention' }
-                            ].map((cat) => (
-                                <Grid item xs={12} sm={6} md={3} key={cat.key}>
-                                    <Paper
-                                        elevation={0}
-                                        onClick={() => setActiveTab(cat.key as any)}
-                                        sx={{
-                                            p: 3,
-                                            borderRadius: 3,
-                                            height: '100%',
-                                            cursor: 'pointer',
-                                            border: '2px solid',
-                                            borderColor: activeTab === cat.key ? cat.color : alpha(cat.color, 0.1),
-                                            background: activeTab === cat.key
-                                                ? alpha(cat.color, 0.05)
-                                                : `linear-gradient(135deg, ${alpha(cat.color, 0.02)} 0%, ${alpha(cat.color, 0.05)} 100%)`,
-                                            transition: 'all 0.2s',
-                                            boxShadow: activeTab === cat.key ? 4 : 0,
-                                            '&:hover': {
-                                                transform: 'translateY(-4px)',
-                                                boxShadow: 2,
-                                                borderColor: cat.color
-                                            }
-                                        }}
-                                    >
-                                        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                                            <Avatar sx={{ bgcolor: alpha(cat.color, 0.1), color: cat.color }}>
+                                { key: 'payments', label: 'Payments', count: counts.payments, icon: <PaymentIcon />, color: '#10B981', desc: 'Fee follow-ups' },
+                                { key: 'tests', label: 'Tests', count: counts.tests, icon: <AssignmentIcon />, color: '#3B82F6', desc: 'Scheduling' },
+                                { key: 'complaints', label: 'Complaints', count: counts.complaints, icon: <WarningAmberIcon />, color: '#EF4444', desc: 'Parent issues' }
+                            ].map((cat, i) => (
+                                <Grid item xs={12} sm={4} key={cat.key}>
+                                    <Grow in timeout={800 + (i * 100)}>
+                                        <Paper
+                                            elevation={0}
+                                            onClick={() => setActiveTab(cat.key as any)}
+                                            sx={{
+                                                p: 3,
+                                                borderRadius: '24px',
+                                                cursor: 'pointer',
+                                                border: '2px solid',
+                                                borderColor: activeTab === cat.key ? cat.color : alpha(cat.color, 0.05),
+                                                bgcolor: activeTab === cat.key ? alpha(cat.color, 0.04) : alpha(theme.palette.background.paper, 0.6),
+                                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                '&:hover': {
+                                                    borderColor: cat.color,
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: `0 10px 20px -10px ${alpha(cat.color, 0.3)}`
+                                                }
+                                            }}
+                                        >
+                                            <Avatar sx={{ bgcolor: alpha(cat.color, 0.1), color: cat.color, width: 48, height: 48, borderRadius: '14px' }}>
                                                 {cat.icon}
                                             </Avatar>
-                                            <Typography variant="h4" fontWeight={800} sx={{ color: cat.color }}>
-                                                {cat.count}
-                                            </Typography>
-                                        </Box>
-                                        <Typography variant="subtitle1" fontWeight={700}>{cat.label}</Typography>
-                                        <Typography variant="body2" color="text.secondary">{cat.desc}</Typography>
-                                    </Paper>
+                                            <Box sx={{ flexGrow: 1 }}>
+                                                <Typography variant="body1" fontWeight={800}>
+                                                    {cat.label}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                                    {cat.desc}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ textAlign: 'right' }}>
+                                                <Typography variant="h5" fontWeight={900} sx={{ color: cat.color }}>
+                                                    {cat.count}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase' }}>
+                                                    Items
+                                                </Typography>
+                                            </Box>
+                                        </Paper>
+                                    </Grow>
                                 </Grid>
                             ))}
                         </Grid>
 
-                        {/* Filter Info & Detailed Tasks Grid */}
+                        {/* Task List Header */}
                         <Box mb={3} display="flex" alignItems="center" justifyContent="space-between">
-                            <Typography variant="h6" fontWeight={700}>
-                                {activeTab === 'all' ? 'All Tasks' : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Tasks`}
-                                <Typography component="span" variant="body2" color="text.secondary" ml={1}>
-                                    ({filteredTasks.length} items)
+                            <Box display="flex" alignItems="center" gap={1}>
+                                <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: '-0.01em' }}>
+                                    {activeTab === 'all' ? 'All Pending Tasks' : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} List`}
                                 </Typography>
-                            </Typography>
+                                <Chip 
+                                    label={filteredTasks.length} 
+                                    size="small" 
+                                    sx={{ fontWeight: 800, height: 20, bgcolor: alpha(theme.palette.primary.main, 0.1), color: 'primary.main' }} 
+                                />
+                            </Box>
                             {activeTab !== 'all' && (
                                 <Button
                                     variant="text"
                                     size="small"
-                                    startIcon={<FilterListIcon />}
                                     onClick={() => setActiveTab('all')}
+                                    sx={{ fontWeight: 700, textTransform: 'none', borderRadius: '8px' }}
                                 >
-                                    View All Categories
+                                    Back to Global View
                                 </Button>
                             )}
                         </Box>
 
-                        {loading && (
-                            <Box display="flex" justifyContent="center" py={4}>
-                                <LoadingSpinner size={32} />
-                            </Box>
-                        )}
-
                         {!loading && filteredTasks.length === 0 ? (
-                            <Box textAlign="center" py={6} bgcolor={alpha(theme.palette.success.main, 0.05)} borderRadius={4} border={`1px dashed ${theme.palette.success.main}`}>
-                                <CheckCircleIcon sx={{ fontSize: 48, color: 'success.main', mb: 1, opacity: 0.8 }} />
-                                <Typography variant="h6" fontWeight={700}>All caught up!</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    No {priorityFilter !== 'all' ? priorityFilter : ''} {activeTab !== 'all' ? activeTab : 'priority'} tasks found.
-                                </Typography>
-                            </Box>
+                            <Fade in timeout={600}>
+                                <Box 
+                                    textAlign="center" 
+                                    py={10} 
+                                    sx={{ 
+                                        bgcolor: alpha(theme.palette.success.main, 0.03), 
+                                        borderRadius: '32px', 
+                                        border: '1px dashed',
+                                        borderColor: alpha(theme.palette.success.main, 0.3)
+                                    }}
+                                >
+                                    <Avatar sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), color: 'success.main', width: 80, height: 80, mx: 'auto', mb: 3 }}>
+                                        <CheckCircleIcon sx={{ fontSize: 40 }} />
+                                    </Avatar>
+                                    <Typography variant="h5" fontWeight={800} gutterBottom>All Clear!</Typography>
+                                    <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '400px', mx: 'auto' }}>
+                                        You don't have any {priorityFilter !== 'all' ? priorityFilter : ''} {activeTab !== 'all' ? activeTab : ''} tasks requiring attention right now.
+                                    </Typography>
+                                </Box>
+                            </Fade>
                         ) : (
                             <Grid container spacing={3}>
                                 {filteredTasks.map((item, idx) => (

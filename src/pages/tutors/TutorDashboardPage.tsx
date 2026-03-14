@@ -96,6 +96,11 @@ const TutorDashboardPage: React.FC = () => {
   const handleVerificationFeeSubmit = async (data: { method: 'PAY_NOW' | 'DEDUCT_LATER'; file?: File }) => {
     if (!tutorProfile?.id) return;
     try {
+      const nextStatus = data.method === 'PAY_NOW' ? 'PAID' : 'DEDUCT_FROM_FIRST_MONTH';
+
+      // Optimistically update local state so the banner disappears immediately
+      setTutorProfile((prev) => (prev ? ({ ...prev, verificationFeeStatus: nextStatus } as any) : prev));
+
       if (data.method === 'PAY_NOW') {
         await updateVerificationFeeStatus(tutorProfile.id, 'PAID', data.file, new Date());
         toast.success('Verification proof submitted successfully! Please wait for admin approval.');
@@ -104,7 +109,8 @@ const TutorDashboardPage: React.FC = () => {
         toast.success('Verification method updated. Fee will be deducted from your first payout.');
       }
       const resp = await getMyProfile();
-      setTutorProfile((prev) => resp.data ? resp.data : prev);
+      const fresh: any = (resp as any)?.data ?? resp;
+      setTutorProfile(fresh || null);
       setShowVerificationFeeModal(false);
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit verification details.');

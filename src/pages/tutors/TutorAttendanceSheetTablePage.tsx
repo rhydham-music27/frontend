@@ -164,12 +164,24 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
 
   useEffect(() => {
     const loadCycleSessions = async () => {
-      if (!tutorId || !selectedSheet) {
+      if (!tutorId || (!selectedSheet && sheets.length > 0)) {
         setCycleSessions([]);
         return;
       }
-      const month = Number((selectedSheet as any).month || 0);
-      const year = Number((selectedSheet as any).year || 0);
+      
+      let month: number;
+      let year: number;
+      
+      if (selectedSheet) {
+        month = Number((selectedSheet as any).month || 0);
+        year = Number((selectedSheet as any).year || 0);
+      } else {
+        // synthesize current month if no sheets exist yet
+        const now = new Date();
+        month = now.getMonth() + 1;
+        year = now.getFullYear();
+      }
+      
       if (!month || !year) {
         setCycleSessions([]);
         return;
@@ -184,7 +196,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
     };
 
     void loadCycleSessions();
-  }, [tutorId, selectedSheet]);
+  }, [tutorId, selectedSheet, sheets.length]);
 
   const monthlyLimitForSelectedClass = useMemo(() => {
     if (!selectedClassId) return 0;
@@ -227,7 +239,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
   }, [classes, selectedClassId, selectedSheet, selectedSheetId, monthlyLimitForSelectedClass]);
 
   const upcomingForSelectedCycle = useMemo(() => {
-    if (!selectedClassId || !selectedSheet) return [] as SessionRow[];
+    if (!selectedClassId || (!selectedSheet && sheets.length > 0)) return [] as SessionRow[];
 
     const cls = classes.find((c: any) => String(c.id || c._id) === String(selectedClassId));
     if (!cls) return [];
@@ -287,7 +299,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
     }
 
     return rows;
-  }, [classes, selectedClassId, selectedSheet, monthlyLimitForSelectedClass, completedForSelectedCycle, cycleSessions]);
+  }, [classes, selectedClassId, selectedSheet, sheets.length, monthlyLimitForSelectedClass, completedForSelectedCycle, cycleSessions]);
 
   const visibleRows = tab === 'upcoming' ? upcomingForSelectedCycle : completedForSelectedCycle;
 

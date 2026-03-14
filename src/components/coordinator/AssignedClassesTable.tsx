@@ -1,62 +1,163 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Tooltip } from '@mui/material';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper, 
+  IconButton, 
+  Tooltip, 
+  alpha, 
+  useTheme, 
+  Chip, 
+  Typography,
+  Box,
+  LinearProgress
+} from '@mui/material';
 import PaymentIcon from '@mui/icons-material/Payment';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import EditIcon from '@mui/icons-material/Edit';
+import { FINAL_CLASS_STATUS } from '../../constants';
 
-// Define the props type for the table
 interface AssignedClassesTableProps {
   classes: any[];
-  onOpenAttendance: (classId: string) => void;
   onOpenPayments: (classId: string) => void;
   onEditClass?: (cls: any) => void;
 }
 
-const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, onOpenAttendance, onOpenPayments, onEditClass }) => {
+const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, onOpenPayments, onEditClass }) => {
+  const theme = useTheme();
+
+  const getStatusChip = (status: string) => {
+    let color: any = 'default';
+    let label = status;
+
+    if (status === FINAL_CLASS_STATUS.ACTIVE) color = 'success';
+    else if (status === FINAL_CLASS_STATUS.COMPLETED) color = 'info';
+    else if (status === FINAL_CLASS_STATUS.PAUSED) color = 'warning';
+    else if (status === FINAL_CLASS_STATUS.CANCELLED) color = 'error';
+
+    return (
+      <Chip 
+        label={label} 
+        size="small" 
+        color={color} 
+        variant="filled"
+        sx={{ 
+          height: 24, 
+          fontWeight: 800, 
+          fontSize: '0.65rem', 
+          textTransform: 'uppercase',
+          borderRadius: '6px'
+        }} 
+      />
+    );
+  };
+
   return (
-    <TableContainer component={Paper}>
-      <Table size="small">
+    <TableContainer 
+      component={Paper} 
+      elevation={0}
+      sx={{ 
+        borderRadius: '24px', 
+        border: '1px solid',
+        borderColor: alpha(theme.palette.divider, 0.1),
+        background: alpha(theme.palette.background.paper, 0.7),
+        backdropFilter: 'blur(12px)',
+        overflow: 'hidden'
+      }}
+    >
+      <Table size="medium">
         <TableHead>
-          <TableRow>
-            <TableCell>Student Name</TableCell>
-            <TableCell>Grade / Board / Mode</TableCell>
-            <TableCell>Subject(s)</TableCell>
-            <TableCell>Tutor Name</TableCell>
-            <TableCell>Schedule</TableCell>
-            <TableCell>Session Progress</TableCell>
-            <TableCell>Pending Attendance</TableCell>
-            <TableCell>Overdue Payments</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Actions</TableCell>
+          <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.03) }}>
+            <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Student / Class</TableCell>
+            <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Subject(s)</TableCell>
+            <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Tutor</TableCell>
+            <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Schedule</TableCell>
+            <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Progress</TableCell>
+            <TableCell sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Status</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 800, color: 'text.secondary', fontSize: '0.75rem', textTransform: 'uppercase' }}>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {classes.map((cls) => (
-            <TableRow key={cls.id}>
-              <TableCell>{cls.studentName}</TableCell>
-              <TableCell>{cls.grade} / {cls.board} / {cls.mode}</TableCell>
-              <TableCell>{cls.subjects?.join(', ')}</TableCell>
-              <TableCell>{cls.tutorName}</TableCell>
-              <TableCell>{Array.isArray(cls.schedule?.daysOfWeek) || cls.schedule?.timeSlot ? `${cls.schedule?.daysOfWeek?.join(', ') || ''}${cls.schedule?.daysOfWeek && cls.schedule?.timeSlot ? ' • ' : ''}${cls.schedule?.timeSlot || ''}` : (cls.schedule || '')}</TableCell>
-              <TableCell>{cls.sessionProgress}</TableCell>
-              <TableCell>{cls.pendingAttendanceCount}</TableCell>
-              <TableCell>{cls.overduePaymentsCount}</TableCell>
-              <TableCell>{cls.status}</TableCell>
-              <TableCell>
-                <Tooltip title="Attendance">
-                  <IconButton onClick={(e) => { e.stopPropagation(); onOpenAttendance(cls.id); }} size="small"><AssignmentIcon /></IconButton>
-                </Tooltip>
-                <Tooltip title="Payments">
-                  <IconButton onClick={(e) => { e.stopPropagation(); onOpenPayments(cls.id); }} size="small"><PaymentIcon /></IconButton>
-                </Tooltip>
-                {onEditClass && (
-                  <Tooltip title="Edit Class">
-                    <IconButton onClick={(e) => { e.stopPropagation(); onEditClass(cls); }} size="small"><EditIcon /></IconButton>
-                  </Tooltip>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
+          {classes.map((cls) => {
+            const progress = cls.sessionProgress ? parseInt(cls.sessionProgress) : 0;
+            const progressColor = progress >= 80 ? 'success' : progress >= 40 ? 'primary' : 'warning';
+            
+            return (
+              <TableRow 
+                key={cls.id}
+                sx={{ 
+                  '&:hover': { bgcolor: alpha(theme.palette.action.hover, 0.5) },
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <TableCell>
+                  <Typography variant="body2" fontWeight={700}>{cls.studentName}</Typography>
+                  <Typography variant="caption" color="text.secondary">{cls.grade} / {cls.board} / {cls.mode}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Box display="flex" gap={0.5} flexWrap="wrap">
+                    {cls.subjects?.map((s: string) => (
+                      <Chip key={s} label={s} size="small" sx={{ height: 20, fontSize: '0.65rem', borderRadius: '4px' }} />
+                    ))}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" fontWeight={600}>{cls.tutorName || 'Unassigned'}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="caption" fontWeight={600} sx={{ display: 'block' }}>
+                    {cls.schedule?.daysOfWeek?.join(', ') || ''}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {cls.schedule?.timeSlot || 'No time set'}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ minWidth: 120 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={progress} 
+                        color={progressColor as any}
+                        sx={{ height: 6, borderRadius: 3, bgcolor: alpha(theme.palette.divider, 0.05) }}
+                      />
+                    </Box>
+                    <Typography variant="caption" fontWeight={700}>{progress}%</Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  {getStatusChip(cls.status)}
+                </TableCell>
+                <TableCell align="right">
+                  <Box display="flex" justifyContent="flex-end" gap={0.5}>
+                    <Tooltip title="Payments">
+                      <IconButton 
+                        onClick={(e) => { e.stopPropagation(); onOpenPayments(cls.id); }} 
+                        size="small"
+                        sx={{ color: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05), '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) } }}
+                      >
+                        <PaymentIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    {onEditClass && (
+                      <Tooltip title="Edit Class">
+                        <IconButton 
+                          onClick={(e) => { e.stopPropagation(); onEditClass(cls); }} 
+                          size="small"
+                          sx={{ color: 'text.secondary', bgcolor: alpha(theme.palette.action.selected, 0.5), '&:hover': { bgcolor: alpha(theme.palette.action.selected, 1) } }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

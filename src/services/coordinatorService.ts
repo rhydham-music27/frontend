@@ -174,4 +174,36 @@ export const updateCoordinatorVerificationStatus = async (
   return data as ApiResponse<any>;
 };
 
-export default { getDashboardStats, getTodaysTasks, getAssignedClasses, getPaymentSummary, getProfileMetrics, getCoordinatorByUserId, createCoordinator, getEligibleCoordinatorUsers, getCoordinators, updateCoordinator, deleteCoordinator, getPendingCoordinatorVerifications, updateCoordinatorVerificationStatus };
+export const getAllAttendanceSheets = async (): Promise<ApiResponse<any[]>> => {
+  const { data } = await api.get(API_ENDPOINTS.ATTENDANCE_SHEETS_COORDINATOR_ALL);
+  return data as ApiResponse<any[]>;
+};
+
+export const approveAttendanceSheet = async (id: string): Promise<ApiResponse<any>> => {
+  const { data } = await api.patch(API_ENDPOINTS.ATTENDANCE_SHEETS_APPROVE(id));
+  return data as ApiResponse<any>;
+};
+
+export const rejectAttendanceSheet = async (id: string, rejectionReason: string): Promise<ApiResponse<any>> => {
+  const { data } = await api.patch(API_ENDPOINTS.ATTENDANCE_SHEETS_REJECT(id), { rejectionReason });
+  return data as ApiResponse<any>;
+};
+
+export default { 
+  getDashboardStats, 
+  getTodaysTasks, 
+  getAssignedClasses, 
+  getPaymentSummary, 
+  getProfileMetrics, 
+  getCoordinatorByUserId, 
+  createCoordinator, 
+  getEligibleCoordinatorUsers, 
+  getCoordinators, 
+  updateCoordinator, 
+  deleteCoordinator, 
+  getPendingCoordinatorVerifications, 
+  updateCoordinatorVerificationStatus,
+  getAllAttendanceSheets,
+  approveAttendanceSheet,
+  rejectAttendanceSheet
+};

@@ -3,12 +3,13 @@ import {
   User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock,
   FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles,
   BarChart2, ShieldCheck, Info, Heart, ExternalLink, CreditCard, Wallet, Handshake,
-  ShieldAlert
+  ShieldAlert, Eye
 } from 'lucide-react';
-import { ITutor } from '../../types';
+import { ITutor, IDocument } from '../../types';
 import { getMyProfile, uploadDocument, getTutorById, updateVerificationFeeStatus } from '../../services/tutorService';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect, useState } from 'react';
+import DocumentViewerModal from '../common/DocumentViewerModal';
 
 
 interface MUIProfileCardProps {
@@ -31,6 +32,9 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [documentUploadError, setDocumentUploadError] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<IDocument | null>(null);
 
   // --- Verification Fee Logic ---
   const [feeModalOpen, setFeeModalOpen] = useState(false);
@@ -90,9 +94,13 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   if (error || !tutor) return (
     <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100">
       <p className="text-red-600 font-medium">{error || 'Tutor not found'}</p>
+      <DocumentViewerModal
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        document={viewingDocument}
+      />
     </div>
   );
-
   const { user } = tutor;
   const profilePhotoDoc = (tutor.documents || []).find((d) => d.documentType === 'PROFILE_PHOTO');
   const profileImageUrl = profilePhotoDoc?.documentUrl;
@@ -151,7 +159,15 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
     return 'pending';
   };
 
-  const docLabels = {
+  const handleOpenViewer = (backendType: string) => {
+    const doc = (tutor.documents || []).find(d => d.documentType === backendType);
+    if (doc) {
+      setViewingDocument(doc);
+      setViewerOpen(true);
+    }
+  };
+
+  const docLabels: Record<string, string> = {
     'PROFILE_PHOTO': 'Profile Photo',
     'EXPERIENCE_PROOF': 'Experience Proof',
     'AADHAAR': 'Aadhar Card',
@@ -620,19 +636,36 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               {Object.entries(docLabels).map(([type, label], idx) => {
                 const status = computeStatusForType(type);
                 const isVerified = tutor.verificationStatus === 'VERIFIED';
-                const isPendingWithDocs = tutor.verificationStatus === 'PENDING' && Array.isArray(tutor.documents) && tutor.documents.length > 0;
-                const isUploadBlocked = isVerified || (isPendingWithDocs && !tutorId) || isManager;
+                
+                // Tutors can upload if not verified and not already uploaded (unless rejected).
+                // Managers can ONLY view if it exists.
+                const isThisDocUploaded = status === 'pending' || status === 'approved';
+                const canUpload = (isTutorSelf || !tutorId) && !isVerified && (!isThisDocUploaded || (tutor.verificationStatus === 'REJECTED'));
+                
+                const handleCardClick = () => {
+                  if (isThisDocUploaded) {
+                    handleOpenViewer(type);
+                  } else if (canUpload) {
+                    handleOpenDocumentModal(type);
+                  }
+                };
+
+                const isClickable = isThisDocUploaded || canUpload;
+
                 return (
                   <div
                     key={idx}
-                    onClick={isUploadBlocked ? undefined : () => handleOpenDocumentModal(type)}
-                    className={`relative p-5 rounded-3xl border-2 transition-all group ${isUploadBlocked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                    onClick={handleCardClick}
+                    className={`relative p-5 rounded-3xl border-2 transition-all group ${!isClickable ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:shadow-lg'
                       } ${status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
                         status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
                           'bg-slate-50 border-slate-100 hover:border-slate-300'
                       }`}
                   >
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${status === 'approved' ? 'bg-green-500 text-white' :
+                    <div className={`absolute top-4 right-4 transition-opacity ${isThisDocUploaded ? 'opacity-100' : 'opacity-0'}`}>
+                       <Eye size={16} className="text-slate-400 group-hover:text-primary-main" />
+                    </div>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform ${!isClickable ? '' : 'group-hover:scale-110'} ${status === 'approved' ? 'bg-green-500 text-white' :
                       status === 'pending' ? 'bg-amber-500 text-white' :
                         'bg-slate-400 text-white'
                       }`}>
@@ -643,7 +676,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                       status === 'pending' ? 'text-amber-600' :
                         'text-slate-500'
                       }`}>
-                      {isVerified ? 'LOCKED' : isPendingWithDocs ? 'UNDER REVIEW' : status.replace('_', ' ').toUpperCase()}
+                      {isVerified ? 'LOCKED' : status === 'pending' ? 'UNDER REVIEW' : status.replace('_', ' ').toUpperCase()}
                     </p>
                   </div>
                 )
@@ -837,6 +870,11 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
           )}
         </DialogActions>
       </Dialog>
+      <DocumentViewerModal 
+        open={viewerOpen} 
+        onClose={() => setViewerOpen(false)} 
+        document={viewingDocument} 
+      />
     </div >
   );
 };

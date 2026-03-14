@@ -95,6 +95,13 @@ export const verifyLoginOtp = async (email: string, otp: string) => {
 };
 
 export const acceptTerms = async () => {
-  const res = await api.post<ApiResponse<{ success: boolean; acceptedTerms: boolean }>>(API_ENDPOINTS.AUTH_ACCEPT_TERMS);
+  const res = await api.post<
+    ApiResponse<{
+      acceptedTerms: boolean;
+      acceptedPolicies?: boolean;
+      acceptedAt?: string;
+      policyVersion?: string;
+    }>
+  >(API_ENDPOINTS.AUTH_ACCEPT_TERMS);
   return res.data;
 };

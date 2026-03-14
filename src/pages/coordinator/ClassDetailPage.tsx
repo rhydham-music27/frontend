@@ -56,7 +56,9 @@ const ClassDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [editScheduleOpen, setEditScheduleOpen] = useState(false);
+  const [scheduleStartDate, setScheduleStartDate] = useState<string>('');
   const [scheduleDays, setScheduleDays] = useState<string>('');
   const [scheduleTimeSlot, setScheduleTimeSlot] = useState<string>('');
   const [savingSchedule, setSavingSchedule] = useState(false);
@@ -72,6 +74,9 @@ const ClassDetailPage: React.FC = () => {
   }, []);
 
   const hydrateScheduleInputs = useCallback((cls: IFinalClass) => {
+    const rawDate = cls.schedule?.startDate || cls.startDate;
+    const dateStr = rawDate ? new Date(rawDate).toISOString().slice(0, 10) : '';
+    setScheduleStartDate(dateStr);
     const days = Array.isArray(cls.schedule?.daysOfWeek) ? cls.schedule.daysOfWeek : [];
     setScheduleDays(days.join(', '));
     setScheduleTimeSlot(String(cls.schedule?.timeSlot || ''));
@@ -115,7 +120,11 @@ const ClassDetailPage: React.FC = () => {
 
     try {
       setSavingSchedule(true);
-      const res = await updateFinalClassSchedule(finalClass.id, { daysOfWeek, timeSlot: scheduleTimeSlot });
+      const res = await updateFinalClassSchedule(finalClass.id, { 
+        startDate: scheduleStartDate,
+        daysOfWeek, 
+        timeSlot: scheduleTimeSlot 
+      });
       if (!res.success) throw new Error(res.message || 'Failed to update schedule');
       setFinalClass(res.data as IFinalClass);
       setEditScheduleOpen(false);
@@ -395,6 +404,15 @@ const ClassDetailPage: React.FC = () => {
         <DialogTitle>Edit Schedule</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
+            <TextField
+              label="Start Date"
+              type="date"
+              value={scheduleStartDate}
+              onChange={(e) => setScheduleStartDate(e.target.value)}
+              fullWidth
+              disabled={savingSchedule}
+              InputLabelProps={{ shrink: true }}
+            />
             <TextField
               label="Days of Week (comma separated)"
               value={scheduleDays}

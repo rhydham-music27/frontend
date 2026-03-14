@@ -46,6 +46,107 @@ import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 
+const apiBase = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+
+const getOriginFromBaseUrl = (base?: string) => {
+    if (!base) return '';
+    try {
+        return new URL(base).origin;
+    } catch (_e) {
+        return String(base).replace(/\/$/, '').replace(/\/(api|api\/v\d+)$/i, '');
+    }
+};
+
+const getUrlPathnameLower = (url: string) => {
+    const lower = url.toLowerCase();
+    try {
+        return new URL(url).pathname.toLowerCase();
+    } catch (_e) {
+        return lower.split('?')[0].split('#')[0];
+    }
+};
+
+const DocumentPreview: React.FC<{ url: string }> = ({ url }) => {
+    const pathname = getUrlPathnameLower(url);
+    const looksLikePdf = pathname.endsWith('.pdf');
+    const [error, setError] = useState(false);
+
+    useEffect(() => {
+        setError(false);
+    }, [url]);
+
+    if (error) {
+        return (
+            <Box textAlign="center" color="white">
+                <DescriptionIcon sx={{ fontSize: 64, mb: 2 }} />
+                <Typography>Preview failed to load.</Typography>
+            </Box>
+        );
+    }
+
+    if (!looksLikePdf) {
+        return (
+            <img
+                key={url}
+                src={url}
+                alt="Document Preview"
+                onLoad={() => setError(false)}
+                onError={() => setError(true)}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
+        );
+    }
+
+    if (looksLikePdf) {
+        return (
+            <object
+                key={url}
+                data={url}
+                type="application/pdf"
+                width="100%"
+                height="100%"
+                style={{ border: 'none', minHeight: 600 }}
+                onError={() => {
+                    setError(true);
+                }}
+            >
+                <iframe
+                    src={url}
+                    title="PDF Preview"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none', minHeight: 600 }}
+                />
+            </object>
+        );
+    }
+};
+
+const resolveDocumentUrl = (url?: string) => {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url) || /^data:/i.test(url) || /^blob:/i.test(url)) return url;
+
+    const origin = getOriginFromBaseUrl(apiBase);
+    if (!origin) return url;
+
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${origin}${path}`;
+};
+
+const formatDocumentTypeLabel = (val: any) => {
+    const raw = String(val || '').trim();
+    if (!raw) return 'Document';
+    const map: Record<string, string> = {
+        AADHAAR: 'Aadhaar',
+        PROFILE_PHOTO: 'Profile Photo',
+        EXPERIENCE_PROOF: 'Experience Proof',
+        DEGREE: 'Degree',
+        CERTIFICATE: 'Certificate',
+        PAN: 'PAN',
+    };
+    return map[raw] || raw.replace(/_/g, ' ');
+};
+
 const ManagerVerificationPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -100,6 +201,13 @@ const ManagerVerificationPage: React.FC = () => {
     useEffect(() => {
         fetchManager();
     }, [fetchManager]);
+
+    useEffect(() => {
+        const docs = Array.isArray((manager as any)?.documents) ? ((manager as any).documents as any[]) : [];
+        if (docs.length > 0 && selectedDocIndex >= docs.length) {
+            setSelectedDocIndex(0);
+        }
+    }, [manager, selectedDocIndex]);
 
     const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
@@ -173,6 +281,9 @@ const ManagerVerificationPage: React.FC = () => {
     if (!manager) return <Container maxWidth="lg" sx={{ mt: 4 }}><Alert severity="warning">Manager not found</Alert></Container>;
 
     const documents = manager.documents || [];
+    const selectedDoc = documents[selectedDocIndex];
+    const selectedDocUrl = resolveDocumentUrl(selectedDoc?.documentUrl);
+    const selectedDocLabel = formatDocumentTypeLabel((selectedDoc as any)?.documentType);
 
     return (
         <Box sx={{ height: 'calc(100vh - 64px)', bgcolor: '#f5f5f5', overflow: 'hidden' }}>
@@ -482,8 +593,8 @@ const ManagerVerificationPage: React.FC = () => {
                                                             {doc.verifiedAt ? <CheckCircleIcon color="success" /> : <DescriptionIcon />}
                                                         </ListItemIcon>
                                                         <ListItemText
-                                                            primary={doc.documentType.replace('_', ' ')}
-                                                            secondary={new Date(doc.uploadedAt).toLocaleDateString()}
+                                                            primary={formatDocumentTypeLabel((doc as any)?.documentType)}
+                                                            secondary={doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : ''}
                                                         />
                                                     </ListItemButton>
                                                 </ListItem>
@@ -506,21 +617,20 @@ const ManagerVerificationPage: React.FC = () => {
                                     >
                                         <Box p={2} bgcolor="white" borderBottom="1px solid #e0e0e0" display="flex" justifyContent="space-between" alignItems="center">
                                             <Typography variant="subtitle1" fontWeight={600}>
-                                                {documents[selectedDocIndex]?.documentType} Preview
+                                                {selectedDocLabel} Preview
                                             </Typography>
-                                            <Button
-                                                size="small"
-                                                href={documents[selectedDocIndex]?.documentUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Open in New Tab
-                                            </Button>
                                         </Box>
-                                        <Box flexGrow={1} display="flex" alignItems="center" justifyContent="center" p={2} sx={{ position: 'relative' }}>
-                                            {documents[selectedDocIndex] && (
-                                                getDocumentComponent(documents[selectedDocIndex].documentUrl)
-                                            )}
+                                        <Box
+                                            flexGrow={1}
+                                            p={2}
+                                            sx={{
+                                                position: 'relative',
+                                                height: '100%',
+                                                overflow: 'auto',
+                                                WebkitOverflowScrolling: 'touch',
+                                            }}
+                                        >
+                                            {selectedDoc && selectedDocUrl ? <DocumentPreview url={selectedDocUrl} /> : null}
                                         </Box>
                                     </Paper>
                                 </Grid>
@@ -565,8 +675,16 @@ const ManagerVerificationPage: React.FC = () => {
 const getDocumentComponent = (url: string) => {
     // Basic check for image vs pdf based on extension or assumptions
     // Ideally we should have mimetype
-    const isPdf = url.toLowerCase().endsWith('.pdf');
-    const isImage = url.match(/\.(jpeg|jpg|gif|png)$/i);
+    const lower = url.toLowerCase();
+    let pathToCheck = lower;
+    try {
+        pathToCheck = new URL(url).pathname.toLowerCase();
+    } catch (_e) {
+        pathToCheck = lower.split('?')[0].split('#')[0];
+    }
+
+    const isPdf = pathToCheck.endsWith('.pdf');
+    const isImage = pathToCheck.match(/\.(jpeg|jpg|gif|png|webp)$/i);
 
     if (isImage) {
         return (
@@ -592,7 +710,6 @@ const getDocumentComponent = (url: string) => {
             <Box textAlign="center" color="white">
                 <DescriptionIcon sx={{ fontSize: 64, mb: 2 }} />
                 <Typography>Preview not available for this file type.</Typography>
-                <Button variant="contained" sx={{ mt: 2 }} href={url} target="_blank">Download to View</Button>
             </Box>
         );
     }

@@ -13,6 +13,7 @@ import useTutors from '../../hooks/useTutors';
 import { ITutor, IDocument } from '../../types';
 import { getPendingVerifications, updateVerificationStatus, getSubjects, getVerifiers } from '../../services/tutorService';
 import { useTheme } from '@mui/material/styles';
+import DocumentViewerModal from '../../components/common/DocumentViewerModal';
 
 export default function TutorVerificationPage() {
   const theme = useTheme();
@@ -759,16 +760,11 @@ export default function TutorVerificationPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={viewerOpen} onClose={() => setViewerOpen(false)} maxWidth="lg" fullWidth>
-        <DialogContent>
-          {selectedDoc && (selectedDoc.documentUrl.toLowerCase().endsWith('.pdf') ? (
-            <iframe src={selectedDoc.documentUrl} title="document" style={{ width: '100%', height: '80vh', border: 'none' }} />
-          ) : (
-            // eslint-disable-next-line jsx-a11y/alt-text
-            <img src={selectedDoc.documentUrl} style={{ maxWidth: '100%', maxHeight: '80vh' }} />
-          ))}
-        </DialogContent>
-      </Dialog>
+      <DocumentViewerModal
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        document={selectedDoc}
+      />
 
       <VerificationModal open={verifyOpen} onClose={() => setVerifyOpen(false)} tutor={selectedTutor} onSubmit={handleVerifySubmit} />
       <SnackbarNotification open={snack.open} message={snack.message} severity={snack.severity} onClose={() => setSnack((s) => ({ ...s, open: false }))} />

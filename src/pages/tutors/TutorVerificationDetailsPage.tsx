@@ -43,18 +43,23 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import DocumentViewerModal from '../../components/common/DocumentViewerModal';
+import { Eye } from 'lucide-react';
 
 const getDocumentComponent = (url: string) => {
-    const isPdf = url.toLowerCase().endsWith('.pdf');
-    const isImage = url.match(/\.(jpeg|jpg|gif|png)$/i);
+    const cleanUrl = url.toLowerCase().split('?')[0];
+    const isPdf = cleanUrl.endsWith('.pdf');
+    const isImage = cleanUrl.match(/\.(jpeg|jpg|gif|png|webp|jfif)$/i) || url.includes('image');
 
     if (isImage) {
         return (
-            <img
-                src={url}
-                alt="Document Preview"
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-            />
+            <Box sx={{ p: 2, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                    src={url}
+                    alt="Document Preview"
+                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', borderRadius: '8px' }}
+                />
+            </Box>
         );
     } else if (isPdf) {
         return (
@@ -68,10 +73,10 @@ const getDocumentComponent = (url: string) => {
         );
     } else {
         return (
-            <Box textAlign="center" color="text.secondary">
-                <DescriptionIcon sx={{ fontSize: 64, mb: 2 }} />
-                <Typography>Preview not available for this file type.</Typography>
-                <Button variant="contained" sx={{ mt: 2 }} href={url} target="_blank">Download to View</Button>
+            <Box textAlign="center" color="text.secondary" p={4}>
+                <DescriptionIcon sx={{ fontSize: 64, mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" gutterBottom>Preview not available</Typography>
+                <Typography variant="body2">This file type cannot be previewed inline.</Typography>
             </Box>
         );
     }
@@ -88,6 +93,7 @@ const TutorVerificationDetailsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [tabValue, setTabValue] = useState(0);
     const [selectedDocIndex, setSelectedDocIndex] = useState(0);
+    const [viewerOpen, setViewerOpen] = useState(false);
 
     const dispatch = useDispatch();
     useEffect(() => {
@@ -312,11 +318,39 @@ const TutorVerificationDetailsPage: React.FC = () => {
                             </Paper>
 
                             {/* Viewer */}
-                            <Paper variant="outlined" sx={{ flexGrow: 1, m: 2, overflow: 'hidden', bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
+                            <Paper variant="outlined" sx={{ flexGrow: 1, m: 2, overflow: 'hidden', bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                 {selectedDocument ? (
-                                    <Box sx={{ flexGrow: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'auto' }}>
-                                        {getDocumentComponent(selectedDocument.documentUrl)}
-                                    </Box>
+                                    <>
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: 16,
+                                            right: 16,
+                                            zIndex: 10,
+                                            display: 'flex',
+                                            gap: 1
+                                        }}>
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                startIcon={<Eye size={16} />}
+                                                onClick={() => setViewerOpen(true)}
+                                                sx={{
+                                                    borderRadius: '8px',
+                                                    textTransform: 'none',
+                                                    fontWeight: 600,
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                    bgcolor: 'white',
+                                                    color: 'text.primary',
+                                                    '&:hover': { bgcolor: '#f5f5f5' }
+                                                }}
+                                            >
+                                                Full View
+                                            </Button>
+                                        </Box>
+                                        <Box sx={{ flexGrow: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'auto' }}>
+                                            {getDocumentComponent(selectedDocument.documentUrl)}
+                                        </Box>
+                                    </>
                                 ) : (
                                     <Box display="flex" alignItems="center" justifyContent="center" height="100%">
                                         <Typography color="text.secondary">Select a document to preview</Typography>
@@ -356,6 +390,12 @@ const TutorVerificationDetailsPage: React.FC = () => {
                 message={snackbar.message}
                 severity={snackbar.severity}
                 onClose={() => setSnackbar({ ...snackbar, open: false })}
+            />
+
+            <DocumentViewerModal
+                open={viewerOpen}
+                onClose={() => setViewerOpen(false)}
+                document={selectedDocument || null}
             />
         </Box>
     );

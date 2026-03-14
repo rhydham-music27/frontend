@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -71,6 +71,17 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
     languagesKnown: [],
     skills: [],
   });
+
+  useEffect(() => {
+    if (!initialData) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      ...initialData,
+      password: '',
+      confirmPassword: '',
+    }));
+  }, [initialData]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 

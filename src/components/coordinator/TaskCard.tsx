@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardActions, Box, Typography, Chip, Button, Divider } from '@mui/material';
+import { Card, CardContent, CardActions, Box, Typography, Chip, Button, Divider, alpha, useTheme, Grow, Avatar } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PaymentIcon from '@mui/icons-material/Payment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -85,183 +85,246 @@ const formatCurrency = (amount: number): string => {
 };
 
 const TaskCard: React.FC<TaskCardProps> = (props) => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { priority, onAction } = props;
 
   const priorityColor = getPriorityColor(priority);
+  const resolvedPriorityColor = priorityColor.includes('.') 
+    ? (theme.palette as any)[priorityColor.split('.')[0]][priorityColor.split('.')[1]] 
+    : priorityColor;
+
   const PriorityChip = (
     <Chip
       size="small"
       label={getPriorityLabel(priority)}
-      sx={{ bgcolor: `${priorityColor}`, color: 'common.white' }}
+      sx={{ 
+        bgcolor: alpha(resolvedPriorityColor, 0.1), 
+        color: resolvedPriorityColor,
+        fontWeight: 700,
+        borderRadius: '6px',
+        fontSize: '0.7rem'
+      }}
       aria-label={`Priority ${getPriorityLabel(priority)}`}
     />
   );
 
   return (
-    <Card elevation={2} sx={{ transition: 'box-shadow 0.3s', '&:hover': { boxShadow: 4 }, borderLeft: '4px solid', borderLeftColor: priorityColor }}>
-      <CardContent>
-        {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-          <Box display="flex" alignItems="center" gap={1}>
-            {props.taskType === 'attendance' && <CheckCircleIcon color="success" />}
-            {props.taskType === 'payment' && <PaymentIcon color="primary" />}
-            {props.taskType === 'test' && <AssignmentIcon color="info" />}
-            {props.taskType === 'complaint' && <WarningIcon color="error" />}
-            <Typography variant="h6">
-              {props.taskType === 'attendance' && 'Attendance Approval'}
-              {props.taskType === 'payment' && 'Payment Reminder'}
-              {props.taskType === 'test' && 'Test to Schedule'}
-              {props.taskType === 'complaint' && 'Parent Complaint'}
-            </Typography>
+    <Grow in timeout={500}>
+      <Card 
+        elevation={0}
+        sx={{ 
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+          '&:hover': { 
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 24px -10px rgba(0,0,0,0.1)',
+            borderColor: alpha(resolvedPriorityColor, 0.3),
+          },
+          border: '1px solid',
+          borderColor: alpha(theme.palette.divider, 0.8),
+          borderRadius: '20px',
+          background: alpha(theme.palette.background.paper, 0.9),
+          backdropFilter: 'blur(10px)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '4px',
+            height: '100%',
+            bgcolor: resolvedPriorityColor
+          }
+        }}
+      >
+        <CardContent sx={{ p: 3, flexGrow: 1 }}>
+          {/* Header */}
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2.5}>
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <Avatar 
+                sx={{ 
+                  bgcolor: alpha(resolvedPriorityColor, 0.1), 
+                  color: resolvedPriorityColor,
+                  width: 40,
+                  height: 40
+                }}
+              >
+                {props.taskType === 'attendance' && <CheckCircleIcon fontSize="small" />}
+                {props.taskType === 'payment' && <PaymentIcon fontSize="small" />}
+                {props.taskType === 'test' && <AssignmentIcon fontSize="small" />}
+                {props.taskType === 'complaint' && <WarningIcon fontSize="small" />}
+              </Avatar>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                  {props.taskType === 'attendance' && 'Attendance'}
+                  {props.taskType === 'payment' && 'Payment'}
+                  {props.taskType === 'test' && 'Test'}
+                  {props.taskType === 'complaint' && 'Complaint'}
+                </Typography>
+                <Typography variant="body1" fontWeight={700}>
+                  {props.taskType === 'attendance' && 'Review Approval'}
+                  {props.taskType === 'payment' && 'Send Reminder'}
+                  {props.taskType === 'test' && 'Schedule Required'}
+                  {props.taskType === 'complaint' && 'Parent Issue'}
+                </Typography>
+              </Box>
+            </Box>
+            {PriorityChip}
           </Box>
-          {PriorityChip}
-        </Box>
 
-        {/* Content per type */}
-        {props.taskType === 'attendance' && (
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <SchoolIcon fontSize="small" />
-              <Typography variant="body2">
-                {(props.task as IAttendance).finalClass.studentName} - {(props.task as IAttendance).finalClass.subject.join(', ')}
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <CalendarTodayIcon fontSize="small" />
-              <Typography variant="body2">{formatDate((props.task as IAttendance).sessionDate)}</Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <PersonIcon fontSize="small" />
-              <Typography variant="body2">{(props.task as IAttendance).tutor.name}</Typography>
-            </Box>
-            {(props.task as IAttendance).topicCovered && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <AccessTimeIcon fontSize="small" />
-                <Typography variant="body2">Topic: {(props.task as IAttendance).topicCovered}</Typography>
-              </Box>
-            )}
-            {(props.task as IAttendance).notes && (
-              <Box sx={{ bgcolor: 'grey.100', p: 1, borderRadius: 1 }}>
-                <Typography variant="body2" color="text.secondary">{(props.task as IAttendance).notes}</Typography>
-              </Box>
-            )}
-          </Box>
-        )}
+          <Divider sx={{ mb: 2.5, opacity: 0.6 }} />
 
-        {props.taskType === 'payment' && (
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <SchoolIcon fontSize="small" />
-              <Typography variant="body2">
-                {(props.task as IPaymentReminder).finalClass.studentName} - {(props.task as IPaymentReminder).finalClass.subject.join(', ')}
-              </Typography>
-            </Box>
-            <Typography variant="h5" color="primary">
-              {formatCurrency((props.task as IPaymentReminder).amount)}
-            </Typography>
-            <Box display="flex" alignItems="center" gap={1}>
-              <CalendarTodayIcon fontSize="small" />
-              <Typography variant="body2">Due {formatDate((props.task as IPaymentReminder).dueDate)}</Typography>
-            </Box>
-            <Box>
-              <Chip
-                size="small"
-                label={(props.task as IPaymentReminder).status}
-                color={(props.task as IPaymentReminder).status === PAYMENT_STATUS.OVERDUE ? 'error' : (props.task as IPaymentReminder).status === PAYMENT_STATUS.PENDING ? 'warning' : 'success'}
-              />
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <PersonIcon fontSize="small" />
-              <Typography variant="body2">{((props.task as IPaymentReminder).tutor as any)?.name || ''}</Typography>
-            </Box>
-          </Box>
-        )}
+          {/* Content per type */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {props.taskType === 'attendance' && (
+              <>
+                <Box display="flex" alignItems="flex-start" gap={1.5}>
+                  <SchoolIcon sx={{ color: 'text.secondary', fontSize: 18, mt: 0.3 }} />
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>
+                      {(props.task as IAttendance).finalClass.studentName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {(props.task as IAttendance).finalClass.subject.join(', ')}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1.5}>
+                  <CalendarTodayIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
+                  <Typography variant="body2" color="text.secondary">{formatDate((props.task as IAttendance).sessionDate)}</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1.5}>
+                  <PersonIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
+                  <Typography variant="body2" color="text.secondary">{(props.task as IAttendance).tutor.name}</Typography>
+                </Box>
+                {(props.task as IAttendance).notes && (
+                  <Box sx={{ bgcolor: alpha(theme.palette.action.hover, 0.5), p: 1.5, borderRadius: '12px', mt: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic', display: 'block', lineHeight: 1.4 }}>
+                      "{(props.task as IAttendance).notes}"
+                    </Typography>
+                  </Box>
+                )}
+              </>
+            )}
 
-        {props.taskType === 'test' && (
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <SchoolIcon fontSize="small" />
-              <Typography variant="body2">{props.task?.finalClass?.studentName} - {props.task?.finalClass?.subject?.join(', ')}</Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary">No test scheduled for this class</Typography>
-            {props.task?.lastTestDate && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <CalendarTodayIcon fontSize="small" />
-                <Typography variant="body2">Last test: {formatDate(props.task.lastTestDate)}</Typography>
-              </Box>
+            {props.taskType === 'payment' && (
+              <>
+                <Box display="flex" alignItems="flex-start" gap={1.5}>
+                  <SchoolIcon sx={{ color: 'text.secondary', fontSize: 18, mt: 0.3 }} />
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>
+                      {(props.task as IPaymentReminder).finalClass.studentName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {(props.task as IPaymentReminder).finalClass.subject.join(', ')}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight={800} color="primary" sx={{ my: 0.5 }}>
+                    {formatCurrency((props.task as IPaymentReminder).amount)}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={(props.task as IPaymentReminder).status}
+                    sx={{
+                      height: 20,
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      bgcolor: (props.task as IPaymentReminder).status === PAYMENT_STATUS.OVERDUE ? alpha(theme.palette.error.main, 0.1) : (props.task as IPaymentReminder).status === PAYMENT_STATUS.PENDING ? alpha(theme.palette.warning.main, 0.1) : alpha(theme.palette.success.main, 0.1),
+                      color: (props.task as IPaymentReminder).status === PAYMENT_STATUS.OVERDUE ? 'error.main' : (props.task as IPaymentReminder).status === PAYMENT_STATUS.PENDING ? 'warning.main' : 'success.main',
+                    }}
+                  />
+                </Box>
+                <Box display="flex" alignItems="center" gap={1.5}>
+                  <CalendarTodayIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
+                  <Typography variant="caption" color="text.secondary">Due {formatDate((props.task as IPaymentReminder).dueDate)}</Typography>
+                </Box>
+              </>
             )}
-            {props.task?.tutor?.name && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <PersonIcon fontSize="small" />
-                <Typography variant="body2">{props.task.tutor.name}</Typography>
-              </Box>
-            )}
-          </Box>
-        )}
 
-        {props.taskType === 'complaint' && (
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Typography variant="body2">{props.task?.parentName} - {props.task?.contact}</Typography>
-            <Typography variant="body2">{props.task?.finalClass?.studentName} - {props.task?.finalClass?.subject?.join(', ')}</Typography>
-            {props.task?.summary && (
-              <Box sx={{ bgcolor: 'grey.100', p: 1, borderRadius: 1 }}>
-                <Typography variant="body2" color="text.secondary">{props.task.summary}</Typography>
-              </Box>
+            {props.taskType === 'test' && (
+              <>
+                <Box display="flex" alignItems="flex-start" gap={1.5}>
+                  <SchoolIcon sx={{ color: 'text.secondary', fontSize: 18, mt: 0.3 }} />
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>
+                      {props.task?.finalClass?.studentName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {props.task?.finalClass?.subject?.join(', ')}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ p: 1.5, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: '12px', border: `1px dashed ${alpha(theme.palette.info.main, 0.2)}` }}>
+                  Periodic assessment is due for this student.
+                </Typography>
+                {props.task?.lastTestDate && (
+                  <Box display="flex" alignItems="center" gap={1.5}>
+                    <CalendarTodayIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
+                    <Typography variant="caption" color="text.secondary">Last test: {formatDate(props.task.lastTestDate)}</Typography>
+                  </Box>
+                )}
+              </>
             )}
-            {props.task?.createdAt && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <CalendarTodayIcon fontSize="small" />
-                <Typography variant="body2">Received {formatDate(props.task.createdAt)}</Typography>
-              </Box>
+
+            {props.taskType === 'complaint' && (
+              <>
+                <Box display="flex" alignItems="flex-start" gap={1.5}>
+                  <SchoolIcon sx={{ color: 'text.secondary', fontSize: 18, mt: 0.3 }} />
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>{props.task?.finalClass?.studentName}</Typography>
+                    <Typography variant="caption" color="text.secondary">{props.task?.parentName}</Typography>
+                  </Box>
+                </Box>
+                {props.task?.summary && (
+                  <Box sx={{ bgcolor: alpha(theme.palette.error.main, 0.05), p: 1.5, borderRadius: '12px', borderLeft: `3px solid ${theme.palette.error.main}` }}>
+                    <Typography variant="caption" color="text.error" fontWeight={600} sx={{ display: 'block', mb: 0.5 }}>ISSUE SUMMARY:</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', lineHeight: 1.4 }}>{props.task.summary}</Typography>
+                  </Box>
+                )}
+                <Box display="flex" alignItems="center" gap={1.5}>
+                  <CalendarTodayIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
+                  <Typography variant="caption" color="text.secondary">Received {formatDate(props.task.createdAt)}</Typography>
+                </Box>
+              </>
             )}
           </Box>
-        )}
-      </CardContent>
-      <Divider />
-      <CardActions sx={{ p: 2 }}>
-        {props.taskType === 'attendance' && (
-          <>
-            <Button variant="contained" color="success" onClick={() => navigate('/attendance-approvals')} aria-label="Review and approve attendance">
-              Review & Approve
+        </CardContent>
+
+        <CardActions sx={{ px: 3, pb: 2.5, pt: 0, mt: 'auto' }}>
+          {props.taskType === 'attendance' && (
+            <>
+              <Button fullWidth variant="contained" color="success" size="small" disableElevation onClick={() => navigate('/attendance-sheet-approvals')} sx={{ borderRadius: '10px', fontWeight: 700, py: 1 }}>
+                Review
+              </Button>
+              <Button variant="outlined" size="small" color="inherit" onClick={() => onAction?.((props.task as IAttendance).id, 'view')} sx={{ borderRadius: '10px', minWidth: 44, width: 44, borderColor: 'divider' }}>
+                <ArrowForwardIcon fontSize="small" />
+              </Button>
+            </>
+          )}
+          {props.taskType === 'payment' && (
+            <>
+              <Button fullWidth variant="contained" color="primary" size="small" disableElevation onClick={() => navigate(`/payment-tracking`)} sx={{ borderRadius: '10px', fontWeight: 700, py: 1 }}>
+                Track
+              </Button>
+              <Button variant="outlined" size="small" color="inherit" onClick={() => navigate('/assigned-classes')} sx={{ borderRadius: '10px', minWidth: 44, width: 44, borderColor: 'divider' }}>
+                <ArrowForwardIcon fontSize="small" />
+              </Button>
+            </>
+          )}
+          {(props.taskType === 'test' || props.taskType === 'complaint') && (
+            <Button fullWidth variant="contained" color="primary" size="small" disableElevation onClick={() => navigate(props.taskType === 'test' ? '/test-scheduling' : '/assigned-classes')} sx={{ borderRadius: '10px', fontWeight: 700, py: 1 }}>
+              Take Action
             </Button>
-            <Button variant="outlined" endIcon={<ArrowForwardIcon />} onClick={() => onAction?.((props.task as IAttendance).id, 'view')} aria-label="View attendance details">
-              View Details
-            </Button>
-          </>
-        )}
-        {props.taskType === 'payment' && (
-          <>
-            <Button variant="contained" color="primary" onClick={() => navigate(`/payments/${(props.task as IPaymentReminder).id}`)} aria-label="Send payment reminder">
-              Send Reminder
-            </Button>
-            <Button variant="outlined" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/assigned-classes')} aria-label="View class">
-              View Class
-            </Button>
-          </>
-        )}
-        {props.taskType === 'test' && (
-          <>
-            <Button variant="contained" color="primary" onClick={() => navigate('/test-scheduling')} aria-label="Schedule test">
-              Schedule Test
-            </Button>
-            <Button variant="outlined" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/assigned-classes')} aria-label="View class">
-              View Class
-            </Button>
-          </>
-        )}
-        {props.taskType === 'complaint' && (
-          <>
-            <Button variant="contained" color="primary" aria-label="Contact parent">
-              Contact Parent
-            </Button>
-            <Button variant="outlined" endIcon={<ArrowForwardIcon />} aria-label="View complaint details">
-              View Details
-            </Button>
-          </>
-        )}
-      </CardActions>
-    </Card>
+          )}
+        </CardActions>
+      </Card>
+    </Grow>
   );
 };
 

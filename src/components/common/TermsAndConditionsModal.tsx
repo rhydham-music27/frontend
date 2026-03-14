@@ -9,6 +9,7 @@ import {
   FormControlLabel,
   Checkbox,
   Box,
+  Link,
 } from '@mui/material';
 
 interface TermsAndConditionsModalProps {
@@ -19,6 +20,142 @@ interface TermsAndConditionsModalProps {
 
 const TermsAndConditionsModal: React.FC<TermsAndConditionsModalProps> = ({ open, onAccept, loading }) => {
   const [checked, setChecked] = useState(false);
+
+  const termsText = `1. Nature of Platform
+1.1 Your Shikshak operates as a technology-enabled facilitator and marketplace connecting parents/students with independent tutors.
+
+1.2 Your Shikshak is not a school, coaching institute, educational institution, or employer of tutors.
+
+1.3 Tutors registered on the Platform are independent service providers and not employees, agents, representatives, or partners of Your Shikshak.
+
+1.4 Nothing contained herein shall be construed as creating any agency, partnership, employment, or joint venture relationship.
+
+1.5 Your Shikshak conducts identity verification based on documents submitted by tutors; however, the Platform does not conduct police verification or comprehensive background investigations.
+
+1.6 Parents and users are advised to exercise independent judgment before engaging any tutor.
+
+1.7 The Platform may facilitate both one-on-one and group class formats. Group classes may be conducted at private premises arranged by participating parents. Your Shikshak does not own, inspect, control, or supervise such premises and acts solely as a coordination and facilitation platform.
+
+2. Eligibility
+2.1 Parents/guardians must be at least 18 years of age.
+
+2.2 Tutors must be at least 18 years of age.
+
+2.3 By using the Platform, you represent that all information provided is accurate and lawful.
+
+3. Account Registration & Responsibility
+3.1 Users shall provide accurate and complete information.
+
+3.2 Users are responsible for safeguarding login credentials.
+
+3.3 Your Shikshak reserves the right to suspend or terminate accounts for false information, policy violations, misconduct, or legal risk.
+
+4. Payments & Platform Role
+4.1 Parents shall pay fees through approved third-party payment gateway providers integrated by the Platform.
+
+4.2 Fees consist of:
+
+(a) Platform service charges; and
+(b) Tutor tuition components.
+4.3 Your Shikshak may temporarily hold tuition amounts solely for coordination and settlement purposes and does not operate as a banking, escrow, or financial institution.
+
+4.4 Your Shikshak does not earn interest on held funds.
+
+4.5 Payment processing is governed by the respective payment gateway's terms and policies.
+
+4.6 Applicable taxes, including GST (if applicable in future), shall be governed by prevailing law.
+
+5. Attendance & Service Verification
+5.1 Attendance records maintained through the Platform shall serve as the primary basis for session verification.
+
+5.2 Sessions marked as completed in Platform records shall be treated as delivered services for billing and settlement purposes.
+
+6. Tutor Replacement & Refunds
+6.1 Tutor replacement limits and refund conditions shall be governed exclusively by the Parent Service Policy and Refund & Cancellation Policy.
+
+6.2 Nothing herein guarantees academic outcomes, continuous tutor availability, or specific results.
+
+7. Prohibited Uses
+Users shall not:
+
+7.1 Bypass the Platform to transact directly with tutors or parents.
+7.2 Misrepresent identity or credentials.
+7.3 Engage in harassment, abuse, or unlawful conduct.
+7.4 Upload malicious software or attempt unauthorized access.
+7.5 Violate applicable laws, including IT Act 2000 and related rules.
+Violation may result in suspension or termination without prior notice.
+
+8. Intellectual Property
+8.1 All content, trademarks, branding, software, and materials on the Platform are proprietary to Your Shikshak.
+
+8.2 Users shall not copy, reproduce, modify, or commercially exploit Platform content without written consent.
+
+8.3 Tutors grant the Platform a limited, non-exclusive license to display profile information and submitted materials for service facilitation purposes.
+
+9. Limitation of Liability
+9.1 To the fullest extent permitted by law, Your Shikshak shall not be liable for:
+
+Acts or omissions of independent tutors or users;
+Incidents occurring at private premises;
+Injuries, accidents, disputes, or property damage;
+Indirect, incidental, special, or consequential damages.
+9.2 Notwithstanding the foregoing, the aggregate liability of Your Shikshak arising out of or relating to the use of the Platform shall not exceed the lower of:
+
+(a) The total platform service charges paid by the User to Your Shikshak in the preceding three (3) months; or
+(b) INR 10,000.
+9.3 Nothing in these Terms shall exclude liability for fraud, willful misconduct, or gross negligence where such exclusion is prohibited by law.
+
+9.4 Users retain rights available under applicable consumer protection laws.
+
+10. Indemnity
+Users agree to indemnify and hold harmless Your Shikshak from claims, damages, losses, liabilities, and expenses arising from misuse of the Platform, breach of these Terms, or disputes between users.
+
+11. Force Majeure
+Your Shikshak shall not be liable for delay or failure due to events beyond reasonable control, including natural disasters, government actions, internet disruptions, or third-party service failures.
+
+12. Suspension & Termination
+Your Shikshak may suspend or terminate access for policy violations, non-payment, safety concerns, or legal compliance requirements.
+
+13. Grievance Redressal
+In accordance with applicable law, users may contact:
+
+Grievance Officer:
+
+Kamaljeet Singh Dangi
+Proprietor & Grievance Officer
+Shop 2/51/2B, Saket Nagar, DRM Road,
+Bhopal, Madhya Pradesh – 462043
+
+Email: legal@yourshikshak.in
+
+Acknowledgment shall be provided within 24 hours, and resolution shall be attempted within 15 days from receipt.
+
+14. Governing Law & Dispute Resolution
+14.1 These Terms shall be governed by the laws of India.
+
+14.2 Parties shall first attempt amicable resolution within 30 days of written notice.
+
+14.3 If unresolved, disputes shall be referred to arbitration under the Arbitration and Conciliation Act, 1996.
+
+14.4 The arbitration shall be conducted by a single arbitrator mutually appointed by the parties. In case of disagreement, appointment shall be made in accordance with Section 11 of the Act.
+
+14.5 The seat and venue of arbitration shall be Bhopal, Madhya Pradesh.
+
+14.6 Nothing herein restricts a User's right to approach competent consumer forums under applicable law.
+
+15. Entity Transition
+In the event of conversion of the proprietorship into a Limited Liability Partnership or Private Limited Company, all rights, obligations, assets, and liabilities under these Terms shall automatically vest in the successor entity without requiring fresh consent from users.
+
+16. Modifications
+Your Shikshak may update these Terms from time to time. Material changes shall be notified through the Platform. Continued use following notification constitutes acceptance of revised Terms.
+
+17. Severability & Waiver
+If any provision is held invalid, remaining provisions shall remain enforceable. Failure to enforce any provision shall not constitute waiver.
+
+18. Entire Agreement
+These Terms, along with related policies, constitute the entire agreement between users and Your Shikshak.
+
+These Terms constitute an electronic record and do not require physical or digital signature.`;
 
   return (
     <Dialog 
@@ -35,56 +172,57 @@ const TermsAndConditionsModal: React.FC<TermsAndConditionsModalProps> = ({ open,
         Terms and Conditions
       </DialogTitle>
       <DialogContent dividers sx={{ py: 3 }}>
-        <Typography variant="body2" component="div" sx={{ '& p': { mb: 2 } }}>
-          <p><strong>Welcome to Your Shikshak!</strong></p>
-          <p>Please read these Terms and Conditions ("Terms", "Terms and Conditions") carefully before using the Your Shikshak platform.</p>
-          
-          <p><strong>1. Acceptance of Terms</strong></p>
-          <p>By accessing and using this platform, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service. These terms apply to all visitors, users and others who access or use the Service.</p>
-          
-          <p><strong>2. User Obligations & Responsibilities</strong></p>
-          <ul>
-            <li>You must provide accurate, complete, and current information at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.</li>
-            <li>You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password.</li>
-            <li>You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</li>
-          </ul>
+        <Typography variant="body1" component="div" sx={{ lineHeight: 1.8 }}>
+          <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+            These Terms &amp; Conditions ("Terms") govern access to and use of the website, mobile applications,
+            and related services (collectively, the "Platform") operated by Kamaljeet Singh Dangi, Sole
+            Proprietor trading as "Your Shikshak", having its principal place of business at:
+          </Typography>
 
-          <p><strong>3. Conduct for Tutors</strong></p>
-          <ul>
-            <li>Maintain high standards of professional conduct during all teaching sessions.</li>
-            <li>Strictly adhere to the scheduled timings and syllabus agreed upon with the parent/student.</li>
-            <li>Provide regular feedback and accurate attendance reports through the platform immediately after each session.</li>
-            <li>Refrain from sharing personal contact information with students/parents or bypassing the platform for payments.</li>
-          </ul>
+          <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+            Shop 2/51/2B, Saket Nagar, DRM Road,
+            <br />
+            Bhopal, Madhya Pradesh – 462043, India
+          </Typography>
 
-          <p><strong>4. Conduct for Parents/Students</strong></p>
-          <ul>
-            <li>Ensure a quiet and conducive environment for learning during online or offline sessions.</li>
-            <li>Review and provide timely approvals for attendance records and payment requests.</li>
-            <li>Communicate any cancellations or changes in schedule at least 24 hours in advance.</li>
-            <li>Respect the tutor's professional expertise and maintain appropriate boundaries.</li>
-          </ul>
+          <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+            ("Your Shikshak", "we", "us", "our").
+          </Typography>
 
-          <p><strong>5. Payments and Fees</strong></p>
-          <p>All payments must be processed through the Your Shikshak platform. Any attempt to settle payments directly between tutors and parents/students without platform involvement is a violation of these terms and may lead to account suspension.</p>
-
-          <p><strong>6. Limitation of Liability</strong></p>
-          <p>In no event shall Your Shikshak, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.</p>
-
-          <p><strong>7. Termination</strong></p>
-          <p>We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.</p>
-          
-          <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid', borderColor: 'divider', fontStyle: 'italic', color: 'text.secondary' }}>
-            <Typography variant="caption">
-              Note: This is an official agreement between you and Your Shikshak. By checking the box below and clicking "Accept", you acknowledge that you have read, understood, and agree to be bound by these terms.
-            </Typography>
-          </Box>
+          <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+            By accessing, registering on, or using the Platform, you acknowledge that you have read,
+            understood, and agree to be legally bound by these Terms, along with the{' '}
+            <Link href="https://yourshikshak.in/privacy-policy" target="_blank" rel="noreferrer">
+              Privacy Policy
+            </Link>
+            ,{' '}
+            <Link href="https://yourshikshak.in/parent-service-policy" target="_blank" rel="noreferrer">
+              Parent Service Policy
+            </Link>
+            ,{' '}
+            <Link href="https://yourshikshak.in/tutor-agreement" target="_blank" rel="noreferrer">
+              Tutor Agreement
+            </Link>
+            , and{' '}
+            <Link href="https://yourshikshak.in/refund-cancellation-policy" target="_blank" rel="noreferrer">
+              Refund &amp; Cancellation Policy
+            </Link>
+            .
+          </Typography>
         </Typography>
+
+        <Box sx={{ mt: 2, whiteSpace: 'pre-wrap', fontSize: '0.95rem', lineHeight: 1.8 }}>
+          {termsText}
+        </Box>
       </DialogContent>
       <DialogActions sx={{ p: 4, flexDirection: 'column', alignItems: 'stretch', gap: 2 }}>
         <FormControlLabel
           control={<Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} color="primary" />}
-          label={<Typography variant="body2" sx={{ fontWeight: 600 }}>I have read and agree to the Terms and Conditions</Typography>}
+          label={
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              I have read and agree to the policies.
+            </Typography>
+          }
           sx={{ ml: 0 }}
         />
         <Button

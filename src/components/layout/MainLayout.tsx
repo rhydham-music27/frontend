@@ -71,8 +71,18 @@ const MainLayout: React.FC = () => {
 
   const communityLink = React.useMemo(() => {
     if (!user?.city || !cityOptions.length) return undefined;
-    const cityOpt = cityOptions.find(c => c.value === user.city || c.label === user.city);
-    return cityOpt?.metadata?.whatsappLink;
+
+    const needle = String(user.city).trim().toLowerCase();
+    if (!needle) return undefined;
+
+    const cityOpt = cityOptions.find((c) => {
+      const value = String(c.value || '').trim().toLowerCase();
+      const label = String(c.label || '').trim().toLowerCase();
+      const cityCode = String((c.metadata as any)?.cityCode || '').trim().toLowerCase();
+      return value === needle || label === needle || (cityCode && cityCode === needle);
+    });
+
+    return (cityOpt?.metadata as any)?.whatsappLink;
   }, [user?.city, cityOptions]);
 
   const isOfflineTutor = user?.role === USER_ROLES.TUTOR && user?.preferredMode === TEACHING_MODE.OFFLINE;
