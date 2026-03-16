@@ -4,7 +4,7 @@ import {
   Container, Box, Typography, Grid, Card, CardContent, Avatar, Chip, 
   List, ListItem, ListItemText, Tabs, Tab, Button, Paper, alpha, useTheme, 
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-  Autocomplete, CircularProgress
+  Autocomplete, CircularProgress, IconButton
 } from '@mui/material';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
@@ -24,6 +24,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import DownloadIcon from '@mui/icons-material/Download';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { toast } from 'sonner';
@@ -35,6 +37,8 @@ import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { subDays, format } from 'date-fns';
 import { useOptions } from '@/hooks/useOptions';
+import DocumentViewerModal from '../../components/common/DocumentViewerModal';
+import { USER_ROLES } from '../../constants';
 
 const ManagerProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,6 +72,9 @@ const ManagerProfilePage: React.FC = () => {
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({ 
     open: false, message: '', severity: 'success' 
   });
+
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<any | null>(null);
 
   const { options: languageOptions } = useOptions('LANGUAGE');
   const { options: skillOptions } = useOptions('SKILL');
@@ -210,6 +217,8 @@ const ManagerProfilePage: React.FC = () => {
     : user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '';
 
   const profilePhotoUrl = managerProfile?.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl;
+
+  const isAdminViewing = Boolean(id) && user?.role === USER_ROLES.ADMIN;
 
   if (loading && !managerProfile) return <LoadingSpinner />;
 
@@ -553,6 +562,81 @@ const ManagerProfilePage: React.FC = () => {
               </Box>
             </Paper>
           </Box>
+
+          {isAdminViewing && (
+            <Box sx={{ mb: 6 }}>
+              <Paper variant="outlined" sx={{ borderRadius: 4, p: 3 }}>
+                <Typography variant="h6" fontWeight={700} gutterBottom>
+                  Documents
+                </Typography>
+                <Grid container spacing={2}>
+                  {Array.isArray((managerProfile as any).documents) && (managerProfile as any).documents.length > 0 ? (
+                    (managerProfile as any).documents.map((doc: any, idx: number) => {
+                      const label = String(doc?.documentType || 'DOCUMENT').replace(/_/g, ' ');
+                      const managerVerified = String((managerProfile as any)?.verificationStatus || '').toUpperCase() === 'VERIFIED';
+                      const isVerified = managerVerified || Boolean(doc?.verifiedAt);
+
+                      return (
+                        <Grid item xs={12} sm={12} md={6} key={`${doc?.documentType || 'doc'}-${idx}`}>
+                          <Card
+                            variant="outlined"
+                            sx={{
+                              borderRadius: 2,
+                              borderColor: 'grey.200',
+                              boxShadow: '0 10px 25px rgba(15,23,42,0.08)',
+                              height: '100%',
+                            }}
+                          >
+                            <CardContent sx={{ pb: 1.5 }}>
+                              <Box display="flex" alignItems="center" mb={1.5}>
+                                <Box>
+                                  <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                                    {label}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Uploaded: {doc?.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : '-'}
+                                  </Typography>
+                                </Box>
+                                <Chip
+                                  size="small"
+                                  label={isVerified ? 'Verified' : 'Pending'}
+                                  color={isVerified ? 'success' : 'warning'}
+                                  sx={{ ml: 'auto' }}
+                                />
+                              </Box>
+                            </CardContent>
+                            <Box sx={{ px: 1.5, pb: 1.5, display: 'flex', gap: 1 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setSelectedDocument(doc);
+                                  setViewerOpen(true);
+                                }}
+                                title="View"
+                              >
+                                <VisibilityIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => doc?.documentUrl && window.open(doc.documentUrl, '_blank')}
+                                title="Download"
+                              >
+                                <DownloadIcon />
+                              </IconButton>
+                            </Box>
+                          </Card>
+                        </Grid>
+                      );
+                    })
+                  ) : (
+                    <Grid item xs={12}>
+                      <Typography color="text.secondary">No documents uploaded yet.</Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </Paper>
+            </Box>
+          )}
         </React.Fragment>
       )}
 
@@ -672,6 +756,12 @@ const ManagerProfilePage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <DocumentViewerModal
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        document={selectedDocument || null}
+      />
 
       <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
       

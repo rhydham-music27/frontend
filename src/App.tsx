@@ -216,6 +216,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             >
+                <Route index element={<RoleBasedDashboard />} />
                 <Route
                   path="attendance-sheet-approvals"
                   element={

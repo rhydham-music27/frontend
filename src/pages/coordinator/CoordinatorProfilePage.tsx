@@ -89,7 +89,7 @@ const CoordinatorProfilePage: React.FC = () => {
 
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '';
 
-  const canEditDocuments = user?.role === 'COORDINATOR' || user?.role === 'ADMIN' || user?.role === 'MANAGER';
+  const canEditDocuments = !id && user?.role === 'COORDINATOR';
 
   const handleUploadDoc = async () => {
     if (!coordinatorProfile) return;

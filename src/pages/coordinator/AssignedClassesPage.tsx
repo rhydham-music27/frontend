@@ -20,6 +20,7 @@ import { FINAL_CLASS_STATUS } from '../../constants';
 
 const AssignedClassesPage: React.FC = () => {
   const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [classes, setClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -214,9 +215,6 @@ const AssignedClassesPage: React.FC = () => {
       setActionLoading(false);
     }
   };
-
-  return (
-  const isDarkMode = theme.palette.mode === 'dark';
 
   return (
     <Container maxWidth="xl" sx={{ pb: 8 }}>
