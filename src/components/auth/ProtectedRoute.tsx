@@ -104,7 +104,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles,
   }
 
   if (user?.role === USER_ROLES.COORDINATOR && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED) {
-    if (location.pathname !== '/coordinator-verification') {
+    if (!location.pathname.includes('coordinator-verification')) {
       return <Navigate to="/coordinator-verification" replace />;
     }
   }

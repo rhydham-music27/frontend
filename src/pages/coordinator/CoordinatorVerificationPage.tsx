@@ -29,10 +29,12 @@ import { VERIFICATION_STATUS } from '../../constants';
 import { ICoordinator } from '../../types';
 import * as coordinatorService from '../../services/coordinatorService';
 import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const CoordinatorVerificationPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
   const { refreshProfile } = useAuth();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -204,7 +206,7 @@ const CoordinatorVerificationPage: React.FC = () => {
               <Button 
                 variant="contained" 
                 color="primary" 
-                onClick={() => window.location.href = '/coordinator-dashboard'}
+                onClick={() => navigate('/coordinator-dashboard')}
                 fullWidth
               >
                 Go to Dashboard

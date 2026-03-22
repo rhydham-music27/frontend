@@ -144,21 +144,6 @@ const App: React.FC = () => {
     const user = useSelector(selectCurrentUser);
     const role = user?.role;
 
-    // Redirect unverified managers
-    if (
-      role === USER_ROLES.MANAGER &&
-      (user?.verificationStatus === "PENDING" || !user?.verificationStatus)
-    ) {
-      return <Navigate to="/manager-verification" replace />;
-    }
-
-    // Redirect unverified coordinators
-    if (
-      role === USER_ROLES.COORDINATOR &&
-      (user?.verificationStatus === "PENDING" || !user?.verificationStatus)
-    ) {
-      return <Navigate to="/coordinator-verification" replace />;
-    }
 
     if (role === USER_ROLES.ADMIN) {
       return <Navigate to="/admin-dashboard" replace />;
