@@ -192,8 +192,8 @@ const AttendanceApprovalPage: React.FC = () => {
           classId: finalClass.className || classIdStr,
           studentName: finalClass.studentName || '',
           subject: Array.isArray(finalClass.subject)
-            ? finalClass.subject.join(', ')
-            : (finalClass.subject as any),
+            ? finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
+            : (typeof finalClass.subject === 'object' && finalClass.subject !== null ? (finalClass.subject as any).label || (finalClass.subject as any).name || 'N/A' : String(finalClass.subject || '')),
           tutorName: user?.name || 'Tutor',
         } as AssignedClass);
         setSheetRange({ start: firstDay, end: lastDay });
@@ -356,8 +356,8 @@ const AttendanceApprovalPage: React.FC = () => {
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {Array.isArray(sheet.finalClass?.subject)
-                          ? sheet.finalClass?.subject.join(', ')
-                          : sheet.finalClass?.subject}
+                          ? sheet.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
+                          : (typeof sheet.finalClass?.subject === 'object' && sheet.finalClass?.subject !== null ? (sheet.finalClass.subject as any).label || (sheet.finalClass.subject as any).name || 'N/A' : String(sheet.finalClass?.subject || ''))}
                       </Typography>
                     </Box>
                     <Chip

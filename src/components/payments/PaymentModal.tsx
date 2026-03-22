@@ -159,8 +159,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   <Typography>Subject:</Typography>
                   <Typography>
                     {Array.isArray(payment.finalClass.subject)
-                      ? payment.finalClass.subject.join(', ')
-                      : payment.finalClass.subject}
+                      ? payment.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
+                      : (typeof payment.finalClass.subject === 'object' && payment.finalClass.subject !== null ? (payment.finalClass.subject as any).label || (payment.finalClass.subject as any).name || 'N/A' : String(payment.finalClass.subject || ''))}
                   </Typography>
                 </Box>
               )}

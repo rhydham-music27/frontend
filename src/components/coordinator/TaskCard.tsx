@@ -189,7 +189,7 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
                       {(props.task as IAttendance).finalClass.studentName}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {(props.task as IAttendance).finalClass.subject.join(', ')}
+                      {Array.isArray((props.task as IAttendance).finalClass.subject) ? (props.task as IAttendance).finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof (props.task as IAttendance).finalClass.subject === 'object' && (props.task as IAttendance).finalClass.subject !== null ? ((props.task as IAttendance).finalClass.subject as any).label || ((props.task as IAttendance).finalClass.subject as any).name || 'N/A' : String((props.task as IAttendance).finalClass.subject || ''))}
                     </Typography>
                   </Box>
                 </Box>
@@ -220,7 +220,7 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
                       {(props.task as IPaymentReminder).finalClass.studentName}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {(props.task as IPaymentReminder).finalClass.subject.join(', ')}
+                      {Array.isArray((props.task as IPaymentReminder).finalClass.subject) ? (props.task as IPaymentReminder).finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof (props.task as IPaymentReminder).finalClass.subject === 'object' && (props.task as IPaymentReminder).finalClass.subject !== null ? ((props.task as IPaymentReminder).finalClass.subject as any).label || ((props.task as IPaymentReminder).finalClass.subject as any).name || 'N/A' : String((props.task as IPaymentReminder).finalClass.subject || ''))}
                     </Typography>
                   </Box>
                 </Box>
@@ -256,7 +256,7 @@ const TaskCard: React.FC<TaskCardProps> = (props) => {
                       {props.task?.finalClass?.studentName}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {props.task?.finalClass?.subject?.join(', ')}
+                      {Array.isArray(props.task?.finalClass?.subject) ? props.task.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof props.task?.finalClass?.subject === 'object' && props.task?.finalClass?.subject !== null ? (props.task.finalClass.subject as any).label || (props.task.finalClass.subject as any).name || 'N/A' : String(props.task?.finalClass?.subject || ''))}
                     </Typography>
                   </Box>
                 </Box>

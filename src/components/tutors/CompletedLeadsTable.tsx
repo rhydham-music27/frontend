@@ -169,7 +169,9 @@ const CompletedLeadsTable: React.FC = () => {
           {demos.map((demo) => {
             const lead = demo.classLead;
             const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-            const subjects = Array.isArray(lead?.subject) ? lead?.subject.join(', ') : lead?.subject;
+            const subjects = Array.isArray(lead?.subject) 
+              ? lead.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') 
+              : (typeof lead?.subject === 'object' && lead?.subject !== null ? (lead.subject as any).label || (lead.subject as any).name || 'N/A' : String(lead?.subject || '-'));
 
             return (
               <Box
@@ -346,7 +348,9 @@ const CompletedLeadsTable: React.FC = () => {
               {demos.map((demo) => {
                 const lead = demo.classLead;
                 const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-                const subjects = Array.isArray(lead?.subject) ? lead?.subject.join(', ') : lead?.subject;
+                const subjects = Array.isArray(lead?.subject) 
+                  ? lead.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') 
+                  : (typeof lead?.subject === 'object' && lead?.subject !== null ? (lead.subject as any).label || (lead.subject as any).name || 'N/A' : String(lead?.subject || '-'));
 
                 return (
                   <TableRow

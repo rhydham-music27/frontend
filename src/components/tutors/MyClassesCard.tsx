@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -292,7 +292,7 @@ const MyClassesCard: React.FC = () => {
       setSheetClassInfo({
         classId: (cls as any).className || classIdStr,
         studentName: (cls as any).studentName || '',
-        subject: Array.isArray((cls as any).subject) ? (cls as any).subject.join(', ') : String((cls as any).subject || ''),
+        subject: Array.isArray((cls as any).subject) ? (cls as any).subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof (cls as any).subject === 'object' && (cls as any).subject !== null ? ((cls as any).subject as any).label || ((cls as any).subject as any).name || 'N/A' : String((cls as any).subject || '')),
         tutorName: user?.name,
       });
       // Remove date range since we're using cycle-based filtering
@@ -551,11 +551,11 @@ const MyClassesCard: React.FC = () => {
 
                     {/* Subject & Mode Chips */}
                     <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
-                      {(Array.isArray(cls.subject) ? cls.subject : [cls.subject]).map((sub) => (
+                      {(Array.isArray(cls.subject) ? cls.subject : [cls.subject]).map((sub: any) => (
                         <Chip
                           key={String(sub)}
                           size="small"
-                          label={String(sub)}
+                          label={typeof sub === 'string' ? sub : sub?.label || sub?.name || 'N/A'}
                           sx={{
                             bgcolor: alpha('#6366f1', 0.06),
                             color: '#4f46e5',

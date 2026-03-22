@@ -224,34 +224,24 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
               />
             </Tooltip>
           )}
-          {Array.isArray(lead.subject) ? lead.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).slice(0, 2).map((s: string) => (
-            <Chip 
-              key={s} 
-              label={s} 
-              size="small" 
-              sx={{ 
-                height: 22, 
-                fontSize: '0.7rem', 
-                fontWeight: 600,
-                bgcolor: alpha(theme.palette.primary.main, 0.05),
-                color: 'primary.main',
-                border: 'none'
-              }} 
-            />
-          )) : (
-            <Chip 
-              label={typeof lead.subject === 'object' ? (lead.subject as any).label : String(lead.subject)} 
-              size="small" 
-              sx={{ 
-                height: 22, 
-                fontSize: '0.7rem', 
-                fontWeight: 600,
-                bgcolor: alpha(theme.palette.primary.main, 0.05),
-                color: 'primary.main',
-                border: 'none'
-              }} 
-            />
-          )}
+          {(Array.isArray(lead.subject) ? lead.subject : (lead.subject ? [lead.subject] : [])).map((s: any, idx: number) => {
+            const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
+            return (
+              <Chip 
+                key={`${lead.id}-subj-${idx}`} 
+                label={label} 
+                size="small" 
+                sx={{ 
+                  height: 22, 
+                  fontSize: '0.7rem', 
+                  fontWeight: 600,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  color: 'primary.main',
+                  border: 'none'
+                }} 
+              />
+            );
+          }).slice(0, 3)}
           <Chip 
             label={lead.grade} 
             size="small" 

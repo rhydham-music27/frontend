@@ -105,7 +105,9 @@ const PublicLeadDetails: React.FC = () => {
     if (loading) return <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f5f5f5"><CircularProgress /></Box>;
     if (error || !lead) return <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="#f5f5f5"><Alert severity="error">{error || 'Lead not found'}</Alert></Box>;
 
-    const subjects = Array.isArray(lead.subject) ? lead.subject.join(', ') : lead.subject;
+    const subjects = Array.isArray(lead.subject) 
+        ? lead.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') 
+        : (typeof lead.subject === 'object' && lead.subject !== null ? (lead.subject as any).label || (lead.subject as any).name || 'N/A' : String(lead.subject || '-'));
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#f5f7fa', py: 4 }}>

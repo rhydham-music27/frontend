@@ -246,7 +246,7 @@ export default function AttendanceListPage() {
       setSheetClassInfo({
         classId: finalClass.className || classIdStr,
         studentName: finalClass.studentName || '',
-        subject: Array.isArray(finalClass.subject) ? finalClass.subject.join(', ') : String(finalClass.subject),
+        subject: Array.isArray(finalClass.subject) ? finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof finalClass.subject === 'object' && finalClass.subject !== null ? (finalClass.subject as any).label || (finalClass.subject as any).name || 'N/A' : String(finalClass.subject || '')),
         tutorName: sheet.coordinator?.name || 'Your Shikshak',
       } as AssignedClass);
       setSheetRange({ start: firstDay, end: lastDay });
@@ -307,10 +307,10 @@ export default function AttendanceListPage() {
         headerName: 'Subjects',
         width: 200,
         valueGetter: (p: any) => {
-          const subjects = p?.row?.finalClass?.subject || [];
-          return Array.isArray(subjects) 
-            ? subjects.map((s: any) => typeof s === 'object' ? s.label : s).join(', ')
-            : String(subjects);
+          const subjects = p.row?.finalClass?.subject;
+          return Array.isArray(subjects)
+            ? subjects.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
+            : (typeof subjects === 'object' && subjects !== null ? (subjects as any).label || (subjects as any).name || 'N/A' : String(subjects || ''));
         },
         renderCell: (p) => (
           <Box display="flex" gap={0.5} flexWrap="wrap">

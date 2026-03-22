@@ -161,7 +161,7 @@ const ParentAttendancePage: React.FC = () => {
                   <MenuItem value="all">All classes</MenuItem>
                   {classes.map((cls) => (
                     <MenuItem key={cls.id} value={cls.id}>
-                      {cls.studentName} - {Array.isArray(cls.subject) ? cls.subject.join(', ') : cls.subject}
+                      {cls.studentName} - {Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof cls.subject === 'object' && cls.subject !== null ? (cls.subject as any).label || (cls.subject as any).name || 'N/A' : String(cls.subject || ''))}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -191,9 +191,9 @@ const ParentAttendancePage: React.FC = () => {
                         <ListItemText
                           primary={
                             cls
-                              ? `${cls.studentName} - ${Array.isArray(cls.subject)
-                                  ? cls.subject.join(', ')
-                                  : cls.subject}`
+                              ? (Array.isArray(cls.subject)
+                                  ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
+                                  : (typeof cls.subject === 'object' && cls.subject !== null ? (cls.subject as any).label || (cls.subject as any).name || 'N/A' : String(cls.subject || '')))
                               : 'Class session'
                           }
                           secondary={`${dateLabel} · ${a.topicCovered || 'No topic specified'}`}

@@ -257,7 +257,7 @@ const TestSchedulingPage: React.FC = () => {
                         <MenuItem key={cls.id} value={cls.id}>
                           <Box display="flex" flexDirection="column">
                             <Typography variant="body1">
-                              {cls.studentName} - {cls.subject.join(', ')} (Grade {cls.grade})
+                               {cls.studentName} - {Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof cls.subject === 'object' && cls.subject !== null ? (cls.subject as any).label || (cls.subject as any).name || 'N/A' : String(cls.subject || ''))} (Grade {cls.grade})
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
                               Tutor: {cls.tutor?.name}
@@ -347,7 +347,7 @@ const TestSchedulingPage: React.FC = () => {
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <SchoolIcon fontSize="small" sx={{ color: 'secondary.main' }} />
                           <Typography variant="body2" fontWeight={600}>
-                            Subjects: {selectedClass.subject.join(', ')}
+                            Subjects: {Array.isArray(selectedClass.subject) ? selectedClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof selectedClass.subject === 'object' && selectedClass.subject !== null ? (selectedClass.subject as any).label || (selectedClass.subject as any).name || 'N/A' : String(selectedClass.subject || ''))}
                           </Typography>
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
@@ -519,7 +519,7 @@ const TestSchedulingPage: React.FC = () => {
                               Subject
                             </Typography>
                             <Typography variant="body2" fontWeight={600}>
-                              {test.finalClass?.subject?.join(', ')}
+                              {Array.isArray(test.finalClass?.subject) ? test.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof test.finalClass?.subject === 'object' && test.finalClass?.subject !== null ? (test.finalClass.subject as any).label || (test.finalClass.subject as any).name || 'N/A' : String(test.finalClass?.subject || ''))}
                             </Typography>
                           </Grid2>
                           <Grid2 size={{ xs: 12 }}>

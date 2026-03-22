@@ -416,8 +416,8 @@ const AttendanceHistoryCard: React.FC = () => {
             const id = (a as any).id || (a as any)._id;
             const studentName = a.finalClass?.studentName;
             const subjects = Array.isArray(a.finalClass?.subject)
-              ? a.finalClass.subject.join(', ')
-              : (a.finalClass?.subject as any) || '';
+              ? a.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
+              : (typeof a.finalClass?.subject === 'object' && a.finalClass?.subject !== null ? (a.finalClass.subject as any).label || (a.finalClass.subject as any).name || 'N/A' : String(a.finalClass?.subject || ''));
             const gradeBoard = `${a.finalClass?.grade || '-'} • ${a.finalClass?.board || '-'}`;
             const sessionDate = a.sessionDate ? formatDate(a.sessionDate as any) : '-';
             const topicCovered = (a as any).topicCovered as string | undefined;

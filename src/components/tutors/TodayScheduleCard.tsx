@@ -211,7 +211,7 @@ const TodayScheduleCard: React.FC = () => {
             }}
           >
             {classes.map((cls) => {
-              const subjects = Array.isArray(cls.subject) ? cls.subject.join(', ') : (cls.subject as any) || '';
+              const subjects = Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof cls.subject === 'object' && cls.subject !== null ? (cls.subject as any).label || (cls.subject as any).name || 'N/A' : String(cls.subject || ''));
               const timeSlot = (cls as any)?.schedule?.timeSlot || '';
               const monthlyClasses =
                 (cls as any)?.classLead?.classesPerMonth ??

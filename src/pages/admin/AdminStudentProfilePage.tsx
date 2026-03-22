@@ -185,9 +185,7 @@ const AdminStudentProfilePage: React.FC = () => {
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={8}>
                             <Typography variant="h6" fontWeight={700} gutterBottom>{cls.className}</Typography>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {cls.subject.join(', ')} â€¢ {cls.grade} â€¢ Start Date: {new Date(cls.startDate).toLocaleDateString()}
-                            </Typography>
+                              {Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof cls.subject === 'object' && cls.subject !== null ? (cls.subject as any).label || (cls.subject as any).name || 'N/A' : String(cls.subject || ''))} â€¢ {cls.grade} â€¢ Start Date: {new Date(cls.startDate).toLocaleDateString()}
                           </Grid>
                           <Grid item xs={12} md={4} display="flex" justifyContent="flex-end" alignItems="flex-start">
                             <FormControl size="small" sx={{ minWidth: 150 }}>

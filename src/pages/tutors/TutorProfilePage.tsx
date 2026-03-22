@@ -1003,7 +1003,7 @@ const TutorProfilePage: React.FC = () => {
               {[
                 { label: 'Student Name', value: selectedClass.studentName },
                 { label: 'Grade', value: selectedClass.grade },
-                { label: 'Subject', value: Array.isArray(selectedClass.subject) ? selectedClass.subject.join(', ') : selectedClass.subject },
+                { label: 'Subject', value: Array.isArray(selectedClass.subject) ? selectedClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof selectedClass.subject === 'object' && selectedClass.subject !== null ? (selectedClass.subject as any).label || (selectedClass.subject as any).name || 'N/A' : String(selectedClass.subject || '-')) },
                 { label: 'Board', value: selectedClass.board },
                 { label: 'Mode', value: selectedClass.mode },
                 { label: 'Location', value: selectedClass.location || 'N/A' },

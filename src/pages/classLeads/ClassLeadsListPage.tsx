@@ -165,9 +165,16 @@ export default function ClassLeadsListPage() {
   const formattedLeads = useMemo(() => {
     let list = (leads as IClassLead[]).map(lead => {
       const r: any = lead || {};
-      let subjVal: any = r.subject ?? r.subjects ?? r.subjectList ?? r.subject_names ?? r.subjectName ?? r.subject_name;
+      const getLabel = (s: any) => {
+        if (!s) return '';
+        if (typeof s === 'string') return s;
+        return s.label || s.name || String(s);
+      };
+
+      const toStrings = (arr: any[]) => arr.map(getLabel).filter((s) => s && s.trim().length > 0);
+
+      const subjVal: any = lead.subject;
       let subjectList: string[] = [];
-      const toStrings = (arr: any[]) => arr.map((s: any) => String(s)).filter((s) => s.trim().length > 0);
 
       if (Array.isArray(subjVal)) subjectList = toStrings(subjVal);
       else if (typeof subjVal === 'string' && subjVal) {
@@ -177,10 +184,15 @@ export default function ClassLeadsListPage() {
             if (Array.isArray(p)) subjectList = toStrings(p);
           } catch { }
         }
-        if (subjectList.length === 0) subjectList = subjVal.split(',').map(x => x.trim()).filter(Boolean);
+        if (subjectList.length === 0) subjectList = subjVal.split(',').map((x: string) => x.trim()).filter(Boolean);
+      } else if (subjVal && typeof subjVal === 'object') {
+        subjectList = [getLabel(subjVal)];
       }
 
-      return { ...lead, displaySubjects: subjectList };
+      return {
+        ...lead,
+        displaySubjects: subjectList,
+      };
     });
 
     // Local timing filter since backend doesn't support it yet
@@ -333,9 +345,9 @@ export default function ClassLeadsListPage() {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">Timing: {lead.timing}</Typography>
                 <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                  {lead.displaySubjects.map((s: any) => {
+                  {lead.displaySubjects.map((s: any, idx: number) => {
                     const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
-                    return <Chip key={label} label={label} size="small" />;
+                    return <Chip key={`${lead.id}-subj-${idx}`} label={label} size="small" />;
                   })}
                 </Box>
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -557,9 +569,9 @@ export default function ClassLeadsListPage() {
                     <TableCell>{lead.grade}</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {lead.displaySubjects.map((s: any) => {
+                        {lead.displaySubjects.map((s: any, idx: number) => {
                           const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
-                          return <Chip key={label} label={label} size="small" variant="outlined" />;
+                          return <Chip key={`${lead.id}-subj-desk-${idx}`} label={label} size="small" variant="outlined" />;
                         })}
                       </Box>
                     </TableCell>

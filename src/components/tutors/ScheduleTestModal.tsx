@@ -177,7 +177,7 @@ const ScheduleTestModal: React.FC<ScheduleTestModalProps> = ({ open, onClose, fi
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2">Class: {finalClass.studentName}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Subject: {Array.isArray(finalClass.subject) ? finalClass.subject.join(', ') : finalClass.subject}
+            Subject: {Array.isArray(finalClass.subject) ? finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof finalClass.subject === 'object' && finalClass.subject !== null ? (finalClass.subject as any).label || (finalClass.subject as any).name || 'N/A' : String(finalClass.subject || ''))}
             {' '}• Grade: {finalClass.grade}
           </Typography>
           <Typography variant="body2" color="text.secondary">
