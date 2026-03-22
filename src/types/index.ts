@@ -117,6 +117,7 @@ export interface ITutor {
   preferredLocations?: string[];
   preferredCities?: string[];
   preferredGrades?: string[];
+  preferredBoards?: string[];
   permanentAddress?: string;
   residentialAddress?: string;
   alternatePhone?: string;

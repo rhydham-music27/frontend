@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "./store/slices/authSlice";
-import { USER_ROLES } from "./constants";
+import { USER_ROLES, VERIFICATION_STATUS } from "./constants";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import LoginPage from "./pages/auth/LoginPage";
