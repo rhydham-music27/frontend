@@ -149,6 +149,9 @@ const App: React.FC = () => {
       return <Navigate to="/admin-dashboard" replace />;
     }
     if (role === USER_ROLES.COORDINATOR) {
+      if (user?.verificationStatus === VERIFICATION_STATUS.PENDING) {
+        return <Navigate to="/coordinator-verification" replace />;
+      }
       return <Navigate to="/coordinator-dashboard" replace />;
     }
     if (role === USER_ROLES.TUTOR) {

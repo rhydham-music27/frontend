@@ -177,7 +177,7 @@ const StudentPaymentsPage: React.FC = () => {
                     const className = classInfo?.className || classInfo?.name || 'Class';
                     const subjects = classInfo
                       ? Array.isArray(classInfo.subject)
-                        ? classInfo.subject.join(', ')
+                        ? classInfo.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
                         : classInfo.subject
                       : undefined;
                     const tutorName = classInfo?.tutor?.name;

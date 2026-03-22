@@ -306,7 +306,12 @@ export default function AttendanceListPage() {
         field: 'subjects',
         headerName: 'Subjects',
         width: 200,
-        valueGetter: (p: any) => (p?.row?.finalClass?.subject || []).join(', '),
+        valueGetter: (p: any) => {
+          const subjects = p?.row?.finalClass?.subject || [];
+          return Array.isArray(subjects) 
+            ? subjects.map((s: any) => typeof s === 'object' ? s.label : s).join(', ')
+            : String(subjects);
+        },
         renderCell: (p) => (
           <Box display="flex" gap={0.5} flexWrap="wrap">
             {p.value.split(', ').filter(Boolean).map((s: string) => (

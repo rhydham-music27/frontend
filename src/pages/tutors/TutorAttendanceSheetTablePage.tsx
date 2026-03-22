@@ -216,7 +216,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
     if (!selectedClassId || !selectedSheet) return [] as SessionRow[];
     const cls = classes.find((c: any) => String(c.id || c._id) === String(selectedClassId));
     const fc = cls || {};
-    const subject = Array.isArray((fc as any).subject) ? (fc as any).subject.join(', ') : String((fc as any).subject || '');
+    const subject = Array.isArray((fc as any).subject) ? (fc as any).subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : String((fc as any).subject || '');
     const timeSlot = (fc as any)?.schedule?.timeSlot || '';
 
     const recs = Array.isArray(selectedSheet.records) ? selectedSheet.records : [];
@@ -251,7 +251,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
 
     if (remaining <= 0) return [];
 
-    const subject = Array.isArray((cls as any).subject) ? (cls as any).subject.join(', ') : String((cls as any).subject || '');
+    const subject = Array.isArray((cls as any).subject) ? (cls as any).subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : String((cls as any).subject || '');
 
     const completedKeySet = new Set<string>();
     completedForSelectedCycle.forEach((r) => {

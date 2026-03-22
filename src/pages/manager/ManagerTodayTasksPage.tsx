@@ -245,7 +245,7 @@ const ManagerTodayTasksPage: React.FC = () => {
                                                             <TableRow key={cls.id}>
                                                                 <TableCell>{cls.className}</TableCell>
                                                                 <TableCell>{cls.studentName}</TableCell>
-                                                                <TableCell>{cls.subject.join(', ')}</TableCell>
+                                                                <TableCell>{cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}</TableCell>
                                                                 <TableCell>
                                                                     <Button 
                                                                         size="small" 
@@ -307,7 +307,7 @@ const ManagerTodayTasksPage: React.FC = () => {
                         >
                             {coordinators.map((coord) => (
                                 <MenuItem key={coord.id} value={coord.user?.id || coord.user?._id || coord.userId}>
-                                    {coord.user?.name || coord.name || 'Unknown'} ({coord.specialization?.join(', ') || 'General'})
+                                    {coord.user?.name || coord.name || 'Unknown'} ({coord.specialization?.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') || 'General'})
                                 </MenuItem>
                             ))}
                         </TextField>

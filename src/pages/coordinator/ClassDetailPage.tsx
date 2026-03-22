@@ -78,7 +78,7 @@ const ClassDetailPage: React.FC = () => {
     const dateStr = rawDate ? new Date(rawDate).toISOString().slice(0, 10) : '';
     setScheduleStartDate(dateStr);
     const days = Array.isArray(cls.schedule?.daysOfWeek) ? cls.schedule.daysOfWeek : [];
-    setScheduleDays(days.join(', '));
+    setScheduleDays(days.map((d: any) => typeof d === 'object' ? d.label || d.value : String(d)).join(', '));
     setScheduleTimeSlot(String(cls.schedule?.timeSlot || ''));
   }, []);
 
@@ -160,7 +160,7 @@ const ClassDetailPage: React.FC = () => {
   }
 
   const scheduleLabel = Array.isArray(finalClass.schedule?.daysOfWeek)
-    ? `${finalClass.schedule.daysOfWeek.join(', ')} • ${finalClass.schedule.timeSlot || ''}`
+    ? `${finalClass.schedule.daysOfWeek.map((d: any) => typeof d === 'object' ? d.label || d.value : String(d)).join(', ')} • ${finalClass.schedule.timeSlot || ''}`
     : (typeof finalClass.schedule === 'string' ? finalClass.schedule : '-');
 
   return (
@@ -284,7 +284,7 @@ const ClassDetailPage: React.FC = () => {
                   <InfoRow label="Mode" value={finalClass.mode || '-'} />
                   <InfoRow label="Grade" value={finalClass.grade || '-'} />
                   <InfoRow label="Board" value={finalClass.board || '-'} />
-                  <InfoRow label="Subjects" value={Array.isArray(finalClass.subject) ? finalClass.subject.join(', ') : '-'} />
+                  <InfoRow label="Subjects" value={Array.isArray(finalClass.subject) ? finalClass.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).join(', ') : '-'} />
                   <InfoRow label="Start Date" value={finalClass.startDate ? new Date(finalClass.startDate as any).toLocaleDateString('en-IN') : '-'} />
                   <InfoRow label="Classes / Month" value={String(finalClass.classesPerMonth ?? '-')} />
                   <InfoRow label="Tests / Month" value={String(finalClass.testPerMonth ?? '-')} />

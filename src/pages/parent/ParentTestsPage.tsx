@@ -141,7 +141,7 @@ const ParentTestsPage: React.FC = () => {
                               </Typography>
                               {t.finalClass && (
                                 <Typography variant="body2" color="text.secondary">
-                                  {t.finalClass.studentName} • {(t.finalClass.subject || []).join(', ')}
+                                  {t.finalClass.studentName} • {(t.finalClass.subject || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}
                                 </Typography>
                               )}
                               <Typography variant="body2" color="text.secondary">

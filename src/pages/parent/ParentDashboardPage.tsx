@@ -157,7 +157,7 @@ const ParentDashboardPage: React.FC = () => {
       </Typography>
       <Typography variant="subtitle1" color="text.secondary" gutterBottom>
         {primaryClass
-          ? `Overview for ${primaryClass.studentName}, Grade ${primaryClass.grade} ${Array.isArray(primaryClass.subject) ? primaryClass.subject.join(', ') : primaryClass.subject}`
+          ? `Overview for ${primaryClass.studentName}, Grade ${primaryClass.grade} ${Array.isArray(primaryClass.subject) ? primaryClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : primaryClass.subject}`
           : "Overview of your child's classes, attendance and payments."}
       </Typography>
 
@@ -175,7 +175,7 @@ const ParentDashboardPage: React.FC = () => {
                 </Typography>
                 <Typography variant="subtitle1">
                   {primaryClass.studentName} - {Array.isArray(primaryClass.subject)
-                    ? primaryClass.subject.join(', ')
+                    ? primaryClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
                     : primaryClass.subject}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -374,7 +374,7 @@ const ParentDashboardPage: React.FC = () => {
                   {classes.map((cls) => (
                     <ListItem key={cls.id} disableGutters>
                       <ListItemText
-                        primary={`${cls.studentName} - ${Array.isArray(cls.subject) ? cls.subject.join(', ') : cls.subject}`}
+                        primary={`${cls.studentName} - ${Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : cls.subject}`}
                         secondary={`${cls.grade} · ${cls.board} · ${cls.mode}`}
                       />
                       <Stack direction="row" spacing={1} alignItems="center">
@@ -434,7 +434,7 @@ const ParentDashboardPage: React.FC = () => {
                         primary={
                           att.finalClass
                             ? `${att.finalClass.studentName} - ${Array.isArray(att.finalClass.subject)
-                              ? att.finalClass.subject.join(', ')
+                              ? att.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
                               : att.finalClass.subject}`
                             : 'Class'
                         }
@@ -469,7 +469,7 @@ const ParentDashboardPage: React.FC = () => {
                         secondary={
                           p.finalClass
                             ? `${p.finalClass.studentName} - ${Array.isArray(p.finalClass.subject)
-                              ? p.finalClass.subject.join(', ')
+                              ? p.finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
                               : p.finalClass.subject}`
                             : undefined
                         }

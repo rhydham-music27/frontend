@@ -123,7 +123,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
     const sheetClassInfo: AssignedClass = {
         classId: finalClass?.className || classId || '',
         studentName: finalClass?.studentName || '',
-        subject: Array.isArray(finalClass?.subject) ? finalClass.subject.join(', ') : finalClass?.subject as any,
+        subject: Array.isArray(finalClass?.subject) ? finalClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : finalClass?.subject as any,
         tutorName: user?.name || 'Tutor',
     };
 

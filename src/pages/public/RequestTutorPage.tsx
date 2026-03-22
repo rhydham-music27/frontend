@@ -336,7 +336,7 @@ export default function RequestTutorPage() {
                             .map(val => 
                                 subjectOptions.find(opt => opt.value === val)?.label || val
                             );
-                        return selectedLabels.join(', ');
+                        return selectedLabels.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ');
                     }
                   }}
                   label="Subjects"

@@ -26,6 +26,7 @@ export type TutorsFilters = {
   city?: string;
   area?: string;
   grade?: string;
+  board?: string;
 };
 
 const useTutors = (filters: TutorsFilters = {}) => {
@@ -56,6 +57,7 @@ const useTutors = (filters: TutorsFilters = {}) => {
         city: filters.city,
         area: filters.area,
         grade: filters.grade,
+        board: filters.board,
       });
       setTutors(res.data);
       setPagination(res.pagination);

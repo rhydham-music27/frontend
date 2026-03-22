@@ -490,7 +490,11 @@ const FinalClassesManagementPage: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">{cls.subject.join(', ')}</Typography>
+                        <Typography variant="body2">{
+                          Array.isArray(cls.subject) 
+                            ? cls.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).join(', ') 
+                            : String(cls.subject || '-')
+                        }</Typography>
                         <Typography variant="caption" color="text.secondary">{cls.grade}</Typography>
                       </TableCell>
                       <TableCell>
@@ -574,7 +578,11 @@ const FinalClassesManagementPage: React.FC = () => {
                 <Grid container spacing={1}>
                   <Grid item xs={6}>
                     <Typography variant="caption" color="text.secondary">Subject/Grade</Typography>
-                    <Typography variant="body2">{cls.subject.join(', ')} ({cls.grade})</Typography>
+                    <Typography variant="body2">{
+                      Array.isArray(cls.subject) 
+                        ? cls.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).join(', ') 
+                        : String(cls.subject || '-')
+                    } ({cls.grade})</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="caption" color="text.secondary">Progress</Typography>
@@ -668,7 +676,11 @@ const FinalClassesManagementPage: React.FC = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="caption" color="text.secondary">Subjects & Grade</Typography>
-                  <Typography variant="body1">{selectedClass.subject.join(', ')} ({selectedClass.grade})</Typography>
+                  <Typography variant="body1">{
+                    Array.isArray(selectedClass.subject) 
+                      ? selectedClass.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).join(', ') 
+                      : String(selectedClass.subject || '-')
+                  } ({selectedClass.grade})</Typography>
                 </Grid>
               </Grid>
 

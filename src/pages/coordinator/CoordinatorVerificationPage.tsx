@@ -99,15 +99,26 @@ const CoordinatorVerificationPage: React.FC = () => {
       coordinatorProfile?.verificationStatus === VERIFICATION_STATUS.VERIFIED &&
       user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED
     ) {
+      console.log('Coordinator verified, refreshing profile...');
       refreshProfile();
     }
   }, [coordinatorProfile?.verificationStatus, user?.verificationStatus, refreshProfile]);
 
   const handleManualRefresh = async () => {
     setLoading(true);
-    await refreshProfile();
-    setLoading(false);
-    setSnackbar({ open: true, message: 'Profile status refreshed', severity: 'info' });
+    try {
+      await refreshProfile();
+      // Also refetch the coordinator profile to ensure local state is synced
+      if (user?.id) {
+        const profileRes = await coordinatorService.getCoordinatorByUserId(user.id);
+        setCoordinatorProfile(profileRes.data as unknown as ICoordinator);
+      }
+      setSnackbar({ open: true, message: 'Profile status refreshed', severity: 'success' });
+    } catch (e: any) {
+      setSnackbar({ open: true, message: 'Failed to refresh status', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUploadDoc = async () => {

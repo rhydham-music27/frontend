@@ -120,7 +120,7 @@ export default function PaymentsListPage() {
       const fc = p.finalClass || {};
       const name = fc.className || fc.studentName || '-';
       const subject = Array.isArray(fc.subject)
-        ? fc.subject.join(', ')
+        ? fc.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')
         : (fc.subject || '');
 
       let classLabel = subject ? `${name} • ${subject}` : name;
@@ -377,7 +377,7 @@ export default function PaymentsListPage() {
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Box>
                     <Typography variant="body2" color="text.secondary">{p.finalClass?.studentName || (p.tutor?.name ? `Tutor: ${p.tutor.name}` : 'General')}</Typography>
-                    <Typography variant="caption" color="text.secondary">{(p.finalClass?.subject || []).join(', ') || p.paymentType}</Typography>
+                    <Typography variant="caption" color="text.secondary">{(p.finalClass?.subject || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') || p.paymentType}</Typography>
                   </Box>
                   <Typography variant="h6" color={p.paymentType === PAYMENT_TYPE.FEES_COLLECTED ? 'success.main' : 'error.main'}>
                     {p.currency} {p.amount}

@@ -185,7 +185,7 @@ const TutorLeadsPage: React.FC = () => {
                   {demos.map((demo) => {
                     const lead = demo.classLead;
                     const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-                    const subjects = Array.isArray(lead?.subject) ? lead?.subject.join(', ') : lead?.subject;
+                    const subjects = Array.isArray(lead?.subject) ? lead?.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : lead?.subject;
                     return (
                       <TableRow key={demo.id} sx={{ '&:hover': { bgcolor: alpha('#a855f7', 0.02) }, '& td': { borderBottom: '1px solid', borderColor: alpha('#a855f7', 0.04), py: 1.75 }, '&:last-child td': { border: 0 } }}>
                         <TableCell>
@@ -301,7 +301,7 @@ const TutorLeadsPage: React.FC = () => {
                 <TableBody>
                   {interests.map((ann: any) => {
                     const lead = ann.classLead || ann.lead || ann;
-                    const subjects = Array.isArray(lead?.subject) ? lead.subject.join(', ') : (lead?.subject || '-');
+                    const subjects = Array.isArray(lead?.subject) ? lead.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (lead?.subject || '-');
                     return (
                       <TableRow key={ann._id || ann.id} sx={{ '&:hover': { bgcolor: alpha('#10b981', 0.02) }, '& td': { borderBottom: '1px solid', borderColor: alpha('#10b981', 0.04), py: 1.75 }, '&:last-child td': { border: 0 } }}>
                         <TableCell>

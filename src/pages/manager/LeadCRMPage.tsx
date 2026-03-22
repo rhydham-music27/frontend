@@ -224,7 +224,7 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
               />
             </Tooltip>
           )}
-          {Array.isArray(lead.subject) ? (lead.subject as string[]).slice(0, 2).map((s: string) => (
+          {Array.isArray(lead.subject) ? lead.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).slice(0, 2).map((s: string) => (
             <Chip 
               key={s} 
               label={s} 
@@ -240,7 +240,7 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
             />
           )) : (
             <Chip 
-              label={lead.subject} 
+              label={typeof lead.subject === 'object' ? (lead.subject as any).label : String(lead.subject)} 
               size="small" 
               sx={{ 
                 height: 22, 

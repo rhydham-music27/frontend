@@ -84,7 +84,7 @@ export default function PaymentDetailPage() {
                 <Typography variant="h6">Related Information</Typography>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                   <Grid item xs={12} sm={6}><Typography variant="body2">Tutor: {payment.tutor?.name}</Typography></Grid>
-                  <Grid item xs={12} sm={6}><Typography variant="body2">Class: {payment.finalClass?.studentName} • {(payment.finalClass?.subject || []).join(', ')}</Typography></Grid>
+                  <Grid item xs={12} sm={6}><Typography variant="body2">Class: {payment.finalClass?.studentName} • {(payment.finalClass?.subject || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}</Typography></Grid>
                   {attendance && (
                     <>
                       <Grid item xs={12} sm={6}><Typography variant="body2">Session Date: {new Date(attendance.sessionDate).toLocaleDateString()}</Typography></Grid>

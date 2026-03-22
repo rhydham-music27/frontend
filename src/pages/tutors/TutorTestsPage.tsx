@@ -344,7 +344,7 @@ const TutorTestsPage: React.FC = () => {
                       {cls.studentName}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {(cls.subject || []).join(', ')} • Grade {cls.grade}
+                      {(cls.subject || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')} • Grade {cls.grade}
                     </Typography>
                     <Box mt={1.5}>
                       <Button
@@ -396,7 +396,7 @@ const TutorTestsPage: React.FC = () => {
                       {t.finalClass?.studentName || 'Class'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {(t.finalClass?.subject || []).join(', ')} • Grade {t.finalClass?.grade}
+                      {(t.finalClass?.subject || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')} • Grade {t.finalClass?.grade}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Test Date: {t.testDate ? new Date(t.testDate).toLocaleDateString() : 'N/A'}

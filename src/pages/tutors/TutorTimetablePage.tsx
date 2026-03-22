@@ -1064,7 +1064,7 @@ const TutorTimetablePage: React.FC = () => {
                 const timeSlot: string = sched.timeSlot || '';
                 const address: string = (cls as any).location || (sched.address as string) || '';
                 const isRescheduled = Boolean((cls as any).__isRescheduledForDate);
-                const subjects = Array.isArray(cls.subject) ? cls.subject.join(', ') : String(cls.subject || '');
+                const subjects = Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : String(cls.subject || '');
 
                 return (
                   <Box

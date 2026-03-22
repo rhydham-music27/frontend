@@ -29,6 +29,7 @@ export type GetTutorsQuery = {
   city?: string;
   area?: string;
   grade?: string;
+  board?: string;
 };
 
 export const getTutors = async (params: GetTutorsQuery = {}): Promise<PaginatedResponse<ITutor[]>> => {
