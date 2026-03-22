@@ -108,8 +108,15 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
     }
   };
 
-  const handleRemoveSubject = (subjectToRemove: string) => {
-    setFormData(prev => ({ ...prev, subjects: prev.subjects.filter(s => s !== subjectToRemove) }));
+  const handleRemoveSubject = (subjectToRemove: any) => {
+    const nameToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : subjectToRemove?.name || subjectToRemove?.label;
+    setFormData(prev => ({
+      ...prev,
+      subjects: prev.subjects.filter(s => {
+        const sName = typeof s === 'string' ? s : s?.name || s?.label;
+        return sName !== nameToRemove;
+      })
+    }));
   };
 
   const formatSubjectLabel = (val: string) => {
@@ -482,16 +489,20 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   </Grid>
 
                   <Box mt={2.5} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {formData.subjects.map((sub) => (
-                      <Chip
-                        key={sub}
-                        label={formatSubjectLabel(sub)}
-                        onDelete={isFieldReadOnly('subjects') ? undefined : () => handleRemoveSubject(sub)}
-                        sx={{ borderRadius: 1.5, fontWeight: 600 }}
-                        color="primary"
-                        variant="outlined"
-                      />
-                    ))}
+                    {formData.subjects.map((sub, index) => {
+                      const label = typeof sub === 'string' ? sub : sub?.name || sub?.label || 'N/A';
+                      const key = typeof sub === 'string' ? sub : sub?._id || index;
+                      return (
+                        <Chip
+                          key={key}
+                          label={formatSubjectLabel(label)}
+                          onDelete={isFieldReadOnly('subjects') ? undefined : () => handleRemoveSubject(sub)}
+                          sx={{ borderRadius: 1.5, fontWeight: 600 }}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      );
+                    })}
                     {formData.subjects.length === 0 && (
                       <Typography variant="caption" color="text.secondary" fontStyle="italic">No subjects added. Add at least one to continue.</Typography>
                     )}

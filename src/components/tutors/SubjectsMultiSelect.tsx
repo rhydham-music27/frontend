@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { getSubjects, SubjectOption } from '@/services/subjectService';
 
 interface SubjectsMultiSelectProps {
-  selected: string[];
+  selected: any[];
   onChange: (subjects: string[]) => void;
   error?: string;
 }
@@ -33,15 +33,17 @@ export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMulti
     };
   }, []);
 
-  const handleSelect = (subject: string) => {
-    const newSelected = selected.includes(subject)
-      ? selected.filter(s => s !== subject)
-      : [...selected, subject];
+  const selectedNames = selected.map(s => typeof s === 'string' ? s : s?.name || s?.label || '');
+  
+  const handleSelect = (subjectName: string) => {
+    const newSelected = selectedNames.includes(subjectName)
+      ? selectedNames.filter(s => s !== subjectName)
+      : [...selectedNames, subjectName];
     onChange(newSelected);
   };
 
-  const handleRemove = (subject: string) => {
-    onChange(selected.filter(s => s !== subject));
+  const handleRemove = (subjectName: string) => {
+    onChange(selectedNames.filter(s => s !== subjectName));
   };
 
   return (
@@ -55,7 +57,7 @@ export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMulti
             className={`w-full justify-between ${error ? 'border-red-500' : 'border-gray-300'} hover:border-[#001F54] hover:bg-transparent hover:text-inherit`}
           >
             <span className="text-gray-500">
-              {selected.length > 0 ? `${selected.length} subject(s) selected` : 'Select subjects you can teach'}
+              {selectedNames.length > 0 ? `${selectedNames.length} subject(s) selected` : 'Select subjects you can teach'}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -65,7 +67,7 @@ export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMulti
             <CommandInput placeholder="Search subjects..." />
             <CommandEmpty>No subject found.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {subjects.map((subject) => (
+               {subjects.map((subject) => (
                 <CommandItem
                   key={subject._id}
                   onSelect={() => handleSelect(subject.name)}
@@ -73,7 +75,7 @@ export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMulti
                 >
                   <Check
                     className={`mr-2 h-4 w-4 ${
-                      selected.includes(subject.name) ? 'opacity-100' : 'opacity-0'
+                      selectedNames.includes(subject.name) ? 'opacity-100' : 'opacity-0'
                     }`}
                   />
                   {subject.name}
@@ -85,9 +87,9 @@ export const SubjectsMultiSelect = ({ selected, onChange, error }: SubjectsMulti
       </Popover>
 
       {/* Selected Subjects as Badges */}
-      {selected.length > 0 && (
+      {selectedNames.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selected.map((subject) => (
+          {selectedNames.map((subject) => (
             <Badge
               key={subject}
               variant="secondary"

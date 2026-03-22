@@ -333,7 +333,10 @@ export default function ClassLeadsListPage() {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">Timing: {lead.timing}</Typography>
                 <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                  {lead.displaySubjects.map((s: string) => <Chip key={s} label={s} size="small" />)}
+                  {lead.displaySubjects.map((s: any) => {
+                    const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
+                    return <Chip key={label} label={label} size="small" />;
+                  })}
                 </Box>
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="caption">By: {(lead.createdBy as any)?.name || '-'}</Typography>
@@ -554,7 +557,10 @@ export default function ClassLeadsListPage() {
                     <TableCell>{lead.grade}</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {lead.displaySubjects.map((s: string) => <Chip key={s} label={s} size="small" variant="outlined" />)}
+                        {lead.displaySubjects.map((s: any) => {
+                          const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
+                          return <Chip key={label} label={label} size="small" variant="outlined" />;
+                        })}
                       </Box>
                     </TableCell>
                     <TableCell>{lead.board}</TableCell>

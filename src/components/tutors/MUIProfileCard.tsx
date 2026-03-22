@@ -501,7 +501,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                       {tutor.qualifications?.length ? tutor.qualifications.map((q, idx) => (
                         <div key={idx} className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl">
                           <GraduationCap className="text-blue-500" size={18} />
-                          <span className="text-sm font-bold text-slate-700">{q}</span>
+                          <span className="text-sm font-bold text-slate-700">{typeof q === 'string' ? q : q.label}</span>
                         </div>
                       )) : <span className="text-slate-400 text-xs italic">Not provided</span>}
                     </div>
@@ -524,7 +524,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                   <div className="flex flex-wrap gap-3">
                     {tutor.subjects?.map((sub: any, i: number) => (
                       <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors border border-white/5">
-                        {typeof sub === 'string' ? sub : sub?.label}
+                        {typeof sub === 'string' ? sub : (sub as any)?.label || 'N/A'}
                       </span>
                     ))}
                   </div>

@@ -128,7 +128,11 @@ const TutorProfileOverviewCard: React.FC = () => {
 
             <Box flex={1} minWidth={0} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</Typography>
-              <Typography sx={{ opacity: 0.85, mb: 1 }}>{(tutor as any).qualifications?.join?.(', ') || 'Tutor'}</Typography>
+              <Typography sx={{ opacity: 0.85, mb: 1 }}>
+                {Array.isArray((tutor as any).qualifications) 
+                  ? (tutor as any).qualifications.map((q: any) => typeof q === 'string' ? q : q.label).join(', ') 
+                  : 'Tutor'}
+              </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', md: 'flex-start' }, gap: 1 }}>
                 <Typography variant="caption" sx={{ opacity: 0.7 }}>Tutor ID:</Typography>
                 <Typography variant="caption" sx={{ fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 600 }}>{tutor.teacherId || user?.email}</Typography>
@@ -187,7 +191,12 @@ const TutorProfileOverviewCard: React.FC = () => {
                 {(tutor as any).subjects?.length > 0 && (
                   <Box>
                     <Typography variant="caption" color="text.secondary">Subjects</Typography>
-                    <Box display="flex" flexWrap="wrap" gap={0.75}>{(tutor as any).subjects.map((s: string) => (<Chip key={s} label={s} size="small" />))}</Box>
+                    <Box display="flex" flexWrap="wrap" gap={0.75}>
+                      {(tutor as any).subjects.map((s: any) => {
+                        const label = typeof s === 'string' ? s : s?.label || 'N/A';
+                        return <Chip key={label} label={label} size="small" />;
+                      })}
+                    </Box>
                   </Box>
                 )}
 

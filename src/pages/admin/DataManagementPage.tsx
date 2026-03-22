@@ -69,11 +69,15 @@ function formatDate(value: any): string {
 
 function formatSubjects(subjects: any): string[] {
   if (!subjects) return [];
-  if (Array.isArray(subjects)) return subjects.map(String);
+  if (Array.isArray(subjects)) {
+    return subjects.map(s => typeof s === 'string' ? s : s?.label || s?.name || String(s));
+  }
   if (typeof subjects === 'string') return subjects.split(',').map(s => s.trim()).filter(Boolean);
   if (typeof subjects === 'object') {
-    if (Array.isArray(subjects?.names)) return subjects.names.map(String);
-    return Object.values(subjects).map(String);
+    if (Array.isArray(subjects?.names)) {
+      return subjects.names.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || String(s));
+    }
+    return Object.values(subjects).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || String(s));
   }
   return [];
 }

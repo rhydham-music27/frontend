@@ -25,7 +25,9 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
   };
 
   const education = {
-    highestQualification: (tutor as any).qualifications?.[0] || '',
+    highestQualification: typeof (tutor as any).qualifications?.[0] === 'string' 
+      ? (tutor as any).qualifications?.[0] 
+      : (tutor as any).qualifications?.[0]?.label || '',
     currentInstitution: (tutor as any).currentInstitution || '',
   };
 
@@ -168,11 +170,14 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
               <div>
                 <p className="text-xs font-medium text-gray-500 mb-2 font-semibold">Subjects Offered</p>
                 <div className="flex flex-wrap gap-2">
-                  {workExperience.subjects.map((subject: string, index: number) => (
-                    <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
-                      {subject}
-                    </span>
-                  ))}
+                  {workExperience.subjects.map((subject: any, index: number) => {
+                    const label = typeof subject === 'string' ? subject : subject?.label || 'N/A';
+                    return (
+                      <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
+                        {label}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 

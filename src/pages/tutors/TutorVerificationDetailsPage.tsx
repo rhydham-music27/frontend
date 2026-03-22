@@ -234,7 +234,7 @@ const TutorVerificationDetailsPage: React.FC = () => {
                         <List disablePadding dense>
                             <ListItem disableGutters>
                                 <ListItemIcon sx={{ minWidth: 35 }}><SchoolIcon color="action" fontSize="small" /></ListItemIcon>
-                                <ListItemText primary={tutor.qualifications?.join(', ') || 'N/A'} secondary="Qualifications" />
+                                <ListItemText primary={tutor.qualifications?.map(q => typeof q === 'string' ? q : q.label).join(', ') || 'N/A'} secondary="Qualifications" />
                             </ListItem>
                             <ListItem disableGutters>
                                 <ListItemIcon sx={{ minWidth: 35 }}><WorkIcon color="action" fontSize="small" /></ListItemIcon>
@@ -249,7 +249,7 @@ const TutorVerificationDetailsPage: React.FC = () => {
                         <Box display="flex" flexWrap="wrap" gap={0.5} mb={1} mt={0.5}>
                             {tutor.subjects && tutor.subjects.length > 0 ? (
                                 tutor.subjects.map((subj, index) => (
-                                    <Chip key={index} label={subj} size="small" variant="outlined" />
+                                    <Chip key={index} label={typeof subj === 'string' ? subj : subj?.label || 'N/A'} size="small" variant="outlined" />
                                 ))
                             ) : (
                                 <Typography variant="caption" color="text.secondary">No subjects listed.</Typography>

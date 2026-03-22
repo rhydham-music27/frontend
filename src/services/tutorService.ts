@@ -32,7 +32,7 @@ export type GetTutorsQuery = {
 };
 
 export const getTutors = async (params: GetTutorsQuery = {}): Promise<PaginatedResponse<ITutor[]>> => {
-  const res = await api.get('/tutors', {
+  const res = await api.get(API_ENDPOINTS.TUTORS, {
     params: {
       ...params,
       subjects: params.subjects?.join(','),
