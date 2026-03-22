@@ -84,7 +84,7 @@ export default function VerificationModal({ open, onClose, tutor, onSubmit }: Pr
               <Grid item xs={12}>
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="subtitle2" color="text.secondary">Subjects & Skills</Typography>
-                <Typography variant="body2" mt={0.5}><strong>Subjects:</strong> {(tutor.subject || []).join(', ')}</Typography>
+                <Typography variant="body2" mt={0.5}><strong>Subjects:</strong> {(tutor.subjects || []).map((s: any) => typeof s === 'string' ? s : s.label).join(', ')}</Typography>
                 <Typography variant="body2"><strong>Skills:</strong> {(tutor.skills || []).join(', ')}</Typography>
                 <Typography variant="body2"><strong>Languages:</strong> {(tutor.languagesKnown || []).join(', ')}</Typography>
               </Grid>

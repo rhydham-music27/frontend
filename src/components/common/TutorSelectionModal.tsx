@@ -72,7 +72,10 @@ export default function TutorSelectionModal({
     return (
       t.user?.name?.toLowerCase().includes(s) ||
       t.user?.email?.toLowerCase().includes(s) ||
-      t.subject?.some((sub: string) => sub.toLowerCase().includes(s))
+      t.subjects?.some((sub: any) => {
+        const label = typeof sub === 'string' ? sub : sub?.label || '';
+        return label.toLowerCase().includes(s);
+      })
     );
   });
 
@@ -137,7 +140,7 @@ export default function TutorSelectionModal({
                         secondary={
                           <Box>
                             <Typography variant="caption" color="text.secondary" display="block">
-                              {tutor.subject?.join(', ')}
+                              {tutor.subjects?.map((s: any) => typeof s === 'string' ? s : s.label).join(', ')}
                             </Typography>
                             <Box display="flex" alignItems="center" gap={0.5}>
                               <StarIcon sx={{ fontSize: 14, color: 'warning.main' }} />

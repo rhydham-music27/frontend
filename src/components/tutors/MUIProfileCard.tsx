@@ -522,8 +522,10 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                 <div>
                   <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Teaching Subjects</p>
                   <div className="flex flex-wrap gap-3">
-                    {tutor.subject?.map((sub: string, i: number) => (
-                      <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors border border-white/5">{sub}</span>
+                    {tutor.subjects?.map((sub: any, i: number) => (
+                      <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors border border-white/5">
+                        {typeof sub === 'string' ? sub : sub?.label}
+                      </span>
                     ))}
                   </div>
                 </div>

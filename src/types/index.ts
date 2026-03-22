@@ -168,6 +168,7 @@ export interface ICoordinator {
   totalClassesHandled: number;
   availableCapacity: number;
   specialization?: string[];
+  verificationStatus?: string;
   joiningDate: Date;
   performanceScore: number;
   isActive: boolean;
