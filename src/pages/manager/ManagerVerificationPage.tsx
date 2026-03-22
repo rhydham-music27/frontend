@@ -120,6 +120,8 @@ const DocumentPreview: React.FC<{ url: string }> = ({ url }) => {
             </object>
         );
     }
+
+    return null;
 };
 
 const resolveDocumentUrl = (url?: string) => {

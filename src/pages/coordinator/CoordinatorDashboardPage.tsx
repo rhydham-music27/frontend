@@ -45,7 +45,7 @@ const CoordinatorDashboardPage: React.FC = () => {
     const theme = useTheme();
     const user = useSelector(selectCurrentUser);
     const { dashboardStats, todaysTasks, loading, error, refetch } = useCoordinator();
-    const [activeTab, setActiveTab] = React.useState<'all' | 'payments' | 'tests' | 'complaints'>('all');
+    const [activeTab, setActiveTab] = React.useState<'all' | 'payments' | 'tests' | 'complaints' | 'attendance'>('all');
     const [priorityFilter, setPriorityFilter] = React.useState<TaskPriority | 'all'>('all');
     const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
         open: false,
