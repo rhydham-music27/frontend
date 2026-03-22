@@ -109,11 +109,11 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
   };
 
   const handleRemoveSubject = (subjectToRemove: any) => {
-    const nameToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : subjectToRemove?.name || subjectToRemove?.label;
+    const nameToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : (subjectToRemove as any)?.name || (subjectToRemove as any)?.label;
     setFormData(prev => ({
       ...prev,
-      subjects: prev.subjects.filter(s => {
-        const sName = typeof s === 'string' ? s : s?.name || s?.label;
+      subjects: prev.subjects.filter((s: any) => {
+        const sName = typeof s === 'string' ? s : (s as any)?.name || (s as any)?.label;
         return sName !== nameToRemove;
       })
     }));
@@ -489,9 +489,9 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                   </Grid>
 
                   <Box mt={2.5} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {formData.subjects.map((sub, index) => {
-                      const label = typeof sub === 'string' ? sub : sub?.name || sub?.label || 'N/A';
-                      const key = typeof sub === 'string' ? sub : sub?._id || index;
+                    {(formData.subjects as any[]).map((sub, index) => {
+                      const label = typeof sub === 'string' ? sub : (sub as any)?.name || (sub as any)?.label || 'N/A';
+                      const key = typeof sub === 'string' ? sub : (sub as any)?._id || index;
                       return (
                         <Chip
                           key={key}
