@@ -55,7 +55,7 @@ const TutorProfilePage: React.FC = () => {
   const [completeModalOpen, setCompleteModalOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<any[]>([]);
   const [selectedExtracurriculars, setSelectedExtracurriculars] = useState<string[]>([]);
   const [qualificationsInput, setQualificationsInput] = useState('');
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
@@ -101,6 +101,9 @@ const TutorProfilePage: React.FC = () => {
         const data: any = (resp as any)?.data ?? resp;
         const tutor = (data as ITutor) || null;
         setTutorProfile(tutor);
+        if (tutor?.subjects) {
+          setSelectedSubjects(tutor.subjects);
+        }
 
         // Fetch detailed data for Admin view
         if (id && tutor && tutor.user) {
@@ -152,7 +155,7 @@ const TutorProfilePage: React.FC = () => {
       return;
     }
 
-    const subjects = selectedSubjects;
+    const subjects = selectedSubjects.map(s => typeof s === 'object' ? s._id : s);
     const qualifications = qualificationsInput
       .split(',')
       .map((s) => s.trim())
@@ -228,7 +231,13 @@ const TutorProfilePage: React.FC = () => {
       headerName: 'Subject',
       flex: 1,
       minWidth: 150,
-      valueGetter: (_value: any, row: any) => Array.isArray(row.subject) ? row.subject.join(', ') : row.subject
+      valueGetter: (_value: any, row: any) => {
+        if (!row.subject) return '';
+        if (Array.isArray(row.subject)) {
+          return row.subject.map((s: any) => typeof s === 'object' ? s.label : s).join(', ');
+        }
+        return typeof row.subject === 'object' ? row.subject.label : row.subject;
+      }
     },
     { field: 'grade', headerName: 'Grade', width: 100 },
     {
@@ -743,22 +752,29 @@ const TutorProfilePage: React.FC = () => {
           <Autocomplete
             multiple
             disableCloseOnSelect
-            options={subjectLabels.length > 0 ? ['Select All', ...subjectLabels] : []}
             value={selectedSubjects}
             onChange={(_, value) => {
-              if (value.includes('Select All')) {
-                if (selectedSubjects.length === subjectLabels.length) {
+              if (value.some(v => v === 'Select All' || v?.label === 'Select All')) {
+                if (selectedSubjects.length === subjectOptions.length) {
                   setSelectedSubjects([]);
                 } else {
-                  setSelectedSubjects(subjectLabels);
+                  setSelectedSubjects(subjectOptions);
                 }
               } else {
                 setSelectedSubjects(value);
               }
             }}
+            getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+            isOptionEqualToValue={(option, value) => {
+              const optionId = typeof option === 'string' ? option : option._id;
+              const valueId = typeof value === 'string' ? value : value._id;
+              return optionId === valueId;
+            }}
+            options={subjectOptions.length > 0 ? [{ label: 'Select All', _id: 'select-all' } as any, ...subjectOptions] : []}
             renderOption={(props, option, { selected }) => {
-              const isSelectAll = option === 'Select All';
-              const allSelected = selectedSubjects.length === subjectLabels.length && subjectLabels.length > 0;
+              const optionLabel = typeof option === 'string' ? option : option.label;
+              const isSelectAll = optionLabel === 'Select All';
+              const allSelected = selectedSubjects.length === subjectOptions.length && subjectOptions.length > 0;
               return (
                 <li {...props}>
                   <Checkbox
@@ -767,20 +783,22 @@ const TutorProfilePage: React.FC = () => {
                     style={{ marginRight: 8 }}
                     checked={isSelectAll ? allSelected : selected}
                   />
-                  {option}
+                  {optionLabel}
                 </li>
               );
             }}
-            renderTags={(value: readonly string[], getTagProps) =>
-              value.filter(v => v !== 'Select All').map((option: string, index: number) => (
-                <Chip
-                  variant="outlined"
-                  label={option}
-                  {...getTagProps({ index })}
-                  key={option}
-                  sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }}
-                />
-              ))
+            renderTags={(value: any[], getTagProps) =>
+              value
+                .filter((v) => (typeof v === 'string' ? v : v.label) !== 'Select All')
+                .map((option: any, index: number) => (
+                  <Chip
+                    variant="outlined"
+                    label={typeof option === 'string' ? option : option.label}
+                    {...getTagProps({ index })}
+                    key={typeof option === 'string' ? option : option._id}
+                    sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }}
+                  />
+                ))
             }
             renderInput={(params) => (
               <TextField

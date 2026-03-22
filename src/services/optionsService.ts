@@ -21,10 +21,10 @@ export interface OptionTypeItem {
 }
 
 export const getOptions = async (type: string, parentId?: string): Promise<OptionItem[]> => {
-    const url = parentId 
-        ? `/api/options/${encodeURIComponent(type)}?parent=${encodeURIComponent(parentId)}` 
+    const url = parentId
+        ? `/api/options/${encodeURIComponent(type)}?parent=${encodeURIComponent(parentId)}`
         : `/api/options/${encodeURIComponent(type)}`;
-    
+
     const res = await api.get(url);
     const data = (res.data?.data || []) as any[];
     return data.map((o) => ({

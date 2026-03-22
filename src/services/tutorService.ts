@@ -26,29 +26,19 @@ export type GetTutorsQuery = {
   phone?: string;
   preferredMode?: string;
   verifiedBy?: string;
+  city?: string;
+  area?: string;
+  grade?: string;
 };
 
-export const getTutors = async (
-  query: GetTutorsQuery = {}
-): Promise<PaginatedResponse<ITutor[]>> => {
-  const params = new URLSearchParams();
-  if (query.page) params.append('page', String(query.page));
-  if (query.limit) params.append('limit', String(query.limit));
-  if (query.verificationStatus) params.append('verificationStatus', query.verificationStatus);
-  if (query.isAvailable !== undefined) params.append('isAvailable', String(query.isAvailable));
-  if (query.subjects && query.subjects.length) params.append('subjects', query.subjects.join(','));
-  if (query.sortBy) params.append('sortBy', query.sortBy);
-  if (query.sortOrder) params.append('sortOrder', query.sortOrder);
-  if (query.search) params.append('search', query.search);
-  if (query.teacherId) params.append('teacherId', query.teacherId);
-  if (query.name) params.append('name', query.name);
-  if (query.email) params.append('email', query.email);
-  if (query.phone) params.append('phone', query.phone);
-  if (query.preferredMode) params.append('preferredMode', query.preferredMode);
-  if (query.verifiedBy) params.append('verifiedBy', query.verifiedBy);
-  const url = `${API_ENDPOINTS.TUTORS}?${params.toString()}`;
-  const { data } = await api.get(url);
-  return data as PaginatedResponse<ITutor[]>;
+export const getTutors = async (params: GetTutorsQuery = {}): Promise<PaginatedResponse<ITutor[]>> => {
+  const res = await api.get('/tutors', {
+    params: {
+      ...params,
+      subjects: params.subjects?.join(','),
+    },
+  });
+  return res.data;
 };
 
 export const getTutorById = async (tutorId: string): Promise<ApiResponse<ITutor>> => {
@@ -149,7 +139,7 @@ export const updateVerificationFeeStatus = async (
     `${API_ENDPOINTS.TUTORS}/${tutorId}/verification-fee`,
     formData,
     {
-       headers: {
+      headers: {
         'Content-Type': 'multipart/form-data',
       },
     }
@@ -170,6 +160,14 @@ export const getSubjects = async (): Promise<ApiResponse<string[]>> => {
 export const getVerifiers = async (): Promise<ApiResponse<{ _id: string; name: string }[]>> => {
   const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/verifiers`);
   return data as ApiResponse<{ _id: string; name: string }[]>;
+};
+export const getCities = async (): Promise<ApiResponse<string[]>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/cities`);
+  return data as ApiResponse<string[]>;
+};
+export const getAreas = async (): Promise<ApiResponse<string[]>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.TUTORS}/areas`);
+  return data as ApiResponse<string[]>;
 };
 
 export const getTutorsByStatus = async (
@@ -331,6 +329,8 @@ export default {
   getTutorStats,
   getSubjects,
   getVerifiers,
+  getCities,
+  getAreas,
   getMyClasses,
   getAttendanceByClass,
   upsertAttendanceSheet,

@@ -23,6 +23,9 @@ export type TutorsFilters = {
   phone?: string;
   preferredMode?: string;
   verifiedBy?: string;
+  city?: string;
+  area?: string;
+  grade?: string;
 };
 
 const useTutors = (filters: TutorsFilters = {}) => {
@@ -50,6 +53,9 @@ const useTutors = (filters: TutorsFilters = {}) => {
         phone: filters.phone,
         preferredMode: filters.preferredMode,
         verifiedBy: filters.verifiedBy,
+        city: filters.city,
+        area: filters.area,
+        grade: filters.grade,
       });
       setTutors(res.data);
       setPagination(res.pagination);
@@ -72,6 +78,9 @@ const useTutors = (filters: TutorsFilters = {}) => {
     filters.phone,
     filters.preferredMode,
     filters.verifiedBy,
+    filters.city,
+    filters.area,
+    filters.grade,
     JSON.stringify(filters.subjects || [])
   ]);
 

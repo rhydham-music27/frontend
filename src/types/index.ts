@@ -37,7 +37,7 @@ export interface IClassLead {
   parentEmail?: string;
   parentPhone?: string;
   grade: string;
-  subject: string | string[];
+  subject: any[]; // Changed from string | string[] to any[] for OptionItem or ID
   board: string;
   mode: string;
   location?: string;
@@ -96,9 +96,7 @@ export interface ITutor {
   user: IUser;
   teacherId?: string;
   experienceHours: number;
-  subject: string[];
-  // backward-compatible alias: some components use `subjects`
-  subjects?: string[];
+  subjects: any[]; // Changed from string[] to any[] for OptionItem or ID
   extracurricularActivities?: string[];
   ratings: number;
   classesAssigned: number;
@@ -118,6 +116,7 @@ export interface ITutor {
   preferredMode?: string;
   preferredLocations?: string[];
   preferredCities?: string[];
+  preferredGrades?: string[];
   permanentAddress?: string;
   residentialAddress?: string;
   alternatePhone?: string;
@@ -143,8 +142,9 @@ export interface ITutor {
       maxClassesPerWeek?: number;
     };
     teachingModePreference?: string;
-    preferredSubjects?: string[];
+    preferredSubjects?: any[];
     preferredLocations?: string[];
+    preferredGrades?: string[];
     notificationSettings?: {
       classAssignments?: boolean;
       demoRequests?: boolean;
@@ -190,7 +190,7 @@ export interface ICoordinatorTodaysTasks {
   testsToSchedule: Array<{
     finalClassId: string;
     className: string;
-    subject: string[];
+    subject: any[];
     grade: string;
     testPerMonth: number;
     testsScheduledThisMonth: number;
@@ -260,7 +260,7 @@ export interface IFinalClass {
   totalSessions: number;
   completedSessions: number;
   studentName: string;
-  subject: string[];
+  subject: any[];
   grade: string;
   board: string;
   mode: string;
@@ -639,7 +639,7 @@ export interface IClassLeadFormData {
   parentEmail?: string;
   parentPhone?: string;
   grade: string;
-  subject: string[];
+  subject: any[];
   board: string;
   mode: string;
   location?: string;
@@ -667,7 +667,7 @@ export interface IClassLeadFormData {
     parentPhone?: string;
     board?: string;
     grade?: string;
-    subject?: string[];
+    subject?: any[];
   }>;
 }
 

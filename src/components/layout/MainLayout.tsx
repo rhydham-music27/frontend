@@ -15,6 +15,7 @@ import { acceptTerms, } from '../../services/authService';
 import { expressInterest } from '../../services/announcementService';
 import { updateMyProfile } from '../../services/tutorService';
 import { useOptions } from '../../hooks/useOptions';
+import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
 import { USER_ROLES, TEACHING_MODE } from '../../constants';
 
@@ -22,6 +23,7 @@ import { USER_ROLES, TEACHING_MODE } from '../../constants';
 // const drawerWidth = 280;
 
 const MainLayout: React.FC = () => {
+  const { refreshProfile } = useAuth();
   // const theme = useTheme();
   // const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -68,6 +70,16 @@ const MainLayout: React.FC = () => {
       handlePendingInterest();
     }
   }, [user]);
+
+  // Proactively refresh profile for unverified coordinators
+  React.useEffect(() => {
+    if (
+      user?.role === USER_ROLES.COORDINATOR &&
+      (user?.verificationStatus === 'PENDING' || !user?.verificationStatus)
+    ) {
+      refreshProfile();
+    }
+  }, [user?.role, user?.verificationStatus, refreshProfile]);
 
   const communityLink = React.useMemo(() => {
     if (!user?.city || !cityOptions.length) return undefined;

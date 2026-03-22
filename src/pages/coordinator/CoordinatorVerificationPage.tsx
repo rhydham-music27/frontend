@@ -28,9 +28,11 @@ import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { VERIFICATION_STATUS } from '../../constants';
 import { ICoordinator } from '../../types';
 import * as coordinatorService from '../../services/coordinatorService';
+import { useAuth } from '../../hooks/useAuth';
 
 const CoordinatorVerificationPage: React.FC = () => {
   const user = useSelector(selectCurrentUser);
+  const { refreshProfile } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +90,23 @@ const CoordinatorVerificationPage: React.FC = () => {
     }
     return <Chip label={s} color="warning" size="small" icon={<HourglassBottomIcon />} />;
   }, [verificationStatus]);
+
+  // Sync Redux user state with latest verification status if they don't match
+  useEffect(() => {
+    if (
+      coordinatorProfile?.verificationStatus === VERIFICATION_STATUS.VERIFIED &&
+      user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED
+    ) {
+      refreshProfile();
+    }
+  }, [coordinatorProfile?.verificationStatus, user?.verificationStatus, refreshProfile]);
+
+  const handleManualRefresh = async () => {
+    setLoading(true);
+    await refreshProfile();
+    setLoading(false);
+    setSnackbar({ open: true, message: 'Profile status refreshed', severity: 'info' });
+  };
 
   const handleUploadDoc = async () => {
     if (!coordinatorProfile) return;
@@ -178,13 +197,34 @@ const CoordinatorVerificationPage: React.FC = () => {
           <Divider sx={{ my: 2 }} />
 
           {verificationStatus === VERIFICATION_STATUS.VERIFIED ? (
-            <Alert severity="success">
-              Your profile is verified. You can now access all coordinator features.
-            </Alert>
+            <Box>
+              <Alert severity="success" sx={{ mb: 2 }}>
+                Your profile is verified. You can now access all coordinator features.
+              </Alert>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={() => window.location.href = '/coordinator-dashboard'}
+                fullWidth
+              >
+                Go to Dashboard
+              </Button>
+            </Box>
           ) : (
-            <Alert severity="warning">
-              Your profile is not verified yet. Please upload the required documents. Once reviewed, you will be verified.
-            </Alert>
+            <Box>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Your profile is not verified yet. Please upload the required documents. Once reviewed, you will be verified.
+              </Alert>
+              <Button 
+                variant="outlined" 
+                size="small" 
+                onClick={handleManualRefresh}
+                startIcon={<VerifiedIcon />}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh My Status'}
+              </Button>
+            </Box>
           )}
         </CardContent>
       </Card>

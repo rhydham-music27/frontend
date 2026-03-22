@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { Container, Box, Typography, Tabs, Tab, Dialog, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination, TextField, TableSortLabel, MenuItem, Select, InputAdornment, IconButton, Link as MuiLink, Avatar, Card, CardContent, Stack, useMediaQuery } from '@mui/material';
+import { Container, Box, Typography, Tabs, Tab, Dialog, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TablePagination, TextField, TableSortLabel, MenuItem, Select, InputAdornment, IconButton, Link as MuiLink, Avatar, Card, CardContent, Stack, useMediaQuery, Autocomplete } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -10,8 +10,13 @@ import VerificationStatusChip from '../../components/tutors/VerificationStatusCh
 import DocumentViewer from '../../components/tutors/DocumentViewer';
 import VerificationModal from '../../components/tutors/VerificationModal';
 import useTutors from '../../hooks/useTutors';
+import { useOptions } from '../../hooks/useOptions';
 import { ITutor, IDocument } from '../../types';
-import { getPendingVerifications, updateVerificationStatus, getSubjects, getVerifiers } from '../../services/tutorService';
+import {
+  getPendingVerifications, updateVerificationStatus, getSubjects, getVerifiers,
+  getCities,
+  getAreas,
+} from '../../services/tutorService';
 import { useTheme } from '@mui/material/styles';
 import DocumentViewerModal from '../../components/common/DocumentViewerModal';
 
@@ -42,7 +47,10 @@ export default function TutorVerificationPage() {
     preferredMode: '',
     status: '',
     verifier: '',
-    subjects: ''
+    subjects: '',
+    city: '',
+    area: '',
+    grade: ''
   });
 
   const [sort, setSort] = useState<{ sortBy: string; sortOrder: 'asc' | 'desc' }>({
@@ -53,6 +61,8 @@ export default function TutorVerificationPage() {
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
   const [subjectsList, setSubjectsList] = useState<string[]>([]);
   const [verifiersList, setVerifiersList] = useState<{ _id: string; name: string }[]>([]);
+  const [citiesList, setCitiesList] = useState<string[]>([]);
+  const [areasList, setAreasList] = useState<string[]>([]);
 
   const renderTutorCard = (t: ITutor, mode: 'pending' | 'all') => {
     const id = (t as any).id || (t as any)._id;
@@ -107,11 +117,12 @@ export default function TutorVerificationPage() {
             <Typography variant="body2">
               <strong>Mode:</strong> {t.preferredMode || '-'}
             </Typography>
-            {locations ? (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                <strong>Locs:</strong> {locations}
-              </Typography>
-            ) : null}
+            <Typography variant="body2">
+              <strong>City:</strong> {t.user?.city || '-'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+              <strong>Areas:</strong> {(t.preferredLocations || []).filter(l => l !== t.user?.city).join(', ') || '-'}
+            </Typography>
           </Box>
 
           <Box sx={{ mt: 1.25 }}>
@@ -190,9 +201,82 @@ export default function TutorVerificationPage() {
       }
     };
 
+    const fetchCities = async () => {
+      // Check cache first
+      const cached = localStorage.getItem('tutor_cities_cache');
+      const cacheTimestamp = localStorage.getItem('tutor_cities_ts');
+
+      const now = Date.now();
+      if (cached && cacheTimestamp && (now - parseInt(cacheTimestamp) < 24 * 60 * 60 * 1000)) {
+        setCitiesList(JSON.parse(cached));
+      } else {
+        try {
+          const res = await getCities();
+          if (res.data) {
+            setCitiesList(res.data);
+            localStorage.setItem('tutor_cities_cache', JSON.stringify(res.data));
+            localStorage.setItem('tutor_cities_ts', String(now));
+          }
+        } catch (e) {
+          console.error("Failed to fetch cities", e);
+        }
+      }
+    };
+
+    const fetchAreas = async () => {
+      // Check cache first
+      const cached = localStorage.getItem('tutor_areas_cache');
+      const cacheTimestamp = localStorage.getItem('tutor_areas_ts');
+
+      const now = Date.now();
+      if (cached && cacheTimestamp && (now - parseInt(cacheTimestamp) < 24 * 60 * 60 * 1000)) {
+        setAreasList(JSON.parse(cached));
+      } else {
+        try {
+          const res = await getAreas();
+          if (res.data) {
+            setAreasList(res.data);
+            localStorage.setItem('tutor_areas_cache', JSON.stringify(res.data));
+            localStorage.setItem('tutor_areas_ts', String(now));
+          }
+        } catch (e) {
+          console.error("Failed to fetch areas", e);
+        }
+      }
+    };
+
     fetchSubjects();
     fetchVerifiers();
+    fetchCities();
+    fetchAreas();
   }, []);
+  const { tutors, loading: loadingTutors, error: tutorsError, pagination, refetch } = useTutors({
+    page: page + 1,
+    limit: rowsPerPage,
+    verificationStatus: tab === 0 ? 'PENDING' : undefined,
+    sortBy: sort.sortBy,
+    sortOrder: sort.sortOrder,
+    teacherId: debouncedFilters.teacherId,
+    name: debouncedFilters.name,
+    email: debouncedFilters.email,
+    phone: debouncedFilters.phone,
+    preferredMode: debouncedFilters.preferredMode,
+    city: debouncedFilters.city,
+    area: debouncedFilters.area,
+    grade: debouncedFilters.grade,
+    subjects: debouncedFilters.subjects ? [debouncedFilters.subjects] : undefined
+  });
+
+  // Use Options hook for dropdowns
+  const { options: cityOptions } = useOptions('CITY');
+
+  // Find selected city ID to fetch areas
+  const selectedCityValue = filters.city;
+  const selectedCityOption = cityOptions.find(o => o.label === selectedCityValue);
+  const { options: areaOptions } = useOptions(selectedCityOption ? `AREA_${selectedCityOption.value}` : 'NONE', selectedCityOption?._id);
+
+  const { options: gradeOptions } = useOptions('GRADE');
+  const { options: subjectOptions } = useOptions('SUBJECT');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -200,21 +284,6 @@ export default function TutorVerificationPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [filters]);
-
-  // Note: API is 1-indexed for page, Material UI is 0-indexed
-  const { tutors, loading: loadingTutors, error: tutorsError, pagination, refetch } = useTutors({
-    page: page + 1,
-    limit: rowsPerPage,
-    verificationStatus: debouncedFilters.status || undefined,
-    teacherId: debouncedFilters.teacherId || undefined,
-    name: debouncedFilters.name || undefined,
-    email: debouncedFilters.email || undefined,
-    phone: debouncedFilters.phone || undefined,
-    preferredMode: debouncedFilters.preferredMode || undefined,
-    sortBy: sort.sortBy,
-    sortOrder: sort.sortOrder,
-    subjects: debouncedFilters.subjects ? [debouncedFilters.subjects] : undefined
-  });
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -405,294 +474,293 @@ export default function TutorVerificationPage() {
           }}
         >
           <Table size="small" sx={{ minWidth: 1100 }}>
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { color: 'text.primary', fontWeight: 700, borderBottom: '2px solid', borderColor: 'divider' } }}>
-              <TableCell sx={{ fontWeight: 700 }}>
-                <TableSortLabel
-                  active={sort.sortBy === 'teacherId'}
-                  direction={sort.sortBy === 'teacherId' ? sort.sortOrder : 'asc'}
-                  onClick={() => handleSort('teacherId')}
-                  sx={{
-                    '&.MuiTableSortLabel-root': { color: 'inherit' },
-                    '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
-                    '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
-                  }}
-                >
-                  ID
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>
-                <TableSortLabel
-                  active={sort.sortBy === 'name'}
-                  direction={sort.sortBy === 'name' ? sort.sortOrder : 'asc'}
-                  onClick={() => handleSort('name')}
-                  sx={{
-                    '&.MuiTableSortLabel-root': { color: 'inherit' },
-                    '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
-                    '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
-                  }}
-                >
-                  Name
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Contact Info</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Mode/Locs</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>
-                <TableSortLabel
-                  active={sort.sortBy === 'classesAssigned'}
-                  direction={sort.sortBy === 'classesAssigned' ? sort.sortOrder : 'asc'}
-                  onClick={() => handleSort('classesAssigned')}
-                  sx={{
-                    '&.MuiTableSortLabel-root': { color: 'inherit' },
-                    '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
-                    '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
-                  }}
-                >
-                  Stats
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>
-                <TableSortLabel
-                  active={sort.sortBy === 'experienceHours'}
-                  direction={sort.sortBy === 'experienceHours' ? sort.sortOrder : 'asc'}
-                  onClick={() => handleSort('experienceHours')}
-                  sx={{
-                    '&.MuiTableSortLabel-root': { color: 'inherit' },
-                    '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
-                    '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
-                  }}
-                >
-                  Exp
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Subjects</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Verifier</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
-            </TableRow>
-            {/* Filter Row */}
-            <TableRow sx={{ bgcolor: 'background.paper' }}>
-              <TableCell>
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Filter ID"
-                  value={filters.teacherId}
-                  onChange={(e) => handleFilterChange('teacherId', e.target.value)}
-                  InputProps={{
-                    sx: { fontSize: '0.8125rem' },
-                    endAdornment: filters.teacherId && (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => clearFilter('teacherId')}><ClearIcon sx={{ fontSize: '0.8rem' }} /></IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Filter Name"
-                  value={filters.name}
-                  onChange={(e) => handleFilterChange('name', e.target.value)}
-                  InputProps={{
-                    sx: { fontSize: '0.8125rem' },
-                    endAdornment: filters.name && (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => clearFilter('name')}><ClearIcon sx={{ fontSize: '0.8rem' }} /></IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  size="small"
-                  variant="standard"
-                  placeholder="Email/Phone"
-                  value={filters.email || filters.phone}
-                  onChange={(e) => {
-                    handleFilterChange('email', e.target.value);
-                    handleFilterChange('phone', e.target.value);
-                  }}
-                  InputProps={{
-                    sx: { fontSize: '0.8125rem' }
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <Select
-                  variant="standard"
-                  value={filters.preferredMode}
-                  onChange={(e) => handleFilterChange('preferredMode', e.target.value as string)}
-                  displayEmpty
-                  sx={{ fontSize: '0.8125rem', width: '100%' }}
-                >
-                  <MenuItem value=""><em>Any Mode</em></MenuItem>
-                  <MenuItem value="ONLINE">Online</MenuItem>
-                  <MenuItem value="OFFLINE">Offline</MenuItem>
-                  <MenuItem value="BOTH">Both</MenuItem>
-                </Select>
-              </TableCell>
-              <TableCell />
-              <TableCell />
-              <TableCell>
-                <Select
-                  variant="standard"
-                  value={filters.subjects}
-                  onChange={(e) => handleFilterChange('subjects', e.target.value as string)}
-                  displayEmpty
-                  sx={{ fontSize: '0.8125rem', width: '100%' }}
-                >
-                  <MenuItem value=""><em>Any Subject</em></MenuItem>
-                  {subjectsList.map((subj) => (
-                    <MenuItem key={subj} value={subj}>{subj}</MenuItem>
-                  ))}
-                </Select>
-              </TableCell>
-              <TableCell>
-                <Select
-                  variant="standard"
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange('status', e.target.value as string)}
-                  displayEmpty
-                  sx={{ fontSize: '0.8125rem', width: '100%' }}
-                >
-                  <MenuItem value=""><em>Any Status</em></MenuItem>
-                  <MenuItem value="PENDING">Pending</MenuItem>
-                  <MenuItem value="UNDER_REVIEW">Review</MenuItem>
-                  <MenuItem value="VERIFIED">Verified</MenuItem>
-                  <MenuItem value="REJECTED">Rejected</MenuItem>
-                </Select>
-              </TableCell>
-              <TableCell>
-                <Select
-                  variant="standard"
-                  value={filters.verifier}
-                  onChange={(e) => handleFilterChange('verifier', e.target.value as string)}
-                  displayEmpty
-                  sx={{ fontSize: '0.8125rem', width: '100%' }}
-                >
-                  <MenuItem value=""><em>Any Verifier</em></MenuItem>
-                  {verifiersList.map((v) => (
-                    <MenuItem key={v._id} value={v._id}>{v.name}</MenuItem>
-                  ))}
-                </Select>
-              </TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {tab === 0 && (
-              <>
-                {loading ? (
-                  <TableRow><TableCell colSpan={6} align="center"><LoadingSpinner /></TableCell></TableRow>
-                ) : error ? (
-                  <TableRow><TableCell colSpan={10} align="center"><ErrorAlert error={error} /></TableCell></TableRow>
-                ) : pending.length === 0 ? (
-                  <TableRow><TableCell colSpan={10} align="center">No tutors pending verification.</TableCell></TableRow>
-                ) : (
-                  pending.map((t) => (
-                    <TableRow key={t.id} hover>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{t.teacherId || '-'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography
-                            variant="subtitle2"
-                            component={RouterLink}
-                            to={`/tutor-profile/${t.id || (t as any)._id}`}
-                            sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                          >
-                            {t.user.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">DOCS: {t.documents?.length || 0}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{t.user.email}</Typography>
-                        <Typography variant="caption" color="text.secondary">{t.user.phone || '-'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{t.preferredMode || '-'}</Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).join(', ')}>
-                          {(t.preferredLocations || []).join(', ')}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{t.classesAssigned} Classes</Typography>
-                        <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
-                      </TableCell>
-                      <TableCell>{t.experienceHours} hrs</TableCell>
-                      <TableCell sx={{ maxWidth: 120 }}>
-                        <Typography variant="body2" noWrap title={(t.subjects || []).join(', ')}>
-                          {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
-                        </Typography>
-                      </TableCell>
-                      <TableCell><VerificationStatusChip status={t.verificationStatus} /></TableCell>
-                      <TableCell>
-                        {t.verifiedBy ? (
-                          <MuiLink component={RouterLink} to={`/manager-profile/${(t.verifiedBy as any).id || (t.verifiedBy as any)._id}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>
-                            {t.verifiedBy.name}
-                          </MuiLink>
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Box display="flex" justifyContent="flex-end" gap={1}>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            component={RouterLink}
-                            to={`/tutors/verify/${t.id}`}
-                          >
-                            Details
-                          </Button>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )
-                }
-              </>
-            )}
-
-            {tab === 1 && (
-              <>
-                {loadingTutors ? (
-                  <TableRow><TableCell colSpan={10} align="center"><LoadingSpinner /></TableCell></TableRow>
-                ) : (
-                  <>
-                    {tutors.map((t) => (
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { color: 'text.primary', fontWeight: 700, borderBottom: '2px solid', borderColor: 'divider' } }}>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  <TableSortLabel
+                    active={sort.sortBy === 'teacherId'}
+                    direction={sort.sortBy === 'teacherId' ? sort.sortOrder : 'asc'}
+                    onClick={() => handleSort('teacherId')}
+                    sx={{
+                      '&.MuiTableSortLabel-root': { color: 'inherit' },
+                      '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
+                      '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
+                    }}
+                  >
+                    ID
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  <TableSortLabel
+                    active={sort.sortBy === 'name'}
+                    direction={sort.sortBy === 'name' ? sort.sortOrder : 'asc'}
+                    onClick={() => handleSort('name')}
+                    sx={{
+                      '&.MuiTableSortLabel-root': { color: 'inherit' },
+                      '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
+                      '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
+                    }}
+                  >
+                    Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Contact Info</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>City</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Area</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Class</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Mode</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  <TableSortLabel
+                    active={sort.sortBy === 'classesAssigned'}
+                    direction={sort.sortBy === 'classesAssigned' ? sort.sortOrder : 'asc'}
+                    onClick={() => handleSort('classesAssigned')}
+                    sx={{
+                      '&.MuiTableSortLabel-root': { color: 'inherit' },
+                      '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
+                      '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
+                    }}
+                  >
+                    Stats
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>
+                  <TableSortLabel
+                    active={sort.sortBy === 'experienceHours'}
+                    direction={sort.sortBy === 'experienceHours' ? sort.sortOrder : 'asc'}
+                    onClick={() => handleSort('experienceHours')}
+                    sx={{
+                      '&.MuiTableSortLabel-root': { color: 'inherit' },
+                      '&.MuiTableSortLabel-root:hover': { color: 'inherit' },
+                      '&.Mui-active': { color: 'inherit', '& .MuiTableSortLabel-icon': { color: 'inherit !important' } },
+                    }}
+                  >
+                    Exp
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Subjects</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Verifier</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
+              </TableRow>
+              {/* Filter Row */}
+              <TableRow sx={{ bgcolor: 'background.paper' }}>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    variant="standard"
+                    placeholder="Filter ID"
+                    value={filters.teacherId}
+                    onChange={(e) => handleFilterChange('teacherId', e.target.value)}
+                    InputProps={{
+                      sx: { fontSize: '0.8125rem' },
+                      endAdornment: filters.teacherId && (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={() => clearFilter('teacherId')}><ClearIcon sx={{ fontSize: '0.8rem' }} /></IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    variant="standard"
+                    placeholder="Filter Name"
+                    value={filters.name}
+                    onChange={(e) => handleFilterChange('name', e.target.value)}
+                    InputProps={{
+                      sx: { fontSize: '0.8125rem' },
+                      endAdornment: filters.name && (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={() => clearFilter('name')}><ClearIcon sx={{ fontSize: '0.8rem' }} /></IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    variant="standard"
+                    placeholder="Email/Phone"
+                    value={filters.email || filters.phone}
+                    onChange={(e) => {
+                      handleFilterChange('email', e.target.value);
+                      handleFilterChange('phone', e.target.value);
+                    }}
+                    InputProps={{
+                      sx: { fontSize: '0.8125rem' }
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Autocomplete
+                    freeSolo
+                    size="small"
+                    options={cityOptions.map(o => o.label)}
+                    value={filters.city}
+                    onChange={(_e, newValue) => handleFilterChange('city', newValue || '')}
+                    onInputChange={(_e, newInputValue) => handleFilterChange('city', newInputValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        placeholder="City"
+                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
+                      />
+                    )}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Autocomplete
+                    freeSolo
+                    size="small"
+                    options={areaOptions.map(o => o.label)}
+                    value={filters.area}
+                    onChange={(_e, newValue) => handleFilterChange('area', newValue || '')}
+                    onInputChange={(_e, newInputValue) => handleFilterChange('area', newInputValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        placeholder="Area"
+                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
+                      />
+                    )}
+                    disabled={!filters.city}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Autocomplete
+                    freeSolo
+                    size="small"
+                    options={gradeOptions.map(o => o.label)}
+                    value={filters.grade}
+                    onChange={(_e, newValue) => handleFilterChange('grade', newValue || '')}
+                    onInputChange={(_e, newInputValue) => handleFilterChange('grade', newInputValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        placeholder="Class"
+                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
+                      />
+                    )}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Select
+                    variant="standard"
+                    value={filters.preferredMode}
+                    onChange={(e) => handleFilterChange('preferredMode', e.target.value as string)}
+                    displayEmpty
+                    sx={{ fontSize: '0.8125rem', width: '100%' }}
+                  >
+                    <MenuItem value=""><em>Mode</em></MenuItem>
+                    <MenuItem value="ONLINE">Online</MenuItem>
+                    <MenuItem value="OFFLINE">Offline</MenuItem>
+                    <MenuItem value="BOTH">Both</MenuItem>
+                  </Select>
+                </TableCell>
+                <TableCell />
+                <TableCell />
+                <TableCell>
+                  <Autocomplete
+                    freeSolo
+                    size="small"
+                    options={subjectOptions.map(o => o.label)}
+                    value={filters.subjects}
+                    onChange={(_e, newValue) => handleFilterChange('subjects', newValue || '')}
+                    onInputChange={(_e, newInputValue) => handleFilterChange('subjects', newInputValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        placeholder="Subject"
+                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
+                      />
+                    )}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Select
+                    variant="standard"
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value as string)}
+                    displayEmpty
+                    sx={{ fontSize: '0.8125rem', width: '100%' }}
+                  >
+                    <MenuItem value=""><em>Any Status</em></MenuItem>
+                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="UNDER_REVIEW">Review</MenuItem>
+                    <MenuItem value="VERIFIED">Verified</MenuItem>
+                    <MenuItem value="REJECTED">Rejected</MenuItem>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Select
+                    variant="standard"
+                    value={filters.verifier}
+                    onChange={(e) => handleFilterChange('verifier', e.target.value as string)}
+                    displayEmpty
+                    sx={{ fontSize: '0.8125rem', width: '100%' }}
+                  >
+                    <MenuItem value=""><em>Any Verifier</em></MenuItem>
+                    {verifiersList.map((v) => (
+                      <MenuItem key={v._id} value={v._id}>{v.name}</MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tab === 0 && (
+                <>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={13} align="center"><LoadingSpinner /></TableCell></TableRow>
+                  ) : error ? (
+                    <TableRow><TableCell colSpan={13} align="center"><ErrorAlert error={error} /></TableCell></TableRow>
+                  ) : pending.length === 0 ? (
+                    <TableRow><TableCell colSpan={13} align="center" sx={{ py: 8 }}><Typography color="text.secondary">No pending verifications</Typography></TableCell></TableRow>
+                  ) : (
+                    pending.map((t) => (
                       <TableRow key={t.id} hover>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{t.teacherId || '-'}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Avatar src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl}>
-                              {(t.user?.name || 'T').charAt(0).toUpperCase()}
-                            </Avatar>
-                            <MuiLink
+                          <Box>
+                            <Typography
                               variant="subtitle2"
                               component={RouterLink}
-                              to={`/tutor-profile/${t.id}`}
+                              to={`/tutor-profile/${t.id || (t as any)._id}`}
                               sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                             >
-                              {t.user?.name || 'Unknown Tutor'}
-                            </MuiLink>
+                              {t.user.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">DOCS: {t.documents?.length || 0}</Typography>
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">{t.user?.email}</Typography>
-                          <Typography variant="caption" color="text.secondary">{t.user?.phone || '-'}</Typography>
+                          <Typography variant="body2">{t.user.email}</Typography>
+                          <Typography variant="caption" color="text.secondary">{t.user.phone || '-'}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">{t.preferredMode || '-'}</Typography>
+                          <Typography variant="body2">{t.user.city || '-'}</Typography>
+                        </TableCell>
+                        <TableCell>
                           <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).join(', ')}>
                             {(t.preferredLocations || []).join(', ')}
                           </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" noWrap title={(t.preferredGrades || []).join(', ')}>
+                            {(t.preferredGrades || []).slice(0, 2).join(', ')}{(t.preferredGrades?.length || 0) > 2 ? '...' : ''}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{t.preferredMode || '-'}</Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">{t.classesAssigned} Classes</Typography>
@@ -713,25 +781,108 @@ export default function TutorVerificationPage() {
                           ) : '-'}
                         </TableCell>
                         <TableCell align="right">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            component={RouterLink}
-                            to={`/tutors/verify/${t.id}`}
-                          >
-                            View
-                          </Button>
+                          <Box display="flex" justifyContent="flex-end" gap={1}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              component={RouterLink}
+                              to={`/tutors/verify/${t.id}`}
+                            >
+                              Details
+                            </Button>
+                          </Box>
                         </TableCell>
                       </TableRow>
-                    ))}
-                    {tutorsError && (
-                      <TableRow><TableCell colSpan={10} align="center"><ErrorAlert error={tutorsError} /></TableCell></TableRow>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </TableBody>
+                    ))
+                  )
+                  }
+                </>
+              )}
+
+              {tab === 1 && (
+                <>
+                  {loadingTutors ? (
+                    <TableRow><TableCell colSpan={13} align="center"><LoadingSpinner /></TableCell></TableRow>
+                  ) : (
+                    <>
+                      {tutors.map((t) => (
+                        <TableRow key={t.id} hover>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{t.teacherId || '-'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Avatar src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl}>
+                                {(t.user?.name || 'T').charAt(0).toUpperCase()}
+                              </Avatar>
+                              <MuiLink
+                                variant="subtitle2"
+                                component={RouterLink}
+                                to={`/tutor-profile/${t.id}`}
+                                sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                              >
+                                {t.user?.name || 'Unknown Tutor'}
+                              </MuiLink>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{t.user?.email}</Typography>
+                            <Typography variant="caption" color="text.secondary">{t.user?.phone || '-'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{t.user?.city || '-'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ maxWidth: 120 }} title={(t.preferredLocations || []).filter(l => l !== t.user?.city).join(', ')}>
+                              {(t.preferredLocations || []).filter(l => l !== t.user?.city).join(', ')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" noWrap title={(t.preferredGrades || []).join(', ')}>
+                              {(t.preferredGrades || []).slice(0, 2).join(', ')}{(t.preferredGrades?.length || 0) > 2 ? '...' : ''}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{t.preferredMode || '-'}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{t.classesAssigned} Classes</Typography>
+                            <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
+                          </TableCell>
+                          <TableCell>{t.experienceHours} hrs</TableCell>
+                          <TableCell sx={{ maxWidth: 120 }}>
+                            <Typography variant="body2" noWrap title={(t.subjects || []).join(', ')}>
+                              {(t.subjects || []).slice(0, 2).join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+                            </Typography>
+                          </TableCell>
+                          <TableCell><VerificationStatusChip status={t.verificationStatus} /></TableCell>
+                          <TableCell>
+                            {t.verifiedBy ? (
+                              <MuiLink component={RouterLink} to={`/manager-profile/${(t.verifiedBy as any).id || (t.verifiedBy as any)._id}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                                {t.verifiedBy.name}
+                              </MuiLink>
+                            ) : '-'}
+                          </TableCell>
+                          <TableCell align="right">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              component={RouterLink}
+                              to={`/tutors/verify/${t.id}`}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {tutorsError && (
+                        <TableRow><TableCell colSpan={10} align="center"><ErrorAlert error={tutorsError} /></TableCell></TableRow>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </TableBody>
           </Table>
         </TableContainer>
       )}
