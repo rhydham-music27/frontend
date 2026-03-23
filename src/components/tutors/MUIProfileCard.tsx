@@ -124,6 +124,13 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
   const { user } = tutor;
   const profilePhotoDoc = (tutor.documents || []).find((d) => d.documentType === 'PROFILE_PHOTO');
   const profileImageUrl = profilePhotoDoc?.documentUrl;
+
+  console.log('MUIProfileCard Debug:', {
+    profileImageUrl,
+    hasDocuments: !!tutor.documents?.length,
+    docCount: tutor.documents?.length
+  });
+
   const initials = (user?.name || '').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   const handleOpenAvatarModal = () => {

@@ -22,6 +22,14 @@ const DocumentViewerModal: React.FC<Props> = ({ open, onClose, document }) => {
   const isPdf = cleanUrl.endsWith('.pdf');
   const isImage = cleanUrl.match(/\.(jpeg|jpg|gif|png|webp|jfif)$/i) || document.documentUrl.includes('image');
 
+  console.log('DocumentViewerModal Debug:', {
+    originalUrl: document.documentUrl,
+    cleanUrl,
+    isPdf,
+    isImage,
+    type: document.documentType
+  });
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
