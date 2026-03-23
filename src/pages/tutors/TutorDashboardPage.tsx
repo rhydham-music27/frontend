@@ -252,32 +252,7 @@ const TutorDashboardPage: React.FC = () => {
                   },
                 }}
               >
-                <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, position: 'relative', zIndex: 1 }}>
-                  <Box>
-                    <Typography variant="h6" fontWeight={700} display="flex" alignItems="center" gap={1}>
-                      <VerifiedUserIcon /> Complete Your Verification
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
-                      Pay the one-time verification fee to activate your profile and start receiving class leads.
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="contained"
-                    onClick={() => setShowVerificationFeeModal(true)}
-                    sx={{
-                      fontWeight: 700,
-                      width: { xs: '100%', sm: 'auto' },
-                      bgcolor: '#fff',
-                      color: '#4f46e5',
-                      '&:hover': { bgcolor: alpha('#fff', 0.9) },
-                      borderRadius: 2.5,
-                      px: 3,
-                      textTransform: 'none',
-                    }}
-                  >
-                    Pay Verification Fee
-                  </Button>
-                </CardContent>
+                
               </Card>
             )}
             <TutorAdvancedAnalyticsCards />

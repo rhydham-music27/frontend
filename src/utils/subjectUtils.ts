@@ -1,10 +1,33 @@
 /**
+ * Formats a subject with its parents in "Board . Class . Subject" format.
+ */
+export const formatHierarchicalSubject = (subject: any): string => {
+  if (!subject || typeof subject !== 'object') return String(subject || '');
+  
+  const parts: string[] = [];
+  let current = subject;
+  
+  // Traverse up the parent chain
+  while (current && (current.label || current.name)) {
+    parts.unshift(current.label || current.name);
+    current = current.parent;
+  }
+  
+  return parts.join(' . ');
+};
+
+/**
  * Extracts a displayable label from a subject object or string.
  * Handles strings, OptionItems {label, value}, and other object formats.
  */
 export const getSubjectLabel = (subject: any): string => {
   if (!subject) return '';
   if (typeof subject === 'string') return subject;
+  
+  // If it has a parent, try to format hierarchically
+  if (subject.parent) {
+    return formatHierarchicalSubject(subject);
+  }
   
   // Handle OptionItem or Mongoose populated object
   return subject.label || subject.name || String(subject);

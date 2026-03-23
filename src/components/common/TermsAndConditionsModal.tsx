@@ -158,11 +158,11 @@ These Terms, along with related policies, constitute the entire agreement betwee
 These Terms constitute an electronic record and do not require physical or digital signature.`;
 
   return (
-    <Dialog 
-      open={open} 
-      maxWidth="md" 
-      fullWidth 
-      scroll="paper" 
+    <Dialog
+      open={open}
+      maxWidth="md"
+      fullWidth
+      scroll="paper"
       disableEscapeKeyDown
       PaperProps={{
         sx: { borderRadius: 3 }
@@ -220,7 +220,9 @@ These Terms constitute an electronic record and do not require physical or digit
           control={<Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} color="primary" />}
           label={
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              I have read and agree to the policies.
+              I have read and agree to the Terms & Conditions, Privacy Policy, Parent Service Policy, Tutor Agreement, and Refund & Cancellation Policy of Your Shikshak.
+
+              By continuing, you acknowledge that you have read and accepted the policies governing the use of Your Shikshak services.
             </Typography>
           }
           sx={{ ml: 0 }}
@@ -232,10 +234,10 @@ These Terms constitute an electronic record and do not require physical or digit
           disabled={!checked || loading}
           fullWidth
           size="large"
-          sx={{ 
-            borderRadius: 2, 
-            height: 54, 
-            fontSize: '1rem', 
+          sx={{
+            borderRadius: 2,
+            height: 54,
+            fontSize: '1rem',
             fontWeight: 700,
             textTransform: 'none',
             boxShadow: '0 4px 14px 0 rgba(0,118,255,0.39)'

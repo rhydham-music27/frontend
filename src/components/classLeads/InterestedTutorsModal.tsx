@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getSubjectLabel } from '../../utils/subjectUtils';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Chip, Typography, Link as MuiLink } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -101,9 +102,12 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
       width: 200,
       renderCell: (params: any) => (
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          {(params?.row?.subjects || []).slice(0, 3).map((s: string) => (
-            <Chip key={s} label={s} size="small" variant="outlined" sx={{ fontSize: '0.7rem' }} />
-          ))}
+          {(params?.row?.subjects || []).slice(0, 3).map((s: any, idx: number) => {
+            const label = getSubjectLabel(s);
+            return (
+              <Chip key={idx} label={label} size="small" variant="outlined" sx={{ fontSize: '0.7rem' }} />
+            );
+          })}
           {(params?.row?.subjects || []).length > 3 && (
             <Typography variant="caption" color="textSecondary">+{params.row.subjects.length - 3}</Typography>
           )}
@@ -173,7 +177,7 @@ export default function InterestedTutorsModal({ open, onClose, announcementId, o
               variant="outlined"
               color="warning"
               component={Link}
-              to={`/tutor-profile/${tutorId}`}
+              to={`/tutors/verify/${tutorId}`}
               sx={{ fontSize: '0.65rem', lineHeight: 1.2, py: 0.3 }}
             >
               Verify First

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { getSubjectList } from '../../utils/subjectUtils';
 import { Box, Typography, Chip, CardContent, Grid, Divider, Stack, Button, Card, alpha } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -229,11 +230,26 @@ const DemoClassesCard: React.FC = () => {
         >
           {activeDemos.map((demo, index) => {
             const studentName = demo.classLead?.studentName || '-';
-            const subjectVal: any = (demo.classLead as any)?.subject;
-            const subject = Array.isArray(subjectVal) ? subjectVal.join(', ') : subjectVal || '-';
+            const studentGender = demo.classLead?.studentGender || '-';
+            const studentType = demo.classLead?.studentType || 'SINGLE';
+            const numStudents = demo.classLead?.numberOfStudents || 1;
+            const parentName = demo.classLead?.parentName || '-';
+            const parentPhone = demo.classLead?.parentPhone || '-';
+            const leadIdStr = demo.classLead?.leadId || '-';
+
+            const subject = getSubjectList(demo.classLead?.subject).join(', ') || '-';
+            
             const grade = demo.classLead?.grade || '-';
             const board = demo.classLead?.board || '-';
             const mode = demo.classLead?.mode || '-';
+            
+            const location = demo.classLead?.location || '-';
+            const area = demo.classLead?.area || '-';
+            const city = demo.classLead?.city || '-';
+            const address = demo.classLead?.address || '-';
+            const timing = demo.classLead?.timing || '-';
+            const weekdays = demo.classLead?.weekdays?.join(', ') || '-';
+
             const statusProps = getStatusChipProps(demo.status);
             return (
               <Box
@@ -258,34 +274,37 @@ const DemoClassesCard: React.FC = () => {
                     <Box display="flex" alignItems="center" gap={1}>
                       <PersonIcon fontSize="small" sx={{ color: '#8b5cf6' }} aria-label="student" />
                       <Typography variant="subtitle1" fontWeight={700} sx={{ wordBreak: 'break-word', fontSize: '0.95rem' }}>
-                        {studentName}
+                        {studentName} {studentGender !== '-' && `(${studentGender})`}
                       </Typography>
                     </Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                      Lead ID: {leadIdStr} • {studentType} {studentType === 'GROUP' && `(${numStudents} students)`}
+                    </Typography>
                   </Stack>
                   <Chip size="small" color={statusProps.color} label={statusProps.label} sx={{ fontWeight: 600, fontSize: '0.7rem' }} aria-label={`status-${statusProps.label}`} />
                 </Box>
 
                 <Grid container spacing={1.5} mb={2}>
-                  <Grid item xs={6}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
                       <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
                         <EventIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="demo-date" />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Date</Typography>
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Demo Date</Typography>
                       </Box>
                       <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{formatDate(demo.demoDate)}</Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
                       <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
                         <AccessTimeIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="demo-time" />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Time</Typography>
+                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Demo Time</Typography>
                       </Box>
                       <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{demo.demoTime || '-'}</Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
                       <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
                         <MenuBookIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="subject" />
                         <Typography variant="caption" color="text.secondary" fontWeight={600}>Subject</Typography>
@@ -293,12 +312,41 @@ const DemoClassesCard: React.FC = () => {
                       <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{subject}</Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04) }}>
+                  <Grid item xs={6} sm={3}>
+                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.25}>Grade & Board</Typography>
                       <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{grade} • {board}</Typography>
                     </Box>
                   </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#f59e0b', 0.04), border: '1px dashed', borderColor: alpha('#f59e0b', 0.2) }}>
+                      <Typography variant="caption" color="warning.main" fontWeight={700} display="block" mb={0.5}>PARENT CONTACT</Typography>
+                      <Typography variant="body2" fontWeight={600}>{parentName}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{parentPhone}</Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#10b981', 0.04), border: '1px dashed', borderColor: alpha('#10b981', 0.2) }}>
+                      <Typography variant="caption" color="success.main" fontWeight={700} display="block" mb={0.5}>PROPOSED REGULAR SCHEDULE</Typography>
+                      <Typography variant="body2" fontWeight={600}>{timing}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{weekdays}</Typography>
+                    </Box>
+                  </Grid>
+
+                  {mode !== 'ONLINE' && (
+                    <Grid item xs={12}>
+                      <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#3b82f6', 0.04), border: '1px dashed', borderColor: alpha('#3b82f6', 0.2) }}>
+                        <Typography variant="caption" color="primary.main" fontWeight={700} display="block" mb={0.5}>LOCATION / ADDRESS</Typography>
+                        <Typography variant="body2" fontWeight={600}>{address}</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{area}, {city}</Typography>
+                        {location && location !== '-' && (
+                           <Typography variant="caption" color="text.disabled" display="block" mt={0.5}>Ref: {location}</Typography>
+                        )}
+                      </Box>
+                    </Grid>
+                  )}
                 </Grid>
 
                 <Box display="flex" alignItems="center" gap={1} mb={1}>
