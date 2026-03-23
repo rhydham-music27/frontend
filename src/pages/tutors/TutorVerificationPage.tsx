@@ -65,19 +65,26 @@ export default function TutorVerificationPage() {
   const [citiesList, setCitiesList] = useState<string[]>([]);
   const [areasList, setAreasList] = useState<string[]>([]);
 
+  const { options: subjectOptions } = useOptions('SUBJECT');
+
   const formatSubjectLabel = (subject: any) => {
     if (!subject) return '-';
+    
+    // If it's a string (ID), resolve it using the centralized subjectOptions
     if (typeof subject === 'string') {
-      // If it's a string, try to find it in our subjectsList (which has formatted labels)
-      const found = subjectsList.find(s => s._id === subject);
+      const found = subjectOptions.find(o => o._id === subject || o.value === subject);
       if (found) return found.label;
-      return subject;
+      // Secondary fallback to subjectsList
+      const foundInList = subjectsList.find(s => s._id === subject);
+      if (foundInList) return foundInList.label;
+      return subject; 
     }
 
+    // If it's an object, handle hierarchical labels
     const parts = [];
     let current = subject;
     while (current) {
-      parts.unshift(current.label);
+      parts.unshift(current.label || current.name || 'N/A');
       current = current.parent;
     }
     return parts.join(' . ');
@@ -672,9 +679,13 @@ export default function TutorVerificationPage() {
                   <Autocomplete
                     size="small"
                     options={subjectsList}
-                    getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
-                    value={subjectsList.find(s => s._id === filters.subjects) || null}
-                    onChange={(_e, newValue) => handleFilterChange('subjects', newValue ? newValue._id : '')}
+                    getOptionLabel={(option) => formatSubjectLabel(option)}
+                    value={
+                      subjectsList.find(s => s._id === filters.subjects) || 
+                      subjectOptions.find(o => o._id === filters.subjects || o.value === filters.subjects) || 
+                      null
+                    }
+                    onChange={(_e, newValue) => handleFilterChange('subjects', newValue ? (newValue._id || newValue.value) : '')}
                     renderInput={(params) => (
                       <TextField
                         {...params}
