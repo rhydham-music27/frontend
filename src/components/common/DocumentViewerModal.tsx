@@ -58,6 +58,8 @@ const DocumentViewerModal: React.FC<Props> = ({ open, onClose, document }) => {
             component="img"
             src={document.documentUrl}
             alt={document.documentType}
+            crossOrigin="anonymous"
+            onError={() => console.error('DocumentViewerModal Image Error', document.documentUrl)}
             sx={{
               maxWidth: '95%',
               maxHeight: '95%',

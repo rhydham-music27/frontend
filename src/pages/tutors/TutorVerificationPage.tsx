@@ -821,7 +821,13 @@ export default function TutorVerificationPage() {
                           </TableCell>
                           <TableCell>
                             <Box display="flex" alignItems="center" gap={2}>
-                              <Avatar src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl}>
+                              <Avatar 
+                                src={t.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl}
+                                imgProps={{
+                                  crossOrigin: 'anonymous',
+                                  onError: () => console.error('Tutor Table Avatar Error', t.user?.name)
+                                }}
+                              >
                                 {(t.user?.name || 'T').charAt(0).toUpperCase()}
                               </Avatar>
                               <MuiLink

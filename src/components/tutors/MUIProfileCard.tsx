@@ -300,7 +300,16 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                 onClick={isTutorSelf ? handleOpenAvatarModal : undefined}
               >
                 {profileImageUrl ? (
-                  <img src={profileImageUrl} alt={user?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+                  <img 
+                    src={profileImageUrl} 
+                    alt={user?.name} 
+                    crossOrigin="anonymous"
+                    onError={(e) => console.error('MUIProfileCard Image Error:', {
+                      src: (e.target as HTMLImageElement).src,
+                      status: 'Failed to load'
+                    })}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
+                  />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-[#0066ff] via-[#2563eb] to-[#3b82f6] flex items-center justify-center">
                     <User className="w-16 h-16 text-white/90" />
