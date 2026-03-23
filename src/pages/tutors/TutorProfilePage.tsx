@@ -49,6 +49,17 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
+const formatSubjectDisplay = (subject: any) => {
+  if (!subject) return '-';
+  if (Array.isArray(subject)) {
+    return subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ');
+  }
+  if (typeof subject === 'object') {
+    return subject.label || subject.name || 'N/A';
+  }
+  return String(subject);
+};
+
 const TutorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [tutorProfile, setTutorProfile] = useState<ITutor | null>(null);
@@ -61,6 +72,19 @@ const TutorProfilePage: React.FC = () => {
   const [preferredAreas, setPreferredAreas] = useState<string[]>([]);
   const [experienceInput, setExperienceInput] = useState('');
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
+
+  const formatSubjectLabel = (subject: any) => {
+    if (!subject) return '-';
+    if (typeof subject === 'string') return subject;
+
+    const parts = [];
+    let current = subject;
+    while (current) {
+      parts.unshift(current.label);
+      current = current.parent;
+    }
+    return parts.join(' . ');
+  };
 
   useEffect(() => {
     if (tutorProfile) {
@@ -234,9 +258,9 @@ const TutorProfilePage: React.FC = () => {
       valueGetter: (_value: any, row: any) => {
         if (!row.subject) return '';
         if (Array.isArray(row.subject)) {
-          return row.subject.map((s: any) => typeof s === 'object' ? s.label : s).join(', ');
+          return row.subject.map((s: any) => formatSubjectLabel(s)).join(', ');
         }
-        return typeof row.subject === 'object' ? row.subject.label : row.subject;
+        return formatSubjectLabel(row.subject);
       }
     },
     { field: 'grade', headerName: 'Grade', width: 100 },
@@ -301,15 +325,18 @@ const TutorProfilePage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" disableGutters sx={{ px: { xs: 2, sm: 0 }, pb: { xs: 10, sm: 0 } }}>
-      {/* ─── Premium Header ──────────────────────────── */}
+      {/* ─── Luminescent Scholar Header ──────────────────────────── */}
       <Box
         sx={{
           position: 'relative',
           borderRadius: { xs: 3, sm: 4 },
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #312e81 100%)',
+          background: 'linear-gradient(135deg, #f8faff 0%, #eff6ff 100%)',
           p: { xs: 2.5, sm: 4 },
           mb: { xs: 2.5, sm: 4 },
           overflow: 'hidden',
+          border: '1px solid',
+          borderColor: alpha('#6366f1', 0.08),
+          boxShadow: `0 10px 30px ${alpha('#6366f1', 0.03)}`,
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -317,7 +344,7 @@ const TutorProfilePage: React.FC = () => {
             right: '-15%',
             width: '60%',
             height: '200%',
-            background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.08) 40%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.04) 40%, transparent 70%)',
             pointerEvents: 'none',
           },
           '&::after': {
@@ -327,7 +354,7 @@ const TutorProfilePage: React.FC = () => {
             left: '-10%',
             width: '40%',
             height: '150%',
-            background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 60%)',
+            background: 'radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 60%)',
             pointerEvents: 'none',
           },
         }}
@@ -339,11 +366,15 @@ const TutorProfilePage: React.FC = () => {
                 <Typography
                   variant="h4"
                   sx={{
-                    color: '#fff',
+                    fontFamily: "'Manrope', sans-serif",
+                    color: '#1e293b',
                     fontWeight: 800,
                     fontSize: { xs: '1.5rem', sm: '1.85rem', md: '2.2rem' },
                     letterSpacing: '-0.03em',
                     lineHeight: 1.15,
+                    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                   }}
                 >
                   {id ? 'Tutor Profile' : 'My Profile'}
@@ -353,12 +384,14 @@ const TutorProfilePage: React.FC = () => {
                     label="Admin View"
                     size="small"
                     sx={{
-                      bgcolor: alpha('#f59e0b', 0.15),
-                      color: '#fbbf24',
+                      fontFamily: "'Manrope', sans-serif",
+                      bgcolor: alpha('#f59e0b', 0.12),
+                      color: '#d97706',
                       fontWeight: 700,
                       fontSize: '0.62rem',
                       height: 22,
                       border: `1px solid ${alpha('#f59e0b', 0.2)}`,
+                      boxShadow: `0 0 10px ${alpha('#f59e0b', 0.1)}`,
                     }}
                   />
                 )}
@@ -366,18 +399,19 @@ const TutorProfilePage: React.FC = () => {
               <Typography
                 variant="body2"
                 sx={{
-                  color: alpha('#fff', 0.55),
+                  color: '#64748b',
                   fontSize: { xs: '0.8rem', sm: '0.88rem' },
                   maxWidth: 500,
+                  fontWeight: 500,
                 }}
               >
                 {id
-                  ? `Managing profile for ${tutorProfile?.user?.name || 'Tutor'}`
-                  : 'View and manage your tutor profile and verification status.'}
+                  ? `Detailed overview and metrics for ${tutorProfile?.user?.name || 'Tutor'}`
+                  : 'Manage your professional presence and track your performance.'}
               </Typography>
             </Box>
 
-            <Box display="flex" gap={1} flexWrap="wrap">
+            <Box display="flex" gap={1.5} flexWrap="wrap">
               {!id && (
                 <Button
                   variant="outlined"
@@ -389,10 +423,18 @@ const TutorProfilePage: React.FC = () => {
                     textTransform: 'none',
                     fontWeight: 700,
                     fontSize: '0.75rem',
-                    borderColor: alpha('#fff', 0.2),
-                    color: alpha('#fff', 0.8),
+                    fontFamily: "'Manrope', sans-serif",
+                    borderColor: alpha('#1e293b', 0.15),
+                    color: '#475569',
+                    bgcolor: 'rgba(255, 255, 255, 0.5)',
                     backdropFilter: 'blur(8px)',
-                    '&:hover': { borderColor: alpha('#fff', 0.4), bgcolor: alpha('#fff', 0.05) },
+                    px: 2.5,
+                    '&:hover': {
+                      borderColor: alpha('#1e293b', 0.3),
+                      bgcolor: 'rgba(255, 255, 255, 0.8)',
+                      transform: 'translateY(-1px)',
+                    },
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   Change Password
@@ -413,11 +455,31 @@ const TutorProfilePage: React.FC = () => {
                     sx={{
                       borderRadius: 2.5,
                       textTransform: 'none',
-                      fontWeight: 700,
+                      fontWeight: 800,
                       fontSize: '0.75rem',
-                      bgcolor: '#6366f1',
-                      boxShadow: `0 4px 14px ${alpha('#6366f1', 0.4)}`,
-                      '&:hover': { bgcolor: '#4f46e5' },
+                      fontFamily: "'Manrope', sans-serif",
+                      bgcolor: '#0066ff',
+                      color: '#fff',
+                      px: 3,
+                      boxShadow: `0 8px 16px ${alpha('#0066ff', 0.25)}`,
+                      background: 'linear-gradient(135deg, #2563eb 0%, #0066ff 100%)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:hover': {
+                        bgcolor: '#0052cc',
+                        boxShadow: `0 12px 20px ${alpha('#0066ff', 0.35)}`,
+                        transform: 'translateY(-2px)',
+                      },
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(rgba(255,255,255,0.1), transparent)',
+                      },
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
                     Complete Profile
@@ -440,55 +502,110 @@ const TutorProfilePage: React.FC = () => {
       {/* ═══════════════════════════════════════════════ */}
       {id && (
         <>
-          {/* Internal Performance Metrics */}
+          {/* Luminescent Scholar Metrics */}
           <Box sx={{ mb: { xs: 3, sm: 5 } }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
-              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#6366f1', 0.06), display: 'flex' }}>
-                <BarChart2 size={18} color="#6366f1" />
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: alpha('#6366f1', 0.1),
+                  display: 'flex',
+                  boxShadow: `0 0 15px ${alpha('#6366f1', 0.15)}`,
+                }}
+              >
+                <BarChart2 size={18} color="#4f46e5" strokeWidth={2.5} />
               </Box>
-              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
-                Internal Performance Metrics
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 800,
+                  fontSize: { xs: '1.05rem', sm: '1.25rem' },
+                  letterSpacing: '-0.02em',
+                  color: '#1e293b',
+                }}
+              >
+                Internal Performance Insights
               </Typography>
             </Box>
 
-            <Grid container spacing={{ xs: 1, sm: 2 }}>
+            <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
               {internalStatCards.map((stat, index) => (
                 <Grid item xs={index < 3 ? 4 : 6} sm key={index}>
                   <Box
                     sx={{
-                      p: { xs: 1.5, sm: 2.5 },
-                      borderRadius: { xs: 2.5, sm: 3 },
+                      p: { xs: 2, sm: 3 },
+                      borderRadius: { xs: 3, sm: 4 },
                       bgcolor: '#fff',
                       border: '1px solid',
-                      borderColor: alpha(stat.color, 0.12),
+                      borderColor: alpha(stat.color, 0.08),
                       textAlign: 'center',
                       position: 'relative',
                       overflow: 'hidden',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: `0 4px 20px ${alpha('#000', 0.02)}`,
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: `0 8px 24px ${alpha(stat.color, 0.12)}`,
-                        borderColor: alpha(stat.color, 0.25),
+                        transform: 'translateY(-6px)',
+                        boxShadow: `0 20px 40px ${alpha(stat.color, 0.12)}`,
+                        borderColor: alpha(stat.color, 0.2),
                       },
                       '&::before': {
                         content: '""',
                         position: 'absolute',
                         top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 3,
-                        background: `linear-gradient(90deg, ${stat.color}, ${alpha(stat.color, 0.3)})`,
-                        borderRadius: '12px 12px 0 0',
+                        left: '10%',
+                        right: '10%',
+                        height: 4,
+                        background: `linear-gradient(90deg, ${alpha(stat.color, 0.6)}, ${stat.color}, ${alpha(stat.color, 0.6)})`,
+                        borderRadius: '0 0 4px 4px',
+                        boxShadow: `0 2px 10px ${alpha(stat.color, 0.4)}`,
                       },
                     }}
                   >
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, mb: { xs: 0, sm: 0.25 } }}>
+                    <Box
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 2.5,
+                        bgcolor: alpha(stat.color, 0.1),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 2,
+                        fontSize: '1.2rem',
+                        boxShadow: `inset 0 0 10px ${alpha(stat.color, 0.1)}`,
+                      }}
+                    >
                       {stat.icon}
-                    </Typography>
-                    <Typography variant="h5" fontWeight={900} sx={{ color: stat.color, fontSize: { xs: '1.1rem', sm: '1.5rem' }, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                    </Box>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontFamily: "'Manrope', sans-serif",
+                        fontWeight: 900,
+                        color: '#1e293b',
+                        fontSize: { xs: '1.1rem', sm: '1.6rem' },
+                        letterSpacing: '-0.03em',
+                        lineHeight: 1.1,
+                        mb: 0.5,
+                      }}
+                    >
                       {stat.value}
                     </Typography>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: { xs: '0.55rem', sm: '0.65rem' } }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 700,
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        fontSize: { xs: '0.55rem', sm: '0.7rem' },
+                        opacity: 0.8,
+                      }}
+                    >
                       {stat.label}
                     </Typography>
                   </Box>
@@ -497,60 +614,81 @@ const TutorProfilePage: React.FC = () => {
             </Grid>
           </Box>
 
-          {/* Personal & Verification Details */}
+          {/* Identity & Verification */}
           <Box sx={{ mb: { xs: 3, sm: 5 } }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
-              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#10b981', 0.06), display: 'flex' }}>
-                <VerifiedIcon sx={{ fontSize: 18, color: '#10b981' }} />
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: alpha('#10b981', 0.1),
+                  display: 'flex',
+                  boxShadow: `0 0 15px ${alpha('#10b981', 0.15)}`,
+                }}
+              >
+                <VerifiedIcon sx={{ fontSize: 18, color: '#059669' }} />
               </Box>
-              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
-                Personal & Verification Details
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 800,
+                  fontSize: { xs: '1.05rem', sm: '1.25rem' },
+                  letterSpacing: '-0.02em',
+                  color: '#1e293b',
+                }}
+              >
+                Identity & Verification
               </Typography>
             </Box>
 
             <Box
               sx={{
-                p: { xs: 2.5, sm: 3.5 },
-                borderRadius: 3,
+                p: { xs: 3, sm: 4 },
+                borderRadius: 4,
                 bgcolor: '#fff',
                 border: '1px solid',
-                borderColor: 'grey.100',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                borderColor: alpha('#64748b', 0.08),
+                boxShadow: `0 4px 20px ${alpha('#000', 0.02)}`,
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.06em', display: 'block', mb: 0.75 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', display: 'block', mb: 1, fontFamily: "'Manrope', sans-serif" }}>
                     Permanent Address
                   </Typography>
-                  <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155' }}>
                     {tutorProfile?.permanentAddress || 'Not provided'}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.06em', display: 'block', mb: 0.75 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', display: 'block', mb: 1, fontFamily: "'Manrope', sans-serif" }}>
                     Residential Address (Same as Aadhaar)
                   </Typography>
-                  <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.6, color: '#334155' }}>
                     {tutorProfile?.residentialAddress || 'Not provided'}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: '0.06em', display: 'block', mb: 0.75 }}>
-                    Aadhaar Card Status
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', display: 'block', mb: 1, fontFamily: "'Manrope', sans-serif" }}>
+                    Aadhaar Status
                   </Typography>
                   {(() => {
                     const verified = tutorProfile?.documents?.find((d) => d.documentType === 'AADHAAR')?.verifiedAt;
                     return (
                       <Chip
-                        label={verified ? 'VERIFIED' : 'PENDING / NOT UPLOADED'}
+                        label={verified ? 'VERIFIED' : 'PENDING REVIEW'}
                         size="small"
                         sx={{
-                          fontWeight: 700,
+                          fontFamily: "'Manrope', sans-serif",
+                          fontWeight: 800,
                           fontSize: '0.65rem',
                           height: 24,
-                          bgcolor: verified ? alpha('#10b981', 0.1) : alpha('#f59e0b', 0.1),
+                          bgcolor: verified ? alpha('#10b981', 0.12) : alpha('#f59e0b', 0.12),
                           color: verified ? '#059669' : '#d97706',
+                          border: `1px solid ${verified ? alpha('#10b981', 0.2) : alpha('#f59e0b', 0.2)}`,
                         }}
                       />
                     );
@@ -563,23 +701,40 @@ const TutorProfilePage: React.FC = () => {
           {/* Assigned Classes DataGrid */}
           <Box sx={{ mb: { xs: 3, sm: 5 } }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
-              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#6366f1', 0.06), display: 'flex' }}>
-                <SchoolIcon sx={{ fontSize: 18, color: '#6366f1' }} />
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: alpha('#3b82f6', 0.1),
+                  display: 'flex',
+                  boxShadow: `0 0 15px ${alpha('#3b82f6', 0.15)}`,
+                }}
+              >
+                <SchoolIcon sx={{ fontSize: 18, color: '#2563eb' }} />
               </Box>
-              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
-                Assigned Classes
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 800,
+                  fontSize: { xs: '1.05rem', sm: '1.25rem' },
+                  letterSpacing: '-0.02em',
+                  color: '#1e293b',
+                }}
+              >
+                Assigned Learning Journeys
               </Typography>
             </Box>
             <Paper
               elevation={0}
               sx={{
-                height: 420,
+                height: 480,
                 width: '100%',
-                borderRadius: 3,
+                borderRadius: 4,
                 border: '1px solid',
-                borderColor: 'grey.100',
+                borderColor: alpha('#64748b', 0.08),
                 overflow: 'hidden',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                boxShadow: `0 4px 20px ${alpha('#000', 0.02)}`,
               }}
             >
               <DataGrid
@@ -593,15 +748,32 @@ const TutorProfilePage: React.FC = () => {
                 getRowId={(row: any) => row.id || row._id}
                 sx={{
                   border: 'none',
+                  fontFamily: "'Inter', sans-serif",
                   '& .MuiDataGrid-columnHeaders': {
-                    bgcolor: alpha('#6366f1', 0.04),
-                    borderRadius: 0,
+                    bgcolor: alpha('#f8faff', 0.8),
+                    backdropFilter: 'blur(8px)',
+                    borderBottom: `2px solid ${alpha('#6366f1', 0.06)}`,
                   },
-                  '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 800, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' },
-                  '& .MuiDataGrid-cell:focus': { outline: 'none' },
-                  '& .MuiDataGrid-cell': { px: 2 },
-                  '& .MuiDataGrid-columnHeader': { px: 2 },
-                  '& .MuiDataGrid-row:hover': { bgcolor: alpha('#6366f1', 0.02) },
+                  '& .MuiDataGrid-columnHeaderTitle': {
+                    fontFamily: "'Manrope', sans-serif",
+                    fontWeight: 800,
+                    fontSize: '0.72rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color: '#64748b',
+                  },
+                  '& .MuiDataGrid-cell': {
+                    borderBottom: `1px solid ${alpha('#64748b', 0.04)}`,
+                    fontSize: '0.88rem',
+                    fontWeight: 500,
+                    color: '#334155',
+                  },
+                  '& .MuiDataGrid-row:hover': {
+                    bgcolor: alpha('#f8faff', 1),
+                  },
+                  '& .MuiDataGrid-footerContainer': {
+                    borderTop: `1px solid ${alpha('#64748b', 0.08)}`,
+                  },
                 }}
               />
             </Paper>
@@ -610,56 +782,102 @@ const TutorProfilePage: React.FC = () => {
           {/* Payment History */}
           <Box sx={{ mb: { xs: 3, sm: 5 } }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
-              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#10b981', 0.06), display: 'flex' }}>
-                <PaymentsIcon sx={{ fontSize: 18, color: '#10b981' }} />
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: alpha('#10b981', 0.1),
+                  display: 'flex',
+                  boxShadow: `0 0 15px ${alpha('#10b981', 0.15)}`,
+                }}
+              >
+                <PaymentsIcon sx={{ fontSize: 18, color: '#059669' }} />
               </Box>
-              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
-                Payment History
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 800,
+                  fontSize: { xs: '1.05rem', sm: '1.25rem' },
+                  letterSpacing: '-0.02em',
+                  color: '#1e293b',
+                }}
+              >
+                Payout Chronicles
               </Typography>
             </Box>
             <Box
               sx={{
-                borderRadius: 3,
+                borderRadius: 4,
                 border: '1px solid',
-                borderColor: 'grey.100',
+                borderColor: alpha('#64748b', 0.08),
                 bgcolor: '#fff',
                 overflow: 'hidden',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                boxShadow: `0 4px 20px ${alpha('#000', 0.02)}`,
               }}
             >
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
+                  <tr style={{ background: alpha('#f8faff', 0.8), borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
                     {['Amount', 'Status', 'Method', 'Date'].map((h) => (
-                      <th key={h} style={{ padding: '14px 16px', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                      <th
+                        key={h}
+                        style={{
+                          padding: '18px 24px',
+                          fontSize: '0.7rem',
+                          fontWeight: 800,
+                          color: '#64748b',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          fontFamily: "'Manrope', sans-serif"
+                        }}
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {adminPayments.length > 0 ? (
                     adminPayments.map((p) => (
-                      <tr key={p.id} style={{ borderBottom: `1px solid ${alpha('#6366f1', 0.04)}` }}>
-                        <td style={{ padding: '14px 16px', fontWeight: 700, fontSize: '0.88rem' }}>₹{p.amount?.toLocaleString()}</td>
-                        <td style={{ padding: '14px 16px' }}>
+                      <tr
+                        key={p.id}
+                        style={{
+                          borderBottom: `1px solid ${alpha('#64748b', 0.04)}`,
+                          transition: 'background-color 0.2s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = alpha('#f8faff', 1))}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <td style={{ padding: '18px 24px', fontWeight: 800, fontSize: '0.95rem', color: '#1e293b' }}>
+                          ₹{p.amount?.toLocaleString()}
+                        </td>
+                        <td style={{ padding: '18px 24px' }}>
                           <Chip
                             label={p.status}
                             size="small"
                             sx={{
-                              fontWeight: 700,
+                              fontFamily: "'Manrope', sans-serif",
+                              fontWeight: 800,
                               fontSize: '0.62rem',
                               height: 22,
-                              bgcolor: p.status === 'PAID' ? alpha('#10b981', 0.1) : p.status === 'PENDING' ? alpha('#f59e0b', 0.1) : alpha('#64748b', 0.08),
+                              bgcolor: p.status === 'PAID' ? alpha('#10b981', 0.12) : p.status === 'PENDING' ? alpha('#f59e0b', 0.12) : alpha('#64748b', 0.08),
                               color: p.status === 'PAID' ? '#059669' : p.status === 'PENDING' ? '#d97706' : '#475569',
+                              border: `1px solid ${p.status === 'PAID' ? alpha('#10b981', 0.2) : p.status === 'PENDING' ? alpha('#f59e0b', 0.2) : 'transparent'}`,
                             }}
                           />
                         </td>
-                        <td style={{ padding: '14px 16px', fontSize: '0.82rem', color: '#64748b' }}>{p.paymentMethod || '-'}</td>
-                        <td style={{ padding: '14px 16px', fontSize: '0.82rem', color: '#64748b' }}>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</td>
+                        <td style={{ padding: '18px 24px', fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>{p.paymentMethod || '-'}</td>
+                        <td style={{ padding: '18px 24px', fontSize: '0.88rem', fontWeight: 600, color: '#64748b' }}>
+                          {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: '0.85rem' }}>No payment records found.</td>
+                      <td colSpan={4} style={{ padding: '48px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem', fontWeight: 500 }}>
+                        No records found in the vault.
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -670,48 +888,102 @@ const TutorProfilePage: React.FC = () => {
           {/* Attendance Snapshot */}
           <Box sx={{ mb: { xs: 3, sm: 5 } }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
-              <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#3b82f6', 0.06), display: 'flex' }}>
-                <EventIcon sx={{ fontSize: 18, color: '#3b82f6' }} />
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: alpha('#f59e0b', 0.1),
+                  display: 'flex',
+                  boxShadow: `0 0 15px ${alpha('#f59e0b', 0.15)}`,
+                }}
+              >
+                <EventIcon sx={{ fontSize: 18, color: '#d97706' }} />
               </Box>
-              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, letterSpacing: '-0.01em' }}>
-                Attendance Snapshot
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 800,
+                  fontSize: { xs: '1.05rem', sm: '1.25rem' },
+                  letterSpacing: '-0.02em',
+                  color: '#1e293b',
+                }}
+              >
+                Attendance Pulse
               </Typography>
             </Box>
-            <Grid container spacing={{ xs: 1.5, sm: 2.5 }}>
+            <Grid container spacing={{ xs: 2, sm: 3 }}>
               {[
-                { label: 'Present', value: attendanceStats.present, color: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
-                { label: 'Absent', value: attendanceStats.absent, color: '#ef4444', gradient: 'linear-gradient(135deg, #ef4444, #dc2626)' },
-                { label: 'Late', value: attendanceStats.late, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' },
-              ].map((stat, idx) => (
-                <Grid item xs={4} key={idx}>
-                  <Box
-                    sx={{
-                      p: { xs: 2, sm: 3 },
-                      borderRadius: { xs: 2.5, sm: 3 },
-                      background: stat.gradient,
-                      color: '#fff',
-                      textAlign: 'center',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      transition: 'all 0.3s',
-                      '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${alpha(stat.color, 0.3)}` },
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: '-50%',
-                        right: '-30%',
-                        width: '70%',
-                        height: '200%',
-                        background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 60%)',
-                        pointerEvents: 'none',
-                      },
-                    }}
-                  >
-                    <Typography variant="h4" fontWeight={900} sx={{ position: 'relative', zIndex: 1, fontSize: { xs: '1.4rem', sm: '2rem' } }}>{stat.value}</Typography>
-                    <Typography variant="caption" fontWeight={700} sx={{ position: 'relative', zIndex: 1, opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: { xs: '0.55rem', sm: '0.7rem' } }}>{stat.label}</Typography>
-                  </Box>
-                </Grid>
-              ))}
+                { label: 'Present', value: attendanceStats.present, color: '#10b981', gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%) shadow' },
+                { label: 'Absent', value: attendanceStats.absent, color: '#ef4444', gradient: 'linear-gradient(135deg, #f87171 0%, #ef4444 100%) shadow' },
+                { label: 'Late', value: attendanceStats.late, color: '#f59e0b', gradient: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) shadow' },
+              ].map((stat, idx) => {
+                const isShadow = stat.gradient.includes('shadow');
+                const gradient = stat.gradient.replace(' shadow', '');
+                return (
+                  <Grid item xs={4} key={idx}>
+                    <Box
+                      sx={{
+                        p: { xs: 2.5, sm: 4 },
+                        borderRadius: { xs: 3, sm: 4 },
+                        background: gradient,
+                        color: '#fff',
+                        textAlign: 'center',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        boxShadow: isShadow ? `0 12px 24px ${alpha(stat.color, 0.25)}` : 'none',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': { 
+                          transform: 'translateY(-4px) scale(1.02)', 
+                          boxShadow: `0 20px 40px ${alpha(stat.color, 0.35)}` 
+                        },
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: '-40%',
+                          right: '-20%',
+                          width: '80%',
+                          height: '180%',
+                          background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%)',
+                          pointerEvents: 'none',
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontFamily: "'Manrope', sans-serif",
+                          fontWeight: 900,
+                          position: 'relative',
+                          zIndex: 1,
+                          fontSize: { xs: '1.5rem', sm: '2.5rem' },
+                          letterSpacing: '-0.04em',
+                          lineHeight: 1,
+                          mb: 0.5,
+                          textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        }}
+                      >
+                        {stat.value}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 800,
+                          position: 'relative',
+                          zIndex: 1,
+                          opacity: 0.9,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.12em',
+                          fontSize: { xs: '0.6rem', sm: '0.75rem' },
+                        }}
+                      >
+                        {stat.label}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                );
+              })}
             </Grid>
           </Box>
         </>
@@ -1003,7 +1275,7 @@ const TutorProfilePage: React.FC = () => {
               {[
                 { label: 'Student Name', value: selectedClass.studentName },
                 { label: 'Grade', value: selectedClass.grade },
-                { label: 'Subject', value: Array.isArray(selectedClass.subject) ? selectedClass.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof selectedClass.subject === 'object' && selectedClass.subject !== null ? (selectedClass.subject as any).label || (selectedClass.subject as any).name || 'N/A' : String(selectedClass.subject || '-')) },
+                { label: 'Subject', value: formatSubjectDisplay(selectedClass.subject) },
                 { label: 'Board', value: selectedClass.board },
                 { label: 'Mode', value: selectedClass.mode },
                 { label: 'Location', value: selectedClass.location || 'N/A' },

@@ -21,6 +21,8 @@ import SnackbarNotification from '../../components/common/SnackbarNotification';
 import GroupStudentsModal from '../../components/classLeads/GroupStudentsModal';
 import { IClassLead } from '../../types';
 
+import { getSubjectList } from '../../utils/subjectUtils';
+
 export default function ClassLeadsListPage() {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -163,45 +165,11 @@ export default function ClassLeadsListPage() {
   };
 
   const formattedLeads = useMemo(() => {
-    let list = (leads as IClassLead[]).map(lead => {
-      const r: any = lead || {};
-      const getLabel = (s: any) => {
-        if (!s) return '';
-        if (typeof s === 'string') return s;
-        return s.label || s.name || String(s);
-      };
-
-      const toStrings = (arr: any[]) => arr.map(getLabel).filter((s) => s && s.trim().length > 0);
-
-      const subjVal: any = lead.subject;
-      let subjectList: string[] = [];
-
-      if (Array.isArray(subjVal)) subjectList = toStrings(subjVal);
-      else if (typeof subjVal === 'string' && subjVal) {
-        if (subjVal.startsWith('[') || subjVal.startsWith('{')) {
-          try {
-            const p = JSON.parse(subjVal);
-            if (Array.isArray(p)) subjectList = toStrings(p);
-          } catch { }
-        }
-        if (subjectList.length === 0) subjectList = subjVal.split(',').map((x: string) => x.trim()).filter(Boolean);
-      } else if (subjVal && typeof subjVal === 'object') {
-        subjectList = [getLabel(subjVal)];
-      }
-
-      return {
-        ...lead,
-        displaySubjects: subjectList,
-      };
-    });
-
-    // Local timing filter since backend doesn't support it yet
-    if (filters.timing) {
-      list = list.filter(l => l.timing?.toLowerCase().includes(filters.timing.toLowerCase()));
-    }
-
-    return list;
-  }, [leads, filters.timing]);
+    return (leads as IClassLead[]).map(lead => ({
+      ...lead,
+      displaySubjects: getSubjectList(lead.subject),
+    }));
+  }, [leads]);
 
   const renderFilterInput = (field: keyof typeof filters, placeholder: string) => (
     <TextField

@@ -17,7 +17,7 @@ export interface TutorLeadFormData {
   email: string;
   qualification: string;
   experience: string;
-  subjects: string[];
+  subjects: any[];
   extracurricularActivities: string[];
   password: string;
   confirmPassword: string;

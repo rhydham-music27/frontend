@@ -19,6 +19,8 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import useNotifications from '../../hooks/useNotifications';
 
+import { getSubjectList } from '../../utils/subjectUtils';
+
 const ClassLeadsFeedCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
   const { notifications, deleteNotif } = useNotifications({ page: 1, limit: 50, enabled: true });
@@ -80,17 +82,9 @@ const ClassLeadsFeedCard: React.FC = () => {
   const computeMatchPercentage = (cl: any, tutor: ITutor | null): number => {
     if (!cl || !tutor) return 0;
 
-    const leadSubjects: string[] = Array.isArray(cl.subject)
-      ? (cl.subject as string[])
-      : cl.subject
-        ? [String(cl.subject)]
-        : [];
-    const tutorSubjects: string[] = Array.isArray((tutor as any).subjects)
-      ? ((tutor as any).subjects as string[])
-      : [];
-    const preferredSubjects: string[] = Array.isArray((tutor as any).settings?.preferredSubjects)
-      ? ((tutor as any).settings.preferredSubjects as string[])
-      : [];
+    const leadSubjects = getSubjectList(cl.subject);
+    const tutorSubjects = getSubjectList((tutor as any).subjects);
+    const preferredSubjects = getSubjectList((tutor as any).settings?.preferredSubjects);
 
     const tutorAllSubjects = new Set<string>([...tutorSubjects, ...preferredSubjects].filter(Boolean));
     const subjectApplicable = leadSubjects.length > 0 && tutorAllSubjects.size > 0;
@@ -340,9 +334,7 @@ const ClassLeadsFeedCard: React.FC = () => {
             const postedAt = (a as any)?.createdAt || (a as any)?.postedAt;
             const postedStr = postedAt ? new Date(postedAt).toLocaleDateString() : '';
             const cl = (a as any).classLead || {};
-            const subjects = Array.isArray(cl?.subject) 
-              ? cl.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') 
-              : (typeof cl?.subject === 'object' && cl?.subject !== null ? (cl.subject as any).label || (cl.subject as any).name || 'N/A' : String(cl?.subject || ''));
+            const subjects = getSubjectList(cl?.subject || cl?.subjects || cl?.subjectList).join(', ');
 
             const isHighlighted = Boolean(matchPercentage >= 80);
 

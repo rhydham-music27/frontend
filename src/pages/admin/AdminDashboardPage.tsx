@@ -17,7 +17,7 @@ import useAdmin from '../../hooks/useAdmin';
 import { getLeadFilterOptions } from '../../services/leadService'; // Import service to fetch cities
 
 import MetricsCard from '../../components/dashboard/MetricsCard';
-import DateRangePicker from '../../components/dashboard/DateRangePicker'; 
+import DateRangePicker from '../../components/dashboard/DateRangePicker';
 import ExportButtons from '../../components/dashboard/ExportButtons';
 import RefreshButton from '../../components/dashboard/RefreshButton';
 // import CumulativeGrowthChart from '../../components/dashboard/CumulativeGrowthChart'; // Removed
@@ -40,13 +40,13 @@ const AdminDashboardPage: React.FC = () => {
   // Default to last 365 days so user can see yearly/monthly trends
   const defaultFrom = format(subDays(new Date(), 365), 'yyyy-MM-dd');
   const defaultTo = format(new Date(), 'yyyy-MM-dd');
-  
+
   // State for Filters
   const [dateRange, setDateRange] = useState<{ fromDate: string; toDate: string; city?: string }>({
     fromDate: defaultFrom, toDate: defaultTo
   });
   const [cities, setCities] = useState<string[]>([]);
-  
+
   const [autoRefresh, setAutoRefresh] = useState<boolean>(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>(
@@ -95,14 +95,14 @@ const AdminDashboardPage: React.FC = () => {
     setDateRange(prev => ({ ...prev, city: city === 'all' ? undefined : city }));
   };
 
-  const handleAutoRefreshToggle = (enabled: boolean) => { 
-    setAutoRefresh(enabled); 
-    setLastRefreshed(new Date()); 
+  const handleAutoRefreshToggle = (enabled: boolean) => {
+    setAutoRefresh(enabled);
+    setLastRefreshed(new Date());
   };
-  
-  const handleManualRefresh = async () => { 
-    await Promise.all([refetchKpi(), refetchCharts()]); 
-    setLastRefreshed(new Date()); 
+
+  const handleManualRefresh = async () => {
+    await Promise.all([refetchKpi(), refetchCharts()]);
+    setLastRefreshed(new Date());
   };
 
   const handleExportCSV = async (reportType: string) => {
@@ -126,8 +126,8 @@ const AdminDashboardPage: React.FC = () => {
   return (
     <Container maxWidth="xl" disableGutters sx={{ px: { xs: 0, sm: 0 } }}>
       {/* Hero Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #1A237E 0%, #0D47A1 100%)',
           color: 'white',
           py: { xs: 4, md: 5 },
@@ -147,7 +147,7 @@ const AdminDashboardPage: React.FC = () => {
             Welcome back, {user?.name || 'Admin'}! Here's your system-wide overview and performance metrics.
           </Typography>
         </Box>
-        
+
         {/* Abstract shapes for visual interest */}
         <Box sx={{
           position: 'absolute',
@@ -186,43 +186,43 @@ const AdminDashboardPage: React.FC = () => {
           bgcolor: 'background.paper',
         }}
       >
-         {/* Filters Group */}
-         <Box display="flex" gap={2} flexWrap="wrap" alignItems="center" flex={1}>
-            <Box sx={{ minWidth: { xs: '100%', sm: 240 } }}>
-              <DateRangePicker fromDate={dateRange.fromDate} toDate={dateRange.toDate} onDateChange={handleDateChange} presets />
-            </Box>
-            <Box sx={{ minWidth: { xs: '100%', sm: 200 } }}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="city-select-label">Filter by City</InputLabel>
-                  <Select
-                    labelId="city-select-label"
-                    value={dateRange.city || 'all'}
-                    label="Filter by City"
-                    onChange={handleCityChange}
-                  >
-                  <MenuItem value="all">All Cities</MenuItem>
-                  {cities.map((city) => (
-                    <MenuItem key={city} value={city}>{city}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-         </Box>
+        {/* Filters Group */}
+        <Box display="flex" gap={2} flexWrap="wrap" alignItems="center" flex={1}>
+          <Box sx={{ minWidth: { xs: '100%', sm: 240 } }}>
+            <DateRangePicker fromDate={dateRange.fromDate} toDate={dateRange.toDate} onDateChange={handleDateChange} presets />
+          </Box>
+          <Box sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="city-select-label">Filter by City</InputLabel>
+              <Select
+                labelId="city-select-label"
+                value={dateRange.city || 'all'}
+                label="Filter by City"
+                onChange={handleCityChange}
+              >
+                <MenuItem value="all">All Cities</MenuItem>
+                {cities.map((city) => (
+                  <MenuItem key={city} value={city}>{city}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
 
-         {/* Actions Group */}
-         <Box display="flex" gap={1.5} alignItems="center" flexWrap="wrap">
-            <RefreshButton onRefresh={handleManualRefresh} autoRefresh={autoRefresh} onAutoRefreshToggle={handleAutoRefreshToggle} loading={kpiLoading || chartLoading} lastRefreshed={lastRefreshed} />
-            <ExportButtons onExportCSV={handleExportCSV} onExportPDF={handleExportPDF} reportTypes={reportTypes as any} />
-         </Box>
+        {/* Actions Group */}
+        <Box display="flex" gap={1.5} alignItems="center" flexWrap="wrap">
+          <RefreshButton onRefresh={handleManualRefresh} autoRefresh={autoRefresh} onAutoRefreshToggle={handleAutoRefreshToggle} loading={kpiLoading || chartLoading} lastRefreshed={lastRefreshed} />
+          <ExportButtons onExportCSV={handleExportCSV} onExportPDF={handleExportPDF} reportTypes={reportTypes as any} />
+        </Box>
       </Paper>
 
       {(kpiError || chartError) && <ErrorAlert error={kpiError || chartError} />}
 
       {/* Key Metrics - Uses kpiAnalytics (Filtered) */}
       <Box mb={{ xs: 3, sm: 4 }}>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
+        <Typography
+          variant="h5"
+          fontWeight={700}
           mb={{ xs: 2, sm: 2.5, md: 3 }}
           sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
@@ -290,22 +290,22 @@ const AdminDashboardPage: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
-             <MetricsCard
-               title="Teacher Churn"
-               value={`${kpiAnalytics?.base.kpi?.teacherChurn ?? 0}%`}
-               subtitle="Inactive Teachers"
-               icon={<TrendingDownIcon />}
-               color="error.main"
-               loading={kpiLoading && !kpiAnalytics}
-             />
-           </Grid>
+            <MetricsCard
+              title="Teacher Churn"
+              value={`${kpiAnalytics?.base.kpi?.teacherChurn ?? 0}%`}
+              subtitle="Inactive Teachers"
+              icon={<TrendingDownIcon />}
+              color="error.main"
+              loading={kpiLoading && !kpiAnalytics}
+            />
+          </Grid>
 
           <Grid item xs={12} sm={6} md={3} sx={{ minWidth: 0 }}>
             <MetricsCard
               title="Pending Approvals"
               value={
-                chartAnalytics?.health 
-                  ? ((chartAnalytics.health.pendingApprovals?.totalPending || 0) + (chartAnalytics.health.pendingTutorVerifications || 0)).toLocaleString() 
+                chartAnalytics?.health
+                  ? ((chartAnalytics.health.pendingApprovals?.totalPending || 0) + (chartAnalytics.health.pendingTutorVerifications || 0)).toLocaleString()
                   : '-'
               }
               subtitle={`${chartAnalytics?.health?.pendingApprovals?.attendance?.total || 0} Attendance • ${chartAnalytics?.health?.pendingTutorVerifications || 0} Tutors`}
@@ -321,9 +321,9 @@ const AdminDashboardPage: React.FC = () => {
       {/* Analytics & Charts - Uses chartAnalytics (Unfiltered / Default Range) */}
       {/* Analytics & Charts - Uses chartAnalytics (Unfiltered / Default Range) */}
       <Box mb={{ xs: 3, sm: 4 }}>
-        <Typography 
-          variant="h5" 
-          fontWeight={700} 
+        <Typography
+          variant="h5"
+          fontWeight={700}
           mb={{ xs: 2, sm: 2.5, md: 3 }}
           sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
         >
@@ -332,36 +332,36 @@ const AdminDashboardPage: React.FC = () => {
 
         {/* Charts Grid: 2 per row */}
         <Box mb={3}>
-           <Grid container spacing={3}>
-               <Grid item xs={12} md={6}>
-                   <TeacherGrowthChart data={chartAnalytics?.tutors.growth || []} />
-               </Grid>
-               <Grid item xs={12} md={6}>
-                   <ClassGrowthChart 
-                     data={chartAnalytics?.classes.growth || []} 
-                   />
-               </Grid>
-               <Grid item xs={12} md={6}>
-                   <ClassLeadsChart data={chartAnalytics?.classes.leadsGrowth || []} />
-               </Grid>
-               <Grid item xs={12} md={6}>
-                   <RevenueTrendsChart data={chartAnalytics?.finance?.revenueTrends || []} loading={chartLoading && !chartAnalytics} />
-               </Grid>
-           </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <TeacherGrowthChart data={chartAnalytics?.tutors.growth || []} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <ClassGrowthChart
+                data={chartAnalytics?.classes.growth || []}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <ClassLeadsChart data={chartAnalytics?.classes.leadsGrowth || []} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <RevenueTrendsChart data={chartAnalytics?.finance?.revenueTrends || []} loading={chartLoading && !chartAnalytics} />
+            </Grid>
+          </Grid>
         </Box>
 
         <Grid container spacing={3}>
           {/* Growth & Health */}
-          
+
           <Grid item xs={12} md={6} lg={4}>
-             <SystemHealthCard data={chartAnalytics?.health} />
+            <SystemHealthCard data={chartAnalytics?.health} />
           </Grid>
 
           {/* Role Performance */}
           <Grid item xs={12}>
-            <RolePerformanceTable 
-              managerData={chartAnalytics?.managers} 
-              coordinatorData={chartAnalytics?.coordinators} 
+            <RolePerformanceTable
+              managerData={chartAnalytics?.managers}
+              coordinatorData={chartAnalytics?.coordinators}
               loading={chartLoading && !chartAnalytics}
             />
           </Grid>

@@ -101,25 +101,51 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
   const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeId ?? null);
 
   const handleAddSubjects = () => {
-    const newSubjects = selectedSubjects.filter(s => !formData.subjects.includes(s));
-    if (newSubjects.length > 0) {
-      setFormData(prev => ({ ...prev, subjects: [...prev.subjects, ...newSubjects] }));
+    const newSubjectObjects = selectedSubjects.map(id => {
+      const opt = subjectOptions.find(o => o._id === id);
+      // Use the pre-formatted label from the backend if it looks hierarchical (contains dots or bullets)
+      // Otherwise fallback to manual formatting
+      const label = opt?.label?.includes(' . ') || opt?.label?.includes(' • ') 
+        ? opt.label 
+        : `${selectedBoard} • Class ${selectedGrade} • ${opt?.label || id}`;
+        
+      return {
+        _id: id,
+        label: label
+      };
+    }).filter(s => !formData.subjects.some((existing: any) => 
+      (typeof existing === 'string' ? existing : existing._id) === s._id
+    ));
+
+    if (newSubjectObjects.length > 0) {
+      setFormData(prev => ({ ...prev, subjects: [...prev.subjects, ...newSubjectObjects] }));
       setSelectedSubjects([]);
     }
   };
 
   const handleRemoveSubject = (subjectToRemove: any) => {
-    const nameToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : (subjectToRemove as any)?.name || (subjectToRemove as any)?.label;
+    const idToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : subjectToRemove?._id;
+    const nameToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : subjectToRemove?.label || subjectToRemove?.name;
+    
     setFormData(prev => ({
       ...prev,
       subjects: prev.subjects.filter((s: any) => {
-        const sName = typeof s === 'string' ? s : (s as any)?.name || (s as any)?.label;
+        const sId = typeof s === 'string' ? s : s?._id;
+        const sName = typeof s === 'string' ? s : s?.label || s?.name;
+        
+        // If we have IDs, filter by ID. Otherwise fallback to name.
+        if (idToRemove && sId) return sId !== idToRemove;
         return sName !== nameToRemove;
       })
     }));
   };
 
   const formatSubjectLabel = (val: string) => {
+    if (!val) return 'N/A';
+    // If it's an ID (hex), we can't format it without the label. 
+    // This function is now mainly a fallback as we store formatted labels.
+    if (/^[0-9a-fA-F]{24}$/.test(val)) return val; 
+
     const parts = val.split('_');
     if (parts.length >= 3) {
       const board = parts[0];
@@ -467,8 +493,8 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                           renderValue={(selected) => `${selected.length} selected`}
                         >
                           {subjectOptions.map(opt => (
-                            <MenuItem key={opt.value} value={opt.value}>
-                              <Checkbox checked={selectedSubjects.includes(opt.value)} size="small" />
+                            <MenuItem key={opt._id} value={opt._id}>
+                              <Checkbox checked={selectedSubjects.includes(opt._id)} size="small" />
                               <ListItemText primary={opt.label} />
                             </MenuItem>
                           ))}
@@ -490,12 +516,14 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
 
                   <Box mt={2.5} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {(formData.subjects as any[]).map((sub, index) => {
-                      const label = typeof sub === 'string' ? sub : (sub as any)?.name || (sub as any)?.label || 'N/A';
-                      const key = typeof sub === 'string' ? sub : (sub as any)?._id || index;
+                      const label = typeof sub === 'string' ? sub : sub?.label || sub?.name || 'N/A';
+                      const key = typeof sub === 'string' ? sub : sub?._id || index;
+                      const displayLabel = (typeof sub !== 'string' && sub?.label) ? sub.label : formatSubjectLabel(label);
+                      
                       return (
                         <Chip
                           key={key}
-                          label={formatSubjectLabel(label)}
+                          label={displayLabel}
                           onDelete={isFieldReadOnly('subjects') ? undefined : () => handleRemoveSubject(sub)}
                           sx={{ borderRadius: 1.5, fontWeight: 600 }}
                           color="primary"

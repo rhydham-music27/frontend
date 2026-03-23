@@ -1,4 +1,4 @@
-import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box, Tooltip } from '@mui/material';
+import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box, Tooltip, alpha } from '@mui/material';
 import {
   User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock,
   FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles,
@@ -63,6 +63,19 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
     fetchProfile();
   }, [tutorId]);
+
+  const formatSubjectLabel = (subject: any) => {
+    if (!subject) return '-';
+    if (typeof subject === 'string') return subject;
+
+    const parts = [];
+    let current = subject;
+    while (current) {
+      parts.unshift(current.label);
+      current = current.parent;
+    }
+    return parts.join(' . ');
+  };
 
   const handleShareProfile = async () => {
     if (!tutor) return;
@@ -258,39 +271,40 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      {/* 1. HERO SECTION */}
-      <div className="relative overflow-hidden bg-slate-900 rounded-[2.5rem] shadow-2xl transition-all duration-500 hover:shadow-blue-500/10 border border-white/5">
+      {/* 1. HERO SECTION - LUMINESCENT SCHOLAR LIGHT MODE */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#f8faff] to-[#eff6ff] rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:shadow-indigo-500/5">
         {/* Animated Background Accents */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-400/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
 
         <div className="relative z-10 p-8 md:p-12">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
             {/* Avatar & Tier */}
             <div className="flex flex-col items-center gap-6">
               <div
-                className={`group relative w-36 h-36 md:w-48 md:h-48 rounded-[2rem] overflow-hidden ring-8 ring-white/5 shadow-2xl transition-all duration-500 ${isTutorSelf ? 'cursor-pointer hover:ring-blue-500/30' : ''}`}
+                className={`group relative w-36 h-36 md:w-48 md:h-48 rounded-[2.5rem] overflow-hidden ring-8 ring-white shadow-2xl transition-all duration-500 ${isTutorSelf ? 'cursor-pointer hover:ring-blue-500/20' : ''}`}
                 onClick={isTutorSelf ? handleOpenAvatarModal : undefined}
               >
                 {profileImageUrl ? (
                   <img src={profileImageUrl} alt={user?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-[#0066ff] via-[#2563eb] to-[#3b82f6] flex items-center justify-center">
                     <User className="w-16 h-16 text-white/90" />
                   </div>
                 )}
                 {isTutorSelf && (
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300 backdrop-blur-[2px]">
+                  <div className="absolute inset-0 bg-[#0066ff]/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300 backdrop-blur-[4px]">
                     <div className="text-center group-hover:scale-110 transition-transform">
-                      <Sparkles className="text-blue-400 w-10 h-10 mb-2 mx-auto drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                      <span className="text-white text-[10px] font-black tracking-widest uppercase">Update Photo</span>
+                      <Sparkles className="text-white w-10 h-10 mb-2 mx-auto drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+                      <span className="text-white text-[10px] font-black tracking-widest uppercase">Sync Photo</span>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="px-5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg">
-                <span className="text-xs font-black tracking-[0.2em] uppercase text-white/70">
-                  Tier: <span className={tutor.tier?.includes('GOLD') ? 'text-amber-400' : tutor.tier?.includes('SILVER') ? 'text-slate-300' : 'text-orange-400'}>
+              <div className="px-5 py-2 rounded-full bg-white border border-slate-100 shadow-md flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${tutor.tier?.includes('GOLD') ? 'bg-amber-400' : tutor.tier?.includes('SILVER') ? 'bg-slate-400' : 'bg-orange-500'}`} />
+                <span className="text-[10px] font-black tracking-[0.15em] uppercase text-slate-500">
+                  Tier: <span className={tutor.tier?.includes('GOLD') ? 'text-amber-600' : tutor.tier?.includes('SILVER') ? 'text-slate-600' : 'text-orange-600'}>
                     {tutor.tier?.split('(')[1]?.replace(')', '') || 'Bronze'}
                   </span>
                 </span>
@@ -299,35 +313,42 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
             {/* Basic Info */}
             <div className="flex-1 text-center md:text-left space-y-6">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                  <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">{user?.name}</h1>
+                  <h1 className="text-4xl md:text-5xl font-extrabold text-[#1e293b] tracking-tight font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                    {user?.name}
+                  </h1>
                   {tutor.verificationStatus === 'VERIFIED' && (
-                    <div className="p-2 rounded-2xl bg-green-500/10 border border-green-500/20">
-                      <ShieldCheck className="w-6 h-6 text-green-400" />
+                    <div className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 flex items-center gap-1.5 shadow-sm">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span className="text-[10px] font-black text-emerald-700 tracking-wider">VERIFIED</span>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <div className="w-12 h-[2px] bg-blue-500/50 rounded-full" />
-                  <p className="text-blue-300 font-bold text-lg tracking-wide uppercase opacity-90">
+                <div className="flex items-center justify-center md:justify-start gap-3">
+                  <div className="w-8 h-[2px] bg-blue-600/30 rounded-full" />
+                  <p className="text-blue-600 font-extrabold text-sm tracking-[0.1em] uppercase opacity-90 font-['Manrope']">
                     {tutor.qualifications?.[0] || "Professional Educator"}
                   </p>
                 </div>
-                <p className="text-slate-400 font-medium text-lg max-w-2xl leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1">
-                  "{tutor.bio || "Dedicated to empowering students through personalized and innovative teaching methodologies."}"
-                </p>
+                <div className="relative">
+                  <p className="text-[#475569] font-medium text-lg max-w-2xl leading-relaxed italic border-l-4 border-blue-500/20 pl-6 py-2 bg-blue-50/30 rounded-r-2xl">
+                    "{tutor.bio || "Dedicated to empowering students through personalized and innovative teaching methodologies."}"
+                  </p>
+                </div>
               </div>
 
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
-                <div className="bg-white/5 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3 transition-colors hover:bg-white/10">
-                  <Award className="w-5 h-5 text-blue-400" />
-                  <span className="text-xs font-black text-white tracking-widest uppercase">{tutor.teacherId || 'TUT-XXXX'}</span>
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-8">
+                <div className="bg-white px-5 py-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm hover:shadow-md transition-all">
+                  <Award className="w-5 h-5 text-blue-500" />
+                  <span className="text-xs font-extrabold text-[#1e293b] tracking-widest uppercase font-['Manrope']">{tutor.teacherId || 'TUT-XXXX'}</span>
                 </div>
-                <div className="bg-white/5 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/10 flex items-center gap-3 transition-colors hover:bg-white/10">
-                  <Clock className="w-5 h-5 text-blue-400" />
-                  <span className="text-lg font-black text-white">{tutor.experienceHours || 0}</span>
-                  <span className="text-[10px] font-bold text-white/40 border-l border-white/10 pl-3">TOTAL HOURS</span>
+                <div className="bg-white px-5 py-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm hover:shadow-md transition-all">
+                  <Clock className="w-5 h-5 text-indigo-500" />
+                  <div className="flex flex-col">
+                    <span className="text-lg font-black text-[#1e293b] leading-none">{tutor.experienceHours || 0}</span>
+                    <span className="text-[9px] font-bold text-slate-400 tracking-tighter uppercase mt-0.5">Total Hours</span>
+                  </div>
                 </div>
                 {!tutorId && (
                   <Button
@@ -337,37 +358,44 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                     onClick={handleShareProfile}
                     sx={{
                       borderRadius: '18px',
-                      bgcolor: 'rgba(255,255,255,0.1)',
-                      backdropFilter: 'blur(10px)',
+                      background: 'linear-gradient(135deg, #2563eb 0%, #0066ff 100%)',
                       color: 'white',
+                      fontFamily: "'Manrope', sans-serif",
                       fontWeight: 800,
                       textTransform: 'none',
                       px: 4,
+                      boxShadow: '0 8px 16px rgba(0, 102, 255, 0.2)',
                       '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.2)',
+                        background: 'linear-gradient(135deg, #1d4ed8 0%, #0052cc 100%)',
+                        boxShadow: '0 12px 20px rgba(0, 102, 255, 0.3)',
                         transform: 'translateY(-2px)'
                       },
                       transition: 'all 0.3s'
                     }}
                   >
-                    {shareCopied ? 'Copied!' : 'Share Profile'}
+                    {shareCopied ? 'URL Copied!' : 'Share Profile'}
                   </Button>
                 )}
               </div>
             </div>
 
-            {/* Availability Toggle / Status */}
-            <div className="bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10 min-w-[200px]">
+            {/* Availability Insights */}
+            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-xl min-w-[220px] flex flex-col justify-center">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Status</span>
-                <div className={`w-3 h-3 rounded-full animate-pulse ${tutor.isAvailable ? 'bg-green-50' : 'bg-red-50'}`} />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Status</span>
+                <div className={`w-3 h-3 rounded-full animate-pulse ${tutor.isAvailable ? 'bg-emerald-500' : 'bg-red-500'} shadow-[0_0_10px_rgba(16,185,129,0.5)]`} />
               </div>
-              <div className="text-center space-y-2">
-                <p className={`text-xl font-black ${tutor.isAvailable ? 'text-green-400' : 'text-red-400'}`}>
-                  {tutor.isAvailable ? 'ACTIVE' : 'OFF DUTY'}
-                </p>
-                <Divider sx={{ borderColor: 'rgba(255,255,255,0.05)' }} />
-                <p className="text-xs text-white/40">Join community: {tutor.whatsappCommunityJoined ? '✅ Joined' : '❌ Pending'}</p>
+              <div className="text-center space-y-4">
+                <div className="py-2 px-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <p className={`text-xl font-black font-['Manrope'] ${tutor.isAvailable ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {tutor.isAvailable ? 'ACTIVE' : 'OFF DUTY'}
+                  </p>
+                </div>
+                <Divider sx={{ borderColor: alpha('#64748b', 0.08) }} />
+                <div className="flex items-center justify-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${tutor.whatsappCommunityJoined ? 'bg-blue-500' : 'bg-slate-300'}`} />
+                  <p className="text-[10px] font-extrabold text-slate-500 tracking-tight">WHATSAPP COMMUNITY: {tutor.whatsappCommunityJoined ? 'JOINED' : 'PENDING'}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -375,22 +403,22 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       </div>
 
       <Grid container spacing={4}>
-        {/* 2. STATS OVERVIEW - FULL WIDTH INSIDE GRID */}
+        {/* 2. STATS OVERVIEW - LUMINESCENT SCHOLAR */}
         <Grid item xs={12}>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
             {[
-              { label: 'Classes Assigned', value: tutor.classesAssigned, icon: BarChart2, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'Completed', value: tutor.classesCompleted, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { label: 'Demos Taken', value: tutor.demosTaken, icon: Clock, color: 'text-violet-600', bg: 'bg-violet-50' },
-              { label: 'Teaching Hours', value: tutor.experienceHours || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-              { label: 'Interest', value: tutor.interestCount, icon: Heart, color: 'text-rose-600', bg: 'bg-rose-50' },
+              { label: 'Assigned', value: tutor.classesAssigned, icon: BarChart2, color: '#2563eb', bg: 'bg-blue-50/50' },
+              { label: 'Completed', value: tutor.classesCompleted, icon: CheckCircle, color: '#059669', bg: 'bg-emerald-50/50' },
+              { label: 'Demos', value: tutor.demosTaken, icon: Clock, color: '#7c3aed', bg: 'bg-violet-50/50' },
+              { label: 'Hours', value: tutor.experienceHours || 0, icon: Clock, color: '#d97706', bg: 'bg-amber-50/50' },
+              { label: 'Interests', value: tutor.interestCount, icon: Heart, color: '#e11d48', bg: 'bg-rose-50/50' },
             ].map((stat, i) => (
-              <div key={i} className="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col items-center text-center group hover:shadow-2xl hover:-translate-y-2 transition-all duration-500">
-                <div className={`p-4 rounded-2xl ${stat.bg} mb-4 group-hover:rotate-12 transition-all duration-500 ${stat.color}`}>
-                  <stat.icon size={28} />
+              <div key={i} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center text-center group hover:shadow-xl hover:-translate-y-2 transition-all duration-500">
+                <div className={`w-14 h-14 rounded-2xl ${stat.bg} mb-4 flex items-center justify-center group-hover:rotate-6 transition-all duration-500`} style={{ color: stat.color }}>
+                  <stat.icon size={26} strokeWidth={2.5} />
                 </div>
-                <div className="text-4xl font-black text-slate-900 tracking-tight">{stat.value}</div>
-                <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-2">{stat.label}</div>
+                <div className="text-3xl font-black text-[#1e293b] tracking-tight font-['Manrope']">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 font-['Manrope']">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -398,27 +426,30 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
         {/* 3. LEFT COLUMN: PERSONAL & CONTACT */}
         <Grid item xs={12} lg={4} className="space-y-6">
-          {/* Contact Details */}
-          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
-            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-              <Phone className="text-blue-500" size={20} /> Contact Profile
+          {/* Contact Details - Luminescent Scholar */}
+          <section className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 space-y-6">
+            <h3 className="text-lg font-black text-[#1e293b] flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                <Phone size={18} strokeWidth={2.5} />
+              </div>
+              Contact Network
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {[
-                { label: 'Email Address', value: user?.email, icon: Mail },
-                { label: 'WhatsApp Number', value: user?.phone, icon: Phone },
-                { label: 'Alternate Phone', value: tutor?.alternatePhone, icon: Phone },
-                { label: 'Current City', value: user?.city, icon: MapPin },
-                { label: 'Gender', value: user?.gender?.toLowerCase(), icon: User, capitalize: true },
+                { label: 'Primary Email', value: user?.email, icon: Mail },
+                { label: 'Secure WhatsApp', value: user?.phone, icon: Phone },
+                { label: 'Emergency Contact', value: tutor?.alternatePhone, icon: Phone },
+                { label: 'Base Location', value: user?.city, icon: MapPin },
+                { label: 'Gender Profile', value: user?.gender?.toLowerCase(), icon: User, capitalize: true },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                    <item.icon size={18} />
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                    <item.icon size={16} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{item.label}</p>
-                    <p className={`text-sm font-semibold text-slate-700 ${item.capitalize ? 'capitalize' : ''}`}>
-                      {item.value || 'Not provided'}
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-['Manrope']">{item.label}</p>
+                    <p className={`text-sm font-bold text-[#334155] ${item.capitalize ? 'capitalize' : ''}`}>
+                      {item.value || 'DEFERRED'}
                     </p>
                   </div>
                 </div>
@@ -427,30 +458,30 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
           </section>
 
           {/* Verification Status Card */}
-          <section className={`rounded-3xl shadow-sm p-6 border ${tutor.verificationStatus === 'VERIFIED' ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
-            <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
-              <ShieldCheck className={tutor.verificationStatus === 'VERIFIED' ? 'text-green-600' : 'text-amber-600'} /> Verification Info
+          <section className={`rounded-[2rem] shadow-sm p-8 border ${tutor.verificationStatus === 'VERIFIED' ? 'bg-emerald-50/30 border-emerald-100' : 'bg-amber-50/30 border-amber-100'}`}>
+            <h3 className="text-lg font-black text-[#1e293b] mb-6 flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              <ShieldCheck className={tutor.verificationStatus === 'VERIFIED' ? 'text-emerald-600' : 'text-amber-600'} /> Validation
             </h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="font-bold text-slate-500">Global Status:</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase ${tutor.verificationStatus === 'VERIFIED' ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'
+                <span className="font-bold text-slate-500 font-['Manrope']">Registry Status:</span>
+                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase ${tutor.verificationStatus === 'VERIFIED' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-amber-500 text-white shadow-lg shadow-amber-200'
                   }`}>
                   {tutor.verificationStatus}
                 </span>
               </div>
               {tutor.verifiedAt && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="font-bold text-slate-500">Verified On:</span>
-                  <span className="text-slate-700 font-mono italic">{new Date(tutor.verifiedAt).toLocaleDateString()}</span>
+                  <span className="font-bold text-slate-500 font-['Manrope']">Authenticated On:</span>
+                  <span className="text-slate-700 font-black font-['Manrope'] text-xs opacity-60">{new Date(tutor.verifiedAt).toLocaleDateString()}</span>
                 </div>
               )}
               {tutor.verificationNotes && (
-                <div className="mt-4 p-3 rounded-xl bg-white/50 border border-slate-200">
-                  <p className="text-xs font-bold text-slate-400 uppercase mb-1 flex items-center gap-1">
-                    <Info size={12} /> Remarks
+                <div className="mt-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                  <p className="text-[9px] font-black text-slate-400 uppercase mb-2 flex items-center gap-1.5 font-['Manrope']">
+                    <Info size={12} className="text-blue-500" /> System Remarks
                   </p>
-                  <p className="text-xs text-slate-600 italic">"{tutor.verificationNotes}"</p>
+                  <p className="text-xs text-[#475569] font-medium italic leading-relaxed">"{tutor.verificationNotes}"</p>
                 </div>
               )}
             </div>
@@ -459,35 +490,38 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
         {/* 4. MAIN COLUMN: TEACHING & EXPERIENCE */}
         <Grid item xs={12} lg={8} className="space-y-6">
-          {/* Professional Credentials */}
-          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-            <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
-              <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                <BookOpen className="text-blue-500" size={24} /> Academic & Expertise
+          {/* Professional Credentials - Luminescent Scholar */}
+          <section className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-10">
+            <div className="flex flex-wrap justify-between items-center gap-6 mb-10">
+              <h3 className="text-xl font-black text-[#1e293b] flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                  <BookOpen size={22} strokeWidth={2.5} />
+                </div>
+                Academic Portfolio
               </h3>
-              <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl">
-                <Briefcase className="text-slate-400" size={16} />
-                <span className="text-sm font-bold text-slate-600">{tutor.yearsOfExperience || 0}+ Years Practical Experience</span>
+              <div className="flex items-center gap-3 bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 shadow-sm">
+                <Briefcase className="text-blue-500 shadow-xl" size={16} />
+                <span className="text-xs font-black text-[#475569] uppercase tracking-wider font-['Manrope']">{tutor.yearsOfExperience || 0}+ Years Specialized Experience</span>
               </div>
             </div>
 
-            <Grid container spacing={4}>
+            <Grid container spacing={5}>
               <Grid item xs={12} md={6}>
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Languages Known</p>
-                    <div className="flex flex-wrap gap-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 font-['Manrope']">Linguistic Fluency</p>
+                    <div className="flex flex-wrap gap-2.5">
                       {tutor.languagesKnown?.length ? tutor.languagesKnown.map((lang, idx) => (
-                        <Chip key={idx} icon={<Languages size={14} />} label={lang} className="bg-blue-50 text-blue-700 font-bold rounded-xl" />
-                      )) : <span className="text-slate-400 text-xs italic">Not specified</span>}
+                        <Chip key={idx} icon={<Languages size={14} />} label={lang} sx={{ bgcolor: '#f1f5f9', color: '#334155', fontWeight: 800, borderRadius: '12px', border: '1px solid #e2e8f0', fontFamily: "'Manrope', sans-serif", fontSize: '0.7rem' }} />
+                      )) : <span className="text-slate-400 text-xs italic">Awaiting selection</span>}
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Core Skills</p>
-                    <div className="flex flex-wrap gap-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 font-['Manrope']">Distinctive Skillsets</p>
+                    <div className="flex flex-wrap gap-2.5">
                       {tutor.skills?.length ? tutor.skills.map((skill, idx) => (
-                        <Chip key={idx} icon={<Sparkles size={14} />} label={skill} className="bg-indigo-50 text-indigo-700 font-bold rounded-xl" />
-                      )) : <span className="text-slate-400 text-xs italic">Not specified</span>}
+                        <Chip key={idx} icon={<Sparkles size={14} />} label={skill} sx={{ bgcolor: alpha('#0066ff', 0.05), color: '#0066ff', fontWeight: 800, borderRadius: '12px', border: '1px solid', borderColor: alpha('#0066ff', 0.1), fontFamily: "'Manrope', sans-serif", fontSize: '0.7rem' }} />
+                      )) : <span className="text-slate-400 text-xs italic">Awaiting selection</span>}
                     </div>
                   </div>
                 </div>
@@ -496,17 +530,19 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               <Grid item xs={12} md={6}>
                 <div className="space-y-6">
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Qualifications</p>
-                    <div className="space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 font-['Manrope']">Verified Qualifications</p>
+                    <div className="space-y-3">
                       {tutor.qualifications?.length ? (tutor.qualifications as any[]).map((q, idx) => {
                         const label = typeof q === 'string' ? q : (q as any)?.label || (q as any)?.name || 'N/A';
                         return (
-                          <div key={`${(q as any)?._id || idx}`} className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl">
-                            <GraduationCap className="text-blue-500" size={18} />
-                            <span className="text-sm font-bold text-slate-700">{label}</span>
+                          <div key={`${(q as any)?._id || idx}`} className="flex items-center gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-blue-100 group">
+                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                              <GraduationCap size={20} />
+                            </div>
+                            <span className="text-sm font-black text-[#334155] font-['Manrope'] tracking-tight">{label}</span>
                           </div>
                         );
-                      }) : <span className="text-slate-400 text-xs italic">Not provided</span>}
+                      }) : <span className="text-slate-400 text-xs italic">Documentation pending</span>}
                     </div>
                   </div>
                 </div>
@@ -514,28 +550,35 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             </Grid>
           </section>
 
-          {/* Preferences Section */}
-          <section className="bg-slate-900 rounded-3xl shadow-xl p-8 text-white/90">
-            <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
-              <Sparkles className="text-blue-400" size={24} /> Service Preferences
+          {/* Service Preferences - Luminescent Scholar Light Mode */}
+          <section className="bg-white rounded-[2.5rem] shadow-xl p-8 border border-slate-100 relative overflow-hidden">
+            {/* Background Glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            
+            <h3 className="text-xl font-black text-[#1e293b] mb-8 flex items-center gap-3 relative z-10 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm">
+                <Sparkles size={20} strokeWidth={2.5} />
+              </div>
+              Service Architecture
             </h3>
 
-            <Grid container spacing={4}>
+            <Grid container spacing={4} className="relative z-10">
               <Grid item xs={12} md={6} className="space-y-8">
                 <div>
-                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Teaching Subjects</p>
+                  <p className="text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] mb-4 font-['Manrope']">Teaching Specializations</p>
                   <div className="flex flex-wrap gap-3">
                     {tutor.subjects?.map((sub: any, i: number) => (
-                      <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors border border-white/5">
-                        {typeof sub === 'string' ? sub : (sub as any)?.label || 'N/A'}
+                      <span key={i} className="bg-indigo-50/50 px-4 py-2 rounded-xl text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition-all border border-indigo-100/50 shadow-sm">
+                        {formatSubjectLabel(sub)}
                       </span>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Teaching Mode</p>
-                  <div className="bg-blue-600 inline-block px-6 py-3 rounded-2xl font-black tracking-widest text-shadow-sm">
+                  <p className="text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] mb-4 font-['Manrope']">Preferred Methodology</p>
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-[#0066ff] px-6 py-3 rounded-2xl font-black tracking-widest text-[#fff] shadow-lg shadow-blue-500/20 text-xs">
+                    <Handshake size={16} />
                     {tutor.preferredMode || 'NOT SELECTED'}
                   </div>
                 </div>
@@ -543,32 +586,48 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
               <Grid item xs={12} md={6} className="space-y-8">
                 <div>
-                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Preferred Cities/Areas</p>
+                  <p className="text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] mb-4 font-['Manrope']">Operational Jurisdictions</p>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
                       {tutor.preferredCities?.map((city, i) => (
-                        <Chip key={i} label={city} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', fontWeight: 700 }} />
+                        <Chip key={i} label={city} size="small" sx={{ 
+                          bgcolor: alpha('#3b82f6', 0.1), 
+                          color: '#2563eb', 
+                          fontWeight: 800,
+                          fontFamily: "'Manrope', sans-serif",
+                          border: '1px solid',
+                          borderColor: alpha('#3b82f6', 0.2)
+                        }} />
                       ))}
                       {tutor.preferredLocations?.map((loc, i) => (
-                        <Chip key={i} label={loc} size="small" variant="outlined" sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.1)' }} />
+                        <Chip key={i} label={loc} size="small" variant="outlined" sx={{ 
+                          color: '#64748b', 
+                          borderColor: alpha('#64748b', 0.15),
+                          fontWeight: 600,
+                          fontSize: '0.65rem'
+                        }} />
                       ))}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Availability Window</p>
-                  <div className="space-y-2">
+                  <p className="text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] mb-4 font-['Manrope']">Availability Pulse</p>
+                  <div className="space-y-3">
                     {tutor.settings?.availabilityPreferences?.daysAvailable?.length ? (
-                      <div className="flex items-center gap-3 text-sm font-semibold">
-                        <Calendar size={16} className="text-blue-400" />
+                      <div className="flex items-center gap-3 text-sm font-bold text-[#334155]">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                          <Calendar size={16} />
+                        </div>
                         <span>{tutor.settings.availabilityPreferences.daysAvailable.join(', ')}</span>
                       </div>
                     ) : null}
                     {tutor.settings?.availabilityPreferences?.timeSlots?.length ? (
-                      <div className="flex items-center gap-3 text-sm font-semibold opacity-80">
-                        <Clock size={16} className="text-blue-400" />
-                        <span>{tutor.settings.availabilityPreferences.timeSlots.join(' | ')}</span>
+                      <div className="flex items-center gap-3 text-sm font-bold text-[#64748b]">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
+                          <Clock size={16} />
+                        </div>
+                        <span className="opacity-80 font-medium">{tutor.settings.availabilityPreferences.timeSlots.join(' | ')}</span>
                       </div>
                     ) : null}
                   </div>
@@ -577,111 +636,82 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             </Grid>
           </section>
 
-          {/* Detailed Addresses */}
-          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-            <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
-              <MapPin className="text-rose-500" size={24} /> Official Address
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-50 p-5 rounded-3xl border border-dashed border-slate-200">
-                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Permanent Address</p>
-                <p className="text-sm font-medium text-slate-700 leading-relaxed">{tutor.permanentAddress || 'Permanent address not provided'}</p>
+          {/* Detailed Addresses - Luminescent Scholar */}
+          <section className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-10">
+            <h3 className="text-xl font-black text-[#1e293b] mb-8 flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              <div className="p-2 rounded-xl bg-rose-50 text-rose-600">
+                <MapPin size={22} strokeWidth={2.5} />
               </div>
-              <div className="bg-slate-50 p-5 rounded-3xl border border-dashed border-slate-200">
-                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Residential Address</p>
-                <p className="text-sm font-medium text-slate-700 leading-relaxed">{tutor.residentialAddress || 'Same as permanent'}</p>
+              Verified Jurisdictions
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-dashed border-slate-200 group transition-all hover:bg-white hover:border-rose-200">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-3 font-['Manrope'] tracking-widest">Permanent Residence</p>
+                <p className="text-sm font-bold text-[#475569] leading-relaxed font-['Inter']">{tutor.permanentAddress || 'Vault record missing'}</p>
+              </div>
+              <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-dashed border-slate-200 group transition-all hover:bg-white hover:border-rose-200">
+                <p className="text-[10px] font-black text-slate-400 uppercase mb-3 font-['Manrope'] tracking-widest">Active Operative Base</p>
+                <p className="text-sm font-bold text-[#475569] leading-relaxed font-['Inter']">{tutor.residentialAddress || 'Same as primary'}</p>
               </div>
             </div>
           </section>
         </Grid>
 
         <Grid item xs={12}>
-          <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                <FileText className="text-indigo-500" size={24} /> Compliance Documents
+          <section className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8">
+            <div className="flex flex-wrap items-center justify-between gap-6 mb-8">
+              <h3 className="text-xl font-black text-[#1e293b] flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                  <FileText size={20} strokeWidth={2.5} />
+                </div>
+                Compliance Repository
               </h3>
-              {tutor.verificationStatus === 'VERIFIED' && (
-                <span className="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-3 py-1 rounded-full">
-                  <ShieldCheck size={13} /> Documents locked after verification
-                </span>
-              )}
-              {tutor.verificationStatus === 'PENDING' && Array.isArray(tutor.documents) && tutor.documents.length > 0 && (
-                <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-3 py-1 rounded-full">
-                  <Info size={13} /> Documents submitted — awaiting review
-                </span>
-              )}
-              {tutor.verificationFeeStatus === 'PAID' && (
-                <Chip icon={<CheckCircle size={14} />} label="Verification Fee Paid" color="success" size="small" />
-              )}
-              {tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' && (
-                <Chip icon={<CheckCircle size={14} />} label="Fee: Deduct from Class" color="info" size="small" />
-              )}
+              <div className="flex flex-wrap gap-2">
+                {tutor.verificationStatus === 'VERIFIED' && (
+                  <span className="flex items-center gap-2 text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full uppercase tracking-wider">
+                    <ShieldCheck size={14} /> Documents Encrypted & Locked
+                  </span>
+                )}
+                {tutor.verificationFeeStatus === 'PAID' && (
+                  <Chip icon={<CheckCircle size={14} />} label="Verification Paid" variant="outlined" sx={{ borderRadius: '12px', fontWeight: 800, fontSize: '0.65rem', color: '#059669', borderColor: '#10b981', bgcolor: '#f0fdf4' }} />
+                )}
+              </div>
             </div>
-
-            {/* Item 27: Show upload-blocked notice for VERIFIED tutors */}
-            {tutor.verificationStatus === 'VERIFIED' && (
-              <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-100 flex items-start gap-3">
-                <ShieldCheck className="text-green-600 mt-0.5 flex-shrink-0" size={18} />
-                <p className="text-sm text-green-700 font-medium">
-                  Your identity documents are permanently locked after verification. Contact support if you need to make changes.
-                </p>
-              </div>
-            )}
-            {tutor.verificationStatus === 'REJECTED' && (
-              <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3">
-                <Info className="text-red-500 mt-0.5 flex-shrink-0" size={18} />
-                <p className="text-sm text-red-700 font-medium">
-                  Your submission was rejected. Please re-upload valid documents.
-                </p>
-              </div>
-            )}
 
             <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }} gap={3}>
               {Object.entries(docLabels).map(([type, label], idx) => {
                 const status = computeStatusForType(type);
                 const isVerified = tutor.verificationStatus === 'VERIFIED';
-                
-                // Tutors can upload if not verified and not already uploaded (unless rejected).
-                // Managers can ONLY view if it exists.
                 const isThisDocUploaded = status === 'pending' || status === 'approved';
                 const canUpload = (isTutorSelf || !tutorId) && !isVerified && (!isThisDocUploaded || (tutor.verificationStatus === 'REJECTED'));
                 
                 const handleCardClick = () => {
-                  if (isThisDocUploaded) {
-                    handleOpenViewer(type);
-                  } else if (canUpload) {
-                    handleOpenDocumentModal(type);
-                  }
+                  if (isThisDocUploaded) handleOpenViewer(type);
+                  else if (canUpload) handleOpenDocumentModal(type);
                 };
-
-                const isClickable = isThisDocUploaded || canUpload;
 
                 return (
                   <div
                     key={idx}
                     onClick={handleCardClick}
-                    className={`relative p-5 rounded-3xl border-2 transition-all group ${!isClickable ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:shadow-lg'
-                      } ${status === 'approved' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
-                        status === 'pending' ? 'bg-amber-50/50 border-amber-100 hover:border-amber-300' :
-                          'bg-slate-50 border-slate-100 hover:border-slate-300'
+                    className={`relative p-6 rounded-[2rem] border-2 transition-all group overflow-hidden ${!isThisDocUploaded && !canUpload ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-xl hover:-translate-y-1'
+                      } ${status === 'approved' ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-300' :
+                        status === 'pending' ? 'bg-amber-50/30 border-amber-100 hover:border-amber-300' :
+                          'bg-slate-50/50 border-slate-100 hover:border-slate-300'
                       }`}
                   >
-                    <div className={`absolute top-4 right-4 transition-opacity ${isThisDocUploaded ? 'opacity-100' : 'opacity-0'}`}>
-                       <Eye size={16} className="text-slate-400 group-hover:text-primary-main" />
-                    </div>
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform ${!isClickable ? '' : 'group-hover:scale-110'} ${status === 'approved' ? 'bg-green-500 text-white' :
-                      status === 'pending' ? 'bg-amber-500 text-white' :
-                        'bg-slate-400 text-white'
+                    <div className={`p-3 rounded-2xl w-fit mb-4 transition-all ${status === 'approved' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :
+                      status === 'pending' ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' :
+                        'bg-slate-300 text-white'
                       }`}>
-                      {status === 'approved' ? <ShieldCheck size={28} /> : <FileText size={28} />}
+                      {status === 'approved' ? <ShieldCheck size={24} /> : <FileText size={24} />}
                     </div>
-                    <p className="text-xs font-black text-slate-800 uppercase mb-1">{label}</p>
-                    <p className={`text-[10px] font-bold ${status === 'approved' ? 'text-green-600' :
+                    <p className="text-[11px] font-black text-[#1e293b] uppercase mb-1 font-['Manrope'] tracking-tight">{label}</p>
+                    <p className={`text-[9px] font-black tracking-widest uppercase ${status === 'approved' ? 'text-emerald-600' :
                       status === 'pending' ? 'text-amber-600' :
-                        'text-slate-500'
+                        'text-slate-400'
                       }`}>
-                      {isVerified ? 'LOCKED' : status === 'pending' ? 'UNDER REVIEW' : status.replace('_', ' ').toUpperCase()}
+                      {isVerified ? 'ENCRYPTED' : status === 'pending' ? 'REVIEWING' : status.replace('_', ' ')}
                     </p>
                   </div>
                 )
@@ -689,29 +719,29 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               {/* Verification Fee Card */}
               <div
                 onClick={(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? undefined : handleOpenFeeModal}
-                className={`relative p-5 rounded-3xl border-2 transition-all group ${(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager
-                    ? 'cursor-not-allowed opacity-70'
-                    : 'cursor-pointer'
-                  } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-50/50 border-green-100 hover:border-green-300' :
-                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-50/50 border-indigo-100 hover:border-indigo-300' :
-                      'bg-slate-50 border-slate-100 hover:border-slate-300'
-                  }`}
+                className={`relative p-6 rounded-[2rem] border-2 transition-all group overflow-hidden ${
+                  (tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-xl hover:-translate-y-1'
+                } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-300' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-50/30 border-indigo-100 hover:border-indigo-300' :
+                      'bg-slate-50/50 border-slate-100 hover:border-slate-300'
+                }`}
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform ${(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? '' : 'group-hover:rotate-12'
-                  } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-green-500 text-white' :
-                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white' :
-                      'bg-slate-400 text-white'
-                  }`}>
-                  <CreditCard size={28} />
+                <div className={`p-3 rounded-2xl w-fit mb-4 transition-all ${
+                  tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :
+                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' :
+                  'bg-slate-300 text-white'
+                }`}>
+                  <CreditCard size={24} />
                 </div>
-                <p className="text-xs font-black text-slate-800 uppercase mb-1">Verification Fee</p>
-                <p className={`text-[10px] font-bold ${tutor.verificationFeeStatus === 'PAID' ? 'text-green-600' :
+                <p className="text-[11px] font-black text-[#1e293b] uppercase mb-1 font-['Manrope'] tracking-tight">System Fee</p>
+                <p className={`text-[9px] font-black tracking-widest uppercase ${
+                  tutor.verificationFeeStatus === 'PAID' ? 'text-emerald-600' :
                   tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'text-indigo-600' :
-                    'text-slate-500'
-                  }`}>
-                  {tutor.verificationFeeStatus === 'PAID' ? 'PAID (₹500)' :
-                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'PAY LATER (₹500)' :
-                      'NOT PAID (₹500)'}
+                  'text-slate-400'
+                }`}>
+                  {tutor.verificationFeeStatus === 'PAID' ? 'SETTLED' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'DEFERRED' :
+                      'REQUIRED'}
                 </p>
               </div>
             </Box>

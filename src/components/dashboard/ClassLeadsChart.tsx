@@ -32,11 +32,11 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
 
     // Aggregate by Interval
     const aggregated: Record<string, { date: string; total: number }> = {};
-    
+
     data.forEach(d => {
       const date = parseISO(d.date);
       let key = d.date;
-      
+
       if (interval === 'weekly') {
         key = format(startOfWeek(date), 'yyyy-MM-dd');
       } else if (interval === 'monthly') {
@@ -70,8 +70,8 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
     else if (interval === 'monthly') minPoints = 12;
     else if (interval === 'yearly') minPoints = 5;
 
-    return chartData.length > minPoints 
-      ? `${(chartData.length / minPoints) * 100}%` 
+    return chartData.length > minPoints
+      ? `${(chartData.length / minPoints) * 100}%`
       : '100%';
   }, [chartData, interval]);
 
@@ -92,11 +92,11 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
   const renderSeries = () => {
     if (chartType === 'line') {
       return (
-        <Line 
-          dataKey="total" 
-          name="New Leads" 
-          stroke={theme.palette.primary.main} 
-          fill={theme.palette.primary.main} 
+        <Line
+          dataKey="total"
+          name="New Leads"
+          stroke={theme.palette.primary.main}
+          fill={theme.palette.primary.main}
           strokeWidth={3}
           dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: theme.palette.primary.main }}
           activeDot={{ r: 7 }}
@@ -104,20 +104,20 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
         />
       );
     }
-    
+
     // Default Bar
     return (
-      <Bar 
-        dataKey="total" 
-        name="New Leads" 
-        fill={theme.palette.primary.main} 
-        radius={[4, 4, 0, 0]} 
+      <Bar
+        dataKey="total"
+        name="New Leads"
+        fill={theme.palette.primary.main}
+        radius={[4, 4, 0, 0]}
         barSize={interval === 'daily' ? 8 : 32}
       >
-          {chartData.map((_entry, index) => (
-          <Cell 
-            key={`cell-${index}`} 
-            fill={alpha(theme.palette.primary.main, 0.7 + (index / Math.max(1, chartData.length)) * 0.3)} 
+        {chartData.map((_entry, index) => (
+          <Cell
+            key={`cell-${index}`}
+            fill={alpha(theme.palette.primary.main, 0.7 + (index / Math.max(1, chartData.length)) * 0.3)}
           />
         ))}
       </Bar>
@@ -125,14 +125,14 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
   };
 
   return (
-    <Paper 
-      elevation={0} 
+    <Paper
+      elevation={0}
       variant="outlined"
-      sx={{ 
-        p: 3, 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column', 
+      sx={{
+        p: 3,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         borderRadius: '16px',
         borderColor: '#E2E8F0',
         background: '#fff'
@@ -141,46 +141,46 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3} gap={2}>
         <Box>
           <Typography variant="h6" fontWeight={700} color="text.primary">
-            Class Leads vs Time   
+            Class Leads vs Time
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Trend of new student enquiries   
+            Trend of new student enquiries
           </Typography>
         </Box>
 
         <Box display="flex" gap={2}>
-            <FormControl size="small" sx={{ minWidth: 100 }}>
-                <InputLabel>Type</InputLabel>
-                <Select
-                    value={chartType}
-                    label="Type"
-                    onChange={(e) => setChartType(e.target.value as ChartType)}
-                    sx={{ borderRadius: '8px' }}
-                >
-                    <MenuItem value="bar">Bar</MenuItem>
-                    <MenuItem value="line">Line</MenuItem>
-                </Select>
-            </FormControl>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={chartType}
+              label="Type"
+              onChange={(e) => setChartType(e.target.value as ChartType)}
+              sx={{ borderRadius: '8px' }}
+            >
+              <MenuItem value="bar">Bar</MenuItem>
+              <MenuItem value="line">Line</MenuItem>
+            </Select>
+          </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 100 }}>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
             <InputLabel id="interval-select-label">View   </InputLabel>
             <Select
-                labelId="interval-select-label"
-                value={interval}
-                label="View"
-                onChange={(e) => setInterval(e.target.value as IntervalType)}
-                sx={{ borderRadius: '8px' }}
+              labelId="interval-select-label"
+              value={interval}
+              label="View"
+              onChange={(e) => setInterval(e.target.value as IntervalType)}
+              sx={{ borderRadius: '8px' }}
             >
-                <MenuItem value="daily">Daily</MenuItem>
-                <MenuItem value="weekly">Weekly</MenuItem>
-                <MenuItem value="monthly">Monthly</MenuItem>
-                <MenuItem value="yearly">Yearly</MenuItem>
+              <MenuItem value="daily">Daily</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
+              <MenuItem value="yearly">Yearly</MenuItem>
             </Select>
-            </FormControl>
+          </FormControl>
         </Box>
       </Box>
 
-      <Box 
+      <Box
         ref={scrollContainerRef}
         sx={{ width: '100%', flexGrow: 1, minHeight: 300, overflowX: 'auto', overflowY: 'hidden' }}
       >
@@ -188,8 +188,8 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis 
-                dataKey="displayDate" 
+              <XAxis
+                dataKey="displayDate"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: theme.palette.text.secondary, fontSize: 10 }}
@@ -197,16 +197,16 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
                 interval="preserveStartEnd"
                 minTickGap={20}
               />
-              <YAxis 
+              <YAxis
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
               />
               <Tooltip
                 cursor={{ fill: alpha(theme.palette.primary.main, 0.04) }}
-                contentStyle={{ 
-                  borderRadius: '12px', 
-                  border: 'none', 
+                contentStyle={{
+                  borderRadius: '12px',
+                  border: 'none',
                   boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                   padding: '12px'
                 }}

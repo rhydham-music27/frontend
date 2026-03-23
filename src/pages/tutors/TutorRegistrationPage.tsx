@@ -45,14 +45,24 @@ const TutorLeadRegistration = () => {
   const handleSubmit = async (data: TutorLeadFormData) => {
     setSubmitting(true);
     try {
+      // Transform subjects from objects to ID strings for API/Schema
+      const finalSubjects = data.subjects.map((s: any) => 
+        typeof s === 'string' ? s : (s?._id || s?.id)
+      ).filter(Boolean);
+
+      const transformedData = {
+        ...data,
+        subjects: finalSubjects
+      };
+
       if (mode === 'edit') {
         // Update existing profile
-        await updateMyProfile(data);
+        await updateMyProfile(transformedData);
         toast.success('Profile updated successfully!');
         navigate('/');
       } else {
         // Create new tutor lead
-        const payload = tutorLeadRegistrationSchema.parse(data);
+        const payload = tutorLeadRegistrationSchema.parse(transformedData);
         const resp = await tutorLeadAPI.create(payload as any);
         const returnedTeacherId = resp?.teacherId;
 

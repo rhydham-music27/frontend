@@ -55,48 +55,85 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
   return (
     <Box
       sx={{
-        p: { xs: 2, sm: 3 },
-        mb: { xs: 2, sm: 3 },
-        borderRadius: { xs: 2.5, sm: 3 },
-        background: bgGradient,
+        p: { xs: 3, sm: 4 },
+        mb: { xs: 3, sm: 4 },
+        borderRadius: { xs: 4, sm: 5 },
+        background: '#fff',
         border: '1px solid',
-        borderColor: alpha(tierColor, 0.15),
+        borderColor: alpha(tierColor, 0.12),
         position: 'relative',
         overflow: 'hidden',
+        boxShadow: `0 10px 30px ${alpha(tierColor, 0.05)}`,
         '&::before': {
           content: '""',
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: 3,
+          height: 4,
           background: tierGradient,
         },
       }}
     >
+      {/* Background Decorative Element */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 120,
+          height: 120,
+          background: alpha(tierColor, 0.03),
+          borderRadius: '50%',
+          filter: 'blur(30px)',
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Header: Tier + Hours Badge */}
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+        <Box display="flex" alignItems="center" gap={{ xs: 1.5, sm: 2 }}>
           <Box
             sx={{
-              width: { xs: 36, sm: 42 },
-              height: { xs: 36, sm: 42 },
-              borderRadius: 2.5,
+              width: { xs: 48, sm: 56 },
+              height: { xs: 48, sm: 56 },
+              borderRadius: 3.5,
               background: tierGradient,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: `0 4px 14px ${alpha(tierColor, 0.3)}`,
+              boxShadow: `0 8px 20px ${alpha(tierColor, 0.25)}`,
+              position: 'relative',
             }}
           >
-            <Trophy size={20} color="#fff" fill="#fff" />
+            <Trophy size={26} color="#fff" fill="#fff" />
           </Box>
           <Box>
-            <Typography variant="subtitle1" fontWeight={800} sx={{ fontSize: { xs: '0.92rem', sm: '1.05rem' }, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
-              {tierEmoji} {currentTierName} Tier
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                fontFamily: "'Manrope', sans-serif",
+                fontWeight: 900, 
+                fontSize: { xs: '1.1rem', sm: '1.25rem' }, 
+                lineHeight: 1.1, 
+                letterSpacing: '-0.03em',
+                color: '#1e293b'
+              }}
+            >
+              {currentTierName} Scholar
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: { xs: '0.65rem', sm: '0.72rem' } }}>
-              {progress < 100 ? 'Keep going! You are doing great.' : 'You\'ve reached the top tier!'}
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontFamily: "'Inter', sans-serif",
+                color: '#64748b', 
+                fontWeight: 600,
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                mt: 0.5,
+                display: 'block'
+              }}
+            >
+              {progress < 100 ? `Questing for ${nextTierName} Status` : 'Legendary Educator Status'}
             </Typography>
           </Box>
         </Box>
@@ -105,13 +142,16 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
           label={`${currentHours} hrs`}
           size="small"
           sx={{
-            bgcolor: '#fff',
-            fontWeight: 700,
-            fontSize: '0.72rem',
-            height: 28,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            bgcolor: alpha(tierColor, 0.05),
+            color: tierColor,
+            fontWeight: 900,
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: '0.75rem',
+            height: 32,
+            px: 1,
+            borderRadius: '12px',
             border: '1px solid',
-            borderColor: alpha(tierColor, 0.15),
+            borderColor: alpha(tierColor, 0.1),
             '& .MuiChip-icon': { color: tierColor },
           }}
         />
@@ -120,31 +160,71 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
       {/* Progress Section */}
       {progress < 100 ? (
         <Box>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={0.75}>
-            <Typography variant="body2" fontWeight={700} sx={{ fontSize: { xs: '0.75rem', sm: '0.82rem' } }}>
-              Progress to {nextTierName}
+          <Box display="flex" justifyContent="space-between" alignItems="flex-end" mb={1.5}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontFamily: "'Manrope', sans-serif",
+                fontWeight: 800, 
+                fontSize: { xs: '0.8rem', sm: '0.88rem' },
+                color: '#475569'
+              }}
+            >
+              Elite Ascension
             </Typography>
-            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: { xs: '0.62rem', sm: '0.7rem' } }}>
-              {hoursNeeded} more hours
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontFamily: "'Inter', sans-serif",
+                color: tierColor, 
+                fontWeight: 900, 
+                fontSize: { xs: '0.65rem', sm: '0.72rem' },
+                letterSpacing: '0.05em'
+              }}
+            >
+              {hoursNeeded} HRS TO GO
             </Typography>
           </Box>
           <LinearProgress
             variant="determinate"
             value={progress}
             sx={{
-              height: 8,
-              borderRadius: 4,
-              bgcolor: alpha(tierColor, 0.08),
+              height: 10,
+              borderRadius: 5,
+              bgcolor: alpha(tierColor, 0.05),
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)',
               '& .MuiLinearProgress-bar': {
-                borderRadius: 4,
-                background: `linear-gradient(90deg, ${tierColor} 0%, ${nextTierColor} 100%)`,
+                borderRadius: 5,
+                background: `linear-gradient(90deg, ${tierColor} 0%, ${alpha(tierColor, 0.6)} 100%)`,
+                boxShadow: `0 0 10px ${alpha(tierColor, 0.3)}`,
               },
             }}
           />
-          <Box mt={1.5} display="flex" gap={0.75} alignItems="flex-start" sx={{ opacity: 0.7 }}>
-            <TrendingUp size={14} color="#3b82f6" style={{ marginTop: 2 }} />
-            <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4, fontSize: { xs: '0.62rem', sm: '0.7rem' } }}>
-              Teaching more classes and getting approved attendance boosts your tier. Higher tiers get better visibility and more leads!
+          <Box 
+            mt={2.5} 
+            sx={{ 
+              p: 2, 
+              bgcolor: alpha('#3b82f6', 0.03), 
+              borderRadius: 3, 
+              border: '1px solid',
+              borderColor: alpha('#3b82f6', 0.08),
+              display: 'flex', 
+              gap: 1.5, 
+              alignItems: 'flex-start' 
+            }}
+          >
+            <Zap size={16} className="text-blue-500" style={{ marginTop: 2 }} />
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontFamily: "'Inter', sans-serif",
+                lineHeight: 1.5, 
+                fontSize: { xs: '0.65rem', sm: '0.72rem' },
+                color: '#64748b',
+                fontWeight: 500
+              }}
+            >
+              Your expertise is valued. Higher tiers unlock <strong style={{color: '#1e293b'}}>premium leads</strong> and <strong style={{color: '#1e293b'}}>priority listing</strong> in the Scholar Database.
             </Typography>
           </Box>
         </Box>
@@ -152,19 +232,33 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
         <Box
           sx={{
             mt: 1,
-            p: { xs: 1.5, sm: 2 },
-            bgcolor: alpha('#fbbf24', 0.08),
-            borderRadius: 2.5,
+            p: 3,
+            bgcolor: alpha('#fbbf24', 0.05),
+            borderRadius: 4,
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
+            gap: 2,
             border: '1px solid',
             borderColor: alpha('#fbbf24', 0.15),
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <Zap size={20} color="#f59e0b" fill="#f59e0b" />
-          <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ fontSize: { xs: '0.75rem', sm: '0.82rem' } }}>
-            You are a <strong style={{ color: '#d97706' }}>Top Rated Gold Tutor</strong>! Your profile is highlighted to parents as a verified expert.
+          <div className="absolute top-0 right-0 p-1 opacity-10">
+            <Trophy size={80} />
+          </div>
+          <Zap size={24} color="#f59e0b" fill="#f59e0b" />
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontFamily: "'Manrope', sans-serif",
+              color: '#475569', 
+              fontWeight: 700, 
+              fontSize: { xs: '0.8rem', sm: '0.9rem' },
+              lineHeight: 1.5
+            }}
+          >
+            Ultimate <strong style={{ color: '#d97706', fontWeight: 900 }}>Gold Distinction</strong> Achieved. Your profile currently emanates maximum trust and authority.
           </Typography>
         </Box>
       )}

@@ -111,6 +111,8 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }
   );
 }
 
+import { getSubjectList } from '../../utils/subjectUtils';
+
 export default function ClassLeadDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -279,14 +281,7 @@ export default function ClassLeadDetailPage() {
   const isManagerOrAdmin = user?.role === USER_ROLES.MANAGER || user?.role === USER_ROLES.ADMIN;
   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
-  const subjectList = (() => {
-    const r: any = classLead as any;
-    let subj: any = r.subject ?? r.subjects ?? r.subjectList ?? r.subject_names ?? r.subjectName ?? r.subject_name;
-    if (subj == null) return [] as string[];
-    if (Array.isArray(subj)) return subj.map((s: any) => String(s));
-    const s = String(subj).trim();
-    return s ? (s.includes(',') ? s.split(',').map((x) => x.trim()).filter(Boolean) : [s]) : [];
-  })();
+  const subjectList = getSubjectList(classLead.subject || (classLead as any).subjects || (classLead as any).subjectList);
 
   const buildShareText = () => {
     const r: any = classLead as any;
@@ -304,7 +299,7 @@ export default function ClassLeadDetailPage() {
         ? 'Female'
         : tutorGender === 'OTHER'
           ? 'Other'
-          : 'Any';
+          : 'No Preferrence';
 
     const fees = r.paymentAmount != null ? `₹${Number(r.paymentAmount).toLocaleString()}` : '';
 
@@ -317,7 +312,7 @@ export default function ClassLeadDetailPage() {
 
     const timing = classLead.timing ? String(classLead.timing) : 'any time';
 
-    const locationParts = [r.location, r.area, r.city, r.address]
+    const locationParts = [r.location, r.area, r.city]
       .map((x: any) => (x ? String(x).trim() : ''))
       .filter(Boolean);
     const locationText = locationParts.join(', ');
@@ -339,7 +334,6 @@ export default function ClassLeadDetailPage() {
     lines.push('');
     if (locationText) {
       lines.push(`📌 Location: ${locationText}.`);
-      if (mapsUrl) lines.push(mapsUrl);
       lines.push('');
     }
     if (noteText) {

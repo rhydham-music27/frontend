@@ -60,10 +60,32 @@ export default function TutorVerificationPage() {
   });
 
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
-  const [subjectsList, setSubjectsList] = useState<string[]>([]);
+  const [subjectsList, setSubjectsList] = useState<any[]>([]);
   const [verifiersList, setVerifiersList] = useState<{ _id: string; name: string }[]>([]);
   const [citiesList, setCitiesList] = useState<string[]>([]);
   const [areasList, setAreasList] = useState<string[]>([]);
+
+  const formatSubjectLabel = (subject: any) => {
+    if (!subject) return '-';
+    if (typeof subject === 'string') return subject;
+
+    const parts = [];
+    let current = subject;
+    while (current) {
+      parts.unshift(current.label);
+      current = current.parent;
+    }
+    return parts.join(' . ');
+  };
+
+  const formatSubjectDisplay = (subjects: any[], limit?: number) => {
+    if (!subjects || subjects.length === 0) return '-';
+    const labels = subjects.map(s => formatSubjectLabel(s));
+    if (limit && labels.length > limit) {
+      return labels.slice(0, limit).join(', ') + '...';
+    }
+    return labels.join(', ');
+  };
 
   const renderTutorCard = (t: ITutor, mode: 'pending' | 'all') => {
     const id = (t as any).id || (t as any)._id;
@@ -134,17 +156,9 @@ export default function TutorVerificationPage() {
               <strong>Exp:</strong> {t.experienceHours} hrs
             </Typography>
           </Box>
-          <Box sx={{ mt: 1.25 }}>
             <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              <strong>Board:</strong> {(t.preferredBoards || []).join(', ') || '-'}
+              <strong>Subjects:</strong> {formatSubjectDisplay(t.subjects)}
             </Typography>
-            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              <strong>Class:</strong> {(t.preferredGrades || []).join(', ') || '-'}
-            </Typography>
-            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              <strong>Subjects:</strong> {(t.subjects || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') || '-'}
-            </Typography>
-          </Box>
 
           <Stack spacing={1} sx={{ mt: 2 }}>
             <Button
@@ -164,24 +178,16 @@ export default function TutorVerificationPage() {
 
   useEffect(() => {
     const fetchSubjects = async () => {
-      // Check cache first
-      const cached = localStorage.getItem('tutor_subjects_cache');
-      const cacheTimestamp = localStorage.getItem('tutor_subjects_ts');
-
-      const now = Date.now();
-      if (cached && cacheTimestamp && (now - parseInt(cacheTimestamp) < 24 * 60 * 60 * 1000)) {
-        setSubjectsList(JSON.parse(cached));
-      } else {
-        try {
-          const res = await getSubjects();
-          if (res.data) {
-            setSubjectsList(res.data);
-            localStorage.setItem('tutor_subjects_cache', JSON.stringify(res.data));
-            localStorage.setItem('tutor_subjects_ts', String(now));
-          }
-        } catch (e) {
-          console.error("Failed to fetch subjects", e);
+      try {
+        const res = await getSubjects();
+        if (res.data) {
+          setSubjectsList(res.data);
+          // Update cache but we bypass it for now to ensure fresh data
+          localStorage.setItem('tutor_subjects_cache', JSON.stringify(res.data));
+          localStorage.setItem('tutor_subjects_ts', String(Date.now()));
         }
+      } catch (e) {
+        console.error("Failed to fetch subjects", e);
       }
     };
 
@@ -517,8 +523,7 @@ export default function TutorVerificationPage() {
                 <TableCell sx={{ fontWeight: 700 }}>Contact Info</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>City</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Area</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Board</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Class</TableCell>
+
                 <TableCell sx={{ fontWeight: 700 }}>Mode</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>
                   <TableSortLabel
@@ -641,42 +646,7 @@ export default function TutorVerificationPage() {
                     disabled={!filters.city}
                   />
                 </TableCell>
-                <TableCell>
-                  <Autocomplete
-                    freeSolo
-                    size="small"
-                    options={boardOptions.map(o => o.label)}
-                    value={filters.board}
-                    onChange={(_e, newValue) => handleFilterChange('board', newValue || '')}
-                    onInputChange={(_e, newInputValue) => handleFilterChange('board', newInputValue)}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="standard"
-                        placeholder="Board"
-                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
-                      />
-                    )}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Autocomplete
-                    freeSolo
-                    size="small"
-                    options={gradeOptions.map(o => o.label)}
-                    value={filters.grade}
-                    onChange={(_e, newValue) => handleFilterChange('grade', newValue || '')}
-                    onInputChange={(_e, newInputValue) => handleFilterChange('grade', newInputValue)}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="standard"
-                        placeholder="Class"
-                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
-                      />
-                    )}
-                  />
-                </TableCell>
+
                 <TableCell>
                   <Select
                     variant="standard"
@@ -695,12 +665,11 @@ export default function TutorVerificationPage() {
                 <TableCell />
                 <TableCell>
                   <Autocomplete
-                    freeSolo
                     size="small"
-                    options={subjectOptions.map(o => o.label)}
-                    value={filters.subjects}
-                    onChange={(_e, newValue) => handleFilterChange('subjects', newValue || '')}
-                    onInputChange={(_e, newInputValue) => handleFilterChange('subjects', newInputValue)}
+                    options={subjectsList}
+                    getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+                    value={subjectsList.find(s => s._id === filters.subjects) || null}
+                    onChange={(_e, newValue) => handleFilterChange('subjects', newValue ? newValue._id : '')}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -783,16 +752,7 @@ export default function TutorVerificationPage() {
                             {(t.preferredLocations || []).join(', ')}
                           </Typography>
                         </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" noWrap title={(t.preferredBoards || []).join(', ')}>
-                            {(t.preferredBoards || []).slice(0, 2).join(', ')}{(t.preferredBoards?.length || 0) > 2 ? '...' : ''}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" noWrap title={(t.preferredGrades || []).join(', ')}>
-                            {(t.preferredGrades || []).slice(0, 2).join(', ')}{(t.preferredGrades?.length || 0) > 2 ? '...' : ''}
-                          </Typography>
-                        </TableCell>
+
                         <TableCell>
                           <Typography variant="body2">{t.preferredMode || '-'}</Typography>
                         </TableCell>
@@ -801,9 +761,9 @@ export default function TutorVerificationPage() {
                           <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
                         </TableCell>
                         <TableCell>{t.experienceHours} hrs</TableCell>
-                        <TableCell sx={{ maxWidth: 120 }}>
-                          <Typography variant="body2" noWrap title={(t.subjects || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}>
-                            {(t.subjects || []).slice(0, 2).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+                        <TableCell sx={{ maxWidth: 200 }}>
+                          <Typography variant="body2" noWrap title={formatSubjectDisplay(t.subjects)}>
+                            {formatSubjectDisplay(t.subjects, 2)}
                           </Typography>
                         </TableCell>
                         <TableCell><VerificationStatusChip status={t.verificationStatus} /></TableCell>
@@ -871,11 +831,7 @@ export default function TutorVerificationPage() {
                               {(t.preferredLocations || []).filter(l => l !== t.user?.city).join(', ')}
                             </Typography>
                           </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" noWrap title={(t.preferredGrades || []).join(', ')}>
-                              {(t.preferredGrades || []).slice(0, 2).join(', ')}{(t.preferredGrades?.length || 0) > 2 ? '...' : ''}
-                            </Typography>
-                          </TableCell>
+
                           <TableCell>
                             <Typography variant="body2">{t.preferredMode || '-'}</Typography>
                           </TableCell>
@@ -884,9 +840,9 @@ export default function TutorVerificationPage() {
                             <Typography variant="caption" color="text.secondary">{t.demosApproved} Demos</Typography>
                           </TableCell>
                           <TableCell>{t.experienceHours} hrs</TableCell>
-                          <TableCell sx={{ maxWidth: 120 }}>
-                            <Typography variant="body2" noWrap title={(t.subjects || []).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}>
-                              {(t.subjects || []).slice(0, 2).map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ')}{(t.subjects?.length || 0) > 2 ? '...' : ''}
+                          <TableCell sx={{ maxWidth: 200 }}>
+                            <Typography variant="body2" noWrap title={formatSubjectDisplay(t.subjects)}>
+                              {formatSubjectDisplay(t.subjects, 2)}
                             </Typography>
                           </TableCell>
                           <TableCell><VerificationStatusChip status={t.verificationStatus} /></TableCell>

@@ -19,7 +19,7 @@ const EmptyState: React.FC = () => (
   <Box p={2} textAlign="center" color="text.secondary">No data available</Box>
 );
 
-const LoadingTable: React.FC<{ rows: number }>= ({ rows }) => (
+const LoadingTable: React.FC<{ rows: number }> = ({ rows }) => (
   <TableContainer component={Paper}>
     <Table size="small">
       <TableHead>

@@ -46,45 +46,45 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
 
   // Memoize sorted data/aggregated to ensure safety and hook order
   const sortedData = React.useMemo(() => {
-     if (!data) return [];
-     
-     // Aggregate data based on interval
-     const aggregated: Record<string, RevenueTrendPoint> = {};
+    if (!data) return [];
 
-     data.forEach(d => {
-       const date = parseISO(d.date);
-       let key = d.date;
+    // Aggregate data based on interval
+    const aggregated: Record<string, RevenueTrendPoint> = {};
 
-       if (interval === 'weekly') {
-         key = format(startOfWeek(date), 'yyyy-MM-dd');
-       } else if (interval === 'monthly') {
-         key = format(startOfMonth(date), 'yyyy-MM-dd');
-       } else if (interval === 'yearly') {
-         key = format(startOfYear(date), 'yyyy-MM-dd');
-       }
+    data.forEach(d => {
+      const date = parseISO(d.date);
+      let key = d.date;
 
-       if (!aggregated[key]) {
-         aggregated[key] = { date: key, feesCollected: 0, tutorPayout: 0, serviceCharge: 0 };
-       }
+      if (interval === 'weekly') {
+        key = format(startOfWeek(date), 'yyyy-MM-dd');
+      } else if (interval === 'monthly') {
+        key = format(startOfMonth(date), 'yyyy-MM-dd');
+      } else if (interval === 'yearly') {
+        key = format(startOfYear(date), 'yyyy-MM-dd');
+      }
 
-       aggregated[key].feesCollected += d.feesCollected;
-       aggregated[key].tutorPayout += d.tutorPayout;
-       aggregated[key].serviceCharge += d.serviceCharge;
-     });
+      if (!aggregated[key]) {
+        aggregated[key] = { date: key, feesCollected: 0, tutorPayout: 0, serviceCharge: 0 };
+      }
 
-     return Object.values(aggregated).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      aggregated[key].feesCollected += d.feesCollected;
+      aggregated[key].tutorPayout += d.tutorPayout;
+      aggregated[key].serviceCharge += d.serviceCharge;
+    });
+
+    return Object.values(aggregated).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [data, interval]);
 
-   // Calculate dynamic width for scrolling
-   const chartWidth = React.useMemo(() => {
+  // Calculate dynamic width for scrolling
+  const chartWidth = React.useMemo(() => {
     let minPoints = 12;
     if (interval === 'daily') minPoints = 30; // Show 1 month
     else if (interval === 'weekly') minPoints = 12; // Show ~3 months
     else if (interval === 'monthly') minPoints = 12; // Show 1 year
     else if (interval === 'yearly') minPoints = 5; // Show 5 years
 
-    return sortedData.length > minPoints 
-      ? `${(sortedData.length / minPoints) * 100}%` 
+    return sortedData.length > minPoints
+      ? `${(sortedData.length / minPoints) * 100}%`
       : '100%';
   }, [sortedData, interval]);
 
@@ -138,7 +138,7 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
   const maxLeft = getMaxLeft();
   const stepLeft = 15000;
   const ceilingLeft = maxLeft > 0 ? Math.ceil(maxLeft / stepLeft) * stepLeft : stepLeft;
-  
+
   const ticksLeft = [];
   for (let i = 0; i <= ceilingLeft; i += stepLeft) {
     ticksLeft.push(i);
@@ -198,81 +198,81 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
             Fees & Net (Left) vs Payouts (Right)
           </Typography>
         </Box>
-        
+
         <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-            <FormControl size="small" sx={{ minWidth: 100 }}>
-             <InputLabel>Interval</InputLabel>
-             <Select
-               value={interval}
-               label="Interval"
-               onChange={(e) => setInterval(e.target.value as IntervalType)}
-               sx={{ height: 32, fontSize: '0.875rem' }}
-             >
-               <MenuItem value="daily">Daily</MenuItem>
-               <MenuItem value="weekly">Weekly</MenuItem>
-               <MenuItem value="monthly">Monthly</MenuItem>
-               <MenuItem value="yearly">Yearly</MenuItem>
-             </Select>
-           </FormControl>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>Interval</InputLabel>
+            <Select
+              value={interval}
+              label="Interval"
+              onChange={(e) => setInterval(e.target.value as IntervalType)}
+              sx={{ height: 32, fontSize: '0.875rem' }}
+            >
+              <MenuItem value="daily">Daily</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
+              <MenuItem value="yearly">Yearly</MenuItem>
+            </Select>
+          </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 100 }}>
-                <InputLabel>Type</InputLabel>
-                <Select
-                    value={chartType}
-                    label="Type"
-                    onChange={(e) => setChartType(e.target.value as ChartType)}
-                    sx={{ height: 32, fontSize: '0.875rem' }}
-                >
-                    <MenuItem value="line">Line</MenuItem>
-                    <MenuItem value="bar">Bar</MenuItem>
-                </Select>
-            </FormControl>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={chartType}
+              label="Type"
+              onChange={(e) => setChartType(e.target.value as ChartType)}
+              sx={{ height: 32, fontSize: '0.875rem' }}
+            >
+              <MenuItem value="line">Line</MenuItem>
+              <MenuItem value="bar">Bar</MenuItem>
+            </Select>
+          </FormControl>
 
-            <FormGroup row>
+          <FormGroup row>
             <FormControlLabel
-                control={
+              control={
                 <Checkbox
-                    checked={visibleSeries.fees}
-                    onChange={() => toggleSeries('fees')}
-                    sx={{
+                  checked={visibleSeries.fees}
+                  onChange={() => toggleSeries('fees')}
+                  sx={{
                     color: theme.palette.primary.main,
                     '&.Mui-checked': { color: theme.palette.primary.main },
-                    }}
+                  }}
                 />
-                }
-                label={<Typography variant="body2">Fees</Typography>}
+              }
+              label={<Typography variant="body2">Fees</Typography>}
             />
             <FormControlLabel
-                control={
+              control={
                 <Checkbox
-                    checked={visibleSeries.payout}
-                    onChange={() => toggleSeries('payout')}
-                    sx={{
+                  checked={visibleSeries.payout}
+                  onChange={() => toggleSeries('payout')}
+                  sx={{
                     color: theme.palette.error.main,
                     '&.Mui-checked': { color: theme.palette.error.main },
-                    }}
+                  }}
                 />
-                }
-                label={<Typography variant="body2">Payouts</Typography>}
+              }
+              label={<Typography variant="body2">Payouts</Typography>}
             />
             <FormControlLabel
-                control={
+              control={
                 <Checkbox
-                    checked={visibleSeries.service}
-                    onChange={() => toggleSeries('service')}
-                    sx={{
+                  checked={visibleSeries.service}
+                  onChange={() => toggleSeries('service')}
+                  sx={{
                     color: theme.palette.success.main,
                     '&.Mui-checked': { color: theme.palette.success.main },
-                    }}
+                  }}
                 />
-                }
-                label={<Typography variant="body2">Net</Typography>}
+              }
+              label={<Typography variant="body2">Net</Typography>}
             />
-            </FormGroup>
+          </FormGroup>
         </Box>
       </Box>
 
-      <Box 
+      <Box
         ref={scrollContainerRef}
         sx={{ width: '100%', overflowX: 'auto', overflowY: 'hidden' }}
       >
@@ -280,27 +280,27 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={sortedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={formatXAxis} 
-                tick={{ fontSize: 12 }} 
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatXAxis}
+                tick={{ fontSize: 12 }}
                 stroke={theme.palette.text.secondary}
               />
               {/* Left Axis: Fees & Net */}
-              <YAxis 
+              <YAxis
                 yAxisId="left"
                 ticks={ticksLeft}
                 domain={[0, ceilingLeft]}
-                tickFormatter={(val) => `₹${val / 1000}k`} 
-                tick={{ fontSize: 12 }} 
+                tickFormatter={(val) => `₹${val / 1000}k`}
+                tick={{ fontSize: 12 }}
                 stroke={theme.palette.text.secondary}
                 orientation="left"
               />
-               {/* Right Axis: Payouts */}
-               <YAxis 
+              {/* Right Axis: Payouts */}
+              <YAxis
                 yAxisId="right"
-                tickFormatter={(val) => `₹${val / 1000}k`} 
-                tick={{ fontSize: 12 }} 
+                tickFormatter={(val) => `₹${val / 1000}k`}
+                tick={{ fontSize: 12 }}
                 stroke={theme.palette.error.main}
                 orientation="right"
                 hide={!visibleSeries.payout} // Hide if payout not selected

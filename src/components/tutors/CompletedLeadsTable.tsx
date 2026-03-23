@@ -34,6 +34,8 @@ import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
 import { DEMO_STATUS } from '../../constants';
 
+import { getSubjectList } from '../../utils/subjectUtils';
+
 const CompletedLeadsTable: React.FC = () => {
   const [demos, setDemos] = useState<IDemoHistory[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -169,9 +171,7 @@ const CompletedLeadsTable: React.FC = () => {
           {demos.map((demo) => {
             const lead = demo.classLead;
             const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-            const subjects = Array.isArray(lead?.subject) 
-              ? lead.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') 
-              : (typeof lead?.subject === 'object' && lead?.subject !== null ? (lead.subject as any).label || (lead.subject as any).name || 'N/A' : String(lead?.subject || '-'));
+            const subjects = getSubjectList(lead?.subject).join(', ');
 
             return (
               <Box
@@ -348,9 +348,7 @@ const CompletedLeadsTable: React.FC = () => {
               {demos.map((demo) => {
                 const lead = demo.classLead;
                 const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-                const subjects = Array.isArray(lead?.subject) 
-                  ? lead.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') 
-                  : (typeof lead?.subject === 'object' && lead?.subject !== null ? (lead.subject as any).label || (lead.subject as any).name || 'N/A' : String(lead?.subject || '-'));
+                const subjects = getSubjectList(lead?.subject).join(', ');
 
                 return (
                   <TableRow

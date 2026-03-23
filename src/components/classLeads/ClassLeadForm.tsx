@@ -34,6 +34,7 @@ import { useOptions } from '@/hooks/useOptions';
 import { IClassLead, IClassLeadFormData, StudentType } from '../../types';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
+import useAuth from '../../hooks/useAuth';
 
 type Props = {
   initialData?: IClassLead;
@@ -540,7 +541,8 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
     defaultValues: defaultValues,
   });
 
-
+  const { user } = useAuth();
+  const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   // Watch values for hierarchy
   const selectedBoard = watch('board');
@@ -1334,16 +1336,41 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Internal Notes / Remarks"
+              label="Notes"
               multiline
               rows={3}
               fullWidth
-              {...register('internalNotes')}
-              error={!!(errors as any).internalNotes}
-              helperText={(errors as any).internalNotes?.message}
-              placeholder="Add any special requirements or notes about this lead..."
+              {...register('notes')}
+              error={!!(errors as any).notes}
+              helperText={(errors as any).notes?.message}
+              placeholder="Add notes for the tutor..."
             />
           </Grid>
+          {isAdminOrManager && (
+            <Grid item xs={12}>
+              <TextField
+                label="Internal Notes / Remarks"
+                multiline
+                rows={3}
+                fullWidth
+                {...register('internalNotes')}
+                error={!!(errors as any).internalNotes}
+                helperText={(errors as any).internalNotes?.message}
+                placeholder="Add any special requirements or internal notes about this lead..."
+                sx={{
+                  bgcolor: (theme) => alpha(theme.palette.warning.light, 0.05),
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: 'warning.light',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'warning.main',
+                    },
+                  }
+                }}
+              />
+            </Grid>
+          )}
         </Grid>
       </SectionCard>
 

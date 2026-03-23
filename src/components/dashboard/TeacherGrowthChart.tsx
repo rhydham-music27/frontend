@@ -42,10 +42,10 @@ const TeacherGrowthChart: React.FC<TeacherGrowthChartProps> = ({ data, loading }
 
   const chartData = React.useMemo(() => {
     if (!data || data.length === 0) return [];
-    
+
     // 1. Group by interval
     const grouped: Record<string, DataPoint> = {};
-    
+
     data.forEach(d => {
       const date = parseISO(d.month); // Input is YYYY-MM-DD
       let key = d.month;
@@ -83,8 +83,8 @@ const TeacherGrowthChart: React.FC<TeacherGrowthChartProps> = ({ data, loading }
     else if (interval === 'monthly') minPoints = 12; // Show 1 year
     else if (interval === 'yearly') minPoints = 5; // Show 5 years
 
-    return chartData.length > minPoints 
-      ? `${(chartData.length / minPoints) * 100}%` 
+    return chartData.length > minPoints
+      ? `${(chartData.length / minPoints) * 100}%`
       : '100%';
   }, [chartData, interval]);
 
@@ -146,14 +146,14 @@ const TeacherGrowthChart: React.FC<TeacherGrowthChartProps> = ({ data, loading }
       />
     );
   };
-    
+
   return (
-    <Paper 
+    <Paper
       elevation={0}
-      sx={{ 
-        p: 3, 
-        height: '100%', 
-        display: 'flex', 
+      sx={{
+        p: 3,
+        height: '100%',
+        display: 'flex',
         flexDirection: 'column',
         borderRadius: '16px',
         border: '1px solid #E2E8F0',
@@ -164,75 +164,75 @@ const TeacherGrowthChart: React.FC<TeacherGrowthChartProps> = ({ data, loading }
         <Typography variant="h6" fontWeight={600}>
           Teacher Registration Trends
         </Typography>
-        
+
         <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-           <FormControl size="small" sx={{ minWidth: 100 }}>
-             <InputLabel>Interval</InputLabel>
-             <Select
-               value={interval}
-               label="Interval"
-               onChange={(e) => setInterval(e.target.value as IntervalType)}
-               sx={{ height: 32, fontSize: '0.875rem' }}
-             >
-               <MenuItem value="daily">Daily</MenuItem>
-               <MenuItem value="weekly">Weekly</MenuItem>
-               <MenuItem value="monthly">Monthly</MenuItem>
-               <MenuItem value="yearly">Yearly</MenuItem>
-             </Select>
-           </FormControl>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>Interval</InputLabel>
+            <Select
+              value={interval}
+              label="Interval"
+              onChange={(e) => setInterval(e.target.value as IntervalType)}
+              sx={{ height: 32, fontSize: '0.875rem' }}
+            >
+              <MenuItem value="daily">Daily</MenuItem>
+              <MenuItem value="weekly">Weekly</MenuItem>
+              <MenuItem value="monthly">Monthly</MenuItem>
+              <MenuItem value="yearly">Yearly</MenuItem>
+            </Select>
+          </FormControl>
 
-           <FormControl size="small" sx={{ minWidth: 100 }}>
-             <InputLabel>Type</InputLabel>
-             <Select
-               value={chartType}
-               label="Type"
-               onChange={(e) => setChartType(e.target.value as ChartType)}
-               sx={{ height: 32, fontSize: '0.875rem' }}
-             >
-               <MenuItem value="line">Line</MenuItem>
-               <MenuItem value="bar">Bar</MenuItem>
-             </Select>
-           </FormControl>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>Type</InputLabel>
+            <Select
+              value={chartType}
+              label="Type"
+              onChange={(e) => setChartType(e.target.value as ChartType)}
+              sx={{ height: 32, fontSize: '0.875rem' }}
+            >
+              <MenuItem value="line">Line</MenuItem>
+              <MenuItem value="bar">Bar</MenuItem>
+            </Select>
+          </FormControl>
 
-           <FormGroup row>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={visibleSeries.total}
-                onChange={() => handleToggle('total')}
-                size="small"
-                sx={{ color: '#8884d8', '&.Mui-checked': { color: '#8884d8' } }}
-              />
-            }
-            label={<Typography variant="caption">Total</Typography>}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={visibleSeries.active}
-                onChange={() => handleToggle('active')}
-                size="small"
-                sx={{ color: '#82ca9d', '&.Mui-checked': { color: '#82ca9d' } }}
-              />
-            }
-            label={<Typography variant="caption">Active</Typography>}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={visibleSeries.verified}
-                onChange={() => handleToggle('verified')}
-                size="small"
-                sx={{ color: '#ffc658', '&.Mui-checked': { color: '#ffc658' } }}
-              />
-            }
-            label={<Typography variant="caption">Verified</Typography>}
-          />
+          <FormGroup row>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={visibleSeries.total}
+                  onChange={() => handleToggle('total')}
+                  size="small"
+                  sx={{ color: '#8884d8', '&.Mui-checked': { color: '#8884d8' } }}
+                />
+              }
+              label={<Typography variant="caption">Total</Typography>}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={visibleSeries.active}
+                  onChange={() => handleToggle('active')}
+                  size="small"
+                  sx={{ color: '#82ca9d', '&.Mui-checked': { color: '#82ca9d' } }}
+                />
+              }
+              label={<Typography variant="caption">Active</Typography>}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={visibleSeries.verified}
+                  onChange={() => handleToggle('verified')}
+                  size="small"
+                  sx={{ color: '#ffc658', '&.Mui-checked': { color: '#ffc658' } }}
+                />
+              }
+              label={<Typography variant="caption">Verified</Typography>}
+            />
           </FormGroup>
         </Box>
       </Box>
 
-      <Box 
+      <Box
         ref={scrollContainerRef}
         sx={{ width: '100%', flexGrow: 1, minHeight: 300, overflowX: 'auto', overflowY: 'hidden' }}
       >
