@@ -54,8 +54,9 @@ const COLUMN_CONFIG = [
   { key: 'announced', label: 'Announced', color: '#F59E0B', description: 'Announced to tutors (0 interest)' },
   { key: 'interested', label: 'Interested', color: '#8B5CF6', description: 'Tutors showing interest' },
   { key: 'demoScheduled', label: 'Demo Scheduled', color: '#10B981', description: 'Demos are scheduled' },
-  { key: 'demoCompleted', label: 'Demo Completed', color: '#EC4899', description: 'Demos done, approval pending' },
+  { key: 'demoPending', label: 'Demo Completed', color: '#EC4899', description: 'Demos done, approval pending' },
   { key: 'won', label: 'Won', color: '#059669', description: 'Leads converted to classes' },
+  { key: 'others', label: 'Others', color: '#6B7280', description: 'Rejected or closed leads' },
 ];
 
 const getPriority = (date: string | Date) => {
@@ -350,13 +351,14 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
       const managerId = managerFilter !== 'All' ? managerFilter : undefined;
       const res = await getCRMLeads(managerId);
       const raw = (res as any)?.data || {};
+      
       const normalized: Record<string, IClassLead[]> = { ...raw };
-      if (normalized.demoPending && !normalized.demoCompleted) {
+      
+      // Map demoPending (backend) to demoCompleted (frontend label) if needed
+      if (normalized.demoPending) {
         normalized.demoCompleted = normalized.demoPending;
       }
-      if (normalized.demoCompleted && !normalized.demoPending) {
-        normalized.demoPending = normalized.demoCompleted;
-      }
+      
       setGroups(normalized);
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to fetch CRM data');

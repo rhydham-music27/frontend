@@ -304,7 +304,6 @@ export default function TutorVerificationPage() {
   const selectedBoardValue = filters.board;
   const selectedBoardOption = boardOptions.find(o => o.label === selectedBoardValue);
   const { options: gradeOptions } = useOptions(selectedBoardOption ? `GRADE_${selectedBoardOption.value}` : 'GRADE', selectedBoardOption?._id);
-  const { options: subjectOptions } = useOptions('SUBJECT');
 
   useEffect(() => {
     const timer = setTimeout(() => {
