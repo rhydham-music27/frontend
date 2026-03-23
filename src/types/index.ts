@@ -47,6 +47,7 @@ export interface IClassLead {
   leadSource?: string;
   preferredTutorGender?: string;
   timing: string;
+  weekdays?: string[];
   classesPerMonth?: number;
   classDurationHours?: number;
   paymentAmount?: number;
