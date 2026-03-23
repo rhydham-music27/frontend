@@ -224,7 +224,7 @@ const TutorProfilePage: React.FC = () => {
     if (!tutorProfile || !tutorProfile.user) return;
     const userId = tutorProfile.user.id || (tutorProfile.user as any)._id;
 
-    setLoadingDetails(true);
+    setLoadingDetails(true)
     try {
       const [attendanceRes, paymentsRes] = await Promise.all([
         getAttendances({ finalClassId: classObj.id || (classObj as any)._id, tutorId: userId, limit: 100 }),
