@@ -67,7 +67,12 @@ export default function TutorVerificationPage() {
 
   const formatSubjectLabel = (subject: any) => {
     if (!subject) return '-';
-    if (typeof subject === 'string') return subject;
+    if (typeof subject === 'string') {
+      // If it's a string, try to find it in our subjectsList (which has formatted labels)
+      const found = subjectsList.find(s => s._id === subject);
+      if (found) return found.label;
+      return subject;
+    }
 
     const parts = [];
     let current = subject;

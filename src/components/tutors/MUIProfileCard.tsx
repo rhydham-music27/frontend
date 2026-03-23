@@ -8,8 +8,9 @@ import {
 import { ITutor, IDocument } from '../../types';
 import { getMyProfile, uploadDocument, getTutorById, updateVerificationFeeStatus } from '../../services/tutorService';
 import { useAuth } from '../../hooks/useAuth';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import DocumentViewerModal from '../common/DocumentViewerModal';
+import { useOptions } from '../../hooks/useOptions';
 
 
 interface MUIProfileCardProps {
@@ -64,9 +65,15 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
     fetchProfile();
   }, [tutorId]);
 
+  const { options: subjectOptions } = useOptions('SUBJECT');
+
   const formatSubjectLabel = (subject: any) => {
     if (!subject) return '-';
-    if (typeof subject === 'string') return subject;
+    if (typeof subject === 'string') {
+      const found = subjectOptions.find(o => o._id === subject || o.value === subject);
+      if (found) return found.label;
+      return subject;
+    }
 
     const parts = [];
     let current = subject;

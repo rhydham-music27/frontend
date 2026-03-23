@@ -75,7 +75,11 @@ const TutorProfilePage: React.FC = () => {
 
   const formatSubjectLabel = (subject: any) => {
     if (!subject) return '-';
-    if (typeof subject === 'string') return subject;
+    if (typeof subject === 'string') {
+      const found = subjectOptions.find(o => o._id === subject || o.value === subject);
+      if (found) return found.label;
+      return subject;
+    }
 
     const parts = [];
     let current = subject;
