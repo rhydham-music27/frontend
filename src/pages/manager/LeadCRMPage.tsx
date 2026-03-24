@@ -423,8 +423,8 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
     });
   };
 
-  const allGrades = ['All', ...availableGrades];
-  const allSubjects = ['All', ...availableSubjects];
+  const allGrades = Array.from(new Set(['All', ...availableGrades]));
+  const allSubjects = Array.from(new Set(['All', ...availableSubjects]));
 
   const handleReassignOpen = (lead: IClassLead) => {
     setLeadToReassign(lead);
@@ -595,7 +595,7 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
             <Box display="flex" gap={0.5} overflow="auto" sx={{ maxWidth: '40vw', pb: 0.5 }}>
               {allGrades.slice(0, 8).map(grade => (
                 <Chip 
-                  key={grade} 
+                  key={`grade-${grade}`} 
                   label={grade} 
                   size="small" 
                   onClick={() => setGradeFilter(grade)}
@@ -617,7 +617,7 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
             <Box display="flex" gap={0.5} overflow="auto" sx={{ maxWidth: '40vw', pb: 0.5 }}>
               {allSubjects.slice(0, 8).map(subject => (
                 <Chip 
-                  key={subject} 
+                  key={`subj-${subject}`} 
                   label={subject} 
                   size="small" 
                   onClick={() => setSubjectFilter(subject)}
