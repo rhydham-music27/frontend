@@ -1,5 +1,35 @@
-import React from 'react';
-import { User, GraduationCap, Briefcase, Star } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Avatar, 
+  Chip, 
+  Grid, 
+  Paper, 
+  alpha, 
+  useTheme, 
+  Divider, 
+  Stack,
+  Fade,
+  Button
+} from '@mui/material';
+import { 
+  ShieldCheck, 
+  Sparkles, 
+  Award, 
+  BookOpen, 
+  MapPin, 
+  Briefcase,
+  Clock,
+  ChevronRight,
+  Verified,
+  GraduationCap,
+  Languages,
+  Calendar,
+  Handshake,
+  User,
+  Info
+} from 'lucide-react';
 import { ITutor } from '../../types';
 
 interface PublicTutorProfileCardProps {
@@ -7,215 +37,441 @@ interface PublicTutorProfileCardProps {
 }
 
 const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }) => {
-  const { user } = tutor;
-  const totalHours = (tutor as any).experienceHours ?? 0;
-  const classesAssigned = (tutor as any).classesAssigned ?? 0;
-  const classesCompleted = (tutor as any).classesCompleted ?? 0;
-  const activeClasses = Math.max(0, classesAssigned - classesCompleted);
+  const theme = useTheme();
+  const user = tutor.user;
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const getFullUrl = (url: string | undefined) => {
+    if (!url) return undefined;
+    if (url.startsWith('http')) return url;
+    const baseUrl = (import.meta as any).env?.VITE_API_BASE_URL || '';
+    return `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
+  };
 
   const profilePhotoDoc = (tutor.documents || []).find((d) => d.documentType === 'PROFILE_PHOTO');
-  const profileImageUrl = profilePhotoDoc?.documentUrl;
+  const profileImageUrl = getFullUrl(profilePhotoDoc?.documentUrl);
 
-  const personalDetails = {
-    profilePhoto: profileImageUrl,
-    fullName: user?.name || '',
-    tutorId: tutor.teacherId || '',
-    tier: (tutor as any).tier || 'BRONZE',
-    isAvailable: tutor.isAvailable,
+  const getTierColor = (tier: string = '') => {
+    const t = tier.toUpperCase();
+    if (t.includes('GOLD')) return '#f59e0b';
+    if (t.includes('SILVER')) return '#94a3b8';
+    if (t.includes('BRONZE')) return '#b45309';
+    return theme.palette.primary.main;
   };
 
-  const education = {
-    highestQualification: typeof (tutor as any).qualifications?.[0] === 'string' 
-      ? (tutor as any).qualifications?.[0] 
-      : (tutor as any).qualifications?.[0]?.label || '',
-    currentInstitution: (tutor as any).currentInstitution || '',
-  };
+  const groupedSubjects = useMemo(() => {
+    if (!tutor.subjects) return [];
+    const groups: Record<string, { parentLabel: string; subjects: string[] }> = {};
+    
+    tutor.subjects.forEach((sub: any) => {
+      if (!sub) return;
+      let label = typeof sub === 'string' ? sub : sub.label || sub.name || 'N/A';
+      let parentLabel = 'Other';
+      
+      if (typeof sub === 'object' && sub.parent) {
+        parentLabel = sub.parent.label || sub.parent.name || 'General';
+        if (sub.parent.parent) {
+          parentLabel = `${sub.parent.parent.label || sub.parent.parent.name} • ${parentLabel}`;
+        }
+      }
+      
+      if (!groups[parentLabel]) {
+        groups[parentLabel] = { parentLabel, subjects: [] };
+      }
+      groups[parentLabel].subjects.push(label);
+    });
+    return Object.values(groups);
+  }, [tutor.subjects]);
 
-  const workExperience = {
-    teachingExperience: `${totalHours} Hours`,
-    subjects: (tutor as any).subjects || [],
-    extracurricularActivities: (tutor as any).extracurricularActivities || [],
-  };
+  const groupedLocations = useMemo(() => {
+    if (!tutor.preferredCities) return [];
+    
+    const groups: Record<string, { city: string; areas: string[] }> = {};
+    tutor.preferredCities.forEach(city => {
+      groups[city] = { city, areas: [] };
+    });
 
-  const locationPreferences = {
-    teachingMode: (tutor as any).preferredMode || '',
-    preferredLocations: (tutor as any).preferredLocations || [],
-    preferredCities: (tutor as any).preferredCities || [],
-  };
-
-  const tutorData = {
-    personalDetails,
-    education,
-    workExperience,
-    locationPreferences,
-    totalTeachingHours: totalHours,
-    activeClasses,
-  };
+    if (tutor.preferredLocations) {
+      tutor.preferredLocations.forEach(loc => {
+        const cityKey = tutor.preferredCities?.[0] || 'Other';
+        if (!groups[cityKey]) groups[cityKey] = { city: cityKey, areas: [] };
+        if (!groups[cityKey].areas.includes(loc) && loc.toLowerCase() !== cityKey.toLowerCase()) {
+          groups[cityKey].areas.push(loc);
+        }
+      });
+    }
+    return Object.values(groups);
+  }, [tutor.preferredCities, tutor.preferredLocations]);
 
   return (
-    <div className="space-y-6">
-      {/* Header card */}
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-lg p-6 text-white">
-        <div className="flex flex-col md:flex-row items-center gap-5">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white/20 shadow-xl">
-              {personalDetails.profilePhoto ? (
-                <img
-                  src={personalDetails.profilePhoto}
-                  alt={personalDetails.fullName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                  <User className="w-16 h-16" />
-                </div>
-              )}
-            </div>
-            <div className={`absolute -bottom-2 -right-2 ${personalDetails.isAvailable ? 'bg-green-500' : 'bg-red-500'} rounded-xl px-2 py-0.5 shadow-lg`}>
-              <span className="text-[10px] font-bold">{personalDetails.isAvailable ? 'Active' : 'Unavailable'}</span>
-            </div>
-          </div>
+    <Fade in timeout={800}>
+      <Box sx={{ maxWidth: '1200px', mx: 'auto', spaceY: 4, pb: 12 }}>
+        
+        {/* 1. HERO SECTION - LUMINESCENT SCHOLAR LIGHT MODE */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 4, md: 8 },
+            borderRadius: '2.5rem',
+            background: 'linear-gradient(135deg, #f8faff 0%, #eff6ff 100%)',
+            border: '1px solid #f1f5f9',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.05)',
+            position: 'relative',
+            overflow: 'hidden',
+            mb: 4
+          }}
+        >
+          {/* Animated Background Accents */}
+          <Box sx={{ position: 'absolute', top: 0, right: 0, width: 400, height: 400, bgcolor: alpha('#3b82f6', 0.05), borderRadius: '50%', filter: 'blur(100px)', transform: 'translate(30%, -30%)' }} />
+          <Box sx={{ position: 'absolute', bottom: 0, left: 0, width: 300, height: 300, bgcolor: alpha('#6366f1', 0.03), borderRadius: '50%', filter: 'blur(80px)', transform: 'translate(-30%, 30%)' }} />
 
-          <div className="flex-1 text-center md:text-left space-y-1">
-            <h1 className="text-2xl font-bold uppercase">{personalDetails.fullName}</h1>
-            <p className="text-blue-300 text-sm">{education.highestQualification}</p>
-            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                <span className="text-xs opacity-75">Tutor ID:</span>
-                <span className="font-mono text-sm font-semibold">{personalDetails.tutorId}</span>
-              </div>
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-yellow-500/30">
-                <span className="text-xs opacity-75">Tier:</span>
-                <span className="text-sm font-bold text-yellow-500">{personalDetails.tier}</span>
-              </div>
-            </div>
-          </div>
+          <Grid container spacing={6} alignItems="center" sx={{ position: 'relative', zIndex: 1 }}>
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ position: 'relative' }}>
+                <Avatar
+                  src={profileImageUrl}
+                  imgProps={{ crossOrigin: 'anonymous' }}
+                  sx={{
+                    width: { xs: 154, md: 194 },
+                    height: { xs: 154, md: 194 },
+                    borderRadius: '2.5rem',
+                    boxShadow: '0 25px 40px rgba(0,0,0,0.15)',
+                    border: '8px solid white',
+                    bgcolor: 'primary.main',
+                    transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    '&:hover': { transform: 'scale(1.05)' }
+                  }}
+                >
+                  {!profileImageUrl && <User size={64} />}
+                </Avatar>
+                {tutor.verificationStatus === 'VERIFIED' && (
+                  <Box sx={{
+                    position: 'absolute',
+                    bottom: -10,
+                    right: -10,
+                    bgcolor: '#10b981',
+                    borderRadius: '50%',
+                    p: 1.2,
+                    boxShadow: '0 8px 20px rgba(16,185,129,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '4px solid white'
+                  }}>
+                    <Verified style={{ color: 'white', width: 22, height: 22 }} />
+                  </Box>
+                )}
+              </Box>
+              
+              <Chip 
+                label={`Tier: ${tutor.tier || 'Elite'}`}
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  bgcolor: 'white',
+                  color: getTierColor(tutor.tier),
+                  border: '1px solid',
+                  borderColor: alpha(getTierColor(tutor.tier), 0.2),
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  px: 1.5,
+                  py: 2,
+                  borderRadius: '1rem',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+                }}
+              />
+            </Grid>
+            
+            <Grid item xs={12} md={8}>
+              <Stack spacing={3} alignItems={{ xs: 'center', md: 'flex-start' }}>
+                <Box>
+                  <Typography
+                    variant="h2"
+                    sx={{
+                      fontWeight: 900,
+                      fontFamily: "'Manrope', sans-serif",
+                      fontSize: { xs: '2.5rem', md: '3.5rem' },
+                      color: '#1e293b',
+                      letterSpacing: '-0.04em',
+                      mb: 1,
+                      textAlign: { xs: 'center', md: 'left' }
+                    }}
+                  >
+                    {user?.name}
+                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={2} justifyContent={{ xs: 'center', md: 'flex-start' }}>
+                    <Box sx={{ width: 40, height: 2, bgcolor: alpha('#3b82f6', 0.3), borderRadius: '1rem' }} />
+                    <Typography 
+                      variant="subtitle2" 
+                      sx={{ 
+                        color: '#2563eb', 
+                        fontWeight: 900, 
+                        letterSpacing: '0.1em', 
+                        textTransform: 'uppercase' 
+                      }}
+                    >
+                      {tutor.qualifications?.[0] || 'Professional Academician'}
+                    </Typography>
+                  </Stack>
+                </Box>
 
-          <div className="flex flex-col gap-2">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
-              <div className="text-xl font-bold">{tutorData.totalTeachingHours}</div>
-              <div className="text-xs opacity-75">Total Hours</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-2 text-center">
-              <div className="text-xl font-bold">{tutorData.activeClasses}</div>
-              <div className="text-xs opacity-75">Active Classes</div>
-            </div>
-          </div>
-        </div>
-      </div>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: '#475569',
+                    fontSize: '1.2rem',
+                    lineHeight: 1.6,
+                    fontStyle: 'italic',
+                    borderLeft: '4px solid',
+                    borderColor: alpha('#3b82f6', 0.2),
+                    pl: 3,
+                    py: 1,
+                    bgcolor: alpha('#3b82f6', 0.03),
+                    borderRadius: '0 1.5rem 1.5rem 0',
+                    maxWidth: 700,
+                    textAlign: { xs: 'center', md: 'left' }
+                  }}
+                >
+                  "{tutor.bio || 'Dedicated to empowering students through personalized and innovative teaching methodologies.'}"
+                </Typography>
 
-      {/* Main Details Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Education & Extra Info */}
-        <div className="space-y-5">
-          <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-blue-600" />
-              Education
-            </h2>
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-                <p className="text-xs text-blue-600 font-medium mb-1">Highest Qualification</p>
-                <p className="text-lg font-bold text-blue-900">{education.highestQualification}</p>
-              </div>
+                <Stack direction="row" spacing={3} sx={{ mt: 2 }}>
+                  <Box sx={{ px: 3, py: 1.5, bgcolor: 'white', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Award size={18} color="#3b82f6" />
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '0.05em' }}>{tutor.teacherId}</Typography>
+                  </Box>
+                  {tutor.isAvailable && (
+                    <Box sx={{ px: 3, py: 1.5, bgcolor: 'white', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#10b981', boxShadow: '0 0 10px rgba(16,185,129,0.5)', animation: 'pulse 2s infinite' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: '#059669', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Available Now</Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Paper>
 
-              {education.currentInstitution && (
-                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                  <GraduationCap className="w-5 h-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">Current Institution</p>
-                    <p className="text-sm font-medium text-gray-900">{education.currentInstitution}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+        <Grid container spacing={4}>
+          {/* Main Column: Teaching & Credentials */}
+          <Grid item xs={12} lg={8} sx={{ spaceY: 4 }}>
+            <Stack spacing={4}>
+              {/* Academic Portfolio */}
+              <Paper sx={{ p: { xs: 4, md: 6 }, borderRadius: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 3, mb: 6 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 2, color: '#1e293b' }}>
+                    <Box sx={{ p: 1.25, borderRadius: '1rem', bgcolor: alpha('#3b82f6', 0.05), color: '#2563eb', display: 'flex' }}><BookOpen size={22} /></Box>
+                    Academic Portfolio
+                  </Typography>
+                  <Box sx={{ px: 3, py: 1.5, bgcolor: '#f8faff', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Briefcase size={16} color="#3b82f6" />
+                    <Typography variant="caption" sx={{ fontWeight: 900, color: '#475569', textTransform: 'uppercase' }}>{tutor.yearsOfExperience || 0}+ Years Specialist</Typography>
+                  </Box>
+                </Box>
 
-          <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Star className="w-5 h-5 text-blue-600" />
-              Expertise & Activities
-            </h2>
-            <div className="space-y-4">
-              {workExperience.extracurricularActivities.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2 font-semibold">Extracurricular Activities</p>
-                  <div className="flex flex-wrap gap-2">
-                    {workExperience.extracurricularActivities.map((act: string, idx: number) => (
-                      <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg border border-purple-100 italic">
-                        {act}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+                <Grid container spacing={6}>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={5}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Linguistic Fluency</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                          {(tutor.languagesKnown || []).map((lang, idx) => (
+                            <Chip key={idx} icon={<Languages size={14} />} label={lang} sx={{ bgcolor: '#f8faff', color: '#1e293b', fontWeight: 800, borderRadius: '0.85rem', border: '1px solid #f1f5f9', px: 0.5 }} />
+                          ))}
+                        </Box>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Core Expertise areas</Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                          {(tutor.skills || []).map((skill, idx) => (
+                            <Chip key={idx} icon={<Sparkles size={14} />} label={skill} sx={{ bgcolor: alpha('#2563eb', 0.05), color: '#2563eb', fontWeight: 800, borderRadius: '0.85rem', border: '1px solid', borderColor: alpha('#2563eb', 0.1), px: 0.5 }} />
+                          ))}
+                        </Box>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Verified Qualifications</Typography>
+                      <Stack spacing={2.5}>
+                        {(tutor.qualifications || []).map((q, idx) => {
+                          const label = typeof q === 'string' ? q : (q as any).label || (q as any).name || 'N/A';
+                          return (
+                            <Box key={idx} sx={{ p: 2.5, borderRadius: '1.5rem', bgcolor: '#f8faff', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.3s', '&:hover': { bgcolor: 'white', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', borderColor: alpha('#3b82f6', 0.1) } }}>
+                              <Box sx={{ width: 44, height: 44, borderRadius: '1rem', bgcolor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}><GraduationCap size={22} /></Box>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>{label}</Typography>
+                            </Box>
+                          );
+                        })}
+                      </Stack>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
 
-        {/* Work & Location */}
-        <div className="space-y-5">
-          <div className="bg-white rounded-2xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-blue-600" />
-              Teaching Preferences
-            </h2>
+              {/* Service Architecture */}
+              <Paper sx={{ p: { xs: 4, md: 6 }, borderRadius: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
+                <Box sx={{ position: 'absolute', top: 0, right: 0, width: 250, height: 250, bgcolor: alpha('#6366f1', 0.03), borderRadius: '50%', filter: 'blur(50px)', transform: 'translate(40%, -40%)' }} />
+                
+                <Typography variant="h5" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 2, color: '#1e293b', mb: 6 }}>
+                  <Box sx={{ p: 1.25, borderRadius: '1rem', bgcolor: alpha('#6366f1', 0.05), color: '#4f46e5', display: 'flex' }}><Sparkles size={22} /></Box>
+                  Service Architecture
+                </Typography>
 
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100 border border-green-200">
-                <p className="text-xs text-green-600 font-medium mb-1">Teaching Experience</p>
-                <p className="text-lg font-bold text-green-900">{workExperience.teachingExperience}</p>
-              </div>
+                <Grid container spacing={6}>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={5}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Pedagogical Scope</Typography>
+                        <Stack spacing={2}>
+                          {groupedSubjects.map((group, i) => {
+                            const isExpanded = expandedSections[`sub_${group.parentLabel}`];
+                            const limit = 5;
+                            const hasMore = group.subjects.length > limit;
+                            const visible = isExpanded ? group.subjects : group.subjects.slice(0, limit);
 
-              <div>
-                <p className="text-xs font-medium text-gray-500 mb-2 font-semibold">Subjects Offered</p>
-                <div className="flex flex-wrap gap-2">
-                  {workExperience.subjects.map((subject: any, index: number) => {
-                    const label = typeof subject === 'string' ? subject : subject?.label || 'N/A';
-                    return (
-                      <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
-                        {label}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
+                            return (
+                              <Box key={i}>
+                                <Typography variant="caption" sx={{ color: '#2563eb', fontWeight: 900, textTransform: 'uppercase', fontSize: '10px', mr: 1, borderBottom: '1px solid', borderColor: alpha('#2563eb', 0.2), pb: 0.2 }}>
+                                  {group.parentLabel}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#475569', fontWeight: 700, mt: 1, lineHeight: 1.6 }}>
+                                  {visible.join(', ')}
+                                  {hasMore && (
+                                    <Box component="span" sx={{ color: '#3b82f6', ml: 1, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleSection(`sub_${group.parentLabel}`)}>
+                                      {isExpanded ? '(Less)' : `+${group.subjects.length - limit} more`}
+                                    </Box>
+                                  )}
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </Stack>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Preferred Mode</Typography>
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1.5, bgcolor: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', px: 3, py: 1.5, borderRadius: '1.25rem', color: 'white' }}>
+                          <Handshake size={16} />
+                          <Typography variant="caption" sx={{ fontWeight: 900, tracking: '0.15em' }}>{tutor.preferredMode === 'BOTH' ? 'HYBRID INSTRUCTION' : (tutor.preferredMode || 'ONLINE/REMOTE')}</Typography>
+                        </Box>
+                      </Box>
+                    </Stack>
+                  </Grid>
 
-              <div className="pt-2 border-t border-gray-100">
-                <p className="text-xs font-medium text-gray-500 mb-1 font-semibold">Mode of Teaching</p>
-                <p className="text-sm font-bold text-gray-800 uppercase">{locationPreferences.teachingMode}</p>
-              </div>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={5}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Operational Jurisdictions</Typography>
+                        <Stack spacing={2}>
+                          {groupedLocations.map((group, i) => {
+                            const isExpanded = expandedSections[group.city];
+                            const limit = 8;
+                            const hasMore = group.areas.length > limit;
+                            const visible = isExpanded ? group.areas : group.areas.slice(0, limit);
 
-              {(locationPreferences.teachingMode === 'OFFLINE' || locationPreferences.teachingMode === 'HYBRID') && locationPreferences.preferredLocations.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2 font-semibold">Preferred Areas for Home Tuition</p>
-                  <div className="flex flex-wrap gap-2">
-                    {locationPreferences.preferredLocations.map((loc: string, idx: number) => (
-                      <span key={idx} className="px-3 py-1 bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-100 italic">
-                        {loc}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+                            return (
+                              <Box key={i}>
+                                <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 900, textTransform: 'uppercase', fontSize: '10px', mr: 1, borderBottom: '1px solid', borderColor: alpha('#6366f1', 0.2), pb: 0.2 }}>
+                                  {group.city}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#475569', fontWeight: 700, mt: 1, lineHeight: 1.6 }}>
+                                  {group.areas.length > 0 ? visible.join(', ') : 'Whole City / Global'}
+                                  {hasMore && (
+                                    <Box component="span" sx={{ color: '#4f46e5', ml: 1, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleSection(group.city)}>
+                                      {isExpanded ? '(Less)' : `+${group.areas.length - limit} more`}
+                                    </Box>
+                                  )}
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </Stack>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Availability Pulse</Typography>
+                        <Stack spacing={2}>
+                          {tutor.settings?.availabilityPreferences?.daysAvailable?.length ? (
+                            <Stack direction="row" alignItems="center" spacing={2.5}>
+                              <Box sx={{ width: 36, height: 36, borderRadius: '0.75rem', bgcolor: alpha('#10b981', 0.05), color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Calendar size={18} /></Box>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>{tutor.settings.availabilityPreferences.daysAvailable.join(', ')}</Typography>
+                            </Stack>
+                          ) : null}
+                          {tutor.settings?.availabilityPreferences?.timeSlots?.length ? (
+                            <Stack direction="row" alignItems="center" spacing={2.5}>
+                              <Box sx={{ width: 36, height: 36, borderRadius: '0.75rem', bgcolor: alpha('#2563eb', 0.05), color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Clock size={18} /></Box>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: '#64748b', opacity: 0.8 }}>{tutor.settings.availabilityPreferences.timeSlots.join(' | ')}</Typography>
+                            </Stack>
+                          ) : null}
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Stack>
+          </Grid>
 
-              {locationPreferences.preferredCities.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-gray-500 mb-2 font-semibold">Home Tuition available in</p>
-                  <div className="flex flex-wrap gap-2">
-                    {locationPreferences.preferredCities.map((city: string, idx: number) => (
-                      <span key={idx} className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-medium rounded-lg border border-orange-100">
-                        {city}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* Sidebar Column */}
+          <Grid item xs={12} lg={4}>
+            <Stack spacing={4} sx={{ position: 'sticky', top: 32 }}>
+              {/* Validation Status */}
+              <Paper sx={{ p: 4, borderRadius: '2.5rem', border: '1px solid', borderColor: tutor.verificationStatus === 'VERIFIED' ? '#dcfce7' : '#fef3c7', bgcolor: tutor.verificationStatus === 'VERIFIED' ? alpha('#10b981', 0.02) : alpha('#f59e0b', 0.02) }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2, color: '#1e293b' }}>
+                  <ShieldCheck color={tutor.verificationStatus === 'VERIFIED' ? '#10b981' : '#f59e0b'} /> Account Validation
+                </Typography>
+                <Stack spacing={3}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>Status:</Typography>
+                    <Chip label={tutor.verificationStatus || 'PENDING'} sx={{ fontWeight: 900, bgcolor: tutor.verificationStatus === 'VERIFIED' ? '#10b981' : '#f59e0b', color: 'white', height: 26, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
+                  </Box>
+                  {tutor.verifiedAt && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>Authenticated:</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 900, color: '#334155' }}>{new Date(tutor.verifiedAt).toLocaleDateString()}</Typography>
+                    </Box>
+                  )}
+                  <Divider sx={{ borderStyle: 'dashed', borderColor: alpha('#64748b', 0.1) }} />
+                  <Box sx={{ p: 2, bgcolor: 'white', borderRadius: '1.25rem', border: '1px solid #f1f5f9' }}>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 1, mb: 1, textTransform: 'uppercase', fontWeight: 900, fontSize: '9px' }}><Info size={12} /> Registry Compliance</Typography>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontStyle: 'italic', fontWeight: 600, lineHeight: 1.5 }}>Authorized educator in the YourShikshak database. Credentials have been verified through our standard academic vetting process.</Typography>
+                  </Box>
+                  
+                  <Button
+                    component="a"
+                    href="/#contact"
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      py: 2,
+                      borderRadius: '1.25rem',
+                      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      fontSize: '0.75rem',
+                      boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.2)',
+                      '&:hover': { background: '#0f172a', transform: 'translateY(-2px)' }
+                    }}
+                  >
+                    Enquire for Demo
+                  </Button>
+                </Stack>
+              </Paper>
+
+              <Paper sx={{ p: 4, borderRadius: '2.5rem', textAlign: 'center', bgcolor: alpha('#1e293b', 0.02), border: '1px solid #f1f5f9' }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.3em', display: 'block' }}>
+                  YourShikshak Academy
+                </Typography>
+              </Paper>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
+    </Fade>
   );
 };
 

@@ -1047,6 +1047,8 @@ const TutorProfilePage: React.FC = () => {
           <Autocomplete
             multiple
             disableCloseOnSelect
+            limitTags={3}
+            size="small"
             options={extracurricularOptions.length > 0 ? ['Select All', ...extracurricularOptions.map((opt) => opt.value)] : []}
             value={selectedExtracurriculars}
             onChange={(_, value) => {
@@ -1066,42 +1068,57 @@ const TutorProfilePage: React.FC = () => {
               const allValues = extracurricularOptions.map((opt) => opt.value);
               const allSelected = selectedExtracurriculars.length === allValues.length && allValues.length > 0;
               return (
-                <li {...props}>
+                <li {...props} style={{ padding: '4px 8px' }}>
                   <Checkbox
                     icon={icon}
                     checkedIcon={checkedIcon}
-                    style={{ marginRight: 8 }}
+                    size="small"
+                    style={{ marginRight: 4 }}
                     checked={isSelectAll ? allSelected : selected}
                   />
-                  {option}
+                  <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{option}</Typography>
                 </li>
               );
             }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
                 <Chip
-                  variant="outlined"
+                  variant="filled"
                   label={option}
                   {...getTagProps({ index })}
                   key={option}
-                  sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }}
+                  size="small"
+                  sx={{ 
+                    borderRadius: 1, 
+                    fontWeight: 600, 
+                    fontSize: '0.7rem',
+                    bgcolor: alpha('#6366f1', 0.08),
+                    color: '#4f46e5',
+                    border: 'none',
+                    height: 20
+                  }}
                 />
               ))
             }
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Extracurricular activities you can teach/coach"
-                placeholder="Select one or more activities"
-                margin="normal"
+                label="Extracurricular activities"
+                placeholder={selectedExtracurriculars.length === 0 ? "Select activities..." : ""}
+                margin="dense"
                 fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                sx={{ 
+                  '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                  '& .MuiInputLabel-root': { fontSize: '0.85rem' }
+                }}
               />
             )}
           />
           <Autocomplete
             multiple
             disableCloseOnSelect
+            limitTags={3}
+            size="small"
             options={availableAreas.length > 0 ? ['Select All', ...availableAreas] : []}
             value={preferredAreas}
             onChange={(_, value) => {
@@ -1119,30 +1136,49 @@ const TutorProfilePage: React.FC = () => {
               const isSelectAll = option === 'Select All';
               const allSelected = preferredAreas.length === availableAreas.length && availableAreas.length > 0;
               return (
-                <li {...props}>
+                <li {...props} style={{ padding: '4px 8px' }}>
                   <Checkbox
                     icon={icon}
                     checkedIcon={checkedIcon}
-                    style={{ marginRight: 8 }}
+                    size="small"
+                    style={{ marginRight: 4 }}
                     checked={isSelectAll ? allSelected : selected}
                   />
-                  {option}
+                  <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{option}</Typography>
                 </li>
               );
             }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
-                <Chip variant="outlined" label={option} {...getTagProps({ index })} key={option} sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }} />
+                <Chip 
+                  variant="filled" 
+                  label={option} 
+                  {...getTagProps({ index })} 
+                  key={option} 
+                  size="small"
+                  sx={{ 
+                    borderRadius: 1, 
+                    fontWeight: 600, 
+                    fontSize: '0.7rem',
+                    bgcolor: alpha('#6366f1', 0.08),
+                    color: '#4f46e5',
+                    border: 'none',
+                    height: 20
+                  }} 
+                />
               ))
             }
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Preferred Areas for Offline Classes"
-                placeholder="Preferred Areas for Offline Classes"
-                margin="normal"
+                label="Preferred Areas"
+                placeholder={preferredAreas.length === 0 ? "Select areas..." : ""}
+                margin="dense"
                 fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                sx={{ 
+                  '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                  '& .MuiInputLabel-root': { fontSize: '0.85rem' }
+                }}
               />
             )}
           />

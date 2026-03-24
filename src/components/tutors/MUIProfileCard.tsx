@@ -681,7 +681,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1.2 }}>
                       {groupedSubjects.map((group, i) => {
                         const isExpanded = expandedLocations[`sub_${group.parentLabel}`];
-                        const displayLimit = 10;
+                        const displayLimit = 5;
                         const hasMore = group.subjects.length > displayLimit;
                         const visibleSubjects = isExpanded ? group.subjects : group.subjects.slice(0, displayLimit);
 
