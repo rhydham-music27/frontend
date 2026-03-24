@@ -5,6 +5,11 @@ import {
   BottomNavigationAction,
   Paper,
   useMediaQuery,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -14,6 +19,7 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 import GroupsIcon from '@mui/icons-material/Groups';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 type NavItem = {
@@ -24,7 +30,7 @@ type NavItem = {
   match?: (pathname: string) => boolean;
 };
 
-const NAV_ITEMS: NavItem[] = [
+const MAIN_NAV_ITEMS: NavItem[] = [
   {
     value: 'dashboard',
     label: 'Dashboard',
@@ -46,19 +52,22 @@ const NAV_ITEMS: NavItem[] = [
     href: '/tutor-timetable',
     match: (p) => p === '/tutor-timetable',
   },
-  {
-    value: 'payments',
-    label: 'Payments',
-    icon: <PaymentsIcon />,
-    href: '/tutor-payments',
-    match: (p) => p === '/tutor-payments',
-  },
+];
+
+const MORE_NAV_ITEMS: NavItem[] = [
   {
     value: 'leads',
     label: 'Leads',
     icon: <GroupsIcon />,
     href: '/tutor-leads',
     match: (p) => p === '/tutor-leads',
+  },
+  {
+    value: 'payments',
+    label: 'Payments',
+    icon: <PaymentsIcon />,
+    href: '/tutor-payments',
+    match: (p) => p === '/tutor-payments',
   },
   {
     value: 'notes',
@@ -76,20 +85,37 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-const getSelectedValue = (pathname: string) => {
-  const match = NAV_ITEMS.find((i) => (i.match ? i.match(pathname) : i.href === pathname));
-  return match?.value ?? 'dashboard';
-};
-
 const TutorBottomNav: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   if (!isMobile) return null;
 
-  const value = getSelectedValue(location.pathname);
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNavigate = (href: string) => {
+    navigate(href);
+    handleMoreClose();
+  };
+
+  const isMoreActive = MORE_NAV_ITEMS.some((item) => 
+    item.match ? item.match(location.pathname) : item.href === location.pathname
+  );
+
+  const activeMainItem = MAIN_NAV_ITEMS.find((item) => 
+    item.match ? item.match(location.pathname) : item.href === location.pathname
+  );
+
+  const value = activeMainItem ? activeMainItem.value : (isMoreActive ? 'more' : 'dashboard');
 
   return (
     <Paper
@@ -109,7 +135,8 @@ const TutorBottomNav: React.FC = () => {
         showLabels
         value={value}
         onChange={(_, nextValue) => {
-          const item = NAV_ITEMS.find((i) => i.value === nextValue);
+          if (nextValue === 'more') return;
+          const item = MAIN_NAV_ITEMS.find((i) => i.value === nextValue);
           if (item) navigate(item.href);
         }}
         sx={{
@@ -124,7 +151,7 @@ const TutorBottomNav: React.FC = () => {
           },
         }}
       >
-        {NAV_ITEMS.map((item) => (
+        {MAIN_NAV_ITEMS.map((item) => (
           <BottomNavigationAction
             key={item.value}
             value={item.value}
@@ -132,7 +159,77 @@ const TutorBottomNav: React.FC = () => {
             icon={item.icon}
           />
         ))}
+        <BottomNavigationAction
+          value="more"
+          label="More"
+          icon={<MoreHorizIcon />}
+          onClick={handleMoreClick}
+          sx={{
+            color: isMoreActive ? theme.palette.primary.main : 'inherit',
+          }}
+        />
       </BottomNavigation>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMoreClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        PaperProps={{
+          sx: {
+            mb: 1,
+            minWidth: 180,
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          },
+        }}
+      >
+        {MORE_NAV_ITEMS.map((item) => {
+          const isActive = item.match 
+            ? item.match(location.pathname) 
+            : item.href === location.pathname;
+          
+          return (
+            <MenuItem
+              key={item.value}
+              onClick={() => handleNavigate(item.href)}
+              sx={{
+                py: 1.5,
+                px: 2,
+                gap: 2,
+                bgcolor: isActive ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                '&:hover': {
+                  bgcolor: isActive 
+                    ? alpha(theme.palette.primary.main, 0.12) 
+                    : alpha(theme.palette.action.hover, 0.04),
+                },
+              }}
+            >
+              <ListItemIcon sx={{ 
+                minWidth: 'auto',
+                color: isActive ? theme.palette.primary.main : 'inherit' 
+              }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.label} 
+                primaryTypographyProps={{ 
+                  variant: 'body2', 
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? theme.palette.primary.main : 'text.primary'
+                }} 
+              />
+            </MenuItem>
+          );
+        })}
+      </Menu>
     </Paper>
   );
 };

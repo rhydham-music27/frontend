@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Toolbar } from '@mui/material';
+import { Box, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
+import TutorMobileAppBar from './TutorMobileAppBar';
 import Sidebar from './Sidebar';
 import PermissionDeniedDialog from '../common/PermissionDeniedDialog';
 import TutorBottomNav from '../tutors/TutorBottomNav';
@@ -24,7 +25,7 @@ import { USER_ROLES, TEACHING_MODE } from '../../constants';
 
 const MainLayout: React.FC = () => {
   const { refreshProfile } = useAuth();
-  // const theme = useTheme();
+  const theme = useTheme();
   // const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   // const [sidebarWidth, setSidebarWidth] = useState(280); // Moved to Redux
@@ -122,7 +123,6 @@ const MainLayout: React.FC = () => {
         if (newWidth > 480) newWidth = 480; // Max width
         // Snap to icon mode only when very small to prevent "stuck" feeling during expansion
         if (newWidth < 110) newWidth = 80;
-
         dispatch(setSidebarWidth(newWidth));
       }
     },
@@ -138,6 +138,9 @@ const MainLayout: React.FC = () => {
     };
   }, [resize, stopResizing]);
 
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTutor = user?.role === USER_ROLES.TUTOR;
+
   return (
     <Box
       display="flex"
@@ -146,7 +149,11 @@ const MainLayout: React.FC = () => {
         minHeight: 'calc(100vh / var(--app-scale))',
       }}
     >
-      <Header onMenuClick={handleDrawerToggle} />
+      {isTutor && isMobile ? (
+        <TutorMobileAppBar onMenuClick={handleDrawerToggle} />
+      ) : (
+        <Header onMenuClick={handleDrawerToggle} />
+      )}
       <Sidebar
         open={mobileOpen}
         onClose={handleDrawerToggle}

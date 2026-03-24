@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Container, Box, Typography, Button, Paper, IconButton, Tooltip, Pagination, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TextField, Select, MenuItem, InputAdornment, Card, CardContent, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Container, Box, Typography, Button, Paper, IconButton, Tooltip, Pagination, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TextField, Select, MenuItem, InputAdornment, Card, CardContent, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Autocomplete } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,6 +14,7 @@ import useAuth from '../../hooks/useAuth';
 import useClassLeads from '../../hooks/useClassLeads';
 import { usePermissionCheck } from '../../hooks/useManagerPermissions';
 import { getLeadFilterOptions } from '../../services/leadService';
+import { getSubjects } from '../../services/tutorService';
 import ClassLeadStatusChip from '../../components/classLeads/ClassLeadStatusChip';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorDialog from '../../components/common/ErrorDialog';
@@ -21,7 +22,7 @@ import SnackbarNotification from '../../components/common/SnackbarNotification';
 import GroupStudentsModal from '../../components/classLeads/GroupStudentsModal';
 import { IClassLead } from '../../types';
 
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getSubjectList, formatHierarchicalSubject } from '../../utils/subjectUtils';
 
 export default function ClassLeadsListPage() {
   const navigate = useNavigate();
@@ -52,8 +53,13 @@ export default function ClassLeadsListPage() {
     creators: [],
     status: [],
   });
+  const [subjectsList, setSubjectsList] = useState<any[]>([]);
 
   useEffect(() => {
+    getSubjects().then((res: any) => {
+      if (res.data) setSubjectsList(res.data);
+    }).catch(console.error);
+
     getLeadFilterOptions().then((res: any) => {
       if (res.success && res.data) {
         setFilterOptions(res.data);
@@ -423,17 +429,22 @@ export default function ClassLeadsListPage() {
                     {filterOptions.grades.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
                   </Select>
                 </TableCell>
-                <TableCell>
-                  <Select
-                    variant="standard"
-                    value={filters.subject}
-                    onChange={(e) => handleFilterChange('subject', e.target.value as string)}
-                    displayEmpty
-                    sx={{ fontSize: '0.8125rem', width: '100%' }}
-                  >
-                    <MenuItem value=""><em>All Subjects</em></MenuItem>
-                    {filterOptions.subjects.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-                  </Select>
+                <TableCell sx={{ minWidth: 200 }}>
+                  <Autocomplete
+                    size="small"
+                    options={subjectsList}
+                    getOptionLabel={(option) => formatHierarchicalSubject(option)}
+                    value={subjectsList.find(s => s._id === filters.subject) || null}
+                    onChange={(_e, newValue) => handleFilterChange('subject', newValue ? (newValue._id || newValue.value) : '')}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        placeholder="Subject"
+                        sx={{ '& .MuiInput-root': { fontSize: '0.8125rem' } }}
+                      />
+                    )}
+                  />
                 </TableCell>
                 <TableCell>
                   <Select
