@@ -205,6 +205,7 @@ export const API_ENDPOINTS = {
   LEADS_MY: '/api/leads/my-leads',
   TUTOR_LEADS_MY: '/api/leads/tutor/my-leads',
   LEAD_STATUS: (id: string) => `/api/leads/${id}/status`,
+  PUBLIC_LEADS: '/api/public/leads',
   TUTORS: '/api/tutors',
   COORDINATORS: '/api/coordinators',
   ATTENDANCE: '/api/attendance',

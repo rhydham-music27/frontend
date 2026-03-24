@@ -25,14 +25,29 @@ import {
   Fade,
   Avatar,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { getAllAttendanceSheets, approveAttendanceSheet, rejectAttendanceSheet } from '../../services/coordinatorService';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import AttendanceSheet from '../../components/tutors/AttendanceSheet';
+import {
+  getCoordinatorPendingSheets,
+  approveAttendanceSheet,
+  rejectAttendanceSheet,
+} from '../../services/attendanceSheetService';
+import finalClassService from '../../services/finalClassService';
 import AttendanceSheetReviewModal from '../../components/coordinator/AttendanceSheetReviewModal';
+import RenewClassModal from '../../components/classes/RenewClassModal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import SnackbarNotification from '../../components/common/SnackbarNotification';
 
 const AttendanceSheetApprovalsPage: React.FC = () => {
   const theme = useTheme();
@@ -41,11 +56,74 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedSheet, setSelectedSheet] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [renewClassId, setRenewClassId] = useState<string | null>(null);
+  const [renewInitialData, setRenewInitialData] = useState<{ fee?: number; sessions?: number }>({});
+
+  // Dialog States
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState<{ title: string; message: string; onConfirm: () => void; severity?: any }>({
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectId, setRejectId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info';
+  }>({ open: false, message: '', severity: 'success' });
+
+  const handleOpenRenewModal = (sheet: any) => {
+    // Enforcement: Only allow renewal if class is "completed" for the current cycle
+    const taken = sheet.totalSessionsTaken || 0;
+    const planned = sheet.totalSessionsPlanned || sheet.finalClass?.classesPerMonth || 8; 
+    
+    if (taken < planned) {
+      setSnackbar({
+        open: true,
+        message: `Renewal is only allowed once the class is completed. (${taken}/${planned} sessions taken)`,
+        severity: 'error'
+      });
+      return;
+    }
+
+    setRenewClassId(sheet.finalClass?._id || sheet.finalClass?.id);
+    setRenewInitialData({
+      fee: sheet.finalClass?.monthlyFees || sheet.finalClass?.monthlyFee,
+      sessions: sheet.finalClass?.classesPerMonth || sheet.finalClass?.sessionsPerMonth
+    });
+    setRenewModalOpen(true);
+  };
+
+  const handleCloseRenewModal = () => {
+    setRenewModalOpen(false);
+    setRenewClassId(null);
+  };
+
+  const handleRenewClass = async (payload: { monthlyFee: number; sessionsPerMonth: number }) => {
+    if (!renewClassId) return;
+    setLoading(true);
+    try {
+      await finalClassService.renewClass(renewClassId, payload);
+      setSnackbar({ open: true, message: 'Class renewed successfully', severity: 'success' });
+      fetchSheets();
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e?.message || 'Failed to renew class', severity: 'error' });
+    } finally {
+      setLoading(false);
+      handleCloseRenewModal();
+    }
+  };
 
   const fetchSheets = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getAllAttendanceSheets();
+      const response = await getCoordinatorPendingSheets();
       if (response.success) {
         setSheets(response.data || []);
       } else {
@@ -71,12 +149,13 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
     try {
       const response = await approveAttendanceSheet(id);
       if (response.success) {
+        setSnackbar({ open: true, message: 'Sheet approved successfully', severity: 'success' });
         fetchSheets();
       } else {
-        alert(response.message || 'Approval failed');
+        setSnackbar({ open: true, message: response.message || 'Approval failed', severity: 'error' });
       }
     } catch (err: any) {
-      alert(err.message || 'An error occurred during approval');
+      setSnackbar({ open: true, message: err.message || 'An error occurred during approval', severity: 'error' });
     }
   };
 
@@ -84,12 +163,13 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
     try {
       const response = await rejectAttendanceSheet(id, reason);
       if (response.success) {
+        setSnackbar({ open: true, message: 'Sheet rejected successfully', severity: 'info' });
         fetchSheets();
       } else {
-        alert(response.message || 'Rejection failed');
+        setSnackbar({ open: true, message: response.message || 'Rejection failed', severity: 'error' });
       }
     } catch (err: any) {
-      alert(err.message || 'An error occurred during rejection');
+      setSnackbar({ open: true, message: err.message || 'An error occurred during rejection', severity: 'error' });
     }
   };
 
@@ -307,58 +387,90 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
                             {getStatusChip(sheet.status)}
                           </TableCell>
                           <TableCell align="center">
-                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-                              <Tooltip title="Review Full Sheet">
-                                <IconButton 
-                                  size="small"
-                                  onClick={() => handleReview(sheet)}
-                                  sx={{ 
-                                    color: 'primary.main', 
-                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.15) } 
-                                  }}
-                                >
-                                  <VisibilityIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
+                              <Button 
+                                size="small"
+                                startIcon={<VisibilityIcon sx={{ fontSize: '1rem !important' }} />}
+                                onClick={() => handleReview(sheet)}
+                                sx={{ 
+                                  color: 'primary.main', 
+                                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                  fontWeight: 700,
+                                  px: 1.5,
+                                  borderRadius: '8px',
+                                  fontSize: '0.75rem',
+                                  '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.15) } 
+                                }}
+                              >
+                                View
+                              </Button>
+
+                              <Button
+                                size="small"
+                                startIcon={<AutorenewIcon sx={{ fontSize: '1rem !important' }} />}
+                                onClick={() => handleOpenRenewModal(sheet)}
+                                sx={{
+                                  color: 'warning.main',
+                                  bgcolor: alpha(theme.palette.warning.main, 0.08),
+                                  fontWeight: 700,
+                                  px: 1.5,
+                                  borderRadius: '8px',
+                                  fontSize: '0.75rem',
+                                  '&:hover': { bgcolor: alpha(theme.palette.warning.main, 0.15) }
+                                }}
+                              >
+                                Renew
+                              </Button>
 
                               {String(sheet.status) === 'PENDING' && (
                                 <>
-                                  <Tooltip title="Approve & Payout">
-                                    <IconButton
-                                      size="small"
-                                      color="success"
-                                      onClick={async () => {
-                                        if (window.confirm('Approve this sheet and create a one-time payout for sessions recorded so far?')) {
-                                          await handleApprove(sheet._id);
+                                  <Button
+                                    size="small"
+                                    color="success"
+                                    startIcon={<CheckCircleIcon sx={{ fontSize: '1rem !important' }} />}
+                                    onClick={() => {
+                                      setConfirmData({
+                                        title: 'Approve Attendance Sheet',
+                                        message: 'Approve this sheet and create a one-time payout for sessions recorded so far?',
+                                        severity: 'success',
+                                        onConfirm: () => {
+                                          handleApprove(sheet._id);
+                                          setConfirmOpen(false);
                                         }
-                                      }}
-                                      sx={{ 
-                                        bgcolor: alpha(theme.palette.success.main, 0.08),
-                                        '&:hover': { bgcolor: alpha(theme.palette.success.main, 0.15) } 
-                                      }}
-                                    >
-                                      <CheckCircleIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title="Reject Sheet">
-                                    <IconButton
-                                      size="small"
-                                      color="error"
-                                      onClick={async () => {
-                                        const reason = window.prompt('Enter rejection reason:');
-                                        if (reason && reason.trim()) {
-                                          await handleReject(sheet._id, reason);
-                                        }
-                                      }}
-                                      sx={{ 
-                                        bgcolor: alpha(theme.palette.error.main, 0.08),
-                                        '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.15) } 
-                                      }}
-                                    >
-                                      <CancelIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
+                                      });
+                                      setConfirmOpen(true);
+                                    }}
+                                    sx={{ 
+                                      bgcolor: alpha(theme.palette.success.main, 0.08),
+                                      fontWeight: 700,
+                                      px: 1.5,
+                                      borderRadius: '8px',
+                                      fontSize: '0.75rem',
+                                      '&:hover': { bgcolor: alpha(theme.palette.success.main, 0.15) } 
+                                    }}
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    color="error"
+                                    startIcon={<CancelIcon sx={{ fontSize: '1rem !important' }} />}
+                                    onClick={() => {
+                                      setRejectId(sheet._id);
+                                      setRejectReason('');
+                                      setRejectOpen(true);
+                                    }}
+                                    sx={{ 
+                                      bgcolor: alpha(theme.palette.error.main, 0.08),
+                                      fontWeight: 700,
+                                      px: 1.5,
+                                      borderRadius: '8px',
+                                      fontSize: '0.75rem',
+                                      '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.15) } 
+                                    }}
+                                  >
+                                    Reject
+                                  </Button>
                                 </>
                               )}
                             </Box>
@@ -380,6 +492,62 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
         sheet={selectedSheet}
         onApprove={handleApprove}
         onReject={handleReject}
+      />
+
+      <RenewClassModal
+        open={renewModalOpen}
+        onClose={handleCloseRenewModal}
+        onRenew={handleRenewClass}
+        isAdmin={false} // Coordinators use this page
+        initialMonthlyFee={renewInitialData.fee}
+        initialSessionsPerMonth={renewInitialData.sessions}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmData.title}
+        message={confirmData.message}
+        onConfirm={confirmData.onConfirm}
+        onClose={() => setConfirmOpen(false)}
+        severity={confirmData.severity || 'warning'}
+      />
+
+      <Dialog open={rejectOpen} onClose={() => setRejectOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Reject Attendance Sheet</DialogTitle>
+        <DialogContent>
+          <Box pt={1}>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Rejection Reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Explain why this sheet is being rejected..."
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setRejectOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            color="error" 
+            disabled={!rejectReason.trim()}
+            onClick={() => {
+              handleReject(rejectId!, rejectReason);
+              setRejectOpen(false);
+            }}
+          >
+            Reject Sheet
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <SnackbarNotification
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
       />
     </Container>
   );

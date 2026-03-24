@@ -149,7 +149,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
               const progress = getProgress(cls);
               const pColor = getProgressColor(progress);
               const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
-              const subjects = (cls.subject || []).join(', ');
+              const subjects = (cls.subject || []).map((s: any) => typeof s === 'string' ? s : s.label).join(', ');
               const monthlyTotalSessions = Number(
                 (cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0
               );
@@ -280,7 +280,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.88rem' }}>{cls.studentName}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {(cls.subject || []).join(', ')} • Grade {cls.grade}
+                          {(cls.subject || []).map((s: any) => typeof s === 'string' ? s : s.label).join(', ')} • Grade {cls.grade}
                         </Typography>
                       </TableCell>
                       <TableCell>

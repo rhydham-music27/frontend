@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Container, Box, Typography, Grid, Button, Chip } from '@mui/material';
+import { Container, Box, Typography, Grid, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import RenewClassModal from '../../components/classes/RenewClassModal';
 import finalClassService from '../../services/finalClassService';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import AttendanceSheet, {
   AttendanceRecord,
   AssignedClass,
@@ -32,12 +33,29 @@ const AttendanceApprovalPage: React.FC = () => {
     message: string;
     severity: 'success' | 'error' | 'info';
   }>({ open: false, message: '', severity: 'success' });
+  const [renewClassId, setRenewClassId] = useState<string | null>(null);
+  const [renewInitialData, setRenewInitialData] = useState<{ fee?: number; sessions?: number }>({});
   const [pendingSheets, setPendingSheets] = useState<IAttendanceSheet[]>([]);
   const [renewModalOpen, setRenewModalOpen] = useState(false);
-  const [renewClassId, setRenewClassId] = useState<string | null>(null);
 
-  const handleOpenRenewModal = (classId: string) => {
-    setRenewClassId(classId);
+  // Dialog States
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState<{ title: string; message: string; onConfirm: () => void; severity?: any }>({
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectId, setRejectId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const handleOpenRenewModal = (finalClass: any) => {
+    setRenewClassId(finalClass?.id || finalClass?._id || '');
+    setRenewInitialData({
+      fee: finalClass?.monthlyFee,
+      sessions: finalClass?.sessionsPerMonth
+    });
     setRenewModalOpen(true);
   };
 
@@ -227,20 +245,9 @@ const AttendanceApprovalPage: React.FC = () => {
 
   const handleRejectSheet = useCallback(
     async (sheetId: string) => {
-      // Simple inline reason collection for now
-      const reason = window.prompt('Reason for rejecting this attendance sheet?');
-      if (!reason) return;
-      setLoading(true);
-      try {
-        await rejectAttendanceSheet(sheetId, reason);
-        setSnackbar({ open: true, message: 'Attendance sheet rejected', severity: 'success' });
-        const res = await getCoordinatorPendingSheets();
-        setPendingSheets(res.data || []);
-      } catch (e: any) {
-        setSnackbar({ open: true, message: e?.message || 'Failed to reject sheet', severity: 'error' });
-      } finally {
-        setLoading(false);
-      }
+      setRejectId(sheetId);
+      setRejectReason('');
+      setRejectOpen(true);
     },
     []
   );
@@ -411,7 +418,18 @@ const AttendanceApprovalPage: React.FC = () => {
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => handleApproveSheet(sheetId)}
+                      onClick={() => {
+                        setConfirmData({
+                          title: 'Approve Attendance Sheet',
+                          message: 'Approve this sheet and create a one-time payout?',
+                          severity: 'success',
+                          onConfirm: () => {
+                            handleApproveSheet(sheetId);
+                            setConfirmOpen(false);
+                          }
+                        });
+                        setConfirmOpen(true);
+                      }}
                       disabled={loading}
                     >
                       Approve
@@ -420,17 +438,12 @@ const AttendanceApprovalPage: React.FC = () => {
                       variant="outlined"
                       size="small"
                       color="primary"
-                      onClick={() => handleOpenRenewModal((sheet.finalClass as any)?.id || (sheet.finalClass as any)?._id || '')}
+                      onClick={() => handleOpenRenewModal(sheet.finalClass)}
                       disabled={loading}
                       sx={{ ml: 1 }}
                     >
                       Renew
                     </Button>
-                        <RenewClassModal
-                          open={renewModalOpen}
-                          onClose={handleCloseRenewModal}
-                          onRenew={handleRenewClass}
-                        />
                   </Box>
                 </Box>
                 );
@@ -460,6 +473,65 @@ const AttendanceApprovalPage: React.FC = () => {
           />
         </Box>
       )}
+      <RenewClassModal
+        open={renewModalOpen}
+        onClose={handleCloseRenewModal}
+        onRenew={handleRenewClass}
+        isAdmin={true}
+        initialMonthlyFee={renewInitialData.fee}
+        initialSessionsPerMonth={renewInitialData.sessions}
+      />
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmData.title}
+        message={confirmData.message}
+        onConfirm={confirmData.onConfirm}
+        onClose={() => setConfirmOpen(false)}
+        severity={confirmData.severity}
+      />
+
+      <Dialog open={rejectOpen} onClose={() => setRejectOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Reject Attendance Sheet</DialogTitle>
+        <DialogContent>
+          <Box pt={1}>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Rejection Reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Explain why this sheet is being rejected..."
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setRejectOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            color="error" 
+            disabled={!rejectReason.trim()}
+            onClick={async () => {
+              const id = rejectId!;
+              const reason = rejectReason;
+              setRejectOpen(false);
+              setLoading(true);
+              try {
+                await rejectAttendanceSheet(id, reason);
+                setSnackbar({ open: true, message: 'Attendance sheet rejected', severity: 'success' });
+                const res = await getCoordinatorPendingSheets();
+                setPendingSheets(res.data || []);
+              } catch (e: any) {
+                setSnackbar({ open: true, message: e?.message || 'Failed to reject sheet', severity: 'error' });
+              } finally {
+                setLoading(false);
+              }
+            }}
+          >
+            Reject Sheet
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -45,6 +45,11 @@ export const getClassLeadById = async (leadId: string): Promise<ApiResponse<ICla
   return data as ApiResponse<IClassLead>;
 };
 
+export const getPublicLeadById = async (leadId: string): Promise<ApiResponse<IClassLead>> => {
+  const { data } = await api.get(`${API_ENDPOINTS.PUBLIC_LEADS}/${leadId}`);
+  return data as ApiResponse<IClassLead>;
+};
+
 export const createClassLead = async (
   payload: IClassLeadFormData
 ): Promise<ApiResponse<IClassLead>> => {
@@ -138,4 +143,5 @@ export default {
   getLeadFilterOptions,
   getCRMLeads,
   reassignLead,
+  getPublicLeadById,
 };

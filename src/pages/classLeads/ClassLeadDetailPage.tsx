@@ -343,7 +343,7 @@ export default function ClassLeadDetailPage() {
     lines.push('📞 For More Details, Contact:');
     lines.push('📱 +91-9244947668');
     lines.push('');
-    lines.push('Share with your friends too!');
+    lines.push('To Express interest or share with your friends click the link below!');
     lines.push(publicUrl);
     return lines.join('\n');
   };
