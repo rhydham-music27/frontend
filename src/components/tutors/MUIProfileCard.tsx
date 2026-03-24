@@ -1,4 +1,4 @@
-import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box, Tooltip, alpha } from '@mui/material';
+import { CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Button, Avatar, Grid, Chip, Divider, Box, Tooltip, alpha, Typography, useTheme } from '@mui/material';
 import {
   User, Phone, Mail, Calendar, MapPin, GraduationCap, Briefcase, Clock,
   FileText, CheckCircle, Star, Award, BookOpen, Languages, Sparkles,
@@ -18,6 +18,7 @@ interface MUIProfileCardProps {
 }
 
 const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
+  const theme = useTheme();
   const { user: currentUser } = useAuth();
   const [tutor, setTutor] = useState<ITutor | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -74,15 +75,102 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       if (found) return found.label;
       return subject;
     }
-
-    const parts = [];
-    let current = subject;
-    while (current) {
-      parts.unshift(current.label);
-      current = current.parent;
-    }
-    return parts.join(' . ');
+    return subject.label || '-';
   };
+
+  const groupedSubjects = useMemo(() => {
+    if (!tutor || !tutor.subjects) return [];
+    
+    interface Group {
+      parentLabel: string;
+      subjects: string[];
+    }
+    const groups: Record<string, Group> = {};
+
+    tutor.subjects.forEach((sub: any) => {
+      if (!sub) return;
+      
+      let label = '';
+      let parentLabel = 'Other';
+      
+      if (typeof sub === 'string') {
+        const found = subjectOptions.find(o => o._id === sub || o.value === sub);
+        label = found ? found.label : sub;
+        
+        // Try to find hierarchy from option service (if populated)
+        if (found && found.parent) {
+          const grade: any = typeof found.parent === 'object' ? found.parent : subjectOptions.find(o => o._id === found.parent);
+          if (grade) {
+            const board: any = typeof grade.parent === 'object' ? grade.parent : subjectOptions.find(o => o._id === grade.parent);
+            parentLabel = board ? `${board.label} • ${grade.label}` : grade.label;
+          }
+        }
+      } else {
+        label = sub.label;
+        const parts = [];
+        let current = sub.parent;
+        while (current) {
+          parts.unshift(current.label);
+          current = current.parent;
+        }
+        if (parts.length > 0) parentLabel = parts.join(' • ');
+      }
+
+      if (!groups[parentLabel]) {
+        groups[parentLabel] = { parentLabel, subjects: [] };
+      }
+      groups[parentLabel].subjects.push(label);
+    });
+
+    return Object.values(groups);
+  }, [tutor?.subjects, subjectOptions]);
+  const { options: cityOptions } = useOptions('CITY');
+  
+  const groupedLocations = useMemo(() => {
+    if (!tutor || !tutor.preferredCities) return [];
+    
+    interface LocationGroup {
+      city: string;
+      areas: string[];
+    }
+    const groups: Record<string, LocationGroup> = {};
+
+    // Initialize groups for all preferred cities
+    tutor.preferredCities.forEach(city => {
+      groups[city] = { city, areas: [] };
+    });
+
+    // Attempt to distribute preferred locations among cities
+    if (tutor.preferredLocations) {
+      tutor.preferredLocations.forEach(loc => {
+        const cityKey = tutor.preferredCities?.[0] || 'Other';
+        if (!groups[cityKey]) groups[cityKey] = { city: cityKey, areas: [] };
+        
+        // Deduplicate and skip if area name matches city name
+        if (!groups[cityKey].areas.includes(loc) && loc.toLowerCase() !== cityKey.toLowerCase()) {
+          groups[cityKey].areas.push(loc);
+        }
+      });
+    }
+
+    return Object.values(groups).filter(g => g.city !== 'Other' || g.areas.length > 0);
+  }, [tutor?.preferredCities, tutor?.preferredLocations]);
+
+  const [expandedLocations, setExpandedLocations] = useState<Record<string, boolean>>({});
+
+  const toggleLocations = (city: string) => {
+    setExpandedLocations(prev => ({ ...prev, [city]: !prev[city] }));
+  };
+
+  useEffect(() => {
+    if (tutor) {
+      console.log('MUIProfileCard Debug:', {
+        profileImageUrl: tutor.documents?.find(d => d.documentType === 'PROFILE_PHOTO')?.documentUrl,
+        hasDocuments: !!tutor.documents,
+        docCount: tutor.documents?.length || 0
+      });
+    }
+  }, [tutor]);
 
   const handleShareProfile = async () => {
     if (!tutor) return;
@@ -590,11 +678,35 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                 <div>
                   <p className="text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] mb-4 font-['Manrope']">Teaching Specializations</p>
                   <div className="flex flex-wrap gap-3">
-                    {tutor.subjects?.map((sub: any, i: number) => (
-                      <span key={i} className="bg-indigo-50/50 px-4 py-2 rounded-xl text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition-all border border-indigo-100/50 shadow-sm">
-                        {formatSubjectLabel(sub)}
-                      </span>
-                    ))}
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                      {groupedSubjects.map((group, i) => {
+                        const isExpanded = expandedLocations[`sub_${group.parentLabel}`];
+                        const displayLimit = 10;
+                        const hasMore = group.subjects.length > displayLimit;
+                        const visibleSubjects = isExpanded ? group.subjects : group.subjects.slice(0, displayLimit);
+
+                        return (
+                          <Typography key={i} variant="body2" sx={{ fontSize: '13px', lineHeight: 1.5 }}>
+                            <Box component="span" sx={{ color: 'primary.main', fontWeight: 800, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.02em', mr: 1, borderBottom: '1.5px solid', borderColor: alpha(theme.palette.primary.main, 0.2), pb: 0.1 }}>
+                              {group.parentLabel}
+                            </Box>
+                            <Box component="span" sx={{ color: 'slate.600', fontWeight: 600 }}>
+                              {visibleSubjects.join(', ')}
+                              {hasMore && !isExpanded && (
+                                <Box component="span" sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer', ml: 1, '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleLocations(`sub_${group.parentLabel}`)}>
+                                  + {group.subjects.length - displayLimit} more
+                                </Box>
+                              )}
+                              {isExpanded && (
+                                <Box component="span" sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer', ml: 1, '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleLocations(`sub_${group.parentLabel}`)}>
+                                  (Show less)
+                                </Box>
+                              )}
+                            </Box>
+                          </Typography>
+                        );
+                      })}
+                    </Box>
                   </div>
                 </div>
 
@@ -611,26 +723,40 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                 <div>
                   <p className="text-[10px] font-black text-[#64748b] uppercase tracking-[0.2em] mb-4 font-['Manrope']">Operational Jurisdictions</p>
                   <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      {tutor.preferredCities?.map((city, i) => (
-                        <Chip key={i} label={city} size="small" sx={{ 
-                          bgcolor: alpha('#3b82f6', 0.1), 
-                          color: '#2563eb', 
-                          fontWeight: 800,
-                          fontFamily: "'Manrope', sans-serif",
-                          border: '1px solid',
-                          borderColor: alpha('#3b82f6', 0.2)
-                        }} />
-                      ))}
-                      {tutor.preferredLocations?.map((loc, i) => (
-                        <Chip key={i} label={loc} size="small" variant="outlined" sx={{ 
-                          color: '#64748b', 
-                          borderColor: alpha('#64748b', 0.15),
-                          fontWeight: 600,
-                          fontSize: '0.65rem'
-                        }} />
-                      ))}
-                    </div>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1.2 }}>
+                      {groupedLocations.map((group, i) => {
+                        const isExpanded = expandedLocations[group.city];
+                        const displayLimit = 10;
+                        const hasMore = group.areas.length > displayLimit;
+                        const visibleAreas = isExpanded ? group.areas : group.areas.slice(0, displayLimit);
+                        
+                        return (
+                          <Typography key={i} variant="body2" sx={{ fontSize: '13px', lineHeight: 1.6 }}>
+                            <Box component="span" sx={{ color: '#2563eb', fontWeight: 800, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.02em', mr: 1, borderBottom: '1.5px solid', borderColor: alpha('#2563eb', 0.2), pb: 0.1 }}>
+                              {group.city}
+                            </Box>
+                            <Box component="span" sx={{ color: 'slate.600', fontWeight: 600 }}>
+                              {visibleAreas.length > 0 ? visibleAreas.join(', ') : 'Whole City'}
+                              {hasMore && !isExpanded && (
+                                <Box component="span" sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer', ml: 1, '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleLocations(group.city)}>
+                                  + {group.areas.length - displayLimit} more
+                                </Box>
+                              )}
+                              {isExpanded && (
+                                <Box component="span" sx={{ color: 'primary.main', fontWeight: 800, cursor: 'pointer', ml: 1, '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleLocations(group.city)}>
+                                  (Show less)
+                                </Box>
+                              )}
+                            </Box>
+                          </Typography>
+                        );
+                      })}
+                      {(!groupedLocations || groupedLocations.length === 0) && (
+                        <Typography variant="caption" sx={{ color: 'slate.400', fontStyle: 'italic' }}>
+                          No operational jurisdictions listed
+                        </Typography>
+                      )}
+                    </Box>
                   </div>
                 </div>
 

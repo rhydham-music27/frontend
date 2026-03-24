@@ -38,6 +38,7 @@ import { Gender, TeachingMode } from '../../types/enums';
 import { validateEmail, validatePhone } from '@/utils/leadValidation';
 import { useOptions } from '@/hooks/useOptions';
 import { motion } from 'framer-motion';
+import { CurriculumTreeSelector } from './CurriculumTreeSelector';
 
 export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create' }: TutorLeadFormProps) => {
   // Helper function to check if a field should be read-only
@@ -85,75 +86,8 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Local state for hierarchy selection
-  const [selectedBoard, setSelectedBoard] = useState('');
-  const [selectedGrade, setSelectedGrade] = useState('');
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-
-  // Options Hooks
-  const { options: boardOptions } = useOptions('BOARD');
-
-  // Dependent Options
-  const selectedBoardId = useMemo(() => boardOptions.find(b => b.value === selectedBoard)?._id, [boardOptions, selectedBoard]);
-  const { options: gradeOptions } = useOptions('GRADE', selectedBoardId ?? null);
-
-  const selectedGradeId = useMemo(() => gradeOptions.find(g => g.value === selectedGrade)?._id, [gradeOptions, selectedGrade]);
-  const { options: subjectOptions } = useOptions('SUBJECT', selectedGradeId ?? null);
-
-  const handleAddSubjects = () => {
-    const newSubjectObjects = selectedSubjects.map(id => {
-      const opt = subjectOptions.find(o => o._id === id);
-      // Use the pre-formatted label from the backend if it looks hierarchical (contains dots or bullets)
-      // Otherwise fallback to manual formatting
-      const label = opt?.label?.includes(' . ') || opt?.label?.includes(' • ') 
-        ? opt.label 
-        : `${selectedBoard} • Class ${selectedGrade} • ${opt?.label || id}`;
-        
-      return {
-        _id: id,
-        label: label
-      };
-    }).filter(s => !formData.subjects.some((existing: any) => 
-      (typeof existing === 'string' ? existing : existing._id) === s._id
-    ));
-
-    if (newSubjectObjects.length > 0) {
-      setFormData(prev => ({ ...prev, subjects: [...prev.subjects, ...newSubjectObjects] }));
-      setSelectedSubjects([]);
-    }
-  };
-
-  const handleRemoveSubject = (subjectToRemove: any) => {
-    const idToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : subjectToRemove?._id;
-    const nameToRemove = typeof subjectToRemove === 'string' ? subjectToRemove : subjectToRemove?.label || subjectToRemove?.name;
-    
-    setFormData(prev => ({
-      ...prev,
-      subjects: prev.subjects.filter((s: any) => {
-        const sId = typeof s === 'string' ? s : s?._id;
-        const sName = typeof s === 'string' ? s : s?.label || s?.name;
-        
-        // If we have IDs, filter by ID. Otherwise fallback to name.
-        if (idToRemove && sId) return sId !== idToRemove;
-        return sName !== nameToRemove;
-      })
-    }));
-  };
-
-  const formatSubjectLabel = (val: string) => {
-    if (!val) return 'N/A';
-    // If it's an ID (hex), we can't format it without the label. 
-    // This function is now mainly a fallback as we store formatted labels.
-    if (/^[0-9a-fA-F]{24}$/.test(val)) return val; 
-
-    const parts = val.split('_');
-    if (parts.length >= 3) {
-      const board = parts[0];
-      const grade = parts[1];
-      const subject = parts.slice(2).join(' ');
-      return `${board} • Class ${grade} • ${subject}`;
-    }
-    return val.replace(/_/g, ' ');
+  const handleSubjectsChange = (newSubjectIds: string[]) => {
+    setFormData(prev => ({ ...prev, subjects: newSubjectIds }));
   };
 
   const { options: extracurricularOptions } = useOptions('EXTRACURRICULAR_ACTIVITY');
@@ -451,92 +385,20 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
               <Grid item xs={12}>
                 <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.03), border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}` }}>
                   <Typography variant="subtitle2" gutterBottom fontWeight={700} color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <LibraryBooksIcon fontSize="inherit" /> Add Your Subjects
+                    <LibraryBooksIcon fontSize="inherit" /> Select Your Subjects
                   </Typography>
                   <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
-                    Select Board, Class, and Subject to add to your profile
+                    Explore the curriculum hierarchy to find and select the subjects you teach.
                   </Typography>
 
-                  <Grid container spacing={1.5}>
-                    <Grid item xs={12} sm={3.5}>
-                      <FormControl fullWidth size="small">
-                        <InputLabel>Board</InputLabel>
-                        <Select
-                          value={selectedBoard}
-                          label="Board"
-                          onChange={(e) => { setSelectedBoard(e.target.value); setSelectedGrade(''); setSelectedSubjects([]); }}
-                        >
-                          {boardOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={3.5}>
-                      <FormControl fullWidth size="small" disabled={!selectedBoard}>
-                        <InputLabel>Class</InputLabel>
-                        <Select
-                          value={selectedGrade}
-                          label="Class"
-                          onChange={(e) => { setSelectedGrade(e.target.value); setSelectedSubjects([]); }}
-                        >
-                          {gradeOptions.map(opt => <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>)}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={3.5}>
-                      <FormControl fullWidth size="small" disabled={!selectedGrade}>
-                        <InputLabel>Subjects</InputLabel>
-                        <Select
-                          multiple
-                          value={selectedSubjects}
-                          label="Subjects"
-                          onChange={(e) => setSelectedSubjects(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value as string[])}
-                          renderValue={(selected) => `${selected.length} selected`}
-                        >
-                          {subjectOptions.map(opt => (
-                            <MenuItem key={opt._id} value={opt._id}>
-                              <Checkbox checked={selectedSubjects.includes(opt._id)} size="small" />
-                              <ListItemText primary={opt.label} />
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={1.5}>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        disabled={selectedSubjects.length === 0 || isFieldReadOnly('subjects')}
-                        onClick={handleAddSubjects}
-                        sx={{ height: 40, borderRadius: 2, fontSize: '0.75rem' }}
-                      >
-                        <AddCircleOutlineIcon sx={{ mr: 0.5 }} /> Add
-                      </Button>
-                    </Grid>
-                  </Grid>
-
-                  <Box mt={2.5} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {(formData.subjects as any[]).map((sub, index) => {
-                      const label = typeof sub === 'string' ? sub : sub?.label || sub?.name || 'N/A';
-                      const key = typeof sub === 'string' ? sub : sub?._id || index;
-                      const displayLabel = (typeof sub !== 'string' && sub?.label) ? sub.label : formatSubjectLabel(label);
-                      
-                      return (
-                        <Chip
-                          key={key}
-                          label={displayLabel}
-                          onDelete={isFieldReadOnly('subjects') ? undefined : () => handleRemoveSubject(sub)}
-                          sx={{ borderRadius: 1.5, fontWeight: 600 }}
-                          color="primary"
-                          variant="outlined"
-                        />
-                      );
-                    })}
-                    {formData.subjects.length === 0 && (
-                      <Typography variant="caption" color="text.secondary" fontStyle="italic">No subjects added. Add at least one to continue.</Typography>
-                    )}
-                  </Box>
-                  {errors.subjects && <FormHelperText error sx={{ mt: 1 }}>{errors.subjects}</FormHelperText>}
-                    {isFieldReadOnly('subjects') && <FormHelperText sx={{ mt: 1 }}>Cannot be changed</FormHelperText>}
+                  <CurriculumTreeSelector
+                    selectedSubjectIds={formData.subjects.map((s: any) => (typeof s === 'string' ? s : s?._id)).filter(Boolean)}
+                    onChange={handleSubjectsChange}
+                    error={errors.subjects}
+                    disabled={isFieldReadOnly('subjects')}
+                  />
+                  
+                  {isFieldReadOnly('subjects') && <FormHelperText sx={{ mt: 1 }}>Subject selection is locked for verified tutors.</FormHelperText>}
                 </Box>
               </Grid>
 

@@ -21,6 +21,7 @@ import { getAttendances } from '../../services/attendanceService';
 import { getMyProfile, updateTutorProfile, getTutorById, getTutorStats } from '../../services/tutorService';
 import type { ITutor, IFinalClass, IAttendance, IPayment } from '../../types';
 import { useOptions } from '@/hooks/useOptions';
+import { CurriculumTreeSelector } from '../../components/tutors/CurriculumTreeSelector';
 
 
 const areasByCity: Record<string, string[]> = {
@@ -1025,68 +1026,15 @@ const TutorProfilePage: React.FC = () => {
             placeholder="e.g., 2 years, Fresher"
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
-          <Autocomplete
-            multiple
-            disableCloseOnSelect
-            value={selectedSubjects}
-            onChange={(_, value) => {
-              if (value.some(v => v === 'Select All' || v?.label === 'Select All')) {
-                if (selectedSubjects.length === subjectOptions.length) {
-                  setSelectedSubjects([]);
-                } else {
-                  setSelectedSubjects(subjectOptions);
-                }
-              } else {
-                setSelectedSubjects(value);
-              }
-            }}
-            getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
-            isOptionEqualToValue={(option, value) => {
-              const optionId = typeof option === 'string' ? option : option._id;
-              const valueId = typeof value === 'string' ? value : value._id;
-              return optionId === valueId;
-            }}
-            options={subjectOptions.length > 0 ? [{ label: 'Select All', _id: 'select-all' } as any, ...subjectOptions] : []}
-            renderOption={(props, option, { selected }) => {
-              const optionLabel = typeof option === 'string' ? option : option.label;
-              const isSelectAll = optionLabel === 'Select All';
-              const allSelected = selectedSubjects.length === subjectOptions.length && subjectOptions.length > 0;
-              return (
-                <li {...props}>
-                  <Checkbox
-                    icon={icon}
-                    checkedIcon={checkedIcon}
-                    style={{ marginRight: 8 }}
-                    checked={isSelectAll ? allSelected : selected}
-                  />
-                  {optionLabel}
-                </li>
-              );
-            }}
-            renderTags={(value: any[], getTagProps) =>
-              value
-                .filter((v) => (typeof v === 'string' ? v : v.label) !== 'Select All')
-                .map((option: any, index: number) => (
-                  <Chip
-                    variant="outlined"
-                    label={typeof option === 'string' ? option : option.label}
-                    {...getTagProps({ index })}
-                    key={typeof option === 'string' ? option : option._id}
-                    sx={{ borderRadius: 1.5, fontWeight: 600, fontSize: '0.75rem' }}
-                  />
-                ))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Subjects you can teach"
-                placeholder="Select one or more subjects"
-                margin="normal"
-                fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              />
-            )}
-          />
+          <Box sx={{ mt: 2, mb: 1 }}>
+            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1, color: 'text.primary' }}>
+              Subjects you can teach
+            </Typography>
+            <CurriculumTreeSelector
+              selectedSubjectIds={selectedSubjects.map(s => typeof s === 'string' ? s : (s?._id || s?.id)).filter(Boolean)}
+              onChange={setSelectedSubjects}
+            />
+          </Box>
           <TextField
             label="Your qualifications"
             value={qualificationsInput}

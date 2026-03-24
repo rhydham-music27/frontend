@@ -92,11 +92,34 @@ export default function TutorVerificationPage() {
 
   const formatSubjectDisplay = (subjects: any[], limit?: number) => {
     if (!subjects || subjects.length === 0) return '-';
-    const labels = subjects.map(s => formatSubjectLabel(s));
-    if (limit && labels.length > limit) {
-      return labels.slice(0, limit).join(', ') + '...';
+    
+    const groups: Record<string, string[]> = {};
+    subjects.forEach(s => {
+      const label = formatSubjectLabel(s);
+      if (label === '-') return;
+      
+      const parts = label.split(' . ');
+      if (parts.length > 1) {
+        const parent = parts.slice(0, -1).join(' • ');
+        const sub = parts[parts.length - 1];
+        if (!groups[parent]) groups[parent] = [];
+        groups[parent].push(sub);
+      } else {
+        if (!groups['Other']) groups['Other'] = [];
+        groups['Other'].push(label);
+      }
+    });
+
+    const displayParts = Object.entries(groups).map(([parent, subs]) => {
+      if (parent === 'Other') return subs.join(', ');
+      return `${parent}: ${subs.join(', ')}`;
+    });
+
+    const fullString = displayParts.join(' | ');
+    if (limit && displayParts.length > limit) {
+      return displayParts.slice(0, limit).join(' | ') + '...';
     }
-    return labels.join(', ');
+    return fullString;
   };
 
   const renderTutorCard = (t: ITutor, mode: 'pending' | 'all') => {
