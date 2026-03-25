@@ -17,27 +17,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles,
   const user = useSelector(selectCurrentUser);
   const location = useLocation();
 
-  useEffect(() => {
-    // Persistent logging that survives reloads
-    const debugInfo = {
-      isAuthenticated,
-      loading,
-      user: user ? { id: user.id, role: user.role, name: user.name } : null,
-      studentRoute,
-      token: localStorage.getItem('token'),
-      storedUser: localStorage.getItem('user')
-    };
-    
-    // Store in sessionStorage to survive reloads
-    sessionStorage.setItem('authDebug', JSON.stringify(debugInfo));
-    
-    // Also log to console
-    console.log('ProtectedRoute Debug:', debugInfo);
-    
-    if (!isAuthenticated) {
-      console.log('Not authenticated, redirecting to:', studentRoute ? "/student-login" : "/login");
-    }
-  }, [isAuthenticated, loading, user, studentRoute]);
 
   if (loading) {
     return (
@@ -47,21 +26,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles,
         left: 0, 
         right: 0, 
         bottom: 0, 
-        background: 'rgba(255,255,255,0.9)', 
+        background: '#FFFFFF', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
         zIndex: 9999,
-        fontSize: '18px'
       }}>
-        <div>
-          <LoadingSpinner fullScreen />
-          <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            Loading auth state...<br/>
-            <small>Token: {localStorage.getItem('token') ? 'EXISTS' : 'MISSING'}</small><br/>
-            <small>User: {localStorage.getItem('user') ? 'EXISTS' : 'MISSING'}</small>
-          </div>
-        </div>
+        <LoadingSpinner fullScreen />
       </div>
     );
   }
