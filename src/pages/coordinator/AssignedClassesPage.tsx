@@ -18,6 +18,7 @@ import { changeTutor, updateClassStatus, updateClassTestsPerMonth, updateAttenda
 import { getCoordinatorTutors } from '../../services/tutorService';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { getOptionLabel } from '../../utils/subjectUtils';
+import { IFinalClass } from '../../types';
 
 const AssignedClassesPage: React.FC = () => {
   const theme = useTheme();

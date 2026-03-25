@@ -38,7 +38,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { getFinalClass, updateFinalClassSchedule, downloadAttendancePdf, renewClass } from '../../services/finalClassService';
-import { getAttendanceByClass, getAttendanceSheetsByClass } from '../../services/attendanceService';
+import { getAttendanceByClass, getAttendanceSheetsByClass, approveAttendanceSheet, rejectAttendanceSheet } from '../../services/attendanceService';
 import { getPaymentsByClass } from '../../services/paymentService';
 import { IAttendance, IFinalClass, IPayment } from '../../types';
 import { getSubjectList } from '../../utils/subjectUtils';
@@ -153,6 +153,30 @@ const ClassDetailPage: React.FC = () => {
       setError(e?.response?.data?.message || e?.message || 'Failed to update schedule');
     } finally {
       setSavingSchedule(false);
+    }
+  };
+
+  const handleApproveSheet = async (id: string) => {
+    if (!id) return;
+    try {
+      await approveAttendanceSheet(id);
+      setSnackbar({ open: true, message: 'Attendance sheet approved successfully', severity: 'success' });
+      const sheetRes = await getAttendanceSheetsByClass(classId!);
+      setSheets(Array.isArray((sheetRes as any)?.data) ? ((sheetRes as any).data as any[]) : []);
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e?.response?.data?.message || 'Failed to approve sheet', severity: 'error' });
+    }
+  };
+
+  const handleRejectSheet = async (id: string, reason: string) => {
+    if (!id) return;
+    try {
+      await rejectAttendanceSheet(id, reason);
+      setSnackbar({ open: true, message: 'Attendance sheet rejected', severity: 'info' });
+      const sheetRes = await getAttendanceSheetsByClass(classId!);
+      setSheets(Array.isArray((sheetRes as any)?.data) ? ((sheetRes as any).data as any[]) : []);
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e?.response?.data?.message || 'Failed to reject sheet', severity: 'error' });
     }
   };
 
@@ -530,6 +554,8 @@ const ClassDetailPage: React.FC = () => {
             open={reviewModalOpen}
             onClose={() => setReviewModalOpen(false)}
             sheet={selectedSheet}
+            onApprove={handleApproveSheet}
+            onReject={handleRejectSheet}
           />
 
           <RenewClassModal

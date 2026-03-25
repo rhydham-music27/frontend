@@ -231,6 +231,7 @@ export interface ISchedule {
   startDate?: string | Date;
   daysOfWeek?: string[];
   timeSlot?: string;
+  isFixed?: boolean;
 }
 
 export interface IClassSession {
@@ -260,6 +261,7 @@ export interface IFinalClass {
   status: string;
   schedule: ISchedule;
   classesPerMonth?: number;
+  sessionsPerMonth?: number;
   totalSessions: number;
   completedSessions: number;
   studentName: string;
@@ -269,6 +271,8 @@ export interface IFinalClass {
   mode: string;
   location?: string;
   ratePerSession?: number;
+  monthlyFee?: number;
+  monthlyFees?: number;
   testPerMonth?: number;
   convertedBy: IUser;
   convertedAt: Date;
