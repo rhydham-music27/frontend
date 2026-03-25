@@ -9,6 +9,7 @@ import {
   alpha,
 } from '@mui/material';
 import { BookOpen } from 'lucide-react';
+import { getLeafSubjectLabel } from '../../utils/subjectUtils';
 
 interface ClassCardProps {
   classId: string;
@@ -93,6 +94,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   classId,
   subject,
   grade,
+  board,
   studentName,
   topic,
   schedule,
@@ -101,7 +103,10 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   classesPerMonth,
   onMarkClick,
 }) => {
-  const config = subjectConfig[subject] || defaultConfig;
+  // Extract leaf subject name if it's a hierarchical string (e.g., "Board . Class . Subject")
+  const leafSubject = getLeafSubjectLabel(subject);
+  
+  const config = subjectConfig[leafSubject] || defaultConfig;
   const targetSessions = classesPerMonth || totalSessions || 0;
   const progressPercentage = targetSessions > 0 ? (completedSessions / targetSessions) * 100 : 0;
   const isCompleted = targetSessions > 0 && completedSessions >= targetSessions;
@@ -158,7 +163,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
         {/* Info Area */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box display="flex" alignItems="center" gap={1.5} mb={0.75}>
+          <Box display="flex" flexDirection="column" gap={0.25} mb={1}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -168,19 +173,21 @@ export const ClassCard: React.FC<ClassCardProps> = ({
                 letterSpacing: '-0.02em',
               }}
             >
-              {subject}
+              {leafSubject}
             </Typography>
-            <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 700,
-                color: '#64748b',
-                fontSize: '0.85rem',
-              }}
-            >
-              Grade {grade}
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 700,
+                  color: '#64748b',
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {grade} {board && `• ${board}`}
+              </Typography>
+            </Box>
           </Box>
 
           <Typography

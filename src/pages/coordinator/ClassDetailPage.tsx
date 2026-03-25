@@ -41,7 +41,7 @@ import { getFinalClass, updateFinalClassSchedule, downloadAttendancePdf, renewCl
 import { getAttendanceByClass, getAttendanceSheetsByClass, approveAttendanceSheet, rejectAttendanceSheet } from '../../services/attendanceService';
 import { getPaymentsByClass } from '../../services/paymentService';
 import { IAttendance, IFinalClass, IPayment } from '../../types';
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getLeafSubjectList } from '../../utils/subjectUtils';
 import AttendanceSheetReviewModal from '../../components/coordinator/AttendanceSheetReviewModal';
 import RenewClassModal from '../../components/classes/RenewClassModal';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
@@ -355,7 +355,7 @@ const ClassDetailPage: React.FC = () => {
                   <InfoRow label="Mode" value={finalClass.mode || '-'} />
                   <InfoRow label="Grade" value={finalClass.grade || '-'} />
                   <InfoRow label="Board" value={finalClass.board || '-'} />
-                  <InfoRow label="Subjects" value={getSubjectList(finalClass.subject).join(', ') || '-'} />
+                  <InfoRow label="Subjects" value={getLeafSubjectList(finalClass.subject).join(', ') || '-'} />
                   <InfoRow label="Start Date" value={finalClass.startDate ? new Date(finalClass.startDate as any).toLocaleDateString('en-IN') : '-'} />
                   <InfoRow label="Classes / Month" value={String(finalClass.classesPerMonth ?? '-')} />
                   <InfoRow label="Tests / Month" value={String(finalClass.testPerMonth ?? '-')} />

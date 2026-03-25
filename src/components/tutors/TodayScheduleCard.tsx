@@ -242,6 +242,7 @@ const TodayScheduleCard: React.FC = () => {
                     classId={cls.id}
                     subject={subjects}
                     grade={getOptionLabel(cls.grade) || 'N/A'}
+                    board={getOptionLabel(cls.board)}
                     studentName={cls.studentName}
                     topic={(cls as any).topic || 'N/A'}
                     schedule={timeSlot}

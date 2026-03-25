@@ -34,7 +34,7 @@ import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
 import { DEMO_STATUS } from '../../constants';
 
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getLeafSubjectList } from '../../utils/subjectUtils';
 
 const CompletedLeadsTable: React.FC = () => {
   const [demos, setDemos] = useState<IDemoHistory[]>([]);
@@ -171,7 +171,7 @@ const CompletedLeadsTable: React.FC = () => {
           {demos.map((demo) => {
             const lead = demo.classLead;
             const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-            const subjects = getSubjectList(lead?.subject).join(', ');
+            const subjects = getLeafSubjectList(lead?.subject).join(', ');
 
             return (
               <Box
@@ -348,7 +348,7 @@ const CompletedLeadsTable: React.FC = () => {
               {demos.map((demo) => {
                 const lead = demo.classLead;
                 const address = [lead?.address, lead?.area, lead?.city].filter(Boolean).join(', ');
-                const subjects = getSubjectList(lead?.subject).join(', ');
+                const subjects = getLeafSubjectList(lead?.subject).join(', ');
 
                 return (
                   <TableRow

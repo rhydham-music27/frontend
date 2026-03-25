@@ -22,7 +22,7 @@ import SnackbarNotification from '../../components/common/SnackbarNotification';
 import GroupStudentsModal from '../../components/classLeads/GroupStudentsModal';
 import { IClassLead } from '../../types';
 
-import { getSubjectList, formatHierarchicalSubject } from '../../utils/subjectUtils';
+import { getSubjectList, formatHierarchicalSubject, getLeafSubjectList } from '../../utils/subjectUtils';
 
 export default function ClassLeadsListPage() {
   const navigate = useNavigate();
@@ -173,7 +173,7 @@ export default function ClassLeadsListPage() {
   const formattedLeads = useMemo(() => {
     return (leads as IClassLead[]).map(lead => ({
       ...lead,
-      displaySubjects: getSubjectList(lead.subject),
+      displaySubjects: getLeafSubjectList(lead.subject),
     }));
   }, [leads]);
 

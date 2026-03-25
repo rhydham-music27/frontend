@@ -19,7 +19,7 @@ import {
 } from '../../services/tutorService';
 import { useTheme } from '@mui/material/styles';
 import DocumentViewerModal from '../../components/common/DocumentViewerModal';
-import { getSubjectLabel, getOptionLabel } from '../../utils/subjectUtils';
+import { getLeafSubjectLabel, getOptionLabel, getLeafSubjectList } from '../../utils/subjectUtils';
 
 export default function TutorVerificationPage() {
   const theme = useTheme();
@@ -68,53 +68,16 @@ export default function TutorVerificationPage() {
 
   const { options: subjectOptions } = useOptions('SUBJECT');
 
-  const formatSubjectLabel = (subject: any) => {
-    if (!subject) return '-';
-    
-    // If it's a string (ID), resolve it using the centralized subjectOptions
-    if (typeof subject === 'string') {
-      const found = subjectOptions.find(o => o._id === subject || o.value === subject);
-      if (found) return found.label;
-      // Secondary fallback to subjectsList
-      const foundInList = subjectsList.find(s => s._id === subject);
-      if (foundInList) return foundInList.label;
-      return subject; 
-    }
-
-    // If it's an object, handle hierarchical labels
-    return getSubjectLabel(subject);
-  };
+    // Use standard leaf-level label extraction
+    return getLeafSubjectLabel(subject);
 
   const formatSubjectDisplay = (subjects: any[], limit?: number) => {
     if (!subjects || subjects.length === 0) return '-';
-    
-    const groups: Record<string, string[]> = {};
-    subjects.forEach(s => {
-      const label = formatSubjectLabel(s);
-      if (label === '-') return;
-      
-      const parts = label.split(' . ');
-      if (parts.length > 1) {
-        const parent = parts.slice(0, -1).join(' • ');
-        const sub = parts[parts.length - 1];
-        if (!groups[parent]) groups[parent] = [];
-        groups[parent].push(sub);
-      } else {
-        if (!groups['Other']) groups['Other'] = [];
-        groups['Other'].push(label);
-      }
-    });
-
-    const displayParts = Object.entries(groups).map(([parent, subs]) => {
-      if (parent === 'Other') return subs.join(', ');
-      return `${parent}: ${subs.join(', ')}`;
-    });
-
-    const fullString = displayParts.join(' | ');
-    if (limit && displayParts.length > limit) {
-      return displayParts.slice(0, limit).join(' | ') + '...';
+    const leafSubjects = getLeafSubjectList(subjects);
+    if (limit && leafSubjects.length > limit) {
+      return leafSubjects.slice(0, limit).join(', ') + '...';
     }
-    return fullString;
+    return leafSubjects.join(', ');
   };
 
   const renderTutorCard = (t: ITutor, mode: 'pending' | 'all') => {

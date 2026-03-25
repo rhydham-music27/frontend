@@ -20,7 +20,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import useNotifications from '../../hooks/useNotifications';
 
-import { getSubjectList, getOptionLabel } from '../../utils/subjectUtils';
+import { getSubjectList, getOptionLabel, getLeafSubjectList } from '../../utils/subjectUtils';
 
 const ClassLeadsFeedCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -363,7 +363,7 @@ const ClassLeadsFeedCard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 2.5,
-            maxHeight: 700,
+            maxHeight: 520, // Limit to roughly 2 leads
             overflowY: 'auto',
             mx: -1,
             px: 1,
@@ -378,7 +378,7 @@ const ClassLeadsFeedCard: React.FC = () => {
             const id = (((a as any).id || (a as any)._id) as string);
             const interested = hasExpressedInterest(a);
             const cl = (a as any).classLead || {};
-            const subjects = getSubjectList(cl?.subject || cl?.subjects || cl?.subjectList).join(', ');
+            const subjects = getLeafSubjectList(cl?.subject || cl?.subjects || cl?.subjectList).join(', ');
             const isHighlighted = Boolean(matchPercentage >= 80);
             const matchColor = matchPercentage >= 80 ? '#10b981' : matchPercentage >= 50 ? '#3b82f6' : '#64748b';
 
@@ -426,32 +426,22 @@ const ClassLeadsFeedCard: React.FC = () => {
                 </Box>
 
                 <Box mb={2.5}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 0.5, pr: 10 }}>
-                    Class {getOptionLabel(cl?.grade)} • {subjects}
+                  <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 1.5, lineHeight: 1.3 }}>
+                    {subjects}
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
                     <Chip 
                       label={getOptionLabel(cl?.mode)} 
                       size="small" 
+                      variant="outlined"
                       sx={{ 
-                        bgcolor: alpha('#64748b', 0.06), 
-                        color: '#475569', 
-                        fontWeight: 700,
-                        fontSize: '0.65rem',
-                        height: 22,
-                        textTransform: 'uppercase'
-                      }} 
-                    />
-                    <Chip 
-                      label={getOptionLabel(cl?.board)} 
-                      size="small" 
-                      sx={{ 
-                        bgcolor: alpha('#64748b', 0.06), 
-                        color: '#475569', 
-                        fontWeight: 700,
-                        fontSize: '0.65rem',
-                        height: 22,
-                        textTransform: 'uppercase'
+                        borderColor: alpha('#3b82f6', 0.2), 
+                        color: '#2563eb', 
+                        fontWeight: 800,
+                        fontSize: '0.7rem',
+                        height: 24,
+                        textTransform: 'uppercase',
+                        bgcolor: alpha('#3b82f6', 0.04)
                       }} 
                     />
                   </Box>
@@ -469,6 +459,12 @@ const ClassLeadsFeedCard: React.FC = () => {
                       border: '1px solid #f1f5f9' 
                     }}
                   >
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>GRADE & BOARD</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
+                      {getOptionLabel(cl?.grade)} • {getOptionLabel(cl?.board)}
+                    </Typography>
+                  </Box>
                   <Box>
                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>LOCATION</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>

@@ -8,7 +8,7 @@ import { selectCurrentUser } from '../../store/slices/authSlice';
 import { getMyClasses } from '../../services/finalClassService';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getLeafSubjectList } from '../../utils/subjectUtils';
 
 const ActiveClassesOverviewCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -164,7 +164,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
               const progress = getProgress(cls);
               const pColor = getProgressColor(progress);
               const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
-              const subjects = getSubjectList(cls.subject).join(', ');
+              const subjects = getLeafSubjectList(cls.subject).join(', ');
               const monthlyTotalSessions = Number(
                 (cls as any)?.classLead?.classesPerMonth ?? (cls as any)?.classesPerMonth ?? (cls as any)?.totalSessions ?? 0
               );
@@ -296,7 +296,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                       <TableCell>
                         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem' }}>{cls.studentName}</Typography>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                          {getSubjectList(cls.subject).join(', ')} • GRADE {cls.grade}
+                          {getLeafSubjectList(cls.subject).join(', ')} • GRADE {cls.grade}
                         </Typography>
                       </TableCell>
                       <TableCell>

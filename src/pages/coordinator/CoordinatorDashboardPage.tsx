@@ -58,7 +58,11 @@ const CoordinatorDashboardPage: React.FC = () => {
     const isDarkMode = theme.palette.mode === 'dark';
 
     const processedTasks = React.useMemo(() => {
-        const attendance: ITaskWithPriority<IAttendance>[] = []; // Assuming attendance tasks are fetched or computed elsewhere if needed, currently empty array based on original code
+        const attendance: ITaskWithPriority<IAttendance>[] = todaysTasks?.pendingAttendanceApprovals?.map((a: any) => ({
+            task: a as IAttendance,
+            priority: calculatePriority(a.sessionDate),
+            priorityDate: new Date(a.sessionDate),
+        })) || [];
 
         const payments: ITaskWithPriority<IPaymentReminder>[] = todaysTasks?.paymentReminders?.map((p: any) => ({
             task: p as IPaymentReminder,
@@ -85,6 +89,7 @@ const CoordinatorDashboardPage: React.FC = () => {
         let list: Array<ITaskWithPriority<any>> = [];
         if (activeTab === 'all') list = [...processedTasks.attendance, ...processedTasks.payments, ...processedTasks.tests, ...processedTasks.complaints];
         if (activeTab === 'payments') list = processedTasks.payments;
+        if (activeTab === 'attendance') list = processedTasks.attendance;
         if (activeTab === 'tests') list = processedTasks.tests;
         if (activeTab === 'complaints') list = processedTasks.complaints;
 
@@ -287,11 +292,12 @@ const CoordinatorDashboardPage: React.FC = () => {
                         {/* Category Selector Cards */}
                         <Grid container spacing={3} mb={6}>
                             {[
+                                { key: 'attendance', label: 'Attendance', count: counts.attendance, icon: <CheckCircleIcon />, color: '#F59E0B', desc: 'Awaiting Approval' },
                                 { key: 'payments', label: 'Payments', count: counts.payments, icon: <PaymentIcon />, color: '#10B981', desc: 'Fee follow-ups' },
                                 { key: 'tests', label: 'Tests', count: counts.tests, icon: <AssignmentIcon />, color: '#3B82F6', desc: 'Scheduling' },
                                 { key: 'complaints', label: 'Complaints', count: counts.complaints, icon: <WarningAmberIcon />, color: '#EF4444', desc: 'Parent issues' }
                             ].map((cat, i) => (
-                                <Grid item xs={12} sm={4} key={cat.key}>
+                                <Grid item xs={12} sm={3} key={cat.key}>
                                     <Grow in timeout={800 + (i * 100)}>
                                         <Paper
                                             elevation={0}

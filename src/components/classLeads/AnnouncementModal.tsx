@@ -6,7 +6,7 @@ import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
 import announcementService from '../../services/announcementService';
 
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getLeafSubjectList } from '../../utils/subjectUtils';
 
 export default function AnnouncementModal({ open, onClose, classLead, onSuccess }: { open: boolean; onClose: () => void; classLead: IClassLead; onSuccess: () => void; }) {
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function AnnouncementModal({ open, onClose, classLead, onSuccess 
     }
   };
 
-  const subjectNames = getSubjectList(classLead.subject).join(', ');
+  const subjectNames = getLeafSubjectList(classLead.subject).join(', ');
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>

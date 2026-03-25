@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { getSubjectList, getOptionLabel } from '../../utils/subjectUtils';
+import { getSubjectList, getOptionLabel, getLeafSubjectList } from '../../utils/subjectUtils';
 import { Box, Typography, Chip, CardContent, Grid, Divider, Stack, Button, Card, alpha, CircularProgress } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import EventIcon from '@mui/icons-material/Event';
@@ -260,7 +260,7 @@ const DemoClassesCard: React.FC = () => {
             const studentName = demo.classLead?.studentName || '-';
             const studentGender = demo.classLead?.studentGender || '-';
             const leadIdStr = demo.classLead?.leadId || '-';
-            const subject = getSubjectList(demo.classLead?.subject).join(', ') || '-';
+            const subject = getLeafSubjectList(demo.classLead?.subject).join(', ') || '-';
             const grade = getOptionLabel(demo.classLead?.grade) || '-';
             const board = getOptionLabel(demo.classLead?.board) || '-';
             const mode = getOptionLabel(demo.classLead?.mode) || '-';
@@ -298,8 +298,11 @@ const DemoClassesCard: React.FC = () => {
                     <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 0.5 }}>
                       {studentName} {studentGender !== '-' && <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.8rem' }}>({studentGender})</span>}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', display: 'block' }}>
                       ID: {leadIdStr} • GRADE {grade}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
+                      BOARD: {board}
                     </Typography>
                   </Box>
                   <Box

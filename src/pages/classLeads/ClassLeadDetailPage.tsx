@@ -111,7 +111,7 @@ function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }
   );
 }
 
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getSubjectList, getLeafSubjectList } from '../../utils/subjectUtils';
 
 export default function ClassLeadDetailPage() {
   const navigate = useNavigate();
@@ -281,7 +281,7 @@ export default function ClassLeadDetailPage() {
   const isManagerOrAdmin = user?.role === USER_ROLES.MANAGER || user?.role === USER_ROLES.ADMIN;
   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
-  const subjectList = getSubjectList(classLead.subject || (classLead as any).subjects || (classLead as any).subjectList);
+  const subjectList = getLeafSubjectList(classLead.subject || (classLead as any).subjects || (classLead as any).subjectList);
 
   const buildShareText = () => {
     const r: any = classLead as any;

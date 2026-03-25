@@ -104,3 +104,44 @@ export const getSubjectList = (subjects: any): string[] => {
   
   return [];
 };
+
+/**
+ * Extracts only the leaf subject label (without parents).
+ */
+/**
+ * Extracts only the leaf subject label (without parents).
+ */
+export const getLeafSubjectLabel = (subject: any): string => {
+  if (subject == null) return '-';
+  
+  // If it's an array, delegate to getLeafSubjectList and join
+  if (Array.isArray(subject)) {
+    return getLeafSubjectList(subject).join(', ');
+  }
+
+  const label = getOptionLabel(subject);
+  if (!label || label === '-') return '-';
+
+  const extractLeaf = (s: string) => {
+    const p = s.trim().split(' . ');
+    return p[p.length - 1];
+  };
+
+  // Handle case where label is comma-separated string (potentially hierarchical)
+  if (label.includes(',')) {
+    return label.split(',').map(extractLeaf).join(', ');
+  }
+
+  return extractLeaf(label);
+};
+
+/**
+ * Extracts a list of only leaf subject labels.
+ */
+export const getLeafSubjectList = (subjects: any): string[] => {
+  const fullLabels = getSubjectList(subjects);
+  return fullLabels.map(label => {
+    const p = label.split(' . ');
+    return p[p.length - 1];
+  }).filter(Boolean);
+};
