@@ -8,8 +8,8 @@ export const formatHierarchicalSubject = (subject: any): string => {
   let current = subject;
   
   // Traverse up the parent chain
-  while (current && (current.label || current.name)) {
-    parts.unshift(current.label || current.name);
+  while (current && (current.label || current.name || current.value)) {
+    parts.unshift(getOptionLabel(current));
     current = current.parent;
   }
   
@@ -19,14 +19,28 @@ export const formatHierarchicalSubject = (subject: any): string => {
 /**
  * Generic helper to extract a displayable label from an Option object, string, or mixed format.
  * Handles {_id, type, value, label}, {id, name}, and other common patterns.
+ * Robustly handles cases where the label itself might be an object (corrupted data).
  */
 export const getOptionLabel = (option: any): string => {
   if (option == null) return '';
   if (typeof option === 'string') return option;
-  if (typeof option !== 'object') return String(option);
   
-  // Return label or name if available
-  return option.label || option.name || option.value || String(option);
+  // If it's an object, try to find a string label
+  if (typeof option === 'object') {
+    const labelCandidate = option.label || option.name || option.display || option.fullName || option.value;
+    
+    if (labelCandidate != null) {
+      if (typeof labelCandidate === 'string') return labelCandidate;
+      // If the candidate is another object, recurse (max depth handled by simple check)
+      if (typeof labelCandidate === 'object' && labelCandidate !== option) {
+        return getOptionLabel(labelCandidate);
+      }
+      return String(labelCandidate);
+    }
+  }
+  
+  // Final fallback
+  return String(option);
 };
 
 /**

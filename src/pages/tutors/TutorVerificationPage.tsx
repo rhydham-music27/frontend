@@ -19,6 +19,7 @@ import {
 } from '../../services/tutorService';
 import { useTheme } from '@mui/material/styles';
 import DocumentViewerModal from '../../components/common/DocumentViewerModal';
+import { getSubjectLabel, getOptionLabel } from '../../utils/subjectUtils';
 
 export default function TutorVerificationPage() {
   const theme = useTheme();
@@ -81,13 +82,7 @@ export default function TutorVerificationPage() {
     }
 
     // If it's an object, handle hierarchical labels
-    const parts = [];
-    let current = subject;
-    while (current) {
-      parts.unshift(current.label || current.name || 'N/A');
-      current = current.parent;
-    }
-    return parts.join(' . ');
+    return getSubjectLabel(subject);
   };
 
   const formatSubjectDisplay = (subjects: any[], limit?: number) => {

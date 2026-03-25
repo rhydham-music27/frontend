@@ -6,6 +6,8 @@ import ErrorAlert from '../common/ErrorAlert';
 import LoadingSpinner from '../common/LoadingSpinner';
 import announcementService from '../../services/announcementService';
 
+import { getSubjectList } from '../../utils/subjectUtils';
+
 export default function AnnouncementModal({ open, onClose, classLead, onSuccess }: { open: boolean; onClose: () => void; classLead: IClassLead; onSuccess: () => void; }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +28,8 @@ export default function AnnouncementModal({ open, onClose, classLead, onSuccess 
       setLoading(false);
     }
   };
+
+  const subjectNames = getSubjectList(classLead.subject).join(', ');
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -51,7 +55,7 @@ export default function AnnouncementModal({ open, onClose, classLead, onSuccess 
             }
           </Typography>
             <Typography>Grade: {classLead.grade}</Typography>
-            <Typography>Subjects: {Array.isArray(classLead.subject) ? (classLead.subject as any).join(', ') : classLead.subject}</Typography>
+            <Typography>Subjects: {subjectNames || (classLead.subject as any) || 'N/A'}</Typography>
             <Typography>Mode: {classLead.mode}</Typography>
           </Box>
           <ErrorAlert error={error} />
