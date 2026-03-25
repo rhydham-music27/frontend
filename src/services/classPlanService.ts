@@ -6,8 +6,10 @@ export interface IClassPlan {
   parentId?: string;
   currentTutorId?: string;
   monthlyFee: number;
+  tutorMonthlyFee: number;
   sessionsPerMonth: number;
   perSessionFee: number;
+  tutorPerSessionFee: number;
   status: 'ACTIVE' | 'PAUSED' | 'ARCHIVED';
   createdAt: string;
   updatedAt: string;
@@ -16,6 +18,7 @@ export interface IClassPlan {
 interface CreatePlanData {
   classId: string;
   monthlyFee: number;
+  tutorMonthlyFee: number;
   sessionsPerMonth: number;
   status?: 'ACTIVE' | 'PAUSED';
 }

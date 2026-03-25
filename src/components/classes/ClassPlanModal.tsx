@@ -29,8 +29,10 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
     const [saving, setSaving] = useState(false);
     const [plan, setPlan] = useState<IClassPlan | null>(null);
     const [monthlyFee, setMonthlyFee] = useState<number | ''>('');
+    const [tutorMonthlyFee, setTutorMonthlyFee] = useState<number | ''>('');
     const [sessionsPerMonth, setSessionsPerMonth] = useState<number | ''>('');
     const [perSessionFee, setPerSessionFee] = useState<number>(0);
+    const [tutorPerSessionFee, setTutorPerSessionFee] = useState<number>(0);
     const [error, setError] = useState<string | null>(null);
     const [notification, setNotification] = useState<{ message: string; severity: 'success' | 'error' } | null>(null);
 
@@ -41,12 +43,14 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
     }, [open, classId]);
 
     useEffect(() => {
-        if (monthlyFee && sessionsPerMonth) {
-            setPerSessionFee(Number(monthlyFee) / Number(sessionsPerMonth));
+        if (sessionsPerMonth && sessionsPerMonth > 0) {
+            setPerSessionFee(monthlyFee ? Number(monthlyFee) / Number(sessionsPerMonth) : 0);
+            setTutorPerSessionFee(tutorMonthlyFee ? Number(tutorMonthlyFee) / Number(sessionsPerMonth) : 0);
         } else {
             setPerSessionFee(0);
+            setTutorPerSessionFee(0);
         }
-    }, [monthlyFee, sessionsPerMonth]);
+    }, [monthlyFee, tutorMonthlyFee, sessionsPerMonth]);
 
     const loadPlan = async () => {
         setLoading(true);
@@ -56,10 +60,12 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
             if (res.data) {
                 setPlan(res.data);
                 setMonthlyFee(res.data.monthlyFee);
+                setTutorMonthlyFee(res.data.tutorMonthlyFee || 0);
                 setSessionsPerMonth(res.data.sessionsPerMonth);
             } else {
                 setPlan(null);
                 setMonthlyFee('');
+                setTutorMonthlyFee('');
                 setSessionsPerMonth('');
             }
         } catch (e: any) {
@@ -70,7 +76,7 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
     };
 
     const handleSave = async () => {
-        if (!monthlyFee || !sessionsPerMonth) {
+        if (monthlyFee === '' || sessionsPerMonth === '' || tutorMonthlyFee === '') {
             setError('Please fill in all fields');
             return;
         }
@@ -87,12 +93,14 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
                 await classPlanService.createOrUpdatePlan({
                     classId,
                     monthlyFee: Number(monthlyFee),
+                    tutorMonthlyFee: Number(tutorMonthlyFee),
                     sessionsPerMonth: Number(sessionsPerMonth),
                 });
             } else {
                 await classPlanService.createOrUpdatePlan({
                     classId,
                     monthlyFee: Number(monthlyFee),
+                    tutorMonthlyFee: Number(tutorMonthlyFee),
                     sessionsPerMonth: Number(sessionsPerMonth),
                 });
             }
@@ -131,6 +139,12 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
                                 Set the monthly fee and sessions. Parents pay the full monthly plan.
                             </Typography>
 
+                            {plan && (plan as any).isInitial && (
+                                <Alert severity="info" sx={{ mb: 3 }}>
+                                    No custom plan found. Showing current fees from Class Lead as defaults.
+                                </Alert>
+                            )}
+
                             {error && (
                                 <Typography color="error" variant="body2" sx={{ mb: 2 }}>
                                     {error}
@@ -138,13 +152,27 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
                             )}
 
                             <Grid container spacing={3}>
-                                <Grid item xs={12}>
+                                <Grid item xs={12} sm={6}>
                                     <TextField
                                         fullWidth
-                                        label="Monthly Fee"
+                                        label="YS Fees (Total)"
                                         type="number"
                                         value={monthlyFee}
-                                        onChange={(e) => setMonthlyFee(Number(e.target.value))}
+                                        onChange={(e) => setMonthlyFee(e.target.value === '' ? '' : Number(e.target.value))}
+                                        helperText="Total amount paid by parent"
+                                        InputProps={{
+                                            startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Tutor Fees"
+                                        type="number"
+                                        value={tutorMonthlyFee}
+                                        onChange={(e) => setTutorMonthlyFee(e.target.value === '' ? '' : Number(e.target.value))}
+                                        helperText="Amount paid to tutor"
                                         InputProps={{
                                             startAdornment: <InputAdornment position="start">₹</InputAdornment>,
                                         }}
@@ -156,19 +184,26 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
                                         label="Sessions per Month"
                                         type="number"
                                         value={sessionsPerMonth}
-                                        onChange={(e) => setSessionsPerMonth(Number(e.target.value))}
+                                        onChange={(e) => setSessionsPerMonth(e.target.value === '' ? '' : Number(e.target.value))}
                                     />
                                 </Grid>
-                                <Grid item xs={12}>
+                                <Grid item xs={12} sm={6}>
                                     <Box bgcolor="action.hover" p={2} borderRadius={1}>
                                         <Typography variant="subtitle2" color="text.secondary">
-                                            Calculated Per Session Fee
+                                            YS Per Session Fee
                                         </Typography>
-                                        <Typography variant="h5" color="primary.main" fontWeight="bold">
+                                        <Typography variant="h6" color="primary.main" fontWeight="bold">
                                             ₹{perSessionFee.toFixed(2)}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            = {monthlyFee || 0} / {sessionsPerMonth || 1}
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Box bgcolor="action.hover" p={2} borderRadius={1}>
+                                        <Typography variant="subtitle2" color="text.secondary">
+                                            Tutor Per Session Fee
+                                        </Typography>
+                                        <Typography variant="h6" color="secondary.main" fontWeight="bold">
+                                            ₹{tutorPerSessionFee.toFixed(2)}
                                         </Typography>
                                     </Box>
                                 </Grid>
