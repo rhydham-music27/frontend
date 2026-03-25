@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Box, Typography, Grid, Card, CardContent, Avatar, Divider, Chip, Tabs, Tab, Button, TextField, MenuItem, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
@@ -25,6 +25,7 @@ import { subDays, format } from 'date-fns';
 
 const CoordinatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
   const [coordinatorProfile, setCoordinatorProfile] = useState<ICoordinator | null>(null);
   const [profileMetrics, setProfileMetrics] = useState<ICoordinatorProfileMetrics | null>(null);
@@ -301,7 +302,14 @@ const CoordinatorProfilePage: React.FC = () => {
                     <MetricsCard title="Available Capacity" value={profileMetrics?.availableCapacity ?? '-'} subtitle={`Max: ${profileMetrics?.maxClassCapacity ?? '-'}`} icon={<WorkIcon />} color="info.main" loading={loading} />
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
-                    <MetricsCard title="Pending Approvals" value={profileMetrics?.pendingApprovalsCount ?? '-'} icon={<AssignmentIcon />} color="warning.main" loading={loading} />
+                    <MetricsCard 
+                      title="Attendance Approval" 
+                      value={profileMetrics?.pendingApprovalsCount ?? '-'} 
+                      icon={<AssignmentIcon />} 
+                      color="warning.main" 
+                      loading={loading} 
+                      onClick={() => navigate('/attendance-sheet-approvals')}
+                    />
                   </Grid>
                 </Grid>
               </CardContent>

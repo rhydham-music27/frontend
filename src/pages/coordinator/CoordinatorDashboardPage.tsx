@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Container, Box, Typography, Grid, Card, CardContent, Button, alpha, Grow, Fade, Paper, useTheme, Avatar, Chip, Badge } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ClassIcon from '@mui/icons-material/Class';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -44,6 +45,7 @@ const sortTasksByPriority = <T,>(arr: ITaskWithPriority<T>[]): ITaskWithPriority
 const CoordinatorDashboardPage: React.FC = () => {
     const theme = useTheme();
     const user = useSelector(selectCurrentUser);
+    const navigate = useNavigate();
     const { dashboardStats, todaysTasks, loading, error, refetch } = useCoordinator();
     const [activeTab, setActiveTab] = React.useState<'all' | 'payments' | 'tests' | 'complaints' | 'attendance'>('all');
     const [priorityFilter, setPriorityFilter] = React.useState<TaskPriority | 'all'>('all');
@@ -206,7 +208,13 @@ const CoordinatorDashboardPage: React.FC = () => {
                         {[
                             { title: 'Active Classes', value: dashboardStats.activeClassesCount, icon: <ClassIcon />, color: '#10B981' },
                             { title: 'Classes Handled', value: dashboardStats.totalClassesHandled, icon: <DashboardIcon />, color: '#3B82F6' },
-                            { title: 'Pending Approvals', value: dashboardStats.pendingAttendanceApprovals, icon: <CheckCircleIcon />, color: '#F59E0B' },
+                            { 
+                                title: 'Attendance Approval', 
+                                value: dashboardStats.pendingAttendanceApprovals, 
+                                icon: <CheckCircleIcon />, 
+                                color: '#F59E0B',
+                                onClick: () => navigate('/attendance-sheet-approvals')
+                            },
                             { title: 'Today\'s Total Tasks', value: dashboardStats.todaysTasksCount, icon: <AssignmentIcon />, color: '#EF4444' }
                         ].map((stat, i) => (
                             <Grid item xs={12} sm={6} md={3} key={i}>
@@ -218,6 +226,7 @@ const CoordinatorDashboardPage: React.FC = () => {
                                             icon={stat.icon}
                                             color={stat.color}
                                             loading={loading}
+                                            onClick={(stat as any).onClick}
                                         />
                                     </Box>
                                 </Grow>

@@ -67,34 +67,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles,
   }
 
   if (!isAuthenticated) {
-    // Show debug info before redirect
-    return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        background: 'rgba(255,0,0,0.1)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        zIndex: 9999,
-        fontSize: '16px'
-      }}>
-        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', maxWidth: '400px' }}>
-          <h3>Authentication Debug</h3>
-          <p><strong>Not Authenticated!</strong></p>
-          <p>Redirecting to: {studentRoute ? "/student-login" : "/login"}</p>
-          <div style={{ fontSize: '12px', marginTop: '10px' }}>
-            <div>Token: {localStorage.getItem('token') ? 'EXISTS' : 'MISSING'}</div>
-            <div>User: {localStorage.getItem('user') ? 'EXISTS' : 'MISSING'}</div>
-            <div>isAuthenticated: {isAuthenticated.toString()}</div>
-            <div>loading: {loading.toString()}</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Navigate to={studentRoute ? "/student-login" : "/login"} state={{ from: location }} replace />;
   }
 
   if (user?.role === USER_ROLES.MANAGER && user?.verificationStatus !== VERIFICATION_STATUS.VERIFIED) {
