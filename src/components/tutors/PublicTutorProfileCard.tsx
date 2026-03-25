@@ -1,24 +1,24 @@
 import React, { useMemo, useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Avatar, 
-  Chip, 
-  Grid, 
-  Paper, 
-  alpha, 
-  useTheme, 
-  Divider, 
+import {
+  Box,
+  Typography,
+  Avatar,
+  Chip,
+  Grid,
+  Paper,
+  alpha,
+  useTheme,
+  Divider,
   Stack,
   Fade,
   Button
 } from '@mui/material';
-import { 
-  ShieldCheck, 
-  Sparkles, 
-  Award, 
-  BookOpen, 
-  MapPin, 
+import {
+  ShieldCheck,
+  Sparkles,
+  Award,
+  BookOpen,
+  MapPin,
   Briefcase,
   Clock,
   ChevronRight,
@@ -48,12 +48,39 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
   const getFullUrl = (url: string | undefined) => {
     if (!url) return undefined;
     if (url.startsWith('http')) return url;
-    const baseUrl = (import.meta as any).env?.VITE_API_BASE_URL || '';
+    
+    // Fallback if VITE_API_BASE_URL is relative or missing
+    const baseUrlFromEnv = (import.meta as any).env?.VITE_API_BASE_URL;
+    const baseUrl = baseUrlFromEnv && baseUrlFromEnv.startsWith('http') 
+      ? baseUrlFromEnv 
+      : window.location.origin.replace(':3000', ':5000'); // Heuristic fallback for local dev
+    
     return `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
   };
 
-  const profilePhotoDoc = (tutor.documents || []).find((d) => d.documentType === 'PROFILE_PHOTO');
-  const profileImageUrl = getFullUrl(profilePhotoDoc?.documentUrl);
+  const profilePhotoDoc = useMemo(() => {
+    const docs = Array.isArray(tutor.documents) ? tutor.documents : Object.values(tutor.documents || {});
+    
+    // 1. Try exact matches
+    const exact = docs.find((d: any) => {
+      const type = String(d.documentType || '').toUpperCase().trim();
+      return ['PROFILE_PHOTO', 'PROFILE_PHOTOS', 'PROFILE_PICTURE'].includes(type);
+    });
+    if (exact) return exact;
+
+    // 2. Try partial matches or file extensions
+    return docs.find((d: any) => {
+      const type = String(d.documentType || '').toUpperCase();
+      const url = String(d.documentUrl || '').toLowerCase();
+      const isImage = /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(url);
+      const isProfileType = type.includes('PROFILE') || type.includes('PHOTO') || type.includes('AVATAR');
+      const isExcluded = ['AADHAR', 'PAN', 'RESUME', 'DEGREE', 'CERTIFICATE', 'MARKSHEET', 'IDCARD'].some(ex => type.includes(ex));
+
+      return (isProfileType || isImage) && !isExcluded;
+    });
+  }, [tutor.documents]);
+
+  const profileImageUrl = getFullUrl((profilePhotoDoc as any)?.documentUrl);
 
   const getTierColor = (tier: string = '') => {
     const t = tier.toUpperCase();
@@ -65,31 +92,31 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
 
   const groupedSubjects = useMemo(() => {
     if (!tutor.subjects) return [];
-    const groups: Record<string, { parentLabel: string; subjects: string[] }> = {};
-    
+
+    // Structure: Record<string (Board), { boardName: string, classes: string[] }>
+    const boardGroups: Record<string, { boardName: string, classes: string[] }> = {};
+
     tutor.subjects.forEach((sub: any) => {
-      if (!sub) return;
-      let label = typeof sub === 'string' ? sub : sub.label || sub.name || 'N/A';
-      let parentLabel = 'Other';
-      
-      if (typeof sub === 'object' && sub.parent) {
-        parentLabel = sub.parent.label || sub.parent.name || 'General';
-        if (sub.parent.parent) {
-          parentLabel = `${sub.parent.parent.label || sub.parent.parent.name} • ${parentLabel}`;
-        }
+      if (!sub || typeof sub !== 'object') return;
+
+      const className = sub.parent?.label || sub.parent?.name || 'General';
+      const boardName = sub.parent?.parent?.label || sub.parent?.parent?.name || 'Other';
+
+      if (!boardGroups[boardName]) {
+        boardGroups[boardName] = { boardName, classes: [] };
       }
-      
-      if (!groups[parentLabel]) {
-        groups[parentLabel] = { parentLabel, subjects: [] };
+
+      if (!boardGroups[boardName].classes.includes(className)) {
+        boardGroups[boardName].classes.push(className);
       }
-      groups[parentLabel].subjects.push(label);
     });
-    return Object.values(groups);
+
+    return Object.values(boardGroups).sort((a, b) => a.boardName.localeCompare(b.boardName));
   }, [tutor.subjects]);
 
   const groupedLocations = useMemo(() => {
     if (!tutor.preferredCities) return [];
-    
+
     const groups: Record<string, { city: string; areas: string[] }> = {};
     tutor.preferredCities.forEach(city => {
       groups[city] = { city, areas: [] };
@@ -110,7 +137,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
   return (
     <Fade in timeout={800}>
       <Box sx={{ maxWidth: '1200px', mx: 'auto', spaceY: 4, pb: 12 }}>
-        
+
         {/* 1. HERO SECTION - LUMINESCENT SCHOLAR LIGHT MODE */}
         <Paper
           elevation={0}
@@ -166,8 +193,8 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                   </Box>
                 )}
               </Box>
-              
-              <Chip 
+
+              <Chip
                 label={`Tier: ${tutor.tier || 'Elite'}`}
                 size="small"
                 sx={{
@@ -185,7 +212,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                 }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={8}>
               <Stack spacing={3} alignItems={{ xs: 'center', md: 'flex-start' }}>
                 <Box>
@@ -205,13 +232,13 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={2} justifyContent={{ xs: 'center', md: 'flex-start' }}>
                     <Box sx={{ width: 40, height: 2, bgcolor: alpha('#3b82f6', 0.3), borderRadius: '1rem' }} />
-                    <Typography 
-                      variant="subtitle2" 
-                      sx={{ 
-                        color: '#2563eb', 
-                        fontWeight: 900, 
-                        letterSpacing: '0.1em', 
-                        textTransform: 'uppercase' 
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        color: '#2563eb',
+                        fontWeight: 900,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase'
                       }}
                     >
                       {tutor.qualifications?.[0] || 'Professional Academician'}
@@ -247,7 +274,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                   {tutor.isAvailable && (
                     <Box sx={{ px: 3, py: 1.5, bgcolor: 'white', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#10b981', boxShadow: '0 0 10px rgba(16,185,129,0.5)', animation: 'pulse 2s infinite' }} />
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: '#059669', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Available Now</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: '#059669', letterSpacing: '0.1em', textTransform: 'uppercase' }}> Active now</Typography>
                     </Box>
                   )}
                 </Stack>
@@ -267,9 +294,34 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                     <Box sx={{ p: 1.25, borderRadius: '1rem', bgcolor: alpha('#3b82f6', 0.05), color: '#2563eb', display: 'flex' }}><BookOpen size={22} /></Box>
                     Academic Portfolio
                   </Typography>
-                  <Box sx={{ px: 3, py: 1.5, bgcolor: '#f8faff', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Briefcase size={16} color="#3b82f6" />
-                    <Typography variant="caption" sx={{ fontWeight: 900, color: '#475569', textTransform: 'uppercase' }}>{tutor.yearsOfExperience || 0}+ Years Specialist</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                    {/* Professional Experience */}
+                    <Box sx={{ px: 2.5, py: 1.2, bgcolor: '#f8faff', borderRadius: '1.25rem', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                      <Briefcase size={15} color="#3b82f6" />
+                      <Typography variant="caption" sx={{ fontWeight: 900, color: '#475569', textTransform: 'uppercase', fontSize: '10px' }}>
+                        {tutor.yearsOfExperience || 0}+ Years Specialist
+                      </Typography>
+                    </Box>
+
+                    {/* Teaching Hours - Only > 100 */}
+                    {(tutor.experienceHours || 0) > 100 && (
+                      <Box sx={{ px: 2.5, py: 1.2, bgcolor: alpha('#10b981', 0.03), borderRadius: '1.25rem', border: '1px solid', borderColor: alpha('#10b981', 0.1), display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                        <Clock size={15} color="#10b981" />
+                        <Typography variant="caption" sx={{ fontWeight: 900, color: '#059669', textTransform: 'uppercase', fontSize: '10px' }}>
+                          {Math.floor(tutor.experienceHours || 0)}+ Teaching Hours
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Active Classes - Only > 1 */}
+                    {(tutor.classesAssigned || 0) > 1 && (
+                      <Box sx={{ px: 2.5, py: 1.2, bgcolor: alpha('#6366f1', 0.03), borderRadius: '1.25rem', border: '1px solid', borderColor: alpha('#6366f1', 0.1), display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                        <GraduationCap size={15} color="#6366f1" />
+                        <Typography variant="caption" sx={{ fontWeight: 900, color: '#4f46e5', textTransform: 'uppercase', fontSize: '10px' }}>
+                          {tutor.classesAssigned} Active batches
+                        </Typography>
+                      </Box>
+                    )}
                   </Box>
                 </Box>
 
@@ -316,7 +368,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
               {/* Service Architecture */}
               <Paper sx={{ p: { xs: 4, md: 6 }, borderRadius: '2.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
                 <Box sx={{ position: 'absolute', top: 0, right: 0, width: 250, height: 250, bgcolor: alpha('#6366f1', 0.03), borderRadius: '50%', filter: 'blur(50px)', transform: 'translate(40%, -40%)' }} />
-                
+
                 <Typography variant="h5" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 2, color: '#1e293b', mb: 6 }}>
                   <Box sx={{ p: 1.25, borderRadius: '1rem', bgcolor: alpha('#6366f1', 0.05), color: '#4f46e5', display: 'flex' }}><Sparkles size={22} /></Box>
                   Service Architecture
@@ -327,29 +379,47 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                     <Stack spacing={5}>
                       <Box>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', mb: 3 }}>Pedagogical Scope</Typography>
-                        <Stack spacing={2}>
-                          {groupedSubjects.map((group, i) => {
-                            const isExpanded = expandedSections[`sub_${group.parentLabel}`];
-                            const limit = 5;
-                            const hasMore = group.subjects.length > limit;
-                            const visible = isExpanded ? group.subjects : group.subjects.slice(0, limit);
-
-                            return (
-                              <Box key={i}>
-                                <Typography variant="caption" sx={{ color: '#2563eb', fontWeight: 900, textTransform: 'uppercase', fontSize: '10px', mr: 1, borderBottom: '1px solid', borderColor: alpha('#2563eb', 0.2), pb: 0.2 }}>
-                                  {group.parentLabel}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#475569', fontWeight: 700, mt: 1, lineHeight: 1.6 }}>
-                                  {visible.join(', ')}
-                                  {hasMore && (
-                                    <Box component="span" sx={{ color: '#3b82f6', ml: 1, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => toggleSection(`sub_${group.parentLabel}`)}>
-                                      {isExpanded ? '(Less)' : `+${group.subjects.length - limit} more`}
-                                    </Box>
-                                  )}
-                                </Typography>
+                        <Stack spacing={3}>
+                          {groupedSubjects.map((group, i) => (
+                            <Box key={i}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: '#2563eb',
+                                  fontWeight: 900,
+                                  textTransform: 'uppercase',
+                                  fontSize: '11px',
+                                  letterSpacing: '0.1em',
+                                  display: 'block',
+                                  mb: 1.5,
+                                  borderBottom: '1px solid',
+                                  borderColor: alpha('#2563eb', 0.1),
+                                  pb: 0.5
+                                }}
+                              >
+                                {group.boardName}
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {group.classes.map((cls, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    label={cls}
+                                    size="small"
+                                    sx={{
+                                      bgcolor: alpha('#2563eb', 0.04),
+                                      color: '#334155',
+                                      fontWeight: 700,
+                                      fontSize: '0.7rem',
+                                      borderRadius: '0.6rem',
+                                      border: '1px solid',
+                                      borderColor: alpha('#3b82f6', 0.1),
+                                      fontFamily: "'Manrope', sans-serif"
+                                    }}
+                                  />
+                                ))}
                               </Box>
-                            );
-                          })}
+                            </Box>
+                          ))}
                         </Stack>
                       </Box>
                       <Box>
@@ -439,7 +509,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                     <Typography variant="caption" sx={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 1, mb: 1, textTransform: 'uppercase', fontWeight: 900, fontSize: '9px' }}><Info size={12} /> Registry Compliance</Typography>
                     <Typography variant="caption" sx={{ color: '#64748b', fontStyle: 'italic', fontWeight: 600, lineHeight: 1.5 }}>Authorized educator in the YourShikshak database. Credentials have been verified through our standard academic vetting process.</Typography>
                   </Box>
-                  
+
                   <Button
                     component="a"
                     href="/#contact"
@@ -464,7 +534,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
 
               <Paper sx={{ p: 4, borderRadius: '2.5rem', textAlign: 'center', bgcolor: alpha('#1e293b', 0.02), border: '1px solid #f1f5f9' }}>
                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.3em', display: 'block' }}>
-                  YourShikshak Academy
+                  YourShikshak
                 </Typography>
               </Paper>
             </Stack>

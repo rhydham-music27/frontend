@@ -70,7 +70,6 @@ const TutorPublicProfilePage: React.FC = () => {
         background: 'linear-gradient(135deg, #EEF2FF 0%, #F9FAFB 40%, #ECFDF5 100%)',
       }}
     >
-      <TutorLeadNavbar />
       <Container maxWidth="md" sx={{ py: { xs: 4, sm: 6 } }}>
         <PublicTutorProfileCard tutor={tutor} />
       </Container>

@@ -11,6 +11,7 @@ import LockResetIcon from '@mui/icons-material/LockReset';
 import PersonIcon from '@mui/icons-material/Person';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import SchoolIcon from '@mui/icons-material/School';
+import LaunchIcon from '@mui/icons-material/Launch';
 import { BarChart2 } from 'lucide-react';
 import ChangePasswordOtpModal from '../../components/common/ChangePasswordOtpModal';
 import TutorTierProgressCard from '../../components/tutors/TutorTierProgressCard';
@@ -384,6 +385,35 @@ const TutorProfilePage: React.FC = () => {
                 >
                   {id ? 'Tutor Profile' : 'My Profile'}
                 </Typography>
+                {tutorProfile?.teacherId && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<LaunchIcon sx={{ fontSize: 13 }} />}
+                    onClick={() => window.open(`/ourtutor/${tutorProfile.teacherId}`, '_blank')}
+                    sx={{
+                      borderRadius: 2.5,
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.65rem',
+                      fontFamily: "'Manrope', sans-serif",
+                      borderColor: alpha('#6366f1', 0.2),
+                      color: '#6366f1',
+                      bgcolor: alpha('#6366f1', 0.04),
+                      px: 2,
+                      ml: 1,
+                      height: 24,
+                      '&:hover': {
+                        borderColor: alpha('#6366f1', 0.4),
+                        bgcolor: alpha('#6366f1', 0.08),
+                        transform: 'translateY(-1px)',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    Public Profile
+                  </Button>
+                )}
                 {id && (
                   <Chip
                     label="Admin View"
@@ -443,6 +473,34 @@ const TutorProfilePage: React.FC = () => {
                   }}
                 >
                   Change Password
+                </Button>
+              )}
+              {tutorProfile?.teacherId && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<LaunchIcon sx={{ fontSize: 16 }} />}
+                  onClick={() => window.open(`/ourtutor/${tutorProfile.teacherId}`, '_blank')}
+                  sx={{
+                    borderRadius: 2.5,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    fontFamily: "'Manrope', sans-serif",
+                    borderColor: alpha('#6366f1', 0.15),
+                    color: '#6366f1',
+                    bgcolor: alpha('#6366f1', 0.04),
+                    backdropFilter: 'blur(8px)',
+                    px: 2.5,
+                    '&:hover': {
+                      borderColor: alpha('#6366f1', 0.3),
+                      bgcolor: alpha('#6366f1', 0.08),
+                      transform: 'translateY(-1px)',
+                    },
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                >
+                  View Public Profile
                 </Button>
               )}
               {(() => {
