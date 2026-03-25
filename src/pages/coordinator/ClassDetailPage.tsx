@@ -172,7 +172,7 @@ const ClassDetailPage: React.FC = () => {
     if (!id) return;
     try {
       await rejectAttendanceSheet(id, reason);
-      setSnackbar({ open: true, message: 'Attendance sheet rejected', severity: 'info' });
+      setSnackbar({ open: true, message: 'Attendance sheet rejected', severity: 'success' });
       const sheetRes = await getAttendanceSheetsByClass(classId!);
       setSheets(Array.isArray((sheetRes as any)?.data) ? ((sheetRes as any).data as any[]) : []);
     } catch (e: any) {
