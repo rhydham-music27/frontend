@@ -93,25 +93,35 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
   const groupedSubjects = useMemo(() => {
     if (!tutor.subjects) return [];
 
-    // Structure: Record<string (Board), { boardName: string, classes: string[] }>
-    const boardGroups: Record<string, { boardName: string, classes: string[] }> = {};
+    // Structure: Record<string (Board), { boardName: string, classes: Record<string, { className: string, subjects: string[] }> }>
+    const boardGroups: Record<string, { boardName: string, classes: Record<string, { className: string, subjects: string[] }> }> = {};
 
     tutor.subjects.forEach((sub: any) => {
       if (!sub || typeof sub !== 'object') return;
 
+      const subjectLabel = sub.label || sub.name || 'Subject';
       const className = sub.parent?.label || sub.parent?.name || 'General';
       const boardName = sub.parent?.parent?.label || sub.parent?.parent?.name || 'Other';
 
       if (!boardGroups[boardName]) {
-        boardGroups[boardName] = { boardName, classes: [] };
+        boardGroups[boardName] = { boardName, classes: {} };
       }
 
-      if (!boardGroups[boardName].classes.includes(className)) {
-        boardGroups[boardName].classes.push(className);
+      if (!boardGroups[boardName].classes[className]) {
+        boardGroups[boardName].classes[className] = { className, subjects: [] };
+      }
+
+      if (!boardGroups[boardName].classes[className].subjects.includes(subjectLabel)) {
+        boardGroups[boardName].classes[className].subjects.push(subjectLabel);
       }
     });
 
-    return Object.values(boardGroups).sort((a, b) => a.boardName.localeCompare(b.boardName));
+    return Object.values(boardGroups)
+      .map(group => ({
+        ...group,
+        classes: Object.values(group.classes).sort((a, b) => a.className.localeCompare(b.className))
+      }))
+      .sort((a, b) => a.boardName.localeCompare(b.boardName));
   }, [tutor.subjects]);
 
   const groupedLocations = useMemo(() => {
@@ -399,23 +409,26 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                               >
                                 {group.boardName}
                               </Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                                 {group.classes.map((cls, idx) => (
-                                  <Chip
-                                    key={idx}
-                                    label={cls}
-                                    size="small"
-                                    sx={{
-                                      bgcolor: alpha('#2563eb', 0.04),
-                                      color: '#334155',
-                                      fontWeight: 700,
-                                      fontSize: '0.7rem',
-                                      borderRadius: '0.6rem',
-                                      border: '1px solid',
-                                      borderColor: alpha('#3b82f6', 0.1),
-                                      fontFamily: "'Manrope', sans-serif"
-                                    }}
-                                  />
+                                  <Box key={idx} sx={{ 
+                                    p: 1.5, 
+                                    borderRadius: '1rem', 
+                                    bgcolor: alpha('#2563eb', 0.03), 
+                                    border: '1px solid', 
+                                    borderColor: alpha('#3b82f6', 0.1),
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 0.5,
+                                    minWidth: 'fit-content'
+                                  }}>
+                                    <Typography variant="caption" sx={{ fontWeight: 900, color: '#1e293b', fontSize: '0.75rem' }}>
+                                      {cls.className}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.65rem' }}>
+                                      {cls.subjects.join(', ')}
+                                    </Typography>
+                                  </Box>
                                 ))}
                               </Box>
                             </Box>

@@ -36,6 +36,7 @@ import { getFinalClass, updateFinalClassSchedule, downloadAttendancePdf } from '
 import { getAttendanceByClass } from '../../services/attendanceService';
 import { getPaymentsByClass } from '../../services/paymentService';
 import { IAttendance, IFinalClass, IPayment } from '../../types';
+import { getSubjectList } from '../../utils/subjectUtils';
 
 const navItems = [
   { id: 'info', label: 'Class Info', icon: <InfoOutlinedIcon fontSize="small" /> },
@@ -284,7 +285,7 @@ const ClassDetailPage: React.FC = () => {
                   <InfoRow label="Mode" value={finalClass.mode || '-'} />
                   <InfoRow label="Grade" value={finalClass.grade || '-'} />
                   <InfoRow label="Board" value={finalClass.board || '-'} />
-                  <InfoRow label="Subjects" value={Array.isArray(finalClass.subject) ? finalClass.subject.map((s: any) => typeof s === 'object' ? s.label : String(s)).join(', ') : '-'} />
+                  <InfoRow label="Subjects" value={getSubjectList(finalClass.subject).join(', ') || '-'} />
                   <InfoRow label="Start Date" value={finalClass.startDate ? new Date(finalClass.startDate as any).toLocaleDateString('en-IN') : '-'} />
                   <InfoRow label="Classes / Month" value={String(finalClass.classesPerMonth ?? '-')} />
                   <InfoRow label="Tests / Month" value={String(finalClass.testPerMonth ?? '-')} />

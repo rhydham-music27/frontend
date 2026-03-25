@@ -17,7 +17,10 @@ import {
   LinearProgress
 } from '@mui/material';
 import PaymentIcon from '@mui/icons-material/Payment';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import { IFinalClass } from '../../types';
+import { getSubjectList } from '../../utils/subjectUtils';
 import { FINAL_CLASS_STATUS } from '../../constants';
 
 interface AssignedClassesTableProps {
@@ -99,7 +102,7 @@ const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, on
                 </TableCell>
                 <TableCell>
                   <Box display="flex" gap={0.5} flexWrap="wrap">
-                    {cls.subjects?.map((s: string) => (
+                    {getSubjectList(cls.subjects || cls.subject).map((s: string) => (
                       <Chip key={s} label={s} size="small" sx={{ height: 20, fontSize: '0.65rem', borderRadius: '4px' }} />
                     ))}
                   </Box>

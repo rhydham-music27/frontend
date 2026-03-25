@@ -12,6 +12,7 @@ import { FINAL_CLASS_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
 import ClassCard from '../parents/ClassCard';
+import { getSubjectList } from '../../utils/subjectUtils';
 
 const TodayScheduleCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -211,7 +212,7 @@ const TodayScheduleCard: React.FC = () => {
             }}
           >
             {classes.map((cls) => {
-              const subjects = Array.isArray(cls.subject) ? cls.subject.map((s: any) => typeof s === 'string' ? s : s?.label || s?.name || 'N/A').join(', ') : (typeof cls.subject === 'object' && cls.subject !== null ? (cls.subject as any).label || (cls.subject as any).name || 'N/A' : String(cls.subject || ''));
+              const subjects = getSubjectList(cls.subject).join(', ');
               const timeSlot = (cls as any)?.schedule?.timeSlot || '';
               const monthlyClasses =
                 (cls as any)?.classLead?.classesPerMonth ??
