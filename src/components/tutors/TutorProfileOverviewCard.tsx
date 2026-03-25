@@ -16,6 +16,7 @@ import {
   Button,
 } from '@mui/material';
 import { blue, green, orange, red } from '@mui/material/colors';
+import { getSubjectList, getSubjectLabel } from '../../utils/subjectUtils';
 import { ITutor } from '../../types';
 import { getMyProfile, uploadDocument } from '../../services/tutorService';
 
@@ -192,9 +193,9 @@ const TutorProfileOverviewCard: React.FC = () => {
                   <Box>
                     <Typography variant="caption" color="text.secondary">Subjects</Typography>
                     <Box display="flex" flexWrap="wrap" gap={0.75}>
-                      {(tutor as any).subjects.map((s: any) => {
-                        const label = typeof s === 'string' ? s : s?.label || 'N/A';
-                        return <Chip key={label} label={label} size="small" />;
+                      {(tutor as any).subjects.map((s: any, idx: number) => {
+                        const label = getSubjectLabel(s) || 'N/A';
+                        return <Chip key={idx} label={label} size="small" />;
                       })}
                     </Box>
                   </Box>
