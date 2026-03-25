@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { getSubjectList } from '../../utils/subjectUtils';
-import { Box, Typography, Chip, CardContent, Grid, Divider, Stack, Button, Card, alpha } from '@mui/material';
+import { getSubjectList, getOptionLabel } from '../../utils/subjectUtils';
+import { Box, Typography, Chip, CardContent, Grid, Divider, Stack, Button, Card, alpha, CircularProgress } from '@mui/material';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
@@ -81,22 +82,69 @@ const DemoClassesCard: React.FC = () => {
     fetchDemos(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  const handleMarkCompletedClick = (demo: IDemoHistory) => {
+    setSelectedDemo(demo);
+    setShowAttendanceModal(true);
+  };
+
+  const handleAttendanceSubmit = async (data: {
+    attendanceStatus: 'PRESENT' | 'ABSENT';
+    topicCovered: string;
+    duration: string;
+    feedback: string;
+  }) => {
+    if (!selectedDemo || !selectedDemo.id) return;
+    try {
+      setUpdatingDemoId(selectedDemo.id);
+      await updateDemoStatus(
+        selectedDemo.id,
+        DEMO_STATUS.COMPLETED,
+        data.feedback,
+        undefined,
+        undefined,
+        data.attendanceStatus,
+        data.topicCovered,
+        data.duration
+      );
+      await fetchDemos(pagination.page);
+      setShowAttendanceModal(false);
+    } catch (e: any) {
+      handleError(e);
+    } finally {
+      setUpdatingDemoId(null);
+    }
+  };
+
+  const onNext = () => {
+    if (pagination.page < pagination.pages) {
+      fetchDemos(pagination.page + 1);
+    }
+  };
+
+  const onPrev = () => {
+    if (pagination.page > 1) {
+      fetchDemos(pagination.page - 1);
+    }
+  };
 
   const cardSx = {
-    borderRadius: 3,
-    border: '1px solid',
-    borderColor: 'grey.100',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    transition: 'box-shadow 0.2s',
-    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+    borderRadius: 6,
+    bgcolor: '#ffffff',
+    boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+    border: 'none',
+    transition: 'all 0.3s ease',
   };
 
   if (loading) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box display="flex" justifyContent="center" py={6} aria-busy>
-            <LoadingSpinner message="Loading demo sessions..." />
+        <CardContent sx={{ py: 6 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" gap={2}>
+            <CircularProgress size={32} thickness={5} sx={{ color: '#8b5cf6' }} />
+            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+              SYNCING DEMO SESSIONS...
+            </Typography>
           </Box>
         </CardContent>
       </Card>
@@ -106,14 +154,21 @@ const DemoClassesCard: React.FC = () => {
   if (error && demos.length === 0) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
+        <CardContent sx={{ py: 4 }}>
           <Box display="flex" flexDirection="column" gap={2}>
-            <ErrorAlert error={error} />
-            <Box display="flex" justifyContent="center">
-              <Button variant="outlined" onClick={() => fetchDemos()} sx={{ borderRadius: 2, textTransform: 'none' }}>
-                Retry
-              </Button>
+            <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+              <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
+              <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
+                {error}
+              </Typography>
             </Box>
+            <Button 
+              variant="text" 
+              onClick={() => fetchDemos()} 
+              sx={{ alignSelf: 'center', fontWeight: 800, color: '#8b5cf6', textTransform: 'none' }}
+            >
+              Try Again
+            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -130,323 +185,220 @@ const DemoClassesCard: React.FC = () => {
     return null;
   }
 
-  const onPrev = () => {
-    if (pagination.page > 1) fetchDemos(pagination.page - 1);
-  };
-
-  const onNext = () => {
-    if (pagination.page < pagination.pages) fetchDemos(pagination.page + 1);
-  };
-
-  const handleMarkCompletedClick = (demo: IDemoHistory) => {
-    setSelectedDemo(demo);
-    setShowAttendanceModal(true);
-  };
-
-  const handleAttendanceSubmit = async (data: {
-    attendanceStatus: 'PRESENT' | 'ABSENT';
-    topicCovered: string;
-    duration: string;
-    feedback: string;
-  }) => {
-    if (!selectedDemo) return;
-
-    const leadAny: any = selectedDemo.classLead as any;
-    const leadId: string | undefined = (selectedDemo.classLead as any)?.id || leadAny?._id;
-
-    if (!leadId) {
-      setError('Unable to identify the demo lead. Please contact support.');
-      return;
-    }
-
-    try {
-      setUpdatingDemoId(selectedDemo.id);
-      await updateDemoStatus(
-        leadId,
-        DEMO_STATUS.COMPLETED,
-        data.feedback,
-        undefined,
-        undefined,
-        data.attendanceStatus,
-        data.topicCovered,
-        data.duration
-      );
-      await fetchDemos(pagination.page);
-      setShowAttendanceModal(false);
-      setSelectedDemo(null);
-    } catch (e: any) {
-      handleError(e);
-    } finally {
-      setUpdatingDemoId(null);
-    }
-  };
-
   return (
     <Card sx={cardSx}>
-      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
-        {error && demos.length > 0 && (
-          <Box mb={2}>
-            <ErrorAlert error={error} />
-          </Box>
-        )}
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
-          <Box display="flex" alignItems="center" gap={1.5}>
+      <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+        <Box mb={4} display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center" gap={2}>
             <Box
               sx={{
-                p: 0.75,
-                borderRadius: 2,
+                width: 44,
+                height: 44,
+                borderRadius: 3,
                 bgcolor: alpha('#8b5cf6', 0.08),
                 display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#8b5cf6',
               }}
             >
-              <AssignmentIcon sx={{ fontSize: 20, color: '#8b5cf6' }} aria-label="demo-sessions" />
+              <AssignmentIcon sx={{ fontSize: 24 }} />
             </Box>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
-              My Demo Sessions
-            </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
+                Trial & Demo Sessions
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.02em' }}>
+                UPCOMING STUDENT ORIENTATIONS
+              </Typography>
+            </Box>
           </Box>
-          <Chip
-            size="small"
-            label={`${activeDemos.length} active`}
+          <Box
             sx={{
-              bgcolor: alpha('#8b5cf6', 0.08),
+              px: 2,
+              py: 0.75,
+              borderRadius: 2,
+              bgcolor: alpha('#8b5cf6', 0.1),
               color: '#7c3aed',
-              fontWeight: 700,
-              fontSize: '0.72rem',
-              height: 26,
+              fontWeight: 900,
+              fontSize: '0.75rem',
+              letterSpacing: '0.04em',
             }}
-          />
+          >
+            {activeDemos.length} SCHEDULED
+          </Box>
         </Box>
 
         <Box
           sx={{
-            maxHeight: 400,
-            overflow: 'auto',
-            pr: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+            maxHeight: 600,
+            overflowY: 'auto',
+            mx: -1,
+            px: 1,
             '&::-webkit-scrollbar': { width: '4px' },
             '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
+            '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
           }}
         >
           {activeDemos.map((demo, index) => {
             const studentName = demo.classLead?.studentName || '-';
             const studentGender = demo.classLead?.studentGender || '-';
-            const studentType = demo.classLead?.studentType || 'SINGLE';
-            const numStudents = demo.classLead?.numberOfStudents || 1;
-            const parentName = demo.classLead?.parentName || '-';
-            const parentPhone = demo.classLead?.parentPhone || '-';
             const leadIdStr = demo.classLead?.leadId || '-';
-
             const subject = getSubjectList(demo.classLead?.subject).join(', ') || '-';
-            
-            const grade = demo.classLead?.grade || '-';
-            const board = demo.classLead?.board || '-';
-            const mode = demo.classLead?.mode || '-';
-            
-            const location = demo.classLead?.location || '-';
-            const area = demo.classLead?.area || '-';
-            const city = demo.classLead?.city || '-';
-            const address = demo.classLead?.address || '-';
+            const grade = getOptionLabel(demo.classLead?.grade) || '-';
+            const board = getOptionLabel(demo.classLead?.board) || '-';
+            const mode = getOptionLabel(demo.classLead?.mode) || '-';
+            const address = getOptionLabel(demo.classLead?.address) || '-';
+            const area = getOptionLabel(demo.classLead?.area) || '-';
+            const city = getOptionLabel(demo.classLead?.city) || '-';
             const timing = demo.classLead?.timing || '-';
-            const weekdays = demo.classLead?.weekdays?.join(', ') || '-';
-
             const statusProps = getStatusChipProps(demo.status);
+
             return (
               <Box
                 key={demo.id || index}
                 sx={{
-                  border: '1px solid',
-                  borderColor: alpha('#8b5cf6', 0.12),
-                  borderRadius: 2.5,
-                  p: 2.5,
-                  mb: 2,
+                  borderRadius: 5,
+                  p: 3,
                   position: 'relative',
-                  transition: 'all 0.2s ease',
-                  bgcolor: alpha('#8b5cf6', 0.02),
+                  bgcolor: '#ffffff',
+                  border: '1px solid',
+                  borderColor: alpha('#e2e8f0', 0.6),
+                  boxShadow: '0 2px 8px rgba(15, 23, 42, 0.02)',
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    borderColor: alpha('#8b5cf6', 0.25),
-                    bgcolor: alpha('#8b5cf6', 0.04),
+                    borderColor: alpha('#8b5cf6', 0.2),
+                    boxShadow: '0 12px 24px rgba(139, 92, 246, 0.06)',
                   },
                 }}
               >
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Stack spacing={0.5}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <PersonIcon fontSize="small" sx={{ color: '#8b5cf6' }} aria-label="student" />
-                      <Typography variant="subtitle1" fontWeight={700} sx={{ wordBreak: 'break-word', fontSize: '0.95rem' }}>
-                        {studentName} {studentGender !== '-' && `(${studentGender})`}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      Lead ID: {leadIdStr} • {studentType} {studentType === 'GROUP' && `(${numStudents} students)`}
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 0.5 }}>
+                      {studentName} {studentGender !== '-' && <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.8rem' }}>({studentGender})</span>}
                     </Typography>
-                  </Stack>
-                  <Chip size="small" color={statusProps.color} label={statusProps.label} sx={{ fontWeight: 600, fontSize: '0.7rem' }} aria-label={`status-${statusProps.label}`} />
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+                      ID: {leadIdStr} • GRADE {grade}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1.5,
+                      bgcolor: alpha(statusProps.color === 'info' ? '#3b82f6' : '#10b981', 0.08),
+                      color: statusProps.color === 'info' ? '#3b82f6' : '#10b981',
+                      fontSize: '0.7rem',
+                      fontWeight: 900,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {statusProps.label}
+                  </Box>
                 </Box>
 
-                <Grid container spacing={1.5} mb={2}>
-                  <Grid item xs={6} sm={3}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
-                      <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
-                        <EventIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="demo-date" />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Demo Date</Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{formatDate(demo.demoDate)}</Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={6} sm={3}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
-                      <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
-                        <AccessTimeIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="demo-time" />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Demo Time</Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{demo.demoTime || '-'}</Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={6} sm={3}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
-                      <Box display="flex" alignItems="center" gap={0.75} mb={0.25}>
-                        <MenuBookIcon sx={{ fontSize: 14, color: 'text.disabled' }} aria-label="subject" />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Subject</Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{subject}</Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={6} sm={3}>
-                    <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.04), height: '100%' }}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={0.25}>Grade & Board</Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.82rem' }}>{grade} • {board}</Typography>
-                    </Box>
-                  </Grid>
-
+                <Grid container spacing={2} mb={3}>
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#f59e0b', 0.04), border: '1px dashed', borderColor: alpha('#f59e0b', 0.2) }}>
-                      <Typography variant="caption" color="warning.main" fontWeight={700} display="block" mb={0.5}>PARENT CONTACT</Typography>
-                      <Typography variant="body2" fontWeight={600}>{parentName}</Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{parentPhone}</Typography>
+                    <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Session Details</Typography>
+                      <Stack spacing={1}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <EventIcon sx={{ fontSize: 16, color: '#8b5cf6' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{formatDate(demo.demoDate)} @ {demo.demoTime || '-'}</Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <MenuBookIcon sx={{ fontSize: 16, color: '#8b5cf6' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{subject} ({board})</Typography>
+                        </Box>
+                      </Stack>
                     </Box>
                   </Grid>
-
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#10b981', 0.04), border: '1px dashed', borderColor: alpha('#10b981', 0.2) }}>
-                      <Typography variant="caption" color="success.main" fontWeight={700} display="block" mb={0.5}>PROPOSED REGULAR SCHEDULE</Typography>
-                      <Typography variant="body2" fontWeight={600}>{timing}</Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{weekdays}</Typography>
+                    <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Parent Info & Schedule</Typography>
+                      <Stack spacing={1}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{demo.classLead?.parentName} • {demo.classLead?.parentPhone}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.8rem' }}>Req Timing: {timing}</Typography>
+                      </Stack>
                     </Box>
                   </Grid>
 
                   {mode !== 'ONLINE' && (
                     <Grid item xs={12}>
-                      <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: alpha('#3b82f6', 0.04), border: '1px dashed', borderColor: alpha('#3b82f6', 0.2) }}>
-                        <Typography variant="caption" color="primary.main" fontWeight={700} display="block" mb={0.5}>LOCATION / ADDRESS</Typography>
-                        <Typography variant="body2" fontWeight={600}>{address}</Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>{area}, {city}</Typography>
-                        {location && location !== '-' && (
-                           <Typography variant="caption" color="text.disabled" display="block" mt={0.5}>Ref: {location}</Typography>
-                        )}
+                      <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Address</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{address}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b' }}>{area}, {city}</Typography>
                       </Box>
                     </Grid>
                   )}
                 </Grid>
 
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <Chip
-                    size="small"
-                    label={mode}
-                    sx={{
-                      bgcolor: mode === 'ONLINE' ? alpha('#3b82f6', 0.08) : mode === 'OFFLINE' ? alpha('#10b981', 0.08) : alpha('#8b5cf6', 0.08),
-                      color: mode === 'ONLINE' ? '#2563eb' : mode === 'OFFLINE' ? '#059669' : '#7c3aed',
-                      fontWeight: 600,
-                      fontSize: '0.7rem',
-                    }}
-                    aria-label="mode"
-                  />
-                </Box>
-
-                {(demo.notes || demo.feedback || demo.rejectionReason) && (
-                  <>
-                    <Divider sx={{ my: 1.5, borderColor: alpha('#8b5cf6', 0.08) }} />
-                    {demo.notes && (
-                      <Box sx={{ bgcolor: alpha('#6366f1', 0.04), p: 1.5, borderRadius: 2 }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Notes</Typography>
-                        <Typography variant="body2" sx={{ fontSize: '0.82rem', mt: 0.25 }}>{demo.notes}</Typography>
-                      </Box>
-                    )}
-                    {demo.feedback && (
-                      <Box sx={{ bgcolor: alpha('#6366f1', 0.04), p: 1.5, borderRadius: 2, mt: demo.notes ? 1 : 0 }}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Feedback</Typography>
-                        <Typography variant="body2" sx={{ fontSize: '0.82rem', mt: 0.25 }}>{demo.feedback}</Typography>
-                      </Box>
-                    )}
-                    {demo.rejectionReason && (
-                      <Box sx={{ bgcolor: alpha('#ef4444', 0.04), p: 1.5, borderRadius: 2, mt: (demo.notes || demo.feedback) ? 1 : 0 }}>
-                        <Typography variant="caption" color="error.main" fontWeight={600}>Rejection Reason</Typography>
-                        <Typography variant="body2" color="error.main" sx={{ fontSize: '0.82rem', mt: 0.25 }}>{demo.rejectionReason}</Typography>
-                      </Box>
-                    )}
-                  </>
-                )}
-
-                <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} pt={1.5} sx={{ borderTop: '1px solid', borderColor: alpha('#8b5cf6', 0.08) }}>
-                  <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
-                    Assigned {formatDate(demo.assignedAt)}
-                  </Typography>
-                  {demo.completedAt && (
-                    <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
-                      Completed {formatDate(demo.completedAt)}
-                    </Typography>
-                  )}
-                </Box>
-
-                {demo.status === DEMO_STATUS.SCHEDULED && (
-                  <Box display="flex" justifyContent="flex-end" mt={1.5}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-                      onClick={() => handleMarkCompletedClick(demo)}
-                      disabled={updatingDemoId === demo.id}
-                      sx={{
-                        borderRadius: 2,
-                        textTransform: 'none',
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box display="flex" gap={1}>
+                    <Chip 
+                      label={mode} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: alpha('#64748b', 0.08), 
+                        color: '#475569', 
                         fontWeight: 700,
-                        fontSize: '0.78rem',
-                        bgcolor: '#10b981',
-                        '&:hover': { bgcolor: '#059669' },
-                        px: 2.5,
-                      }}
-                    >
-                      Mark Completed
-                    </Button>
+                        fontSize: '0.65rem',
+                        height: 24
+                      }} 
+                    />
                   </Box>
-                )}
+                  <Button
+                    variant="contained"
+                    startIcon={<CheckCircleIcon sx={{ fontSize: 18 }} />}
+                    onClick={() => handleMarkCompletedClick(demo)}
+                    disabled={updatingDemoId === demo.id}
+                    sx={{
+                      borderRadius: 3,
+                      py: 1,
+                      px: 3,
+                      textTransform: 'none',
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+                      }
+                    }}
+                  >
+                    {updatingDemoId === demo.id ? <CircularProgress size={18} color="inherit" /> : 'Mark Completed'}
+                  </Button>
+                </Box>
               </Box>
             );
           })}
         </Box>
 
         {pagination.pages > 1 && (
-          <Box display="flex" justifyContent="center" alignItems="center" mt={3} gap={2}>
+          <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={3}>
             <Button
-              size="small"
-              variant="outlined"
+              variant="text"
               disabled={pagination.page <= 1}
               onClick={onPrev}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+              sx={{ fontWeight: 800, color: '#64748b' }}
             >
-              Previous
+              PREVIOUS
             </Button>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
+            <Typography variant="caption" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '0.1em' }}>
               {pagination.page} / {pagination.pages}
             </Typography>
             <Button
-              size="small"
-              variant="outlined"
+              variant="text"
               disabled={pagination.page >= pagination.pages}
               onClick={onNext}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+              sx={{ fontWeight: 800, color: '#64748b' }}
             >
-              Next
+              NEXT
             </Button>
           </Box>
         )}
@@ -455,7 +407,7 @@ const DemoClassesCard: React.FC = () => {
         open={showError}
         onClose={clearError}
         error={dialogError}
-        title="Demo Update Error"
+        title="Session Update Alert"
       />
       <DemoAttendanceModal
         open={showAttendanceModal}
@@ -464,6 +416,7 @@ const DemoClassesCard: React.FC = () => {
         demo={selectedDemo}
       />
     </Card>
+
   );
 };
 

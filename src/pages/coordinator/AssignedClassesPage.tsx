@@ -16,8 +16,8 @@ import { getAssignedClasses } from '../../services/coordinatorService';
 import api from '../../services/api';
 import { changeTutor, updateClassStatus, updateClassTestsPerMonth, updateAttendanceSubmissionWindow, downloadAttendancePdf } from '../../services/finalClassService';
 import { getCoordinatorTutors } from '../../services/tutorService';
-import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
+import { getOptionLabel } from '../../utils/subjectUtils';
 
 const AssignedClassesPage: React.FC = () => {
   const theme = useTheme();
@@ -479,6 +479,7 @@ const AssignedClassesPage: React.FC = () => {
                   classes={classes}
                   onOpenPayments={handleOpenPayments}
                   onEditClass={handleEditClass}
+                  onViewDetails={handleViewDetails}
                 />
               </Box>
             </Fade>
@@ -545,7 +546,7 @@ const AssignedClassesPage: React.FC = () => {
                 <Typography variant="subtitle2" color="text.secondary">Student</Typography>
                 <Typography variant="body2" fontWeight={700}>{selectedClass.studentName}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {(selectedClass as any).grade} • {(selectedClass as any).board} • {(selectedClass as any).mode}
+                  {getOptionLabel((selectedClass as any).grade)} • {getOptionLabel((selectedClass as any).board)} • {getOptionLabel((selectedClass as any).mode)}
                 </Typography>
               </Box>
 

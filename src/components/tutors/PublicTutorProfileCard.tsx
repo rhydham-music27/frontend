@@ -48,19 +48,19 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
   const getFullUrl = (url: string | undefined) => {
     if (!url) return undefined;
     if (url.startsWith('http')) return url;
-    
+
     // Fallback if VITE_API_BASE_URL is relative or missing
     const baseUrlFromEnv = (import.meta as any).env?.VITE_API_BASE_URL;
-    const baseUrl = baseUrlFromEnv && baseUrlFromEnv.startsWith('http') 
-      ? baseUrlFromEnv 
+    const baseUrl = baseUrlFromEnv && baseUrlFromEnv.startsWith('http')
+      ? baseUrlFromEnv
       : window.location.origin.replace(':3000', ':5000'); // Heuristic fallback for local dev
-    
+
     return `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
   };
 
   const profilePhotoDoc = useMemo(() => {
     const docs = Array.isArray(tutor.documents) ? tutor.documents : Object.values(tutor.documents || {});
-    
+
     // 1. Try exact matches
     const exact = docs.find((d: any) => {
       const type = String(d.documentType || '').toUpperCase().trim();
@@ -148,7 +148,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
     <Fade in timeout={800}>
       <Box sx={{ maxWidth: '1200px', mx: 'auto', spaceY: 4, pb: 12 }}>
 
-        {/* 1. HERO SECTION - LUMINESCENT SCHOLAR LIGHT MODE */}
+        {/* 1. HERO SECTION - Yourshikshak  LIGHT MODE */}
         <Paper
           elevation={0}
           sx={{
@@ -411,11 +411,11 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
                               </Typography>
                               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                                 {group.classes.map((cls, idx) => (
-                                  <Box key={idx} sx={{ 
-                                    p: 1.5, 
-                                    borderRadius: '1rem', 
-                                    bgcolor: alpha('#2563eb', 0.03), 
-                                    border: '1px solid', 
+                                  <Box key={idx} sx={{
+                                    p: 1.5,
+                                    borderRadius: '1rem',
+                                    bgcolor: alpha('#2563eb', 0.03),
+                                    border: '1px solid',
                                     borderColor: alpha('#3b82f6', 0.1),
                                     display: 'flex',
                                     flexDirection: 'column',

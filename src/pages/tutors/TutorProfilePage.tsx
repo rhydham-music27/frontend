@@ -331,7 +331,7 @@ const TutorProfilePage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" disableGutters sx={{ px: { xs: 2, sm: 0 }, pb: { xs: 10, sm: 0 } }}>
-      {/* ─── Luminescent Scholar Header ──────────────────────────── */}
+      {/* ─── Yourshikshak  Header ──────────────────────────── */}
       <Box
         sx={{
           position: 'relative',
@@ -565,7 +565,7 @@ const TutorProfilePage: React.FC = () => {
       {/* ═══════════════════════════════════════════════ */}
       {id && (
         <>
-          {/* Luminescent Scholar Metrics */}
+          {/* Yourshikshak  Metrics */}
           <Box sx={{ mb: { xs: 3, sm: 5 } }}>
             <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
               <Box
@@ -996,9 +996,9 @@ const TutorProfilePage: React.FC = () => {
                         overflow: 'hidden',
                         boxShadow: isShadow ? `0 12px 24px ${alpha(stat.color, 0.25)}` : 'none',
                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': { 
-                          transform: 'translateY(-4px) scale(1.02)', 
-                          boxShadow: `0 20px 40px ${alpha(stat.color, 0.35)}` 
+                        '&:hover': {
+                          transform: 'translateY(-4px) scale(1.02)',
+                          boxShadow: `0 20px 40px ${alpha(stat.color, 0.35)}`
                         },
                         '&::before': {
                           content: '""',
@@ -1146,9 +1146,9 @@ const TutorProfilePage: React.FC = () => {
                   {...getTagProps({ index })}
                   key={option}
                   size="small"
-                  sx={{ 
-                    borderRadius: 1, 
-                    fontWeight: 600, 
+                  sx={{
+                    borderRadius: 1,
+                    fontWeight: 600,
                     fontSize: '0.7rem',
                     bgcolor: alpha('#6366f1', 0.08),
                     color: '#4f46e5',
@@ -1165,7 +1165,7 @@ const TutorProfilePage: React.FC = () => {
                 placeholder={selectedExtracurriculars.length === 0 ? "Select activities..." : ""}
                 margin="dense"
                 fullWidth
-                sx={{ 
+                sx={{
                   '& .MuiOutlinedInput-root': { borderRadius: 2 },
                   '& .MuiInputLabel-root': { fontSize: '0.85rem' }
                 }}
@@ -1208,21 +1208,21 @@ const TutorProfilePage: React.FC = () => {
             }}
             renderTags={(value: readonly string[], getTagProps) =>
               value.filter(v => v !== 'Select All').map((option: string, index: number) => (
-                <Chip 
-                  variant="filled" 
-                  label={option} 
-                  {...getTagProps({ index })} 
-                  key={option} 
+                <Chip
+                  variant="filled"
+                  label={option}
+                  {...getTagProps({ index })}
+                  key={option}
                   size="small"
-                  sx={{ 
-                    borderRadius: 1, 
-                    fontWeight: 600, 
+                  sx={{
+                    borderRadius: 1,
+                    fontWeight: 600,
                     fontSize: '0.7rem',
                     bgcolor: alpha('#6366f1', 0.08),
                     color: '#4f46e5',
                     border: 'none',
                     height: 20
-                  }} 
+                  }}
                 />
               ))
             }
@@ -1233,7 +1233,7 @@ const TutorProfilePage: React.FC = () => {
                 placeholder={preferredAreas.length === 0 ? "Select areas..." : ""}
                 margin="dense"
                 fullWidth
-                sx={{ 
+                sx={{
                   '& .MuiOutlinedInput-root': { borderRadius: 2 },
                   '& .MuiInputLabel-root': { fontSize: '0.85rem' }
                 }}

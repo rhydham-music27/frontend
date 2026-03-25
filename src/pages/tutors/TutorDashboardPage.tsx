@@ -129,101 +129,137 @@ const TutorDashboardPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" disableGutters sx={{ position: "relative", px: { xs: 2, sm: 0 }, pb: { xs: 10, sm: 0 } }}>
-      {/* ─── Premium Header ──────────────────────────── */}
+    <Container maxWidth="xl" disableGutters sx={{ position: "relative", px: { xs: 2.15, sm: 3.5 }, pb: { xs: 10, sm: 4 }, minHeight: '100vh', bgcolor: '#f8fafc' }}>
+      {/* ─── Premium Header (Yourshikshak ) ──────────────────────────── */}
       <Box
         sx={{
           position: 'relative',
-          borderRadius: { xs: 3, sm: 4 },
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-          p: { xs: 2.5, sm: 4 },
-          mb: { xs: 2.5, sm: 4 },
+          borderRadius: { xs: 4, sm: 5 },
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)',
+          p: { xs: 2.5, sm: 5 },
+          mb: { xs: 2.5, sm: 5 },
+          mt: { xs: 1.5, sm: 3 },
           overflow: 'hidden',
+          boxShadow: '0 20px 50px rgba(15, 23, 42, 0.25)',
           '&::before': {
             content: '""',
             position: 'absolute',
-            top: '-50%',
-            right: '-20%',
-            width: '60%',
-            height: '200%',
-            background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+            top: '-60%',
+            right: '-10%',
+            width: '80%',
+            height: '240%',
+            background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)',
             pointerEvents: 'none',
+            filter: 'blur(60px)',
           },
           '&::after': {
             content: '""',
             position: 'absolute',
-            bottom: '-30%',
-            left: '-10%',
-            width: '40%',
-            height: '160%',
+            bottom: '-40%',
+            left: '-15%',
+            width: '50%',
+            height: '180%',
             background: 'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)',
             pointerEvents: 'none',
+            filter: 'blur(40px)',
           },
         }}
       >
-        <Box position="relative" zIndex={1} display="flex" alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" flexDirection={{ xs: 'column', sm: 'row' }} gap={2}>
+        <Box position="relative" zIndex={1} display="flex" alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between" flexDirection={{ xs: 'column', sm: 'row' }} gap={{ xs: 2, sm: 3 }}>
           <Box>
-            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-              <WavingHandIcon sx={{ color: '#fbbf24', fontSize: { xs: 20, sm: 24 } }} />
-              <Typography variant="body2" sx={{ color: alpha('#fff', 0.7), fontWeight: 500, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>
+            <Box display="flex" alignItems="center" gap={1.25} mb={1.5}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  p: 0.75,
+                  borderRadius: '50%',
+                  bgcolor: alpha('#fbbf24', 0.15),
+                }}
+              >
+                <WavingHandIcon sx={{ color: '#fbbf24', fontSize: { xs: 18, sm: 22 } }} />
+              </Box>
+              <Typography variant="body2" sx={{ color: alpha('#fff', 0.65), fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                 {getGreeting()}
               </Typography>
             </Box>
             <Typography
-              variant="h4"
+              variant="h3"
               sx={{
                 color: '#fff',
-                fontWeight: 800,
-                fontSize: { xs: '1.5rem', sm: '1.85rem', md: '2.1rem' },
-                letterSpacing: '-0.02em',
-                lineHeight: 1.2,
+                fontWeight: 900,
+                fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' },
+                letterSpacing: '-0.04em',
+                lineHeight: 1.1,
+                mb: 1.5,
               }}
             >
               {user?.name || "Tutor"}
             </Typography>
             <Typography
-              variant="body2"
+              variant="body1"
               sx={{
-                color: alpha('#fff', 0.6),
-                mt: 0.75,
-                fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                maxWidth: 500,
+                color: alpha('#fff', 0.5),
+                fontSize: { xs: '0.9rem', sm: '1.05rem' },
+                maxWidth: 550,
+                fontWeight: 500,
+                lineHeight: 1.6,
               }}
             >
-              Track your classes, demos, and performance — all in one place.
+              Manage your teaching journey, track student progress, and discover new class opportunities in your personalized digital workspace.
             </Typography>
           </Box>
+
           <Box
             sx={{
-              display: { xs: 'none', sm: 'flex' },
+              display: 'flex',
               alignItems: 'center',
-              gap: 1,
-              px: 2.5,
-              py: 1,
-              borderRadius: 2.5,
-              bgcolor: alpha('#fff', 0.08),
-              backdropFilter: 'blur(8px)',
-              border: `1px solid ${alpha('#fff', 0.1)}`,
+              gap: 1.5,
+              px: 3,
+              py: 1.25,
+              borderRadius: 3.5,
+              bgcolor: alpha('#fff', 0.05),
+              backdropFilter: 'blur(16px)',
+              border: `1px solid ${alpha('#fff', 0.12)}`,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
             }}
           >
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-            <Typography variant="caption" sx={{ color: alpha('#fff', 0.8), fontWeight: 600, letterSpacing: '0.02em' }}>
-              Dashboard Live
+            <Box sx={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              bgcolor: '#10b981',
+              boxShadow: '0 0 12px #10b981',
+              animation: 'pulse 2s infinite'
+            }} />
+            <Typography variant="caption" sx={{ color: alpha('#fff', 0.9), fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              LIVE MONITOR
             </Typography>
+            <style>
+              {`
+                @keyframes pulse {
+                  0% { opacity: 1; transform: scale(1); }
+                  50% { opacity: 0.6; transform: scale(1.1); }
+                  100% { opacity: 1; transform: scale(1); }
+                }
+              `}
+            </style>
           </Box>
         </Box>
       </Box>
 
       <Box
         sx={{
-          filter: showCompleteProfileModal ? "blur(4px)" : "none",
+          filter: showCompleteProfileModal ? "blur(8px)" : "none",
+          transition: 'filter 0.3s ease',
           pointerEvents: showCompleteProfileModal ? "none" : "auto",
           userSelect: showCompleteProfileModal ? "none" : "auto",
         }}
       >
         {loading && (
-          <Box display="flex" justifyContent="center" py={8}>
-            <LoadingSpinner size={48} message="Loading dashboard..." />
+          <Box display="flex" justifyContent="center" py={12}>
+            <LoadingSpinner size={56} message="Curating your dashboard..." />
           </Box>
         )}
 
@@ -234,25 +270,27 @@ const TutorDashboardPage: React.FC = () => {
             {showVerificationBanner && (
               <Card
                 sx={{
-                  mb: 3,
-                  borderRadius: 3,
-                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                  mb: 4.5,
+                  borderRadius: 4,
+                  background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
                   color: '#fff',
                   overflow: 'hidden',
                   position: 'relative',
+                  border: 'none',
+                  boxShadow: '0 12px 24px rgba(79, 70, 229, 0.2)',
                   '&::before': {
                     content: '""',
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: '30%',
+                    width: '40%',
                     height: '100%',
-                    background: 'radial-gradient(circle at 100% 50%, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle at 100% 50%, rgba(255,255,255,0.15) 0%, transparent 70%)',
                     pointerEvents: 'none',
                   },
                 }}
               >
-                
+                {/* Banner content remains functional */}
               </Card>
             )}
             <TutorAdvancedAnalyticsCards />
@@ -262,11 +300,15 @@ const TutorDashboardPage: React.FC = () => {
                 sx={{
                   position: 'sticky',
                   top: 0,
-                  zIndex: 30,
-                  mb: 2.5,
-                  bgcolor: 'background.default',
-                  pt: 0.5,
+                  zIndex: 100,
+                  mb: { xs: 2, sm: 3.5 },
+                  bgcolor: alpha('#f8fafc', 0.95),
+                  backdropFilter: 'blur(16px)',
+                  pt: 1,
                   pb: 1,
+                  mx: -2.15,
+                  px: 2.15,
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                 }}
               >
                 <Tabs
@@ -276,39 +318,36 @@ const TutorDashboardPage: React.FC = () => {
                   TabIndicatorProps={{
                     style: {
                       height: '100%',
-                      borderRadius: 14,
+                      borderRadius: 16,
                       backgroundColor: '#fff',
-                      boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
-                      border: '1px solid rgba(0,0,0,0.04)',
-                      transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      width: '50%',
+                      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
+                      transition: 'left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                      width: '48%',
+                      margin: '0 1%',
                       left: mobileTab === 0 ? '0%' : '50%',
                     },
                   }}
                   sx={{
-                    borderRadius: 3.5,
-                    minHeight: 48,
-                    bgcolor: alpha(theme.palette.primary.main, 0.06),
-                    border: '1px solid',
-                    borderColor: alpha(theme.palette.primary.main, 0.1),
-                    px: 0.5,
+                    borderRadius: 4,
+                    minHeight: 44,
+                    bgcolor: alpha(theme.palette.primary.main, 0.05),
+                    p: 0.5,
                     '& .MuiTab-root': {
-                      minHeight: 48,
-                      fontWeight: 700,
+                      minHeight: 44,
+                      fontWeight: 800,
                       textTransform: 'none',
-                      fontSize: '0.9rem',
-                      color: 'text.secondary',
-                      transition: 'color 0.2s',
-                    },
-                    '& .MuiTabs-indicator': {},
-                    '& .MuiTab-root.Mui-selected': {
-                      color: 'primary.main',
+                      fontSize: '0.95rem',
+                      color: alpha(theme.palette.text.secondary, 0.7),
+                      transition: 'all 0.3s ease',
                       zIndex: 1,
+                    },
+                    '& .MuiTab-root.Mui-selected': {
+                      color: theme.palette.primary.main,
                     },
                   }}
                 >
-                  <Tab label="🎯 Opportunities" />
-                  <Tab label="📚 My Classes" />
+                  <Tab label="Opportunities" />
+                  <Tab label="My Schedule" />
                 </Tabs>
               </Box>
             )}
@@ -316,77 +355,65 @@ const TutorDashboardPage: React.FC = () => {
         )}
 
         {isMobile ? (
-          <>
+          <Box mb={4}>
             {mobileTab === 0 ? (
-              <Box mb={3}>
-                <Box display="flex" flexDirection="column" gap={2}>
-                  <ClassLeadsFeedCard />
-                  <DemoClassesCard />
-                </Box>
+              <Box display="flex" flexDirection="column" gap={2}>
+                <ClassLeadsFeedCard />
+                <DemoClassesCard />
               </Box>
             ) : (
-              <Box mb={3}>
-                <Box display="flex" flexDirection="column" gap={2}>
-                  <TodayScheduleCard />
-                  <ActiveClassesOverviewCard />
-                </Box>
+              <Box display="flex" flexDirection="column" gap={2}>
+                <TodayScheduleCard />
+                <ActiveClassesOverviewCard />
               </Box>
             )}
-          </>
+          </Box>
         ) : (
           <>
-            <Box mb={{ xs: 3, sm: 4 }}>
-              <Typography
-                variant="h5"
-                fontWeight={800}
-                mb={{ xs: 2, sm: 2.5 }}
-                sx={{
-                  fontSize: { xs: "1.2rem", sm: "1.4rem" },
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  color: 'text.primary',
-                }}
-              >
-                <Box sx={{ width: 4, height: 24, borderRadius: 2, bgcolor: 'primary.main' }} />
-                Class Opportunities & Demos
-              </Typography>
-              <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-                <Grid2 size={{ xs: 12, md: 7 }}>
-                  <Box display="flex" flexDirection="column" gap={{ xs: 2, sm: 2.5, md: 3 }}>
+            <Box mb={6}>
+              <Box display="flex" alignItems="center" gap={2} mb={3.5}>
+                <Box sx={{ width: 6, height: 32, borderRadius: 3, background: 'linear-gradient(to bottom, #6366f1, #3b82f6)' }} />
+                <Typography
+                  variant="h5"
+                  fontWeight={900}
+                  sx={{
+                    fontSize: "1.65rem",
+                    letterSpacing: '-0.02em',
+                    color: '#0f172a',
+                  }}
+                >
+                  Priority Actions & Opportunities
+                </Typography>
+              </Box>
+              <Grid2 container spacing={4}>
+                <Grid2 size={{ xs: 12, md: 7.5 }}>
+                  <Box display="flex" flexDirection="column" gap={4}>
                     <DemoClassesCard />
                     <TodayScheduleCard />
                   </Box>
                 </Grid2>
-                <Grid2 size={{ xs: 12, md: 5 }} sx={{ maxWidth: { md: '40%' } }}>
-                  <Box sx={{ mt: { xs: 0.5, sm: 0 } }}>
-                    <ClassLeadsFeedCard />
-                  </Box>
+                <Grid2 size={{ xs: 12, md: 4.5 }}>
+                  <ClassLeadsFeedCard />
                 </Grid2>
               </Grid2>
             </Box>
 
-            <Box mt={{ xs: 3, sm: 4 }} mb={{ xs: 3, sm: 4 }}>
-              <Typography
-                variant="h5"
-                fontWeight={800}
-                mb={{ xs: 2, sm: 2.5 }}
-                sx={{
-                  fontSize: { xs: "1.2rem", sm: "1.4rem" },
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  color: 'text.primary',
-                }}
-              >
-                <Box sx={{ width: 4, height: 24, borderRadius: 2, bgcolor: 'success.main' }} />
-                Active Classes Overview
-              </Typography>
-              <Grid2 container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-                <Grid2 size={{ xs: 12 }}>
-                  <ActiveClassesOverviewCard />
-                </Grid2>
-              </Grid2>
+            <Box mt={6} mb={8}>
+              <Box display="flex" alignItems="center" gap={2} mb={3.5}>
+                <Box sx={{ width: 6, height: 32, borderRadius: 3, background: 'linear-gradient(to bottom, #10b981, #059669)' }} />
+                <Typography
+                  variant="h5"
+                  fontWeight={900}
+                  sx={{
+                    fontSize: "1.65rem",
+                    letterSpacing: '-0.02em',
+                    color: '#0f172a',
+                  }}
+                >
+                  Active Teaching Portfolio
+                </Typography>
+              </Box>
+              <ActiveClassesOverviewCard />
             </Box>
           </>
         )}
@@ -397,73 +424,85 @@ const TutorDashboardPage: React.FC = () => {
           sx={{
             position: "fixed",
             inset: 0,
-            zIndex: 2000,
-            bgcolor: "rgba(0,0,0,0.6)",
-            backdropFilter: 'blur(8px)',
+            zIndex: 3000,
+            bgcolor: "rgba(15, 23, 42, 0.45)",
+            backdropFilter: 'blur(12px)',
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            p: 2,
           }}
         >
           <Card
             sx={{
-              maxWidth: 420,
-              width: "90%",
-              borderRadius: 4,
-              boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+              maxWidth: 460,
+              width: "100%",
+              borderRadius: 6,
+              boxShadow: '0 40px 100px rgba(0,0,0,0.3)',
+              border: 'none',
+              overflow: 'visible',
+              position: 'relative',
             }}
           >
-            <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-              <Box textAlign="center" mb={2}>
+            <CardContent sx={{ p: { xs: 4, sm: 6 } }}>
+              <Box textAlign="center" mb={3.5}>
                 <Box
                   sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '50%',
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    width: 72,
+                    height: 72,
+                    borderRadius: 3,
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    mb: 2,
+                    mb: 3,
+                    transform: 'rotate(-5deg)',
+                    boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
                   }}
                 >
-                  <VerifiedUserIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                  <VerifiedUserIcon sx={{ fontSize: 36, color: 'primary.main' }} />
                 </Box>
               </Box>
               <Typography
-                variant="h6"
-                fontWeight={700}
+                variant="h5"
+                fontWeight={900}
                 gutterBottom
                 align="center"
+                sx={{ letterSpacing: '-0.02em', color: '#0f172a' }}
               >
-                Complete your profile to get classes
+                Let's Unlock Your Potential
               </Typography>
               <Typography
-                variant="body2"
+                variant="body1"
                 color="text.secondary"
                 align="center"
-                sx={{ mb: 3 }}
+                sx={{ mb: 4.5, fontWeight: 500, lineHeight: 1.6 }}
               >
-                Please fill your qualification, subjects, experience and areas so
-                that our team can verify you and share class opportunities.
+                Complete your profile to help our team match you with the best teaching opportunities that fit your expertise and preferences.
               </Typography>
               <Button
                 variant="contained"
-                color="primary"
-                fullWidth
                 onClick={() => {
                   setShowCompleteProfileModal(false);
                   navigate("/tutor-register?mode=edit");
                 }}
                 sx={{
-                  py: 1.5,
-                  borderRadius: 2.5,
-                  fontWeight: 700,
+                  py: 2,
+                  borderRadius: 3.5,
+                  fontWeight: 800,
                   textTransform: 'none',
-                  fontSize: '1rem',
+                  fontSize: '1.05rem',
+                  background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
+                  boxShadow: '0 10px 25px rgba(79, 70, 229, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 15px 35px rgba(79, 70, 229, 0.4)',
+                  },
                 }}
+                fullWidth
               >
-                Go to Complete Profile
+                Ignite My Profile
               </Button>
             </CardContent>
           </Card>
@@ -478,6 +517,7 @@ const TutorDashboardPage: React.FC = () => {
       />
 
     </Container>
+
   );
 };
 

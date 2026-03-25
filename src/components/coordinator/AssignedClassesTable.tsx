@@ -19,17 +19,19 @@ import {
 import PaymentIcon from '@mui/icons-material/Payment';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { IFinalClass } from '../../types';
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getSubjectList, getOptionLabel } from '../../utils/subjectUtils';
 import { FINAL_CLASS_STATUS } from '../../constants';
 
 interface AssignedClassesTableProps {
   classes: any[];
   onOpenPayments: (classId: string) => void;
   onEditClass?: (cls: any) => void;
+  onViewDetails?: (classId: string) => void;
 }
 
-const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, onOpenPayments, onEditClass }) => {
+const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, onOpenPayments, onEditClass, onViewDetails }) => {
   const theme = useTheme();
 
   const getStatusChip = (status: string) => {
@@ -98,7 +100,7 @@ const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, on
               >
                 <TableCell>
                   <Typography variant="body2" fontWeight={700}>{cls.studentName}</Typography>
-                  <Typography variant="caption" color="text.secondary">{cls.grade} / {cls.board} / {cls.mode}</Typography>
+                  <Typography variant="caption" color="text.secondary">{getOptionLabel(cls.grade)} / {getOptionLabel(cls.board)} / {getOptionLabel(cls.mode)}</Typography>
                 </TableCell>
                 <TableCell>
                   <Box display="flex" gap={0.5} flexWrap="wrap">
@@ -145,6 +147,17 @@ const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, on
                         <PaymentIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
+                    {onViewDetails && (
+                      <Tooltip title="View Class Details">
+                        <IconButton 
+                          onClick={(e) => { e.stopPropagation(); onViewDetails(cls.id || cls._id); }} 
+                          size="small"
+                          sx={{ color: 'info.main', bgcolor: alpha(theme.palette.info.main, 0.05), '&:hover': { bgcolor: alpha(theme.palette.info.main, 0.1) } }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     {onEditClass && (
                       <Tooltip title="Edit Class">
                         <IconButton 

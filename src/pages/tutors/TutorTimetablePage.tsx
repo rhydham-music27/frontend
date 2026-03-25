@@ -75,85 +75,92 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 0.75, sm: 1, md: 1.5 },
-        minHeight: { xs: 70, sm: 90, md: 110 },
+        p: { xs: 1, sm: 1.25, md: 1.75 },
+        minHeight: { xs: 70, sm: 95, md: 115 },
         height: '100%',
         bgcolor: isToday
-          ? alpha('#6366f1', 0.04)
+          ? alpha('#6366f1', 0.03)
           : isRescheduledDay
-            ? alpha('#f59e0b', 0.04)
-            : '#fff',
-        border: '1px solid',
-        borderColor: isToday
-          ? alpha('#6366f1', 0.3)
-          : isRescheduledDay
-            ? alpha('#f59e0b', 0.25)
-            : hasClasses
-              ? alpha('#6366f1', 0.12)
-              : 'grey.100',
-        borderLeftWidth: hasClasses ? 3 : 1,
-        borderLeftColor: isRescheduledDay
-          ? '#f59e0b'
-          : hasClasses
-            ? '#6366f1'
-            : isToday
-              ? alpha('#6366f1', 0.3)
-              : 'grey.100',
-        borderRadius: 2.5,
+            ? alpha('#f59e0b', 0.03)
+            : '#ffffff',
+        border: 'none',
+        boxShadow: isToday 
+          ? `inset 0 0 0 1.5px ${alpha('#6366f1', 0.15)}, 0 4px 12px ${alpha('#6366f1', 0.04)}`
+          : '0 2px 8px rgba(15, 23, 42, 0.02)',
+        borderRadius: 4,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         cursor: hasClasses ? 'pointer' : 'default',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::after': hasClasses ? {
+          content: '""',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 4,
+          background: isRescheduledDay ? '#f59e0b' : '#6366f1',
+          opacity: 0.8,
+        } : {},
         '&:hover': hasClasses ? {
-          bgcolor: alpha('#6366f1', 0.04),
-          borderColor: alpha('#6366f1', 0.25),
-          transform: { xs: 'none', sm: 'translateY(-1px)' },
-          boxShadow: { xs: 'none', sm: `0 4px 12px ${alpha('#6366f1', 0.1)}` },
+          bgcolor: isToday ? alpha('#6366f1', 0.05) : '#ffffff',
+          transform: { xs: 'none', sm: 'translateY(-2px)' },
+          boxShadow: `0 12px 24px ${alpha('#0f172a', 0.06)}`,
         } : {},
       }}
       onClick={() => hasClasses && onClick(date, dateClasses)}
     >
       {/* Day Number Header */}
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={{ xs: 0.5, sm: 0.75, md: 1 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={{ xs: 0.5, sm: 1 }}>
         <Typography
           variant="subtitle2"
-          fontWeight={isToday ? 800 : 600}
-          color={isToday ? '#6366f1' : 'text.primary'}
-          sx={{ fontSize: { xs: '0.75rem', sm: '0.8125rem', md: '0.875rem' } }}
+          sx={{ 
+            fontSize: { xs: '0.75rem', sm: '0.9rem' },
+            fontWeight: isToday ? 900 : 700,
+            color: isToday ? '#6366f1' : '#1e293b',
+            fontFamily: "'Manrope', sans-serif",
+          }}
         >
           {dayNumber}
         </Typography>
         {isToday && !isMobile && (
           <Chip
-            label="Today"
+            label="TODAY"
             size="small"
             sx={{
               height: 18,
-              fontSize: '0.6rem',
-              fontWeight: 700,
-              bgcolor: alpha('#6366f1', 0.08),
-              color: '#6366f1',
+              fontSize: '0.55rem',
+              fontWeight: 900,
+              letterSpacing: '0.05em',
+              bgcolor: alpha('#6366f1', 0.1),
+              color: '#4f46e5',
+              backdropFilter: 'blur(4px)',
+              border: 'none',
             }}
           />
         )}
         {!isToday && isRescheduledDay && !isMobile && (
           <Chip
-            label="Moved"
+            label="MOVED"
             size="small"
             sx={{
               height: 18,
-              fontSize: '0.6rem',
-              fontWeight: 700,
+              fontSize: '0.55rem',
+              fontWeight: 900,
+              letterSpacing: '0.05em',
               bgcolor: alpha('#f59e0b', 0.1),
               color: '#d97706',
+              backdropFilter: 'blur(4px)',
             }}
           />
         )}
       </Box>
 
       {/* Class Information */}
-      <Box flexGrow={1} display="flex" flexDirection="column" gap={{ xs: 0.25, sm: 0.5 }}>
+      <Box flexGrow={1} display="flex" flexDirection="column" gap={{ xs: 0.5, sm: 0.75 }}>
         {hasClasses ? (
           (() => {
             const first = dateClasses[0];
@@ -164,61 +171,92 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
               <>
                 {!isMobile ? (
                   <>
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <Avatar
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+                      <Box
                         sx={{
-                          width: { xs: 16, sm: 18, md: 20 },
-                          height: { xs: 16, sm: 18, md: 20 },
-                          bgcolor: '#6366f1',
-                          fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' },
-                          fontWeight: 700,
+                          width: { xs: 18, sm: 20, md: 22 },
+                          height: { xs: 18, sm: 20, md: 22 },
+                          bgcolor: alpha('#6366f1', 0.1),
+                          color: '#6366f1',
+                          borderRadius: 1.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.72rem' },
+                          fontWeight: 800,
                         }}
                       >
                         {first.studentName?.charAt(0) || 'S'}
-                      </Avatar>
+                      </Box>
                       <Typography
                         variant="body2"
-                        fontWeight={600}
-                        noWrap
                         sx={{
                           flex: 1,
-                          color: 'text.primary',
-                          fontSize: { xs: '0.7rem', sm: '0.75rem', md: '0.85rem' },
+                          color: '#334155',
+                          fontSize: { xs: '0.7rem', sm: '0.78rem', md: '0.85rem' },
+                          fontWeight: 700,
+                          lineHeight: 1.2,
                         }}
+                        noWrap
                       >
                         {first.studentName}
                       </Typography>
                     </Stack>
 
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <AccessTimeIcon sx={{ fontSize: { xs: 10, sm: 11, md: 12 }, color: '#6366f1' }} />
+                    <Stack direction="row" alignItems="center" spacing={0.75} sx={{ opacity: 0.8 }}>
+                      <AccessTimeIcon sx={{ fontSize: { xs: 11, sm: 12, md: 14 }, color: '#64748b' }} />
                       <Typography
                         variant="caption"
-                        color="text.secondary"
-                        fontWeight={500}
+                        sx={{ 
+                          fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+                          color: '#64748b',
+                          fontWeight: 600,
+                          letterSpacing: '0.01em',
+                        }}
                         noWrap
-                        sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' } }}
                       >
-                        {timeSlot || 'Time N/A'}
+                        {timeSlot || 'TIME N/A'}
                       </Typography>
                     </Stack>
 
                     {extraCount > 0 && (
-                      <Typography
-                        variant="caption"
-                        fontWeight={600}
-                        sx={{ fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.72rem' }, color: '#6366f1' }}
+                      <Box
+                        sx={{
+                          mt: 0.5,
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: 1,
+                          bgcolor: alpha('#6366f1', 0.05),
+                          width: 'fit-content',
+                        }}
                       >
-                        +{extraCount} more
-                      </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ 
+                            fontSize: { xs: '0.55rem', sm: '0.6rem', md: '0.68rem' }, 
+                            color: '#6366f1',
+                            fontWeight: 800,
+                            letterSpacing: '0.03em',
+                          }}
+                        >
+                          +{extraCount} OTHERS
+                        </Typography>
+                      </Box>
                     )}
                   </>
                 ) : (
-                  <Box sx={{ textAlign: 'center' }}>
+                  <Box 
+                    sx={{ 
+                      textAlign: 'center',
+                      bgcolor: alpha('#6366f1', 0.08),
+                      borderRadius: 1.5,
+                      py: 0.5,
+                      mt: 1,
+                    }}
+                  >
                     <Typography
                       variant="caption"
-                      fontWeight={700}
-                      sx={{ fontSize: '0.7rem', color: '#6366f1' }}
+                      sx={{ fontSize: '0.72rem', color: '#4f46e5', fontWeight: 900 }}
                     >
                       {dateClasses.length}
                     </Typography>
@@ -234,9 +272,10 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
               alignItems: 'center',
               justifyContent: 'center',
               height: '100%',
+              opacity: 0.2,
             }}
           >
-            <Typography variant="caption" color="text.disabled" sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.72rem' } }}>
+            <Typography variant="caption" sx={{ fontSize: '1rem', fontWeight: 300 }}>
               —
             </Typography>
           </Box>
@@ -813,28 +852,57 @@ const TutorTimetablePage: React.FC = () => {
       {unscheduledClasses.length > 0 && (
         <Box
           sx={{
-            mb: { xs: 2, sm: 3 },
-            border: '1px dashed',
-            borderColor: alpha('#f59e0b', 0.35),
+            mb: { xs: 3, sm: 4 },
             bgcolor: alpha('#f59e0b', 0.03),
-            borderRadius: 3,
-            p: { xs: 2, sm: 2.5 },
+            borderRadius: 4,
+            p: { xs: 2.5, sm: 3 },
+            border: `1px solid ${alpha('#f59e0b', 0.1)}`,
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Typography
-            variant="subtitle2"
-            sx={{ mb: 0.75, fontWeight: 700, fontSize: { xs: '0.82rem', sm: '0.88rem' }, color: '#d97706' }}
-          >
-            ⚠️ Classes without fixed schedule
-          </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'block', mb: 1.5, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-          >
-            These classes don&apos;t appear on the calendar grid yet.
-          </Typography>
-          <Stack spacing={1}>
+          <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 2,
+                bgcolor: alpha('#f59e0b', 0.1),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#d97706',
+              }}
+            >
+              <EventNoteIcon sx={{ fontSize: 18 }} />
+            </Box>
+            <Box>
+              <Typography
+                variant="subtitle2"
+                sx={{ 
+                  fontWeight: 800, 
+                  fontSize: { xs: '0.85rem', sm: '0.95rem' }, 
+                  color: '#9a3412',
+                  fontFamily: "'Manrope', sans-serif"
+                }}
+              >
+                Pending Schedules
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ 
+                  display: 'block', 
+                  color: alpha('#9a3412', 0.7), 
+                  fontWeight: 600,
+                  letterSpacing: '0.01em'
+                }}
+              >
+                {unscheduledClasses.length} {unscheduledClasses.length === 1 ? 'class requires' : 'classes require'} a fixed timetable
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Stack spacing={1.5}>
             {unscheduledClasses.map((cls) => {
               const className: string = (cls as any).className || '-';
               const sched: any = (cls as any).schedule || {};
@@ -845,39 +913,61 @@ const TutorTimetablePage: React.FC = () => {
                   sx={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    gap: 1,
+                    gap: 2,
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    p: 1.25,
-                    borderRadius: 2,
-                    bgcolor: alpha('#f59e0b', 0.04),
-                    border: '1px solid',
-                    borderColor: alpha('#f59e0b', 0.1),
+                    p: 2,
+                    borderRadius: 3,
+                    bgcolor: '#ffffff',
+                    boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.06)',
+                    }
                   }}
                 >
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.78rem', sm: '0.82rem' }, fontWeight: 700 }}>
-                      {cls.studentName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.72rem' } }}>
-                      {className !== '-' ? `• ${className}` : ''} • {timeSlot}
-                    </Typography>
+                  <Box display="flex" alignItems="center" gap={1.5}>
+                    <Avatar
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: alpha('#f59e0b', 0.1),
+                        color: '#d97706',
+                        fontWeight: 800,
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      {cls.studentName?.charAt(0) || 'S'}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#1e293b' }}>
+                        {cls.studentName}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                        {className !== '-' ? `${className} • ` : ''}{timeSlot}
+                      </Typography>
+                    </Box>
                   </Box>
                   <Button
                     size="small"
-                    variant="outlined"
+                    variant="contained"
                     onClick={() => openScheduleModal(cls)}
                     sx={{
                       borderRadius: 2,
                       textTransform: 'none',
-                      fontWeight: 700,
-                      fontSize: '0.72rem',
-                      borderColor: alpha('#f59e0b', 0.4),
-                      color: '#d97706',
-                      '&:hover': { borderColor: '#d97706', bgcolor: alpha('#f59e0b', 0.06) },
+                      fontWeight: 800,
+                      fontSize: '0.75rem',
+                      bgcolor: '#f59e0b',
+                      color: '#fff',
+                      boxShadow: 'none',
+                      px: 2,
+                      '&:hover': { 
+                        bgcolor: '#d97706',
+                        boxShadow: `0 4px 12px ${alpha('#d97706', 0.2)}`
+                      },
                     }}
                   >
-                    Set timetable
+                    Set Timetable
                   </Button>
                 </Box>
               );
@@ -896,30 +986,50 @@ const TutorTimetablePage: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 1.5,
-            p: 1.25,
-            bgcolor: '#fff',
-            border: '1px solid',
-            borderColor: alpha('#6366f1', 0.1),
-            borderRadius: 2.5,
+            mb: 2,
+            p: 1.5,
+            bgcolor: '#ffffff',
+            borderRadius: 4,
+            boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
           }}
         >
           <IconButton
             onClick={handleMobilePrevWeek}
             size="small"
-            sx={{ width: 32, height: 32, bgcolor: alpha('#6366f1', 0.06) }}
+            sx={{ 
+              width: 36, 
+              height: 36, 
+              bgcolor: alpha('#6366f1', 0.04),
+              color: '#6366f1',
+              '&:hover': { bgcolor: alpha('#6366f1', 0.08) }
+            }}
           >
-            <ChevronLeftIcon sx={{ fontSize: 18 }} />
+            <ChevronLeftIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.88rem', letterSpacing: '-0.01em' }}>
+          <Typography 
+            variant="subtitle2" 
+            sx={{ 
+              fontWeight: 900, 
+              fontSize: '0.95rem', 
+              letterSpacing: '-0.02em',
+              color: '#1e293b',
+              fontFamily: "'Manrope', sans-serif"
+            }}
+          >
             {mobileWeekLabel}
           </Typography>
           <IconButton
             onClick={handleMobileNextWeek}
             size="small"
-            sx={{ width: 32, height: 32, bgcolor: alpha('#6366f1', 0.06) }}
+            sx={{ 
+              width: 36, 
+              height: 36, 
+              bgcolor: alpha('#6366f1', 0.04),
+              color: '#6366f1',
+              '&:hover': { bgcolor: alpha('#6366f1', 0.08) }
+            }}
           >
-            <ChevronRightIcon sx={{ fontSize: 18 }} />
+            <ChevronRightIcon sx={{ fontSize: 20 }} />
           </IconButton>
         </Box>
 
@@ -927,10 +1037,12 @@ const TutorTimetablePage: React.FC = () => {
         <Box
           sx={{
             display: 'flex',
-            gap: 0.75,
-            mb: 2,
+            gap: 1,
+            mb: 3,
             overflowX: 'auto',
-            pb: 0.5,
+            pb: 1,
+            mx: -1,
+            px: 1,
             '&::-webkit-scrollbar': { display: 'none' },
             scrollbarWidth: 'none',
           }}
@@ -945,48 +1057,50 @@ const TutorTimetablePage: React.FC = () => {
                 key={i}
                 onClick={() => setMobileSelectedDay(day)}
                 sx={{
-                  flex: '1 0 auto',
-                  minWidth: 44,
+                  flex: '0 0 auto',
+                  minWidth: 50,
                   textAlign: 'center',
-                  py: 1,
-                  px: 0.5,
-                  borderRadius: 2.5,
+                  py: 1.5,
+                  px: 1,
+                  borderRadius: 3,
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   bgcolor: isSelected
                     ? '#6366f1'
                     : today
-                      ? alpha('#6366f1', 0.06)
-                      : '#fff',
-                  border: '1px solid',
-                  borderColor: isSelected
-                    ? '#6366f1'
+                      ? alpha('#6366f1', 0.05)
+                      : '#ffffff',
+                  boxShadow: isSelected 
+                    ? `0 8px 16px ${alpha('#6366f1', 0.25)}` 
                     : today
-                      ? alpha('#6366f1', 0.2)
-                      : 'grey.100',
+                      ? 'none'
+                      : '0 2px 6px rgba(15, 23, 42, 0.02)',
+                  border: isSelected ? 'none' : `1px solid ${alpha('#6366f1', today ? 0.2 : 0.05)}`,
                   position: 'relative',
+                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
                 }}
               >
                 <Typography
                   variant="caption"
                   display="block"
-                  fontWeight={600}
                   sx={{
                     fontSize: '0.6rem',
-                    color: isSelected ? alpha('#fff', 0.7) : 'text.secondary',
+                    fontWeight: 900,
+                    color: isSelected ? alpha('#fff', 0.7) : '#64748b',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    mb: 0.25,
+                    letterSpacing: '0.08em',
+                    mb: 0.5,
                   }}
                 >
                   {WEEKDAY_LABELS[i]}
                 </Typography>
                 <Typography
                   variant="subtitle2"
-                  fontWeight={800}
                   sx={{
-                    fontSize: '0.92rem',
-                    color: isSelected ? '#fff' : today ? '#6366f1' : 'text.primary',
+                    fontSize: '1rem',
+                    fontWeight: 900,
+                    fontFamily: "'Manrope', sans-serif",
+                    color: isSelected ? '#fff' : today ? '#6366f1' : '#1e293b',
                   }}
                 >
                   {day.getDate()}
@@ -994,12 +1108,13 @@ const TutorTimetablePage: React.FC = () => {
                 {hasClass && (
                   <Box
                     sx={{
-                      width: 5,
-                      height: 5,
+                      width: 6,
+                      height: 6,
                       borderRadius: '50%',
                       bgcolor: isSelected ? '#fff' : '#6366f1',
                       mx: 'auto',
-                      mt: 0.25,
+                      mt: 0.75,
+                      boxShadow: isSelected ? 'none' : `0 0 8px ${alpha('#6366f1', 0.4)}`,
                     }}
                   />
                 )}
@@ -1014,12 +1129,12 @@ const TutorTimetablePage: React.FC = () => {
             variant="caption"
             sx={{
               display: 'block',
-              mb: 1.5,
-              fontWeight: 700,
-              fontSize: '0.72rem',
-              color: 'text.secondary',
+              mb: 2,
+              fontWeight: 900,
+              fontSize: '0.7rem',
+              color: '#64748b',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.1em',
             }}
           >
             {mobileSelectedDay.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -1029,36 +1144,37 @@ const TutorTimetablePage: React.FC = () => {
             <Box
               sx={{
                 textAlign: 'center',
-                py: 5,
-                borderRadius: 3,
-                border: '1px dashed',
-                borderColor: alpha('#6366f1', 0.15),
+                py: 6,
+                borderRadius: 5,
                 bgcolor: alpha('#6366f1', 0.02),
+                border: `1px dashed ${alpha('#6366f1', 0.15)}`,
               }}
             >
               <Box
                 sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
+                  width: 54,
+                  height: 54,
+                  borderRadius: 3,
                   bgcolor: alpha('#6366f1', 0.06),
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  mb: 1.5,
+                  mb: 2,
+                  color: '#6366f1',
+                  transform: 'rotate(-5deg)',
                 }}
               >
-                <EventNoteIcon sx={{ fontSize: 22, color: '#6366f1' }} />
+                <EventNoteIcon sx={{ fontSize: 26 }} />
               </Box>
-              <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.85rem' }}>
-                No classes today
+              <Typography variant="body2" sx={{ fontWeight: 800, color: '#1e293b', mb: 0.5 }}>
+                Clear Horizon
               </Typography>
-              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.72rem' }}>
-                Enjoy your free time! 🎉
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                No sessions scheduled for this day
               </Typography>
             </Box>
           ) : (
-            <Stack spacing={1.5}>
+            <Stack spacing={2}>
               {mobileSelectedDayClasses.map((cls, idx) => {
                 const sched: any = (cls as any).schedule || {};
                 const timeSlot: string = sched.timeSlot || '';
@@ -1070,54 +1186,27 @@ const TutorTimetablePage: React.FC = () => {
                   <Box
                     key={cls.id || idx}
                     sx={{
-                      borderRadius: 2.5,
-                      border: '1px solid',
-                      borderColor: isRescheduled ? alpha('#f59e0b', 0.2) : alpha('#6366f1', 0.1),
-                      bgcolor: '#fff',
+                      borderRadius: 4,
+                      bgcolor: '#ffffff',
+                      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)',
                       overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        display: 'block',
-                        height: 3,
-                        background: isRescheduled
-                          ? `linear-gradient(90deg, #f59e0b, ${alpha('#f59e0b', 0.3)})`
-                          : `linear-gradient(90deg, #6366f1, ${alpha('#6366f1', 0.3)})`,
-                      },
+                      position: 'relative',
+                      border: isRescheduled ? `1px solid ${alpha('#f59e0b', 0.2)}` : 'none',
                     }}
                   >
-                    <Box sx={{ p: 2 }}>
-                      {/* Student info */}
-                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1.5}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Avatar
-                            sx={{
-                              width: 34,
-                              height: 34,
-                              bgcolor: '#6366f1',
-                              fontWeight: 700,
-                              fontSize: '0.82rem',
-                            }}
-                          >
-                            {cls.studentName?.charAt(0) || 'S'}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.88rem' }}>
-                              {cls.studentName}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>
-                              {subjects} • Grade {cls.grade}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <Box display="flex" gap={0.5}>
+                    <Box sx={{ p: 2.5 }}>
+                      {/* Top Bar with Status and Mode */}
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Box display="flex" gap={1}>
                           {isRescheduled && (
                             <Chip
-                              label="Moved"
+                              label="MOVED"
                               size="small"
                               sx={{
                                 height: 20,
-                                fontSize: '0.6rem',
-                                fontWeight: 700,
+                                fontSize: '0.55rem',
+                                fontWeight: 900,
+                                letterSpacing: '0.04em',
                                 bgcolor: alpha('#f59e0b', 0.1),
                                 color: '#d97706',
                               }}
@@ -1128,82 +1217,124 @@ const TutorTimetablePage: React.FC = () => {
                             size="small"
                             sx={{
                               height: 20,
-                              fontSize: '0.6rem',
-                              fontWeight: 700,
-                              bgcolor: cls.mode === 'ONLINE' ? alpha('#3b82f6', 0.08) : alpha('#10b981', 0.08),
-                              color: cls.mode === 'ONLINE' ? '#2563eb' : '#059669',
+                              fontSize: '0.55rem',
+                              fontWeight: 900,
+                              letterSpacing: '0.04em',
+                              bgcolor: alpha('#6366f1', 0.06),
+                              color: '#6366f1',
                             }}
                           />
                         </Box>
+                        <Box
+                          sx={{
+                            px: 1.25,
+                            py: 0.5,
+                            borderRadius: 1.5,
+                            bgcolor: alpha('#10b981', 0.06),
+                            color: '#059669',
+                            fontSize: '0.6rem',
+                            fontWeight: 900,
+                            letterSpacing: '0.04em',
+                          }}
+                        >
+                          ACTIVE
+                        </Box>
                       </Box>
 
-                      {/* Time & Location */}
+                      {/* Content Section */}
+                      <Stack direction="row" spacing={2} alignItems="center" mb={2.5}>
+                        <Avatar
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            bgcolor: alpha('#6366f1', 0.08),
+                            color: '#6366f1',
+                            fontWeight: 900,
+                            fontSize: '1rem',
+                            fontFamily: "'Manrope', sans-serif"
+                          }}
+                        >
+                          {cls.studentName?.charAt(0) || 'S'}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, mb: 0.25 }}>
+                            {cls.studentName}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>
+                            {subjects} • Grade {cls.grade}
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      {/* Info Row */}
                       <Box
                         sx={{
                           display: 'flex',
                           gap: 1.5,
-                          p: 1.25,
-                          borderRadius: 2,
-                          bgcolor: alpha('#6366f1', 0.03),
-                          border: '1px solid',
-                          borderColor: alpha('#6366f1', 0.06),
+                          p: 1.5,
+                          borderRadius: 3,
+                          bgcolor: alpha('#f8fafc', 0.8),
+                          mb: 2,
                         }}
                       >
-                        <Box display="flex" alignItems="center" gap={0.5} flex={1}>
-                          <AccessTimeIcon sx={{ fontSize: 14, color: '#6366f1' }} />
-                          <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.72rem' }}>
-                            {timeSlot || 'Time N/A'}
+                        <Box display="flex" alignItems="center" gap={1} flex={1}>
+                          <Box sx={{ color: '#6366f1', display: 'flex' }}><AccessTimeIcon sx={{ fontSize: 16 }} /></Box>
+                          <Typography variant="caption" sx={{ color: '#334155', fontWeight: 800, fontSize: '0.72rem' }}>
+                            {timeSlot || 'TIME N/A'}
                           </Typography>
                         </Box>
                         {address && (
-                          <Box display="flex" alignItems="center" gap={0.5} flex={1}>
-                            <LocationOnIcon sx={{ fontSize: 14, color: '#6366f1' }} />
-                            <Typography variant="caption" fontWeight={600} noWrap sx={{ fontSize: '0.72rem' }}>
+                          <Box display="flex" alignItems="center" gap={1} flex={1} sx={{ minWidth: 0 }}>
+                            <Box sx={{ color: '#6366f1', display: 'flex' }}><LocationOnIcon sx={{ fontSize: 16 }} /></Box>
+                            <Typography variant="caption" sx={{ color: '#334155', fontWeight: 800, fontSize: '0.72rem' }} noWrap>
                               {address}
                             </Typography>
                           </Box>
                         )}
                       </Box>
 
-                      {/* Actions */}
-                      <Box display="flex" justifyContent="flex-end" gap={1} mt={1.5}>
+                      {/* Action Row */}
+                      <Box display="flex" gap={1.5}>
                         {Boolean((cls as any).coordinator) && (
                           <Button
-                            size="small"
+                            fullWidth
+                            size="medium"
                             variant="outlined"
                             onClick={() => openTestModalForClass(cls)}
                             sx={{
-                              borderRadius: 2,
+                              borderRadius: 2.5,
                               textTransform: 'none',
-                              fontWeight: 700,
-                              fontSize: '0.7rem',
-                              borderColor: alpha('#6366f1', 0.25),
+                              fontWeight: 800,
+                              fontSize: '0.75rem',
+                              borderColor: alpha('#6366f1', 0.2),
                               color: '#6366f1',
-                              py: 0.5,
+                              py: 1,
+                              '&:hover': { borderColor: '#6366f1', bgcolor: alpha('#6366f1', 0.04) }
                             }}
                           >
                             Schedule Test
                           </Button>
                         )}
                         <Button
-                          size="small"
+                          fullWidth
+                          size="medium"
                           variant="contained"
                           onClick={() => {
                             setSelectedDate(mobileSelectedDay);
                             setSelectedClasses(mobileSelectedDayClasses);
                           }}
                           sx={{
-                            borderRadius: 2,
+                            borderRadius: 2.5,
                             textTransform: 'none',
-                            fontWeight: 700,
-                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            fontSize: '0.75rem',
                             bgcolor: '#6366f1',
-                            boxShadow: 'none',
-                            py: 0.5,
-                            '&:hover': { bgcolor: '#4f46e5', boxShadow: 'none' },
+                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)',
+                            py: 1,
+                            '&:hover': { bgcolor: '#4f46e5', boxShadow: '0 6px 16px rgba(99, 102, 241, 0.3)' },
                           }}
                         >
-                          Details
+                          View Details
                         </Button>
                       </Box>
                     </Box>
@@ -1225,48 +1356,59 @@ const TutorTimetablePage: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: { sm: 2.5, md: 3 },
-            p: 2,
-            bgcolor: '#fff',
-            border: '1px solid',
-            borderColor: alpha('#6366f1', 0.1),
-            borderRadius: 3,
+            mb: 4,
+            p: 2.5,
+            bgcolor: '#ffffff',
+            borderRadius: 4,
+            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.03)',
           }}
         >
           <IconButton
             onClick={handlePrevMonth}
             size="small"
             sx={{
-              width: 36,
-              height: 36,
-              bgcolor: alpha('#6366f1', 0.06),
+              width: 40,
+              height: 40,
+              bgcolor: alpha('#6366f1', 0.04),
+              color: '#6366f1',
               '&:hover': { bgcolor: '#6366f1', color: 'white' },
-              transition: 'all 0.2s',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <ChevronLeftIcon sx={{ fontSize: 22 }} />
+            <ChevronLeftIcon sx={{ fontSize: 24 }} />
           </IconButton>
 
-          <Typography
-            variant="h6"
-            fontWeight={800}
-            sx={{ fontSize: { sm: '1.125rem', md: '1.25rem' }, letterSpacing: '-0.01em' }}
-          >
-            {formatMonthYear(currentMonth)}
-          </Typography>
+          <Box textAlign="center">
+            <Typography
+              variant="h5"
+              sx={{ 
+                fontWeight: 900, 
+                color: '#0f172a',
+                fontSize: { sm: '1.25rem', md: '1.5rem' }, 
+                letterSpacing: '-0.03em',
+                fontFamily: "'Manrope', sans-serif"
+              }}
+            >
+              {formatMonthYear(currentMonth)}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+              ACADEMIC CALENDAR
+            </Typography>
+          </Box>
 
           <IconButton
             onClick={handleNextMonth}
             size="small"
             sx={{
-              width: 36,
-              height: 36,
-              bgcolor: alpha('#6366f1', 0.06),
+              width: 40,
+              height: 40,
+              bgcolor: alpha('#6366f1', 0.04),
+              color: '#6366f1',
               '&:hover': { bgcolor: '#6366f1', color: 'white' },
-              transition: 'all 0.2s',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <ChevronRightIcon sx={{ fontSize: 22 }} />
+            <ChevronRightIcon sx={{ fontSize: 24 }} />
           </IconButton>
         </Box>
 
@@ -1274,27 +1416,27 @@ const TutorTimetablePage: React.FC = () => {
         <Card
           elevation={0}
           sx={{
-            border: '1px solid',
-            borderColor: 'grey.100',
-            borderRadius: 3,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            bgcolor: 'transparent',
+            borderRadius: 5,
+            border: 'none',
           }}
         >
-          <CardContent sx={{ p: { sm: 2.5, md: 3 } }}>
+          <Box sx={{ p: 0 }}>
             {/* Weekday Headers */}
-            <Grid container spacing={{ sm: 0.75, md: 1 }} mb={{ sm: 1.5, md: 2 }}>
+            <Grid container spacing={1.5} mb={2}>
               {WEEKDAY_LABELS.map((label) => (
                 <Grid item xs={12 / 7} key={label}>
                   <Box
                     sx={{
                       textAlign: 'center',
-                      py: { sm: 0.75, md: 1 },
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      color: 'white',
-                      borderRadius: 2,
-                      fontWeight: 700,
-                      fontSize: { sm: '0.78rem', md: '0.85rem' },
-                      letterSpacing: '0.02em',
+                      py: 1.5,
+                      bgcolor: alpha('#6366f1', 0.04),
+                      color: '#4f46e5',
+                      borderRadius: 2.5,
+                      fontWeight: 900,
+                      fontSize: '0.75rem',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
                     }}
                   >
                     {label}
@@ -1304,12 +1446,12 @@ const TutorTimetablePage: React.FC = () => {
             </Grid>
 
             {/* Calendar Days */}
-            <Grid container spacing={{ sm: 0.75, md: 1 }}>
+            <Grid container spacing={1.5}>
               {monthDays.map((date, idx) => {
                 if (!date) {
                   return (
                     <Grid item xs={12 / 7} key={idx}>
-                      <Box minHeight={{ sm: 90, md: 110 }} />
+                      <Box minHeight={{ sm: 95, md: 115 }} sx={{ bgcolor: alpha('#f8fafc', 0.4), borderRadius: 4 }} />
                     </Grid>
                   );
                 }
@@ -1323,7 +1465,7 @@ const TutorTimetablePage: React.FC = () => {
                 );
               })}
             </Grid>
-          </CardContent>
+          </Box>
         </Card>
       </Box>
 
@@ -1336,34 +1478,63 @@ const TutorTimetablePage: React.FC = () => {
         fullScreen={isDialogFullScreen}
         PaperProps={{
           sx: {
-            borderRadius: { xs: 0, sm: 3 },
+            borderRadius: { xs: 0, sm: 5 },
             m: { xs: 0, sm: 2 },
             overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           },
         }}
       >
         <DialogTitle
           sx={{
-            pb: 2,
-            pt: { xs: 2, sm: 3 },
+            pb: 4,
+            pt: { xs: 3, sm: 5 },
+            px: { xs: 2.5, sm: 4 },
             background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
             color: '#fff',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={1.5}>
-            <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: alpha('#fff', 0.1), display: 'flex' }}>
-              <CalendarTodayIcon sx={{ fontSize: { xs: 18, sm: 20 }, color: alpha('#fff', 0.8) }} />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-10%',
+              width: '40%',
+              height: '200%',
+              background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+          <Stack direction="row" alignItems="center" spacing={2.5} sx={{ position: 'relative', zIndex: 1 }}>
+            <Box 
+              sx={{ 
+                p: 1.25, 
+                borderRadius: 2.5, 
+                bgcolor: alpha('#fff', 0.1), 
+                display: 'flex',
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${alpha('#fff', 0.1)}`,
+              }}
+            >
+              <CalendarTodayIcon sx={{ fontSize: { xs: 22, sm: 26 }, color: '#fff' }} />
             </Box>
             <Box>
               <Typography
-                variant="h6"
-                component="div"
-                fontWeight={700}
-                sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' }, color: '#fff' }}
+                variant="h5"
+                fontWeight={900}
+                sx={{ 
+                  fontSize: { xs: '1.2rem', sm: '1.5rem' }, 
+                  color: '#fff',
+                  fontFamily: "'Manrope', sans-serif",
+                  letterSpacing: '-0.02em',
+                }}
               >
-                Classes Schedule
+                Class Sessions
               </Typography>
-              <Typography variant="body2" component="div" sx={{ fontSize: { xs: '0.78rem', sm: '0.82rem' }, color: alpha('#fff', 0.6) }}>
+              <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' }, color: alpha('#fff', 0.6), fontWeight: 600 }}>
                 {selectedDate
                   ? selectedDate.toLocaleDateString(undefined, {
                     weekday: 'long',
@@ -1377,32 +1548,34 @@ const TutorTimetablePage: React.FC = () => {
           </Stack>
         </DialogTitle>
 
-        <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#f8fafc' }}>
+        <DialogContent sx={{ p: { xs: 2, sm: 4 }, bgcolor: '#f8fafc' }}>
           {selectedClasses.length === 0 ? (
-            <Box sx={{ py: { xs: 4, sm: 6 }, textAlign: 'center' }}>
+            <Box sx={{ py: { xs: 6, sm: 10 }, textAlign: 'center' }}>
               <Box
                 sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  bgcolor: alpha('#6366f1', 0.06),
+                  width: 72,
+                  height: 72,
+                  borderRadius: 4,
+                  bgcolor: alpha('#6366f1', 0.05),
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  mb: 2,
+                  mb: 3,
+                  color: alpha('#6366f1', 0.3),
+                  transform: 'rotate(-5deg)',
                 }}
               >
-                <EventNoteIcon sx={{ fontSize: 28, color: '#6366f1' }} />
+                <EventNoteIcon sx={{ fontSize: 32 }} />
               </Box>
-              <Typography variant="h6" gutterBottom fontWeight={700} sx={{ fontSize: { xs: '1.05rem', sm: '1.15rem' } }}>
-                No Classes Scheduled
+              <Typography variant="h6" gutterBottom fontWeight={800} sx={{ color: '#1e293b' }}>
+                Agenda Clear
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                You don't have any classes on this day
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, maxWidth: 300, mx: 'auto' }}>
+                No active teaching sessions are scheduled for this date.
               </Typography>
             </Box>
           ) : (
-            <Stack spacing={{ xs: 1.5, sm: 2 }}>
+            <Stack spacing={2.5}>
               {selectedClasses.map((cls, index) => {
                 const sched: any = (cls as any).schedule || {};
                 const timeSlot: string = sched.timeSlot || '';
@@ -1411,142 +1584,131 @@ const TutorTimetablePage: React.FC = () => {
                 const isRescheduled = Boolean((cls as any).__isRescheduledForDate);
 
                 return (
-                  <Card
-                    key={cls.id}
-                    elevation={0}
+                  <Box
+                    key={cls.id || index}
                     sx={{
-                      border: '1px solid',
-                      borderColor: isRescheduled ? alpha('#f59e0b', 0.25) : alpha('#6366f1', 0.1),
-                      borderRadius: 2.5,
-                      transition: 'all 0.2s ease',
-                      overflow: 'hidden',
-                      '&:hover': {
-                        boxShadow: { xs: 'none', sm: `0 4px 12px ${alpha('#6366f1', 0.08)}` },
-                      },
-                      '&::before': {
-                        content: '""',
-                        display: 'block',
-                        height: 3,
-                        background: isRescheduled
-                          ? `linear-gradient(90deg, #f59e0b, ${alpha('#f59e0b', 0.4)})`
-                          : `linear-gradient(90deg, #6366f1, ${alpha('#6366f1', 0.4)})`,
-                      },
+                      p: { xs: 2.5, sm: 3 },
+                      borderRadius: 4,
+                      bgcolor: '#ffffff',
+                      boxShadow: '0 4px 15px rgba(15, 23, 42, 0.04)',
+                      border: isRescheduled ? `1px solid ${alpha('#f59e0b', 0.2)}` : 'none',
+                      position: 'relative',
                     }}
                   >
-                    <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
-                      <Stack spacing={{ xs: 1.5, sm: 2 }}>
-                        <Stack
-                          direction={{ xs: 'column', sm: 'row' }}
-                          alignItems={{ xs: 'flex-start', sm: 'center' }}
-                          justifyContent="space-between"
-                          spacing={{ xs: 1, sm: 0 }}
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar
+                          sx={{
+                            width: 52,
+                            height: 52,
+                            bgcolor: alpha('#6366f1', 0.08),
+                            color: '#6366f1',
+                            fontWeight: 900,
+                            fontSize: '1.2rem',
+                            fontFamily: "'Manrope', sans-serif"
+                          }}
                         >
-                          <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 1.5 }}>
-                            <Avatar
-                              sx={{
-                                width: { xs: 36, sm: 40 },
-                                height: { xs: 36, sm: 40 },
-                                bgcolor: '#6366f1',
-                                fontWeight: 700,
-                                fontSize: { xs: '0.875rem', sm: '1rem' },
-                              }}
-                            >
-                              {cls.studentName?.charAt(0) || 'S'}
-                            </Avatar>
-                            <Box>
-                              <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: { xs: '0.92rem', sm: '1rem' } }}>
-                                {cls.studentName}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.78rem', sm: '0.82rem' } }}>
-                                {className}
-                              </Typography>
-                            </Box>
-                          </Stack>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Chip
-                              label={`Class ${index + 1}`}
-                              size="small"
-                              sx={{
-                                bgcolor: isRescheduled ? alpha('#f59e0b', 0.1) : alpha('#6366f1', 0.08),
-                                color: isRescheduled ? '#d97706' : '#4f46e5',
-                                fontWeight: 700,
-                                fontSize: { xs: '0.68rem', sm: '0.72rem' },
-                              }}
-                            />
-                            {isRescheduled && (
-                              <Chip
-                                label="Rescheduled"
-                                size="small"
-                                sx={{
-                                  bgcolor: alpha('#f59e0b', 0.1),
-                                  color: '#d97706',
-                                  fontWeight: 700,
-                                  fontSize: { xs: '0.68rem', sm: '0.72rem' },
-                                }}
-                              />
-                            )}
-                            {Boolean((cls as any).coordinator) ? (
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => openTestModalForClass(cls)}
-                                sx={{
-                                  borderRadius: 2,
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  fontSize: '0.72rem',
-                                  borderColor: alpha('#6366f1', 0.3),
-                                  color: '#6366f1',
-                                  '&:hover': { borderColor: '#6366f1', bgcolor: alpha('#6366f1', 0.04) },
-                                }}
-                              >
-                                Schedule Test
-                              </Button>
-                            ) : (
-                              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
-                                Coordinator not assigned yet
-                              </Typography>
-                            )}
-                          </Stack>
-                        </Stack>
-
-                        <Divider sx={{ borderColor: alpha('#6366f1', 0.06) }} />
-
-                        <Grid container spacing={{ xs: 1.5, sm: 2 }}>
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.03) }}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <AccessTimeIcon sx={{ fontSize: { xs: 16, sm: 18 }, color: '#6366f1' }} />
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem', fontWeight: 600 }}>
-                                    Time
-                                  </Typography>
-                                  <Typography variant="body2" fontWeight={700} sx={{ fontSize: { xs: '0.82rem', sm: '0.88rem' } }}>
-                                    {timeSlot || 'Not specified'}
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: alpha('#6366f1', 0.03) }}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <LocationOnIcon sx={{ fontSize: { xs: 16, sm: 18 }, color: '#6366f1' }} />
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem', fontWeight: 600 }}>
-                                    Location
-                                  </Typography>
-                                  <Typography variant="body2" fontWeight={700} sx={{ fontSize: { xs: '0.82rem', sm: '0.88rem' }, wordBreak: 'break-word' }}>
-                                    {address}
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </Box>
-                          </Grid>
-                        </Grid>
+                          {cls.studentName?.charAt(0) || 'S'}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, mb: 0.5 }}>
+                            {cls.studentName}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                            {className || 'N/A'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Stack direction="row" spacing={1}>
+                        {isRescheduled && (
+                          <Chip
+                            label="RESCHEDULED"
+                            size="small"
+                            sx={{
+                              height: 22,
+                              fontSize: '0.6rem',
+                              fontWeight: 900,
+                              letterSpacing: '0.05em',
+                              bgcolor: alpha('#f59e0b', 0.1),
+                              color: '#d97706',
+                            }}
+                          />
+                        )}
+                        <Chip
+                          label={`SESSION ${index + 1}`}
+                          size="small"
+                          sx={{
+                            height: 22,
+                            fontSize: '0.6rem',
+                            fontWeight: 900,
+                            letterSpacing: '0.05em',
+                            bgcolor: alpha('#6366f1', 0.08),
+                            color: '#6366f1',
+                          }}
+                        />
                       </Stack>
-                    </CardContent>
-                  </Card>
+                    </Box>
+
+                    <Grid container spacing={2} mb={3}>
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ color: '#6366f1', display: 'flex' }}><AccessTimeIcon sx={{ fontSize: 20 }} /></Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 800, letterSpacing: '0.02em', mb: 0.25 }}>TIME SLOT</Typography>
+                            <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 800 }}>{timeSlot || 'NOT SPECIFIED'}</Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ color: '#6366f1', display: 'flex' }}><LocationOnIcon sx={{ fontSize: 20 }} /></Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 800, letterSpacing: '0.02em', mb: 0.25 }}>LOCATION</Typography>
+                            <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 800 }} noWrap>{address || 'LOCATION N/A'}</Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    <Box display="flex" gap={2} pt={2.5} borderTop={`1px solid ${alpha('#e2e8f0', 0.8)}`}>
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => openScheduleModal(cls)}
+                        sx={{
+                          borderRadius: 2.5,
+                          textTransform: 'none',
+                          fontWeight: 800,
+                          fontSize: '0.75rem',
+                          borderColor: alpha('#6366f1', 0.2),
+                          color: '#6366f1',
+                          py: 1.25,
+                          '&:hover': { borderColor: '#6366f1', bgcolor: alpha('#6366f1', 0.04) }
+                        }}
+                      >
+                        Modify Schedule
+                      </Button>
+                      {Boolean((cls as any).coordinator) && (
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          onClick={() => openTestModalForClass(cls)}
+                          sx={{
+                            borderRadius: 2.5,
+                            textTransform: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.75rem',
+                            bgcolor: '#6366f1',
+                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)',
+                            py: 1.25,
+                            '&:hover': { bgcolor: '#4f46e5', boxShadow: '0 6px 16px rgba(99, 102, 241, 0.3)' }
+                          }}
+                        >
+                          Schedule Test
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
                 );
               })}
             </Stack>
@@ -1569,129 +1731,189 @@ const TutorTimetablePage: React.FC = () => {
         fullWidth
         maxWidth="sm"
         PaperProps={{
-          sx: { borderRadius: 3, overflow: 'hidden' },
+          sx: { 
+            borderRadius: 5, 
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          },
         }}
       >
         <DialogTitle
           sx={{
             background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
             color: '#fff',
-            pb: 2,
+            pb: 4,
+            pt: 4,
+            px: 4,
+            position: 'relative',
           }}
         >
-          <Typography variant="h6" component="div" fontWeight={700} sx={{ fontSize: '1.05rem' }}>
-            Set Timetable
-          </Typography>
-          {scheduleModalClass && (
-            <Typography variant="body2" component="div" sx={{ mt: 0.5, color: alpha('#fff', 0.6), fontSize: '0.82rem' }}>
-              {scheduleModalClass.studentName}
-            </Typography>
-          )}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '-20%',
+              right: '-10%',
+              width: '40%',
+              height: '140%',
+              background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ position: 'relative', zIndex: 1 }}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#fff', 0.1), display: 'flex', border: `1px solid ${alpha('#fff', 0.1)}` }}>
+              <EventNoteIcon sx={{ fontSize: 24 }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" fontWeight={900} sx={{ fontSize: '1.25rem', fontFamily: "'Manrope', sans-serif" }}>
+                {scheduleModalClass?.schedule?.isFixed ? 'Modify Timetable' : 'Fix Timetable'}
+              </Typography>
+              {scheduleModalClass && (
+                <Typography variant="body2" sx={{ color: alpha('#fff', 0.6), fontWeight: 700 }}>
+                  {scheduleModalClass.studentName} • Grade {scheduleModalClass.grade}
+                </Typography>
+              )}
+            </Box>
+          </Stack>
         </DialogTitle>
-        <DialogContent sx={{ pt: 2.5, px: 3 }}>
+
+        <DialogContent sx={{ pt: 4, px: 4, bgcolor: '#ffffff' }}>
           {(scheduleError || scheduleSuccess) && (
-            <Box mb={1.5}>
+            <Box mb={3} p={1.5} borderRadius={2} bgcolor={scheduleError ? alpha('#ef4444', 0.05) : alpha('#10b981', 0.05)}>
               {scheduleError && (
-                <Typography variant="caption" color="error.main" fontWeight={600}>
+                <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 800 }}>
                   {scheduleError}
                 </Typography>
               )}
               {scheduleSuccess && (
-                <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ color: '#059669', fontWeight: 800 }}>
                   {scheduleSuccess}
                 </Typography>
               )}
             </Box>
           )}
 
-          <Box mb={2}>
+          <Box mb={3}>
+            <Typography variant="caption" sx={{ display: 'block', mb: 1, color: '#64748b', fontWeight: 800, letterSpacing: '0.05em' }}>
+              EFFECTIVE FROM
+            </Typography>
             <TextField
               fullWidth
-              size="small"
-              label="Start Date"
+              size="medium"
               type="date"
-              InputLabelProps={{ shrink: true }}
               value={scheduleStartDate}
               onChange={(e) => setScheduleStartDate(e.target.value)}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+              sx={{ 
+                '& .MuiOutlinedInput-root': { 
+                  borderRadius: 3,
+                  bgcolor: '#f8fafc',
+                  '& fieldset': { borderColor: alpha('#e2e8f0', 1) },
+                } 
+              }}
             />
           </Box>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, fontSize: '0.82rem' }}>
-            Days of week
-          </Typography>
-          <FormGroup row sx={{ mb: 2.5 }}>
-            {DAYS_ORDER.map((day) => (
-              <FormControlLabel
-                key={day}
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={scheduleDays.includes(day)}
-                    onChange={() => toggleDay(day)}
+
+          <Box mb={3}>
+            <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: '#64748b', fontWeight: 800, letterSpacing: '0.05em' }}>
+              RECURRING DAYS
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {DAYS_ORDER.map((day) => {
+                const isSelected = scheduleDays.includes(day);
+                return (
+                  <Chip
+                    key={day}
+                    label={day.slice(0, 3)}
+                    onClick={() => toggleDay(day)}
                     sx={{
-                      color: alpha('#6366f1', 0.4),
-                      '&.Mui-checked': { color: '#6366f1' },
+                      borderRadius: 2,
+                      fontWeight: 800,
+                      bgcolor: isSelected ? '#6366f1' : alpha('#6366f1', 0.04),
+                      color: isSelected ? '#fff' : '#6366f1',
+                      border: `1px solid ${isSelected ? '#6366f1' : alpha('#6366f1', 0.1)}`,
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': { bgcolor: isSelected ? '#4f46e5' : alpha('#6366f1', 0.08) }
                     }}
                   />
-                }
-                label={day.charAt(0) + day.slice(1).toLowerCase()}
-                sx={{ '& .MuiFormControlLabel-label': { fontSize: '0.82rem', fontWeight: 500 } }}
-              />
-            ))}
-          </FormGroup>
+                );
+              })}
+            </Box>
+          </Box>
 
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, fontSize: '0.82rem' }}>
-            Time slot
-          </Typography>
-          <Grid container spacing={2} sx={{ mb: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Start time"
-                type="time"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 300 }}
-                value={scheduleStartTime}
-                onChange={(e) => setScheduleStartTime(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-              />
+          <Box mb={1}>
+            <Typography variant="caption" sx={{ display: 'block', mb: 1, color: '#64748b', fontWeight: 800, letterSpacing: '0.05em' }}>
+              SESSION TIMING
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="medium"
+                  label="Start time"
+                  type="time"
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
+                  value={scheduleStartTime}
+                  onChange={(e) => setScheduleStartTime(e.target.value)}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': { 
+                      borderRadius: 3,
+                      bgcolor: '#f8fafc',
+                      '& fieldset': { borderColor: alpha('#e2e8f0', 1) },
+                    } 
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box 
+                  sx={{ 
+                    p: 1.5, 
+                    borderRadius: 3, 
+                    bgcolor: alpha('#6366f1', 0.04),
+                    border: `1px solid ${alpha('#6366f1', 0.1)}`,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 800, letterSpacing: '0.02em' }}>
+                    END TIME
+                  </Typography>
+                  <Typography variant="subtitle1" fontWeight={900} sx={{ color: '#1e293b' }}>
+                    {getComputedEndTime(scheduleModalClass, scheduleStartTime) || '--:--'}
+                  </Typography>
+                </Box>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ pt: 0.5 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  End time (auto)
-                </Typography>
-                <Typography variant="body2" fontWeight={700} sx={{ mt: 0.5 }}>
-                  {getComputedEndTime(scheduleModalClass, scheduleStartTime) || '--:--'}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+          </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+
+        <DialogActions sx={{ px: 4, pb: 4, pt: 2, bgcolor: '#ffffff' }}>
           <Button
             onClick={closeScheduleModal}
             disabled={scheduleSaving}
-            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, color: 'text.secondary' }}
+            sx={{ borderRadius: 2.5, textTransform: 'none', fontWeight: 800, color: '#64748b', px: 3 }}
           >
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handleSaveSchedule}
-            disabled={scheduleSaving}
+            disabled={scheduleSaving || scheduleDays.length === 0}
             sx={{
-              borderRadius: 2,
+              borderRadius: 3,
               textTransform: 'none',
-              fontWeight: 700,
+              fontWeight: 900,
               bgcolor: '#6366f1',
-              '&:hover': { bgcolor: '#4f46e5' },
-              boxShadow: 'none',
-              px: 3,
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)',
+              px: 5,
+              py: 1.25,
+              '&:hover': { bgcolor: '#4f46e5', boxShadow: '0 8px 20px rgba(99, 102, 241, 0.3)' },
+              '&.Mui-disabled': { bgcolor: alpha('#6366f1', 0.3) }
             }}
           >
-            Save
+            {scheduleSaving ? 'Saving...' : 'Deploy Schedule'}
           </Button>
         </DialogActions>
       </Dialog>

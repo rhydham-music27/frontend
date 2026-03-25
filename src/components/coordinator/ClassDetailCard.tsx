@@ -12,6 +12,7 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { IFinalClass } from '../../types';
 import { FINAL_CLASS_STATUS } from '../../constants';
 import { useAuth } from '../../hooks/useAuth';
+import { getOptionLabel } from '../../utils/subjectUtils';
 
 interface ClassDetailCardProps {
   finalClass: IFinalClass;
@@ -137,14 +138,14 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
             </Box>
             <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, opacity: 0.8 }}>
               <SchoolIcon sx={{ fontSize: 16 }} />
-              {finalClass.grade} • {finalClass.board} • {finalClass.mode}
+              {getOptionLabel(finalClass.grade)} • {getOptionLabel(finalClass.board)} • {getOptionLabel(finalClass.mode)}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: 120 }}>
             {finalClass.subject?.slice(0, 2).map((s) => (
               <Chip 
-                key={s} 
-                label={s} 
+                key={getOptionLabel(s)} 
+                label={getOptionLabel(s)} 
                 size="small" 
                 sx={{ 
                   height: 20, 
@@ -240,7 +241,7 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
                     Session Rate
                   </Typography>
                   <Typography variant="body2" fontWeight={700}>
-                    â‚¹{finalClass.ratePerSession} <Typography component="span" variant="caption" color="text.secondary">/ session</Typography>
+                    {'\u20B9'}{finalClass.ratePerSession} <Typography component="span" variant="caption" color="text.secondary">/ session</Typography>
                   </Typography>
                 </Box>
               </Box>
@@ -306,7 +307,7 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
                   <Box key={i} mb={1.5} sx={{ position: 'relative' }}>
                     <Typography variant="body2" fontWeight={700} sx={{ fontSize: '0.8rem' }}>{h.tutor?.name}</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem' }}>
-                      {new Date(h.startDate).toLocaleDateString()} â€” {new Date(h.endDate).toLocaleDateString()}
+                      {new Date(h.startDate).toLocaleDateString()} — {new Date(h.endDate).toLocaleDateString()}
                     </Typography>
                     {h.reason && (
                       <Typography variant="caption" sx={{ fontStyle: 'italic', display: 'block', mt: 0.5, color: 'text.secondary', fontSize: '0.7rem' }}>

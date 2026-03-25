@@ -12,7 +12,7 @@ import { FINAL_CLASS_STATUS } from '../../constants';
 import { IFinalClass } from '../../types';
 import SubmitAttendanceModal from './SubmitAttendanceModal';
 import ClassCard from '../parents/ClassCard';
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getSubjectList, getOptionLabel } from '../../utils/subjectUtils';
 
 const TodayScheduleCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -97,20 +97,22 @@ const TodayScheduleCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 3,
-    border: '1px solid',
-    borderColor: 'grey.100',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    transition: 'box-shadow 0.2s',
-    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+    borderRadius: 6,
+    bgcolor: '#ffffff',
+    boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+    border: 'none',
+    transition: 'all 0.3s ease',
   };
 
   if (loading) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box display="flex" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={24} />
+        <CardContent sx={{ py: 6 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" gap={2}>
+            <CircularProgress size={32} thickness={5} sx={{ color: '#6366f1' }} />
+            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+              SYNCING SCHEDULE...
+            </Typography>
           </Box>
         </CardContent>
       </Card>
@@ -120,10 +122,10 @@ const TodayScheduleCard: React.FC = () => {
   if (error) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1}>
-            <ErrorOutlineIcon color="error" />
-            <Typography variant="body2" color="error.main">
+        <CardContent sx={{ py: 4 }}>
+          <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+            <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
+            <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
               {error}
             </Typography>
           </Box>
@@ -135,27 +137,28 @@ const TodayScheduleCard: React.FC = () => {
   if (!classes.length) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box textAlign="center" py={5}>
+        <CardContent sx={{ py: 8 }}>
+          <Box textAlign="center">
             <Box
               sx={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                bgcolor: alpha('#6366f1', 0.08),
+                width: 72,
+                height: 72,
+                borderRadius: 4,
+                bgcolor: alpha('#6366f1', 0.06),
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                mb: 1.5,
+                mb: 3,
+                transform: 'rotate(-5deg)',
               }}
             >
-              <CalendarTodayIcon sx={{ fontSize: 24, color: '#6366f1' }} />
+              <CalendarTodayIcon sx={{ fontSize: 32, color: '#6366f1' }} />
             </Box>
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              No classes scheduled for today
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1, letterSpacing: '-0.02em' }}>
+              Clear Horizon
             </Typography>
-            <Typography variant="caption" color="text.disabled" display="block" mt={0.5}>
-              Enjoy your free time! 🎉
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500, maxWidth: 280, mx: 'auto' }}>
+              No classes scheduled for today. Take this time to refine your lesson plans or explore new opportunities.
             </Typography>
           </Box>
         </CardContent>
@@ -165,50 +168,64 @@ const TodayScheduleCard: React.FC = () => {
 
   return (
     <>
-      <Card sx={{ ...cardSx, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2.5, sm: 3 }, height: '100%' }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
-            <Box display="flex" alignItems="center" gap={1.5}>
+      <Card sx={{ ...cardSx, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'visible' }}>
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 3, sm: 4 }, height: '100%' }}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
+            <Box display="flex" alignItems="center" gap={2}>
               <Box
                 sx={{
-                  p: 0.75,
-                  borderRadius: 2,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 3,
                   bgcolor: alpha('#6366f1', 0.08),
                   display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#6366f1',
                 }}
               >
-                <ScheduleIcon sx={{ fontSize: 20, color: '#6366f1' }} />
+                <ScheduleIcon sx={{ fontSize: 24 }} />
               </Box>
-              <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
-                Today's Classes
-              </Typography>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
+                  Today's Agenda
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.02em' }}>
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                </Typography>
+              </Box>
             </Box>
-            <Chip
-              size="small"
-              label={`${classes.length} class${classes.length === 1 ? '' : 'es'}`}
+            <Box
               sx={{
-                bgcolor: alpha('#6366f1', 0.08),
-                color: '#6366f1',
-                fontWeight: 700,
-                fontSize: '0.72rem',
-                height: 26,
+                px: 2,
+                py: 0.75,
+                borderRadius: 2,
+                bgcolor: '#4f46e5',
+                color: '#fff',
+                fontWeight: 900,
+                fontSize: '0.75rem',
+                letterSpacing: '0.04em',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)',
               }}
-            />
+            >
+              {classes.length} {classes.length === 1 ? 'SESSION' : 'SESSIONS'}
+            </Box>
           </Box>
 
           <Box
             sx={{
               display: 'flex',
               flexDirection: 'column',
-              gap: 2,
+              gap: 0.5,
               flex: '1 1 auto',
               overflowY: 'auto',
               maxHeight: 600,
-              pr: 1,
+              mx: -1,
+              px: 1,
               '& > *': { flexShrink: 0 },
               '&::-webkit-scrollbar': { width: '4px' },
               '&::-webkit-scrollbar-track': { background: 'transparent' },
-              '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
+              '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
             }}
           >
             {classes.map((cls) => {
@@ -224,7 +241,7 @@ const TodayScheduleCard: React.FC = () => {
                   <ClassCard
                     classId={cls.id}
                     subject={subjects}
-                    grade={cls.grade || 'N/A'}
+                    grade={getOptionLabel(cls.grade) || 'N/A'}
                     studentName={cls.studentName}
                     topic={(cls as any).topic || 'N/A'}
                     schedule={timeSlot}
@@ -239,6 +256,7 @@ const TodayScheduleCard: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
+
 
       {selectedClass && attendanceModalOpen && (
         <SubmitAttendanceModal

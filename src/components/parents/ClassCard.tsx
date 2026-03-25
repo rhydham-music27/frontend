@@ -6,6 +6,7 @@ import {
   Typography,
   Button,
   LinearProgress,
+  alpha,
 } from '@mui/material';
 import { BookOpen } from 'lucide-react';
 
@@ -106,202 +107,187 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   const isCompleted = targetSessions > 0 && completedSessions >= targetSessions;
 
   return (
-    <Card
+    <Box
       sx={{
-        borderLeft: `5px solid ${config.color}`,
-        background: config.lightBg,
-        mb: 2,
-        transition: 'all 0.3s ease-in-out',
-        cursor: 'pointer',
+        borderRadius: 5,
+        bgcolor: '#ffffff',
+        mb: 2.5,
+        p: { xs: 2.5, sm: 3 },
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)',
+        border: '1px solid',
+        borderColor: alpha('#e2e8f0', 0.6),
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         '&:hover': {
-          boxShadow: '0 8px 16px rgba(0,0,0,0.12)',
-          transform: 'translateY(-2px)',
+          transform: 'translateY(-4px)',
+          boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)',
+          borderColor: alpha(config.color, 0.2),
         },
       }}
     >
-      <CardContent
+      {/* Subject Accent Tag */}
+      <Box 
         sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 2.5, sm: 2 },
-          alignItems: { xs: 'flex-start', sm: 'center' },
-          p: { xs: 2, sm: 2.5 }
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: 6,
+          height: '100%',
+          background: config.gradient,
         }}
-      >
-        {/* Icon with gradient background */}
+      />
+
+      <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={3} alignItems={{ xs: 'flex-start', sm: 'center' }}>
+        {/* Icon / Subject Indicator */}
         <Box
           sx={{
             flexShrink: 0,
-            width: { xs: 48, sm: 56 },
-            height: { xs: 48, sm: 56 },
-            borderRadius: '12px',
-            background: config.gradient,
+            width: 52,
+            height: 52,
+            borderRadius: 3.5,
+            background: `linear-gradient(135deg, ${alpha(config.color, 0.1)} 0%, ${alpha(config.color, 0.05)} 100%)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: `0 4px 12px ${config.color}40`,
+            color: config.color,
           }}
         >
-          <BookOpen size={24} color="white" />
+          <BookOpen size={24} />
         </Box>
 
-        {/* Content */}
-        <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+        {/* Info Area */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box display="flex" alignItems="center" gap={1.5} mb={0.75}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 800,
+                color: '#0f172a',
+                fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {subject}
+            </Typography>
+            <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 700,
+                color: '#64748b',
+                fontSize: '0.85rem',
+              }}
+            >
+              Grade {grade}
+            </Typography>
+          </Box>
+
           <Typography
-            variant="subtitle2"
+            variant="body1"
             sx={{
-              fontWeight: 800,
-              color: config.textColor,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              mb: 0.5,
-              fontSize: { xs: '0.9rem', sm: '0.95rem' },
-              letterSpacing: '0.01em'
-            }}
-          >
-            {subject} - {grade}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: '#475569',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              mb: 0.75,
+              color: '#334155',
               fontWeight: 600,
-              fontSize: { xs: '0.8125rem', sm: '0.875rem' }
-            }}
-          >
-            {studentName}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#64748B',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: 'block',
-              mb: 1,
-              fontWeight: 500
-            }}
-          >
-            {topic}
-          </Typography>
-          <Box
-            sx={{
+              fontSize: '0.9rem',
+              mb: 1.5,
               display: 'flex',
               alignItems: 'center',
-              gap: 1.5,
-              mb: 0.5,
+              gap: 1,
             }}
           >
+            <span style={{ color: '#94a3b8', fontWeight: 500 }}>Student:</span> {studentName}
+          </Typography>
+
+          {/* Progress Area */}
+          <Box sx={{ maxWidth: 300 }}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Course Progress
+              </Typography>
+              <Typography variant="caption" sx={{ color: config.textColor, fontWeight: 900 }}>
+                {completedSessions} / {targetSessions}
+              </Typography>
+            </Box>
             <LinearProgress
               variant="determinate"
               value={progressPercentage}
               sx={{
-                height: 6,
-                borderRadius: 3,
-                flex: 1,
-                backgroundColor: `${config.color}20`,
+                height: 8,
+                borderRadius: 4,
+                bgcolor: alpha(config.color, 0.1),
                 '& .MuiLinearProgress-bar': {
                   background: config.gradient,
-                  borderRadius: 3,
+                  borderRadius: 4,
                 },
               }}
             />
-            <Typography
-              variant="caption"
-              sx={{
-                color: config.textColor,
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                minWidth: '40px',
-                textAlign: 'right'
-              }}
-            >
-              {Math.round(progressPercentage)}%
-            </Typography>
           </Box>
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#94a3b8',
-              fontSize: '0.7rem',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em'
-            }}
-          >
-            {completedSessions} / {classesPerMonth || totalSessions} sessions
-          </Typography>
         </Box>
 
-        {/* Right Section / Footer on Mobile */}
+        {/* Actions Area */}
         <Box
           sx={{
             flexShrink: 0,
-            width: { xs: '100%', sm: 'auto' },
             display: 'flex',
             flexDirection: { xs: 'row', sm: 'column' },
-            gap: 1.5,
             alignItems: { xs: 'center', sm: 'flex-end' },
-            justifyContent: { xs: 'space-between', sm: 'flex-start' },
-            borderTop: { xs: '1px solid', sm: 'none' },
-            borderColor: 'grey.100',
-            pt: { xs: 1.5, sm: 0 },
-            mt: { xs: 0.5, sm: 0 }
+            justifyContent: 'space-between',
+            width: { xs: '100%', sm: 'auto' },
+            gap: 2,
           }}
         >
           <Box
             sx={{
-              backgroundColor: config.lightBg,
-              border: `1.5px solid ${config.color}`,
-              borderRadius: '8px',
-              px: { xs: 1.25, sm: 1.5 },
-              py: { xs: 0.5, sm: 0.75 },
+              bgcolor: alpha(config.color, 0.06),
+              px: 2,
+              py: 1,
+              borderRadius: 2.5,
+              border: `1px solid ${alpha(config.color, 0.12)}`,
             }}
           >
             <Typography
               variant="caption"
               sx={{
-                fontWeight: 700,
+                fontWeight: 800,
                 color: config.color,
-                fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                whiteSpace: 'nowrap'
+                fontSize: '0.85rem',
+                letterSpacing: '-0.01em',
               }}
             >
               {schedule || 'N/A'}
             </Typography>
           </Box>
+
           <Button
-            size="small"
             variant="contained"
-            sx={{
-              background: config.gradient,
-              color: 'white',
-              textTransform: 'none',
-              fontWeight: 700,
-              fontSize: { xs: '0.75rem', sm: '0.75rem' },
-              py: { xs: 0.75, sm: 0.75 },
-              px: { xs: 2.5, sm: 2 },
-              borderRadius: '8px',
-              boxShadow: `0 4px 12px ${config.color}40`,
-              '&:hover': {
-                boxShadow: `0 6px 16px ${config.color}60`,
-                transform: 'scale(1.02)',
-              },
-            }}
-            disabled={isCompleted}
             onClick={() => onMarkClick?.(classId)}
+            disabled={isCompleted}
+            sx={{
+              borderRadius: 3.5,
+              textTransform: 'none',
+              fontWeight: 800,
+              fontSize: '0.875rem',
+              px: 3,
+              py: 1.25,
+              background: config.gradient,
+              boxShadow: `0 8px 20px ${alpha(config.color, 0.25)}`,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: `0 12px 28px ${alpha(config.color, 0.35)}`,
+              },
+              '&.Mui-disabled': {
+                background: '#f1f5f9',
+                color: '#94a3b8',
+                boxShadow: 'none',
+              }
+            }}
           >
-            {isCompleted ? 'Completed' : 'Mark'}
+            {isCompleted ? 'Marked' : 'Mark Attendance'}
           </Button>
         </Box>
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 };
 

@@ -157,6 +157,15 @@ export const getAttendanceByClass = async (
   };
 };
 
+export const getAttendanceSheetsByClass = async (
+  classId: string
+): Promise<ApiResponse<any[]>> => {
+  const { data } = await api.get(
+    `${API_ENDPOINTS.ATTENDANCE_SHEETS}/class/${classId}`
+  );
+  return data as ApiResponse<any[]>;
+};
+
 export const getAttendanceHistory = async (
   classId: string
 ): Promise<ApiResponse<{ attendances: IAttendance[]; statistics: IAttendanceStatistics }>> => {
@@ -228,6 +237,7 @@ export default {
   getCoordinatorPendingApprovals,
   getParentPendingApprovals,
   getAttendanceByClass,
+  getAttendanceSheetsByClass,
   getAttendanceHistory,
   getMyAttendanceSummary,
   downloadClassAttendancePdf,

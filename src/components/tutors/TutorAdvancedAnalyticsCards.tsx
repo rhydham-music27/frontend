@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Grid2, Typography, CircularProgress, alpha, useTheme } from '@mui/material';
+import { Box, Grid2, Typography, CircularProgress, alpha, useTheme, useMediaQuery } from '@mui/material';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -12,6 +12,7 @@ import { selectCurrentUser } from '../../store/slices/authSlice';
 
 const TutorAdvancedAnalyticsCards: React.FC = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const user = useSelector(selectCurrentUser);
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<ITutorAdvancedAnalytics | null>(null);
@@ -84,93 +85,136 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
   ];
 
   return (
-    <Grid2 container spacing={{ xs: 1.5, sm: 2 }} mb={{ xs: 2, sm: 3 }}>
+    <Grid2 container spacing={{ xs: 1.5, sm: 3 }} mb={{ xs: 3, sm: 6 }}>
       {cards.map((card, index) => (
-        <Grid2 key={index} size={{ xs: 6, sm: 4, md: 3 }}>
+        <Grid2 key={index} size={{ xs: 6, sm: 6, md: 3 }}>
           <Box
             sx={{
               height: '100%',
-              borderRadius: 4,
-              bgcolor: '#fff',
-              border: '1px solid',
-              borderColor: alpha(card.color, 0.1),
-              p: { xs: 2.25, sm: 2.5 },
+              borderRadius: { xs: 4, sm: 6 },
+              bgcolor: '#ffffff',
+              p: { xs: 2.25, sm: 3.5 },
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: `0 4px 20px ${alpha(card.color, 0.05)}`,
-              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+              transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
               cursor: 'default',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
               '&:hover': {
-                transform: 'translateY(-6px)',
-                boxShadow: `0 12px 30px ${alpha(card.color, 0.18)}`,
-                borderColor: alpha(card.color, 0.3),
+                transform: 'translateY(-8px)',
+                boxShadow: `0 24px 48px ${alpha(card.color, 0.12)}`,
+                '& .card-icon-container': {
+                  transform: 'scale(1.1) rotate(-5deg)',
+                  bgcolor: card.color,
+                  color: '#fff',
+                },
+                '& .card-gradient-bar': {
+                  height: 8,
+                }
               },
-              '&::before': {
-                content: '""',
+            }}
+          >
+            {/* Top Gradient Bar */}
+            <Box 
+              className="card-gradient-bar"
+              sx={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 5,
+                height: 0,
                 background: card.gradient,
-              },
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={1.25} mb={2}>
-              <Box
-                sx={{
-                  p: 0.8,
-                  borderRadius: '10px',
-                  bgcolor: card.lightBg,
-                  color: card.color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: `inset 0 0 0 1px ${alpha(card.color, 0.1)}`,
-                }}
+                transition: 'height 0.3s ease',
+              }}
+            />
+
+            <Box>
+              <Box 
+                display="flex" 
+                alignItems="center" 
+                flexDirection="row"
+                gap={1.75} 
+                mb={{ xs: 1.5, sm: 3 }}
               >
-                {React.cloneElement(card.icon as React.ReactElement, { sx: { fontSize: { xs: 18, sm: 20 } } })}
+                <Box
+                  className="card-icon-container"
+                  sx={{
+                    width: { xs: 36, sm: 44 },
+                    height: { xs: 36, sm: 44 },
+                    borderRadius: { xs: 2.5, sm: 3.5 },
+                    bgcolor: alpha(card.color, 0.08),
+                    color: card.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.4s ease',
+                    boxShadow: `inset 0 0 0 1px ${alpha(card.color, 0.1)}`,
+                  }}
+                >
+                  {React.cloneElement(card.icon as React.ReactElement, { sx: { fontSize: { xs: 18, sm: 22 } } })}
+                </Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#64748b',
+                    fontWeight: 800,
+                    fontSize: { xs: '0.62rem', sm: '0.7rem' },
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {card.title}
+                </Typography>
               </Box>
+              
               <Typography
-                variant="body2"
+                variant="h4"
                 sx={{
-                  color: '#475569',
-                  fontWeight: 700,
-                  fontSize: { xs: '0.62rem', sm: '0.72rem' },
-                  lineHeight: 1.1,
-                  letterSpacing: '0.02em',
-                  textTransform: 'uppercase',
+                  fontWeight: 900,
+                  color: '#0f172a',
+                  fontSize: { xs: '1.2rem', sm: '1.85rem' },
+                  lineHeight: 1,
+                  letterSpacing: '-0.04em',
+                  mb: { xs: 1, sm: 1.5 },
                 }}
               >
-                {card.title}
+                {card.value}
               </Typography>
             </Box>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 800,
-                color: '#0f172a',
-                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
-                lineHeight: 1,
-                letterSpacing: '-0.03em',
-                mb: 0.75,
+
+            <Box 
+              sx={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: 1,
+                mt: 'auto',
+                pt: { xs: 1, sm: 1.5 }
               }}
             >
-              {card.value}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'block',
-                fontSize: { xs: '0.62rem', sm: '0.68rem' },
-                fontWeight: 600,
-                color: card.color,
-                opacity: 0.9,
-                letterSpacing: '0.01em',
-              }}
-            >
-              {card.subValue}
-            </Typography>
+              <Box 
+                sx={{ 
+                  width: 5, 
+                  height: 5, 
+                  borderRadius: '50%', 
+                  bgcolor: card.color,
+                  opacity: 0.6
+                }} 
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: { xs: '0.68rem', sm: '0.78rem' },
+                  fontWeight: 600,
+                  color: '#64748b',
+                  letterSpacing: '0.01em',
+                }}
+              >
+                {card.subValue}
+              </Typography>
+            </Box>
           </Box>
         </Grid2>
       ))}

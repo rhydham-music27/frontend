@@ -80,7 +80,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
   const groupedSubjects = useMemo(() => {
     if (!tutor || !tutor.subjects) return [];
-    
+
     interface Group {
       parentLabel: string;
       subjects: string[];
@@ -89,14 +89,14 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
     tutor.subjects.forEach((sub: any) => {
       if (!sub) return;
-      
+
       let label = '';
       let parentLabel = 'Other';
-      
+
       if (typeof sub === 'string') {
         const found = subjectOptions.find(o => o._id === sub || o.value === sub);
         label = found ? found.label : sub;
-        
+
         // Try to find hierarchy from option service (if populated)
         if (found && found.parent) {
           const grade: any = typeof found.parent === 'object' ? found.parent : subjectOptions.find(o => o._id === found.parent);
@@ -125,10 +125,10 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
     return Object.values(groups);
   }, [tutor?.subjects, subjectOptions]);
   const { options: cityOptions } = useOptions('CITY');
-  
+
   const groupedLocations = useMemo(() => {
     if (!tutor || !tutor.preferredCities) return [];
-    
+
     interface LocationGroup {
       city: string;
       areas: string[];
@@ -145,7 +145,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       tutor.preferredLocations.forEach(loc => {
         const cityKey = tutor.preferredCities?.[0] || 'Other';
         if (!groups[cityKey]) groups[cityKey] = { city: cityKey, areas: [] };
-        
+
         // Deduplicate and skip if area name matches city name
         if (!groups[cityKey].areas.includes(loc) && loc.toLowerCase() !== cityKey.toLowerCase()) {
           groups[cityKey].areas.push(loc);
@@ -373,7 +373,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      {/* 1. HERO SECTION - LUMINESCENT SCHOLAR LIGHT MODE */}
+      {/* 1. HERO SECTION - Yourshikshak  LIGHT MODE */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#f8faff] to-[#eff6ff] rounded-[2.5rem] shadow-xl border border-slate-100 transition-all duration-500 hover:shadow-indigo-500/5">
         {/* Animated Background Accents */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 animate-pulse" />
@@ -388,15 +388,15 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                 onClick={isTutorSelf ? handleOpenAvatarModal : undefined}
               >
                 {profileImageUrl ? (
-                  <img 
-                    src={profileImageUrl} 
-                    alt={user?.name} 
+                  <img
+                    src={profileImageUrl}
+                    alt={user?.name}
                     crossOrigin="anonymous"
                     onError={(e) => console.error('MUIProfileCard Image Error:', {
                       src: (e.target as HTMLImageElement).src,
                       status: 'Failed to load'
                     })}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-[#0066ff] via-[#2563eb] to-[#3b82f6] flex items-center justify-center">
@@ -514,7 +514,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
       </div>
 
       <Grid container spacing={4}>
-        {/* 2. STATS OVERVIEW - LUMINESCENT SCHOLAR */}
+        {/* 2. STATS OVERVIEW - Yourshikshak  */}
         <Grid item xs={12}>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
             {[
@@ -537,7 +537,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
         {/* 3. LEFT COLUMN: PERSONAL & CONTACT */}
         <Grid item xs={12} lg={4} className="space-y-6">
-          {/* Contact Details - Luminescent Scholar */}
+          {/* Contact Details - Yourshikshak  */}
           <section className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 space-y-6">
             <h3 className="text-lg font-black text-[#1e293b] flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
               <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
@@ -601,7 +601,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
 
         {/* 4. MAIN COLUMN: TEACHING & EXPERIENCE */}
         <Grid item xs={12} lg={8} className="space-y-6">
-          {/* Professional Credentials - Luminescent Scholar */}
+          {/* Professional Credentials - Yourshikshak  */}
           <section className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-10">
             <div className="flex flex-wrap justify-between items-center gap-6 mb-10">
               <h3 className="text-xl font-black text-[#1e293b] flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
@@ -661,11 +661,11 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             </Grid>
           </section>
 
-          {/* Service Preferences - Luminescent Scholar Light Mode */}
+          {/* Service Preferences - Yourshikshak  Light Mode */}
           <section className="bg-white rounded-[2.5rem] shadow-xl p-8 border border-slate-100 relative overflow-hidden">
             {/* Background Glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-400/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            
+
             <h3 className="text-xl font-black text-[#1e293b] mb-8 flex items-center gap-3 relative z-10 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
               <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shadow-sm">
                 <Sparkles size={20} strokeWidth={2.5} />
@@ -729,7 +729,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                         const displayLimit = 10;
                         const hasMore = group.areas.length > displayLimit;
                         const visibleAreas = isExpanded ? group.areas : group.areas.slice(0, displayLimit);
-                        
+
                         return (
                           <Typography key={i} variant="body2" sx={{ fontSize: '13px', lineHeight: 1.6 }}>
                             <Box component="span" sx={{ color: '#2563eb', fontWeight: 800, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.02em', mr: 1, borderBottom: '1.5px solid', borderColor: alpha('#2563eb', 0.2), pb: 0.1 }}>
@@ -785,7 +785,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
             </Grid>
           </section>
 
-          {/* Detailed Addresses - Luminescent Scholar */}
+          {/* Detailed Addresses - Yourshikshak  */}
           <section className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-10">
             <h3 className="text-xl font-black text-[#1e293b] mb-8 flex items-center gap-3 font-['Manrope']" style={{ fontFamily: "'Manrope', sans-serif" }}>
               <div className="p-2 rounded-xl bg-rose-50 text-rose-600">
@@ -833,7 +833,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                 const isVerified = tutor.verificationStatus === 'VERIFIED';
                 const isThisDocUploaded = status === 'pending' || status === 'approved';
                 const canUpload = (isTutorSelf || !tutorId) && !isVerified && (!isThisDocUploaded || (tutor.verificationStatus === 'REJECTED'));
-                
+
                 const handleCardClick = () => {
                   if (isThisDocUploaded) handleOpenViewer(type);
                   else if (canUpload) handleOpenDocumentModal(type);
@@ -868,26 +868,23 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
               {/* Verification Fee Card */}
               <div
                 onClick={(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? undefined : handleOpenFeeModal}
-                className={`relative p-6 rounded-[2rem] border-2 transition-all group overflow-hidden ${
-                  (tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-xl hover:-translate-y-1'
-                } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-300' :
+                className={`relative p-6 rounded-[2rem] border-2 transition-all group overflow-hidden ${(tutor.verificationFeeStatus === 'PAID' || tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH') && !isManager ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-xl hover:-translate-y-1'
+                  } ${tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-300' :
                     tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-50/30 border-indigo-100 hover:border-indigo-300' :
                       'bg-slate-50/50 border-slate-100 hover:border-slate-300'
-                }`}
+                  }`}
               >
-                <div className={`p-3 rounded-2xl w-fit mb-4 transition-all ${
-                  tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :
-                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' :
-                  'bg-slate-300 text-white'
-                }`}>
+                <div className={`p-3 rounded-2xl w-fit mb-4 transition-all ${tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' :
+                      'bg-slate-300 text-white'
+                  }`}>
                   <CreditCard size={24} />
                 </div>
                 <p className="text-[11px] font-black text-[#1e293b] uppercase mb-1 font-['Manrope'] tracking-tight">System Fee</p>
-                <p className={`text-[9px] font-black tracking-widest uppercase ${
-                  tutor.verificationFeeStatus === 'PAID' ? 'text-emerald-600' :
-                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'text-indigo-600' :
-                  'text-slate-400'
-                }`}>
+                <p className={`text-[9px] font-black tracking-widest uppercase ${tutor.verificationFeeStatus === 'PAID' ? 'text-emerald-600' :
+                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'text-indigo-600' :
+                      'text-slate-400'
+                  }`}>
                   {tutor.verificationFeeStatus === 'PAID' ? 'SETTLED' :
                     tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'DEFERRED' :
                       'REQUIRED'}
@@ -985,7 +982,7 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                     <Wallet size={32} />
                   </div>
                   <div>
-                    <h4 className="font-black text-slate-800 text-lg">Pay Later (₹{VERIFICATION_FEE_AMOUNT+200})</h4>
+                    <h4 className="font-black text-slate-800 text-lg">Pay Later (₹{VERIFICATION_FEE_AMOUNT + 200})</h4>
                     <p className="text-xs text-slate-500 font-medium mt-1">Deduct from 1st Month Salary</p>
                   </div>
                 </div>
@@ -1054,10 +1051,10 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
           )}
         </DialogActions>
       </Dialog>
-      <DocumentViewerModal 
-        open={viewerOpen} 
-        onClose={() => setViewerOpen(false)} 
-        document={viewingDocument} 
+      <DocumentViewerModal
+        open={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+        document={viewingDocument}
       />
     </div >
   );

@@ -128,7 +128,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
       display: 'flex',
       flexDirection: 'column',
       overflowX: 'hidden',
-      position: 'relative'
+      position: 'relative',
+      bgcolor: '#ffffff',
     }}>
       <Box
         sx={{
@@ -136,46 +137,53 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           display: 'flex',
           alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'flex-start',
-          gap: { xs: 1, sm: 1.5 },
-          borderBottom: '1px solid #E2E8F0',
-          minHeight: { xs: 56, sm: 64, md: 70 },
+          gap: { xs: 1.5, sm: 2 },
+          minHeight: { xs: 56, sm: 64, md: 80 },
+          px: 4,
         }}
       >
         <Box
-          component="img"
-          src="/1.jpg"
-          alt="Logo"
           sx={{
-            height: { xs: 32, sm: 36 },
-            width: { xs: 32, sm: 36 },
-            borderRadius: '50%',
-            border: '2px solid #E2E8F0',
+            p: 0.5,
+            borderRadius: 2,
+            bgcolor: alpha('#6366f1', 0.06),
+            display: 'flex',
+            border: `1px solid ${alpha('#6366f1', 0.1)}`
           }}
-        />
+        >
+          <Box
+            component="img"
+            src="/1.jpg"
+            alt="Logo"
+            sx={{
+              height: { xs: 36, sm: 42 },
+              width: { xs: 36, sm: 42 },
+              borderRadius: '50%',
+            }}
+          />
+        </Box>
         <Box sx={{ minWidth: 0, flex: 1, display: isCollapsed ? 'none' : 'block' }}>
           <Typography
             variant="h6"
             sx={{
-              color: 'primary.main',
-              fontWeight: 700,
-              fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
+              color: '#0f172a',
+              fontWeight: 900,
+              fontSize: '1.1rem',
               lineHeight: 1.2,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontFamily: "'Manrope', sans-serif",
+              letterSpacing: '-0.02em',
             }}
           >
-            Your Shikshak
+            Shikshak
           </Typography>
           <Typography
             variant="caption"
             sx={{
-              color: 'text.secondary',
-              fontSize: { xs: '0.65rem', sm: '0.7rem' },
-              display: 'block',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              color: '#64748b',
+              fontWeight: 750,
+              fontSize: '0.65rem',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
             }}
           >
             {userRole || 'Dashboard'}
@@ -183,7 +191,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
         </Box>
       </Box>
 
-      <List sx={{ flexGrow: 1, py: { xs: 1, sm: 1.5, md: 2 }, px: isCollapsed ? 1 : { xs: 0.5, sm: 1 } }}>
+      <Box sx={{ px: 2, mb: 2 }}>
+        <Divider sx={{ opacity: 0.5 }} />
+      </Box>
+
+      <List sx={{ flexGrow: 1, py: 1, px: 2 }}>
         {NAVIGATION_ITEMS.filter((item: any) => !item.allowedRoles || item.allowedRoles.includes(userRole)).map((item) => {
           let resolvedPath = item.path;
           if (item.label === 'Dashboard') {
@@ -208,14 +220,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           const isItemDisabled = (isUnverifiedManager || isUnverifiedCoordinator) && !['Dashboard', 'Profile', 'My Profile'].includes(item.label);
 
           return (
-            <ListItem key={item.path} disablePadding sx={{ mb: { xs: 0.25, sm: 0.5 }, display: 'block' }}>
+            <ListItem key={item.path} disablePadding sx={{ mb: 1, display: 'block' }}>
               <Tooltip
-                title={
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{item.label}</Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>{(item as any).description}</Typography>
+                title={isCollapsed ? (
+                  <Box sx={{ p: 0.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 900 }}>{item.label}</Typography>
+                    <Typography variant="body2" sx={{ fontSize: '0.7rem', color: alpha('#fff', 0.8) }}>{(item as any).description}</Typography>
                   </Box>
-                }
+                ) : ""}
                 placement="right"
                 arrow
               >
@@ -224,54 +236,46 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
                   disabled={isItemDisabled}
                   onClick={() => !isItemDisabled && handleNavigation(resolvedPath)}
                   sx={{
-                    borderRadius: { xs: '8px', sm: '10px' },
-                    mx: { xs: 0.5, sm: 1 },
-                    py: { xs: 1, sm: 1.25 },
-                    px: { xs: 1, sm: 1.5 },
-                    transition: 'all 0.2s ease-in-out',
-                    opacity: isItemDisabled ? 0.5 : 1,
-                    filter: isItemDisabled ? 'grayscale(1)' : 'none',
-                    '&.Mui-disabled': {
-                      cursor: 'not-allowed',
-                      pointerEvents: 'none',
-                      backgroundColor: isItemDisabled ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
-                    },
+                    borderRadius: 3,
+                    py: 1.5,
+                    px: 2,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    bgcolor: 'transparent',
                     '&.Mui-selected': {
-                      backgroundColor: alpha('#0F62FE', 0.08),
-                      color: 'primary.main',
-                      fontWeight: 600,
+                      bgcolor: alpha('#6366f1', 0.08),
+                      color: '#6366f1',
                       '&:hover': {
-                        backgroundColor: alpha('#0F62FE', 0.12),
+                        bgcolor: alpha('#6366f1', 0.12),
                       },
                       '& .MuiListItemIcon-root': {
-                        color: 'primary.main',
-                      },
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        left: 0,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '4px',
-                        height: '60%',
-                        backgroundColor: 'primary.main',
-                        borderRadius: '0 4px 4px 0',
+                        color: '#6366f1',
+                        transform: 'scale(1.1)',
                       },
                     },
                     '&:hover': {
-                      backgroundColor: '#F8FAFC',
+                      bgcolor: alpha('#6366f1', 0.04),
+                      '& .MuiListItemIcon-root': { color: '#6366f1' },
                     },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 2, justifyContent: 'center' }}>
-                    {iconForLabel(item.label)}
+                  <ListItemIcon 
+                    sx={{ 
+                      minWidth: 0, 
+                      mr: isCollapsed ? 0 : 2, 
+                      justifyContent: 'center',
+                      color: selected ? '#6366f1' : '#64748b',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {React.cloneElement(iconForLabel(item.label) as React.ReactElement, { sx: { fontSize: 22 } })}
                   </ListItemIcon>
                   <ListItemText
                     primary={item.label}
                     sx={{ opacity: isCollapsed ? 0 : 1 }}
                     primaryTypographyProps={{
-                      fontSize: { xs: '0.8125rem', sm: '0.875rem' },
-                      fontWeight: selected ? 600 : 500,
+                      fontSize: '0.875rem',
+                      fontWeight: selected ? 800 : 600,
+                      fontFamily: "'Inter', sans-serif",
                       noWrap: true,
                     }}
                   />
@@ -282,20 +286,29 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
         })}
       </List>
 
-      <Divider />
-
-      <Box sx={{ p: { xs: 1.5, sm: 2 }, display: isCollapsed ? 'none' : 'block' }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            display: 'block',
-            textAlign: 'center',
-            fontSize: { xs: '0.65rem', sm: '0.75rem' },
+      <Box sx={{ p: 3, display: isCollapsed ? 'none' : 'block' }}>
+        <Box 
+          sx={{ 
+            p: 2, 
+            borderRadius: 3, 
+            bgcolor: alpha('#6366f1', 0.03), 
+            border: `1px solid ${alpha('#6366f1', 0.05)}`,
+            textAlign: 'center'
           }}
         >
-          © 2024 Your Shikshak
-        </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              color: '#64748b',
+              fontWeight: 800,
+              fontSize: '0.65rem',
+              letterSpacing: '0.02em'
+            }}
+          >
+            © 2024 Your Shikshak
+          </Typography>
+        </Box>
       </Box>
       {/* Resize Handle */}
       <Box
@@ -304,13 +317,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           position: 'absolute',
           top: 0,
           right: 0,
-          width: '5px',
+          width: '2px',
           height: '100%',
           cursor: 'col-resize',
-          zIndex: 1200, // Above content
+          zIndex: 1200,
+          transition: 'all 0.2s',
           '&:hover': {
-            backgroundColor: 'primary.main',
-            opacity: 0.5,
+            width: '4px',
+            backgroundColor: alpha('#6366f1', 0.3),
           },
         }}
       />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Box, Avatar, Menu, MenuItem, Divider, Badge, Tooltip } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Box, Avatar, Menu, MenuItem, Divider, Badge, Tooltip, alpha } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -39,8 +39,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
       role === USER_ROLES.COORDINATOR
         ? '/coordinator-profile'
         : role === USER_ROLES.TUTOR
-        ? '/tutor-profile'
-        : '/profile';
+          ? '/tutor-profile'
+          : '/profile';
     navigate(target);
   };
 
@@ -81,13 +81,17 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
   return (
     <AppBar
       position="fixed"
-      color="primary"
+      elevation={0}
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        background: '#001F54',
+        bgcolor: alpha('#ffffff', 0.8),
+        backdropFilter: 'blur(12px)',
+        borderBottom: 'none',
+        boxShadow: '0 4px 20px rgba(15, 23, 42, 0.03)',
+        color: '#0f172a',
       }}
     >
-      <Toolbar sx={{ minHeight: { xs: 56, sm: 64, md: 70 }, px: { xs: 1, sm: 2 } }}>
+      <Toolbar sx={{ minHeight: { xs: 56, sm: 64, md: 70 }, px: { xs: 2, sm: 3 } }}>
         {showSidebarMenu && onMenuClick && (
           <IconButton
             color="inherit"
@@ -95,37 +99,49 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
             onClick={onMenuClick}
             sx={{
               display: { md: 'none', xs: 'inline-flex' },
-              mr: { xs: 1, sm: 2 },
+              mr: 2,
+              bgcolor: alpha('#6366f1', 0.04),
+              borderRadius: 2,
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backgroundColor: alpha('#6366f1', 0.08),
               },
             }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ color: '#6366f1' }} />
           </IconButton>
         )}
 
-        <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 1.5 }} sx={{ flexGrow: 1 }}>
+        <Box display="flex" alignItems="center" gap={2} sx={{ flexGrow: 1 }}>
           <Box
-            component="img"
-            src="/1.jpg"
-            alt="Your Shikshak Logo"
             sx={{
-              height: { xs: 32, sm: 40 },
-              width: { xs: 32, sm: 40 },
-              borderRadius: '50%',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              display: { xs: 'none', sm: 'block' },
+              p: 0.5,
+              borderRadius: 2,
+              bgcolor: alpha('#6366f1', 0.06),
+              display: { xs: 'none', sm: 'flex' },
+              border: `1px solid ${alpha('#6366f1', 0.1)}`
             }}
-          />
+          >
+            <Box
+              component="img"
+              src="/1.jpg"
+              alt="Logo"
+              sx={{
+                height: { xs: 36, sm: 46 },
+                width: { xs: 36, sm: 46 },
+                borderRadius: '50%',
+              }}
+            />
+          </Box>
           <Box>
             <Typography
               variant="h6"
               sx={{
-                fontWeight: 700,
-                fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
-                letterSpacing: '-0.01em',
+                fontWeight: 900,
+                fontSize: { xs: '1rem', sm: '1.2rem' },
+                letterSpacing: '-0.02em',
                 lineHeight: 1.2,
+                color: '#0f172a',
+                fontFamily: "'Manrope', sans-serif"
               }}
             >
               Your Shikshak
@@ -134,27 +150,29 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
               variant="caption"
               sx={{
                 display: { xs: 'none', md: 'block' },
-                opacity: 0.9,
-                fontSize: '0.7rem',
-                lineHeight: 1,
+                color: '#64748b',
+                fontWeight: 750,
+                fontSize: '0.65rem',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                mt: -0.25
               }}
             >
-              Empowering Education
+              Yourshikshak
             </Typography>
           </Box>
         </Box>
 
-        <Box display="flex" alignItems="center" gap={{ xs: 0.5, sm: 1, md: 2 }}>
+        <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 2 }}>
           <Tooltip title="Notifications" arrow>
             <IconButton
-              color="inherit"
               onClick={() => setNotifOpen(true)}
               size="small"
               sx={{
-                p: { xs: 0.75, sm: 1 },
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
+                borderRadius: 2,
+                bgcolor: alpha('#6366f1', 0.04),
+                '&:hover': { backgroundColor: alpha('#6366f1', 0.08) },
+                p: 1.25
               }}
             >
               <Badge
@@ -162,38 +180,41 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
                 color="error"
                 sx={{
                   '& .MuiBadge-badge': {
-                    fontWeight: 700,
-                    fontSize: { xs: '0.6rem', sm: '0.65rem' },
-                    minWidth: { xs: 16, sm: 20 },
-                    height: { xs: 16, sm: 20 },
+                    fontWeight: 900,
+                    fontSize: '0.65rem',
+                    minWidth: 18,
+                    height: 18,
+                    border: '2px solid #fff',
+                    boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
                   },
                 }}
               >
-                <NotificationsIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                <NotificationsIcon sx={{ fontSize: 22, color: '#6366f1' }} />
               </Badge>
             </IconButton>
           </Tooltip>
 
           <Tooltip title="Account" arrow>
             <IconButton
-              color="inherit"
               onClick={handleMenuOpen}
               size="small"
               sx={{
-                p: { xs: 0.5, sm: 0.75 },
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                },
+                p: 0.5,
+                borderRadius: 3,
+                border: `1px solid ${alpha('#6366f1', 0.1)}`,
+                bgcolor: alpha('#6366f1', 0.02),
+                '&:hover': { backgroundColor: alpha('#6366f1', 0.06) }
               }}
             >
               <Avatar
                 sx={{
-                  width: { xs: 32, sm: 36 },
-                  height: { xs: 32, sm: 36 },
-                  bgcolor: 'rgba(255, 255, 255, 0.2)',
-                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                  fontWeight: 700,
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  width: { xs: 36, sm: 44 },
+                  height: { xs: 36, sm: 44 },
+                  bgcolor: '#6366f1',
+                  fontWeight: 900,
+                  fontSize: { xs: '0.85rem', sm: '1rem' },
+                  fontFamily: "'Manrope', sans-serif",
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
                 }}
                 src={avatarUrl}
               >
@@ -211,61 +232,70 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
             PaperProps={{
               sx: {
                 mt: 1.5,
-                minWidth: 200,
-                borderRadius: '12px',
-                boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.12)',
+                minWidth: 240,
+                borderRadius: 4,
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
+                border: `1px solid ${alpha('#64748b', 0.08)}`,
+                p: 1
               },
             }}
           >
-            <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #E2E8F0' }}>
-              <Typography variant="subtitle2" fontWeight={600}>
+            <Box sx={{ px: 2, py: 2, mb: 1, borderRadius: 3, bgcolor: alpha('#6366f1', 0.03) }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#0f172a' }}>
                 {user?.name || 'User'}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
                 {user?.email || ''}
               </Typography>
             </Box>
 
-            <MenuItem 
+            <MenuItem
               onClick={handleProfile}
-              sx={{ 
-                py: 1.5, 
+              sx={{
+                py: 1.5,
+                px: 2,
+                borderRadius: 2.5,
                 gap: 1.5,
                 '&:hover': {
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: alpha('#6366f1', 0.04),
+                  '& .MuiSvgIcon-root': { color: '#6366f1' }
                 },
               }}
             >
-              <AccountCircleIcon fontSize="small" sx={{ color: 'text.secondary' }} />
-              <Typography variant="body2">Profile</Typography>
+              <AccountCircleIcon fontSize="small" sx={{ color: '#64748b', transition: 'color 0.2s' }} />
+              <Typography variant="body2" sx={{ fontWeight: 750 }}>Profile</Typography>
             </MenuItem>
 
-            <MenuItem 
+            <MenuItem
               disabled
-              sx={{ 
-                py: 1.5, 
+              sx={{
+                py: 1.5,
+                px: 2,
+                borderRadius: 2.5,
                 gap: 1.5,
               }}
             >
-              <SettingsIcon fontSize="small" sx={{ color: 'text.secondary' }} />
-              <Typography variant="body2">Settings</Typography>
+              <SettingsIcon fontSize="small" sx={{ color: '#64748b' }} />
+              <Typography variant="body2" sx={{ fontWeight: 750 }}>Settings</Typography>
             </MenuItem>
 
-            <Divider sx={{ my: 0.5 }} />
+            <Divider sx={{ my: 1, opacity: 0.5 }} />
 
-            <MenuItem 
+            <MenuItem
               onClick={handleLogout}
-              sx={{ 
-                py: 1.5, 
+              sx={{
+                py: 1.5,
+                px: 2,
+                borderRadius: 2.5,
                 gap: 1.5,
-                color: 'error.main',
+                color: '#ef4444',
                 '&:hover': {
-                  backgroundColor: '#FEF2F2',
+                  backgroundColor: alpha('#ef4444', 0.04),
                 },
               }}
             >
               <LogoutIcon fontSize="small" />
-              <Typography variant="body2">Logout</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 800 }}>Logout</Typography>
             </MenuItem>
           </Menu>
 

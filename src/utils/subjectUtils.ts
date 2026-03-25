@@ -17,6 +17,19 @@ export const formatHierarchicalSubject = (subject: any): string => {
 };
 
 /**
+ * Generic helper to extract a displayable label from an Option object, string, or mixed format.
+ * Handles {_id, type, value, label}, {id, name}, and other common patterns.
+ */
+export const getOptionLabel = (option: any): string => {
+  if (option == null) return '';
+  if (typeof option === 'string') return option;
+  if (typeof option !== 'object') return String(option);
+  
+  // Return label or name if available
+  return option.label || option.name || option.value || String(option);
+};
+
+/**
  * Extracts a displayable label from a subject object or string.
  * Handles strings, OptionItems {label, value}, and other object formats.
  */
@@ -29,8 +42,8 @@ export const getSubjectLabel = (subject: any): string => {
     return formatHierarchicalSubject(subject);
   }
   
-  // Handle OptionItem or Mongoose populated object
-  return subject.label || subject.name || String(subject);
+  // Handle OptionItem or Mongoose populated object using the generic helper
+  return getOptionLabel(subject);
 };
 
 /**

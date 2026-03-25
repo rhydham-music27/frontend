@@ -26,17 +26,27 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  alpha,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import { getFinalClass, updateFinalClassSchedule, downloadAttendancePdf } from '../../services/finalClassService';
-import { getAttendanceByClass } from '../../services/attendanceService';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import { getFinalClass, updateFinalClassSchedule, downloadAttendancePdf, renewClass } from '../../services/finalClassService';
+import { getAttendanceByClass, getAttendanceSheetsByClass } from '../../services/attendanceService';
 import { getPaymentsByClass } from '../../services/paymentService';
 import { IAttendance, IFinalClass, IPayment } from '../../types';
 import { getSubjectList } from '../../utils/subjectUtils';
+import AttendanceSheetReviewModal from '../../components/coordinator/AttendanceSheetReviewModal';
+import RenewClassModal from '../../components/classes/RenewClassModal';
+import SnackbarNotification from '../../components/common/SnackbarNotification';
+import { useErrorDialog } from '../../hooks/useErrorDialog';
+import ErrorDialog from '../../components/common/ErrorDialog';
 
 const navItems = [
   { id: 'info', label: 'Class Info', icon: <InfoOutlinedIcon fontSize="small" /> },
@@ -56,6 +66,14 @@ const ClassDetailPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Summarized View States
+  const [sheets, setSheets] = useState<any[]>([]);
+  const [selectedSheet, setSelectedSheet] = useState<any>(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const { error: dialogError, showError, clearError, handleError } = useErrorDialog();
 
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editScheduleOpen, setEditScheduleOpen] = useState(false);
@@ -94,12 +112,14 @@ const ClassDetailPage: React.FC = () => {
       setFinalClass(cls);
       hydrateScheduleInputs(cls);
 
-      const [attRes, payRes] = await Promise.all([
+      const [attRes, sheetRes, payRes] = await Promise.all([
         getAttendanceByClass(classId),
+        getAttendanceSheetsByClass(classId),
         getPaymentsByClass(classId),
       ]);
 
       setAttendance(Array.isArray((attRes as any)?.data) ? ((attRes as any).data as IAttendance[]) : []);
+      setSheets(Array.isArray((sheetRes as any)?.data) ? ((sheetRes as any).data as any[]) : []);
       setPayments(Array.isArray((payRes as any)?.data?.payments) ? ((payRes as any).data.payments as IPayment[]) : []);
     } catch (e: any) {
       setError(e?.response?.data?.message || e?.message || 'Failed to load class');
@@ -133,6 +153,32 @@ const ClassDetailPage: React.FC = () => {
       setError(e?.response?.data?.message || e?.message || 'Failed to update schedule');
     } finally {
       setSavingSchedule(false);
+    }
+  };
+
+  const handleReviewSheet = (sheet: any) => {
+    setSelectedSheet(sheet);
+    setReviewModalOpen(true);
+  };
+
+  const handleOpenRenew = (sheet: any) => {
+    setSelectedSheet(sheet);
+    setRenewModalOpen(true);
+  };
+
+  const handleRenewSuccess = async (payload: { monthlyFee: number; sessionsPerMonth: number }) => {
+    if (!classId) return;
+    try {
+      setLoading(true);
+      const res = await renewClass(classId, payload);
+      if (!res.success) throw new Error(res.message || 'Failed to renew class');
+      setSnackbar({ open: true, message: 'Class renewed successfully', severity: 'success' });
+      await load();
+      setRenewModalOpen(false);
+    } catch (e: any) {
+      setSnackbar({ open: true, message: e.message || 'Failed to renew class', severity: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -314,33 +360,69 @@ const ClassDetailPage: React.FC = () => {
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Typography variant="h6" fontWeight={800}>
-                    Attendance
+                    Attendance Cycles
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Showing latest {Math.min(attendance.length, 10)} entries
+                    Total Cycles: {sheets.length}
                   </Typography>
                 </Box>
                 <Divider sx={{ mb: 2 }} />
-                {attendance.length === 0 ? (
+                {sheets.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
-                    No attendance records found.
+                    No attendance sheets found.
                   </Typography>
                 ) : (
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Topic</TableCell>
-                        <TableCell>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 800 }}>#</TableCell>
+                        <TableCell sx={{ fontWeight: 800 }}>Period</TableCell>
+                        <TableCell sx={{ fontWeight: 800 }} align="center">Sessions</TableCell>
+                        <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 800 }} align="right">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {attendance.slice(0, 10).map((a) => (
-                        <TableRow key={a.id} hover>
-                          <TableCell>{a.sessionDate ? new Date(a.sessionDate as any).toLocaleDateString('en-IN') : '-'}</TableCell>
-                          <TableCell>{(a as any).topicCovered || '-'}</TableCell>
+                      {sheets.map((s, idx) => (
+                        <TableRow key={s._id} hover>
+                          <TableCell sx={{ fontWeight: 700 }}>{idx + 1}</TableCell>
                           <TableCell>
-                            <Chip size="small" label={a.status || '-'} variant="outlined" />
+                            <Typography variant="body2" fontWeight={600}>{s.periodLabel}</Typography>
+                            <Typography variant="caption" color="text.secondary">Cycle {s.cycleNumber}</Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip 
+                              size="small" 
+                              label={`${s.totalSessionsTaken || 0} / ${s.totalSessionsPlanned || finalClass?.classesPerMonth || '-'}`}
+                              sx={{ fontWeight: 700, bgcolor: alpha(theme.palette.primary.main, 0.08), color: 'primary.main' }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              size="small" 
+                              label={s.status} 
+                              color={s.status === 'APPROVED' ? 'success' : s.status === 'PENDING' ? 'warning' : 'error'}
+                              variant="outlined"
+                              sx={{ fontWeight: 800, borderRadius: 1.5, fontSize: '0.65rem' }}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                              <Tooltip title="View Sheet">
+                                <IconButton size="small" onClick={() => handleReviewSheet(s)} sx={{ color: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                                  <VisibilityIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Renew Class">
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => handleOpenRenew(s)} 
+                                  sx={{ color: 'warning.main', bgcolor: alpha(theme.palette.warning.main, 0.05) }}
+                                >
+                                  <AutorenewIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -382,7 +464,7 @@ const ClassDetailPage: React.FC = () => {
                         <TableRow key={p.id} hover>
                           <TableCell>{p.dueDate ? new Date(p.dueDate as any).toLocaleDateString('en-IN') : '-'}</TableCell>
                           <TableCell>{p.paymentType || '-'}</TableCell>
-                          <TableCell align="right">{p.amount != null ? `₹${Number(p.amount).toLocaleString('en-IN')}` : '-'}</TableCell>
+                          <TableCell align="right">{p.amount != null ? <>{'\u20B9'}{Number(p.amount).toLocaleString('en-IN')}</> : '-'}</TableCell>
                           <TableCell>
                             <Chip
                               size="small"
@@ -441,6 +523,37 @@ const ClassDetailPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {finalClass && (
+        <>
+          <AttendanceSheetReviewModal
+            open={reviewModalOpen}
+            onClose={() => setReviewModalOpen(false)}
+            sheet={selectedSheet}
+          />
+
+          <RenewClassModal
+            open={renewModalOpen}
+            onClose={() => setRenewModalOpen(false)}
+            onRenew={handleRenewSuccess}
+            initialMonthlyFee={finalClass.monthlyFees || finalClass.monthlyFee}
+            initialSessionsPerMonth={finalClass.classesPerMonth || finalClass.sessionsPerMonth}
+          />
+
+          <SnackbarNotification
+            open={snackbar.open}
+            message={snackbar.message}
+            severity={snackbar.severity}
+            onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          />
+
+          <ErrorDialog
+            open={showError}
+            onClose={clearError}
+            error={dialogError}
+          />
+        </>
+      )}
     </Box>
   );
 };

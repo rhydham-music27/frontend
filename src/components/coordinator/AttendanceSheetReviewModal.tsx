@@ -30,6 +30,7 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import { format } from 'date-fns';
 import { ATTENDANCE_STATUS } from '../../constants';
+import { getOptionLabel, getSubjectLabel } from '../../utils/subjectUtils';
 
 interface AttendanceSheetReviewModalProps {
   open: boolean;
@@ -141,7 +142,7 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
                     sx={{ fontWeight: 700, borderColor: alpha(theme.palette.divider, 0.2) }} 
                   />
                   <Chip 
-                    label={`${sheet.finalClass?.grade} Grade - ${sheet.finalClass?.subject}`} 
+                    label={`${getOptionLabel(sheet.finalClass?.grade)} Grade - ${getSubjectLabel(sheet.finalClass?.subject)}`} 
                     size="small" 
                     variant="outlined" 
                     sx={{ fontWeight: 700, borderColor: alpha(theme.palette.divider, 0.2) }} 

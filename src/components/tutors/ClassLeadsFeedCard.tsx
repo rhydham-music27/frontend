@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Chip, Stack, Divider, IconButton, Tooltip, Alert, CardContent, Button, Card, alpha } from '@mui/material';
+import { Box, Typography, Chip, Stack, Divider, IconButton, Tooltip, Alert, CardContent, Button, Card, alpha, CircularProgress } from '@mui/material';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CloseIcon from '@mui/icons-material/Close';
 import SchoolIcon from '@mui/icons-material/School';
@@ -9,6 +9,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CampaignIcon from '@mui/icons-material/Campaign';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import EmptyState from '../common/EmptyState';
@@ -19,7 +20,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import useNotifications from '../../hooks/useNotifications';
 
-import { getSubjectList } from '../../utils/subjectUtils';
+import { getSubjectList, getOptionLabel } from '../../utils/subjectUtils';
 
 const ClassLeadsFeedCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
@@ -231,20 +232,22 @@ const ClassLeadsFeedCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 3,
-    border: '1px solid',
-    borderColor: 'grey.100',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    transition: 'box-shadow 0.2s',
-    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+    borderRadius: 6,
+    bgcolor: '#ffffff',
+    boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+    border: 'none',
+    transition: 'all 0.3s ease',
   };
 
   if (loading) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box display="flex" justifyContent="center" py={4} aria-busy>
-            <LoadingSpinner message="Loading class opportunities..." />
+        <CardContent sx={{ py: 6 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" gap={2}>
+            <CircularProgress size={32} thickness={5} sx={{ color: '#3b82f6' }} />
+            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+              SCANNING OPPORTUNITIES...
+            </Typography>
           </Box>
         </CardContent>
       </Card>
@@ -254,10 +257,21 @@ const ClassLeadsFeedCard: React.FC = () => {
   if (error && filteredAnnouncements.length === 0) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <ErrorAlert error={error} />
-          <Box mt={1.5} display="flex" justifyContent="center">
-            <Button variant="outlined" onClick={fetchAnnouncements} sx={{ borderRadius: 2, textTransform: 'none' }}>Retry</Button>
+        <CardContent sx={{ py: 4 }}>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+              <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
+              <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
+                {error}
+              </Typography>
+            </Box>
+            <Button 
+              variant="text" 
+              onClick={fetchAnnouncements} 
+              sx={{ alignSelf: 'center', fontWeight: 800, color: '#3b82f6', textTransform: 'none' }}
+            >
+              Try Again
+            </Button>
           </Box>
         </CardContent>
       </Card>
@@ -267,12 +281,30 @@ const ClassLeadsFeedCard: React.FC = () => {
   if (!loading && filteredAnnouncements.length === 0) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <EmptyState
-            icon={<CampaignIcon color="primary" />}
-            title="No Active Class Leads"
-            description="There are no new class opportunities at the moment. Check back later!"
-          />
+        <CardContent sx={{ py: 8 }}>
+          <Box textAlign="center">
+            <Box
+              sx={{
+                width: 72,
+                height: 72,
+                borderRadius: 4,
+                bgcolor: alpha('#3b82f6', 0.06),
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 3,
+                transform: 'rotate(5deg)',
+              }}
+            >
+              <CampaignIcon sx={{ fontSize: 32, color: '#3b82f6' }} />
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1, letterSpacing: '-0.02em' }}>
+              Quiet Horizon
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500, maxWidth: 280, mx: 'auto' }}>
+              We'll notify you as soon as a new class lead matches your expertise. Keep your profile updated!
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
     );
@@ -280,50 +312,64 @@ const ClassLeadsFeedCard: React.FC = () => {
 
   return (
     <Card sx={cardSx}>
-      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2.5}>
-          <Box display="flex" alignItems="center" gap={1.5}>
+      <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+        <Box mb={4} display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center" gap={2}>
             <Box
               sx={{
-                p: 0.75,
-                borderRadius: 2,
+                width: 44,
+                height: 44,
+                borderRadius: 3,
                 bgcolor: alpha('#3b82f6', 0.08),
                 display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#3b82f6',
               }}
             >
-              <CampaignIcon sx={{ fontSize: 20, color: '#3b82f6' }} />
+              <CampaignIcon sx={{ fontSize: 24 }} />
             </Box>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
-              Class Opportunities
-            </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
+                Class Opportunities
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.02em' }}>
+                LIVE MARKETPLACE FEED
+              </Typography>
+            </Box>
           </Box>
-          <Chip
-            label={`${filteredAnnouncements.length} available`}
-            size="small"
-            sx={{
-              bgcolor: alpha('#3b82f6', 0.08),
-              color: '#2563eb',
-              fontWeight: 700,
-              fontSize: '0.72rem',
-              height: 26,
-            }}
-          />
         </Box>
 
         {successMessage && (
-          <Alert severity="success" onClose={() => setSuccessMessage(null)} sx={{ mb: 2, borderRadius: 2 }} role="status">
+          <Alert 
+            severity="success" 
+            onClose={() => setSuccessMessage(null)} 
+            sx={{ 
+              mb: 3, 
+              borderRadius: 3, 
+              fontWeight: 600,
+              bgcolor: alpha('#10b981', 0.1),
+              color: '#059669',
+              border: 'none',
+              '& .MuiAlert-icon': { color: '#059669' }
+            }}
+          >
             {successMessage}
           </Alert>
         )}
 
         <Box
           sx={{
-            maxHeight: 600,
-            overflow: 'auto',
-            pr: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2.5,
+            maxHeight: 700,
+            overflowY: 'auto',
+            mx: -1,
+            px: 1,
             '&::-webkit-scrollbar': { width: '4px' },
             '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
+            '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
           }}
         >
           {filteredAnnouncements.map((item) => {
@@ -331,278 +377,188 @@ const ClassLeadsFeedCard: React.FC = () => {
             const matchPercentage = item.matchPercentage as number;
             const id = (((a as any).id || (a as any)._id) as string);
             const interested = hasExpressedInterest(a);
-            const postedAt = (a as any)?.createdAt || (a as any)?.postedAt;
-            const postedStr = postedAt ? new Date(postedAt).toLocaleDateString() : '';
             const cl = (a as any).classLead || {};
             const subjects = getSubjectList(cl?.subject || cl?.subjects || cl?.subjectList).join(', ');
-
             const isHighlighted = Boolean(matchPercentage >= 80);
-
-            const grade = cl?.grade || '-';
-            const board = cl?.board || '-';
-            const mode = cl?.mode || '-';
-            const studentType = (cl as any)?.studentType || 'SINGLE';
-            const numberOfStudents = (cl as any)?.numberOfStudents || 1;
-            const studentDetails = (cl as any)?.studentDetails || [];
-            const location = (cl as any)?.location || '';
-            const city = (cl as any)?.city || '';
-            const area = (cl as any)?.area || '';
-            const scheduleLine = cl?.timing || '-';
-            const classesPerMonth = (cl as any)?.classesPerMonth;
-            const genderPref = (cl as any)?.preferredTutorGender || '-';
-            const qualifications = String((cl as any)?.qualifications || '').trim();
-            const requirementItems = qualifications
-              ? qualifications.split(/[,•\n]/).map((s) => s.trim()).filter(Boolean)
-              : [];
-
-            const getStudentDisplay = () => {
-              if (studentType === 'GROUP') {
-                const studentNames = studentDetails.map((s: any) => s.name).filter(Boolean).join(', ');
-                return {
-                  type: 'GROUP',
-                  label: `Group (${numberOfStudents} students)`,
-                  names: studentNames || `${numberOfStudents} students`,
-                  icon: <GroupIcon fontSize="small" />,
-                };
-              } else {
-                const studentName = cl?.studentName || 'Student';
-                return {
-                  type: 'SINGLE',
-                  label: 'Single Student',
-                  names: studentName,
-                  icon: <PersonIcon fontSize="small" />,
-                };
-              }
-            };
-
-            const studentDisplay = getStudentDisplay();
-
-            const getTutorFeesDisplay = () => {
-              if (studentType === 'GROUP') {
-                const totalTutorFees = studentDetails.reduce((sum: number, student: any) => {
-                  return sum + (student.tutorFees || 0);
-                }, 0);
-                return {
-                  amount: totalTutorFees,
-                  label: `Total Tutor Fees: ₹${totalTutorFees.toLocaleString()}`,
-                  perStudent: studentDetails.length > 1 ? `₹${Math.round(totalTutorFees / studentDetails.length).toLocaleString()} per student` : null
-                };
-              } else {
-                const tutorFees = (cl as any)?.tutorFees || 0;
-                return {
-                  amount: tutorFees,
-                  label: `Tutor Fees: ₹${tutorFees.toLocaleString()}`,
-                  perStudent: null
-                };
-              }
-            };
-
-            const tutorFeesDisplay = getTutorFeesDisplay();
-
-            const matchColor = matchPercentage >= 80 ? '#10b981' : matchPercentage >= 50 ? '#3b82f6' : '#94a3b8';
+            const matchColor = matchPercentage >= 80 ? '#10b981' : matchPercentage >= 50 ? '#3b82f6' : '#64748b';
 
             return (
               <Box
                 key={id}
                 sx={{
-                  border: '1px solid',
-                  borderColor: isHighlighted ? alpha('#10b981', 0.3) : alpha('#3b82f6', 0.1),
-                  borderRadius: 2.5,
-                  p: 2.5,
-                  mb: 2,
+                  borderRadius: 5,
+                  p: 3,
                   position: 'relative',
-                  bgcolor: isHighlighted ? alpha('#10b981', 0.03) : alpha('#3b82f6', 0.01),
-                  transition: 'all 0.2s ease',
+                  overflow: 'hidden',
+                  bgcolor: isHighlighted ? alpha('#10b981', 0.02) : '#ffffff',
+                  border: '1px solid',
+                  borderColor: isHighlighted ? alpha('#10b981', 0.15) : alpha('#e2e8f0', 0.6),
+                  boxShadow: isHighlighted ? `0 8px 24px ${alpha('#10b981', 0.05)}` : '0 2px 8px rgba(15, 23, 42, 0.02)',
+                  transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                   '&:hover': {
-                    bgcolor: isHighlighted ? alpha('#10b981', 0.06) : alpha('#3b82f6', 0.04),
-                    borderColor: isHighlighted ? alpha('#10b981', 0.4) : alpha('#3b82f6', 0.2),
+                    transform: 'translateY(-4px)',
+                    boxShadow: isHighlighted ? `0 16px 32px ${alpha('#10b981', 0.1)}` : '0 12px 24px rgba(15, 23, 42, 0.06)',
+                    borderColor: isHighlighted ? alpha('#10b981', 0.3) : alpha('#3b82f6', 0.2),
                   },
                 }}
               >
-                {/* Header */}
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Stack spacing={0.5}>
-                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-                      <SchoolIcon sx={{ fontSize: 18, color: '#3b82f6' }} aria-label="Class" />
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ wordBreak: 'break-word', fontSize: '0.92rem' }}>
-                        {`Class ${grade} - ${subjects || '-'}`}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" gap={0.75} flexWrap="wrap" mt={0.5}>
-                      <Chip
-                        icon={studentDisplay.icon}
-                        label={studentDisplay.label}
-                        size="small"
-                        sx={{
-                          bgcolor: studentDisplay.type === 'GROUP' ? alpha('#8b5cf6', 0.08) : alpha('#3b82f6', 0.08),
-                          color: studentDisplay.type === 'GROUP' ? '#7c3aed' : '#2563eb',
-                          fontWeight: 600,
-                          fontSize: '0.68rem',
-                          height: 24,
-                          '& .MuiChip-icon': { color: 'inherit' },
-                        }}
-                      />
-                      <Chip
-                        label={`${matchPercentage}% match`}
-                        size="small"
-                        sx={{
-                          bgcolor: alpha(matchColor, 0.1),
-                          color: matchColor,
-                          fontWeight: 700,
-                          fontSize: '0.68rem',
-                          height: 24,
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.82rem', mt: 0.5 }}>
-                      {`${board} • ${mode}`}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
-                      {studentDisplay.names}
-                    </Typography>
-                    {postedStr && (
-                      <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
-                        {`Posted ${postedStr}`}
-                      </Typography>
-                    )}
-                  </Stack>
-                  <Tooltip title="Ignore this lead">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleIgnore(id)}
-                      aria-label="Ignore lead"
-                      sx={{
-                        bgcolor: alpha('#ef4444', 0.06),
-                        '&:hover': { bgcolor: alpha('#ef4444', 0.12) },
-                        width: 28,
-                        height: 28,
-                      }}
-                    >
-                      <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-
-                {/* Details */}
+                {/* Match Indicator */}
                 <Box
                   sx={{
-                    p: 1.5,
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 1.5,
+                    py: 0.5,
                     borderRadius: 2,
-                    bgcolor: alpha('#f8fafc', 0.8),
-                    border: '1px solid',
-                    borderColor: 'grey.50',
-                    mb: 2,
+                    bgcolor: alpha(matchColor, 0.08),
+                    backdropFilter: 'blur(8px)',
+                    border: `1px solid ${alpha(matchColor, 0.1)}`,
                   }}
                 >
-                  <Stack spacing={1}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <LocationOnIcon sx={{ fontSize: 15, color: 'text.disabled' }} />
-                      <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>
-                        {location || area || city || '-'}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AccessTimeIcon sx={{ fontSize: 15, color: 'text.disabled' }} />
-                      <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>
-                        {scheduleLine}
-                        {classesPerMonth != null && ` (${classesPerMonth}/month)`}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AttachMoneyIcon sx={{ fontSize: 15, color: '#10b981' }} />
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.82rem', color: '#059669' }}>
-                        {tutorFeesDisplay.label}
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <PersonIcon sx={{ fontSize: 15, color: 'text.disabled' }} />
-                      <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>
-                        {`Preferred: ${genderPref}`}
-                      </Typography>
-                    </Box>
-                  </Stack>
+                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: matchColor }} />
+                  <Typography variant="caption" sx={{ fontWeight: 900, color: matchColor, letterSpacing: '0.04em' }}>
+                    {matchPercentage}% MATCH
+                  </Typography>
                 </Box>
 
-                {requirementItems.length > 0 && (
-                  <Box mb={2}>
-                    <Typography variant="caption" fontWeight={700} display="block" mb={0.75} sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.65rem' }}>
-                      Parent Requirements
-                    </Typography>
-                    <Stack spacing={0.25} pl={0.5}>
-                      {requirementItems.map((req, idx) => (
-                        <Typography key={idx} variant="body2" sx={{ fontSize: '0.8rem', position: 'relative', pl: 1.5, '&::before': { content: '"•"', position: 'absolute', left: 0, color: 'text.disabled' } }}>
-                          {req}
-                        </Typography>
-                      ))}
-                    </Stack>
-                  </Box>
-                )}
-
-                {!!(a as any)?.interestCount && (a as any).interestCount > 0 && (
-                  <Typography variant="caption" color="text.disabled" display="block" mb={1.5} sx={{ fontSize: '0.68rem' }}>
-                    {(a as any).interestCount} tutor(s) interested
+                <Box mb={2.5}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 0.5, pr: 10 }}>
+                    Class {getOptionLabel(cl?.grade)} • {subjects}
                   </Typography>
-                )}
+                  <Box display="flex" gap={1} flexWrap="wrap">
+                    <Chip 
+                      label={getOptionLabel(cl?.mode)} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: alpha('#64748b', 0.06), 
+                        color: '#475569', 
+                        fontWeight: 700,
+                        fontSize: '0.65rem',
+                        height: 22,
+                        textTransform: 'uppercase'
+                      }} 
+                    />
+                    <Chip 
+                      label={getOptionLabel(cl?.board)} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: alpha('#64748b', 0.06), 
+                        color: '#475569', 
+                        fontWeight: 700,
+                        fontSize: '0.65rem',
+                        height: 22,
+                        textTransform: 'uppercase'
+                      }} 
+                    />
+                  </Box>
+                </Box>
 
-                <Divider sx={{ mb: 2, borderColor: alpha('#3b82f6', 0.06) }} />
+                <Box 
+                  sx={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(2, 1fr)', 
+                    gap: 2, 
+                    mb: 3, 
+                    p: 2, 
+                    borderRadius: 3, 
+                    bgcolor: alpha('#f8fafc', 0.8),
+                    border: '1px solid #f1f5f9' 
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>LOCATION</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
+                      {getOptionLabel(cl?.location || cl?.area || cl?.city) || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>TIMING</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
+                      {cl?.timing || 'As agreed'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>STUDENT</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
+                      {cl?.studentName || (cl?.studentType === 'GROUP' ? `Group of ${cl?.numberOfStudents}` : 'Single Student')}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>EXPECTED FEES</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 900, color: '#10b981', fontSize: '0.85rem' }}>
+                      {'\u20B9'}{cl?.tutorFees?.toLocaleString() || 'N/A'} <span style={{ color: '#94a3b8', fontSize: '0.7rem', fontWeight: 500 }}>/mo</span>
+                    </Typography>
+                  </Box>
+                </Box>
 
-                {/* Actions */}
-                <Box display="flex" gap={1.5} flexWrap="wrap">
+                <Box display="flex" gap={1.5}>
                   {interested ? (
                     <Button
+                      fullWidth
                       variant="outlined"
-                      startIcon={<ThumbUpIcon sx={{ fontSize: 16 }} />}
                       disabled
                       sx={{
-                        borderRadius: 2,
+                        borderRadius: 3,
+                        py: 1.25,
                         textTransform: 'none',
-                        fontWeight: 600,
-                        fontSize: '0.78rem',
-                        borderColor: alpha('#10b981', 0.3),
+                        fontWeight: 800,
+                        borderColor: alpha('#10b981', 0.2),
                         color: '#10b981',
+                        bgcolor: alpha('#10b981', 0.04),
+                        '&.Mui-disabled': { color: '#059669', opacity: 1 }
                       }}
                     >
-                      Already Expressed
+                      Interest Shared
                     </Button>
                   ) : (
                     <>
                       <Button
+                        fullWidth
                         variant="contained"
-                        startIcon={<ThumbUpIcon sx={{ fontSize: 16 }} />}
                         onClick={() => handleExpressInterest(id)}
                         disabled={!!actionLoading[id]}
                         sx={{
-                          borderRadius: 2,
+                          borderRadius: 3,
+                          py: 1.25,
                           textTransform: 'none',
-                          fontWeight: 700,
-                          fontSize: '0.78rem',
-                          bgcolor: '#3b82f6',
-                          '&:hover': { bgcolor: '#2563eb' },
-                          px: 2.5,
+                          fontWeight: 800,
+                          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 8px 20px rgba(37, 99, 235, 0.3)',
+                          }
                         }}
                       >
-                        {actionLoading[id] ? 'Expressing...' : 'Express Interest'}
+                        {actionLoading[id] ? <CircularProgress size={20} color="inherit" /> : 'Express Interest'}
                       </Button>
-                      <Button
-                        variant="outlined"
+                      <IconButton
                         onClick={() => handleIgnore(id)}
                         sx={{
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.78rem',
-                          color: 'text.secondary',
-                          borderColor: 'grey.200',
-                          '&:hover': { borderColor: 'grey.400' },
+                          borderRadius: 3,
+                          width: 48,
+                          height: 48,
+                          bgcolor: alpha('#ef4444', 0.05),
+                          color: '#ef4444',
+                          border: '1px solid',
+                          borderColor: alpha('#ef4444', 0.1),
+                          '&:hover': { bgcolor: alpha('#ef4444', 0.1) },
                         }}
                       >
-                        Ignore
-                      </Button>
+                        <CloseIcon />
+                      </IconButton>
                     </>
                   )}
                 </Box>
                 {actionError[id] && (
-                  <Alert severity="error" sx={{ mt: 1.5, borderRadius: 2, fontSize: '0.78rem' }}>{actionError[id]}</Alert>
+                  <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 600, mt: 1.5, display: 'block', textAlign: 'center' }}>
+                    {actionError[id]}
+                  </Typography>
                 )}
               </Box>
             );

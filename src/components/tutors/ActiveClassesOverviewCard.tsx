@@ -56,20 +56,22 @@ const ActiveClassesOverviewCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 3,
-    border: '1px solid',
-    borderColor: 'grey.100',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    transition: 'box-shadow 0.2s',
-    '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.06)' },
+    borderRadius: 6,
+    bgcolor: '#ffffff',
+    boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+    border: 'none',
+    transition: 'all 0.3s ease',
   };
 
   if (loading) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box display="flex" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={24} />
+        <CardContent sx={{ py: 6 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" gap={2}>
+            <CircularProgress size={32} thickness={5} sx={{ color: '#10b981' }} />
+            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.05em' }}>
+              RETRIVING PORTFOLIO...
+            </Typography>
           </Box>
         </CardContent>
       </Card>
@@ -79,10 +81,10 @@ const ActiveClassesOverviewCard: React.FC = () => {
   if (error) {
     return (
       <Card sx={cardSx}>
-        <CardContent>
-          <Box display="flex" alignItems="center" gap={1}>
-            <ErrorOutlineIcon color="error" />
-            <Typography variant="body2" color="error.main">
+        <CardContent sx={{ py: 4 }}>
+          <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+            <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
+            <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
               {error}
             </Typography>
           </Box>
@@ -93,60 +95,72 @@ const ActiveClassesOverviewCard: React.FC = () => {
 
   return (
     <Card sx={cardSx}>
-      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
-        <Box mb={2.5} display="flex" alignItems="center" justifyContent="space-between">
-          <Box display="flex" alignItems="center" gap={1.5}>
+      <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+        <Box mb={4} display="flex" alignItems="center" justifyContent="space-between">
+          <Box display="flex" alignItems="center" gap={2}>
             <Box
               sx={{
-                p: 0.75,
-                borderRadius: 2,
+                width: 44,
+                height: 44,
+                borderRadius: 3,
                 bgcolor: alpha('#10b981', 0.08),
                 display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#10b981',
               }}
             >
-              <ClassIcon sx={{ fontSize: 20, color: '#10b981' }} />
+              <ClassIcon sx={{ fontSize: 24 }} />
             </Box>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ letterSpacing: '-0.01em' }}>
-              Active Classes Breakdown
-            </Typography>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
+                Course Portfolio
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.02em' }}>
+                OVERVIEW OF ACTIVE ENGAGEMENTS
+              </Typography>
+            </Box>
           </Box>
-          <Chip
-            label={`${classes.length} Active`}
-            size="small"
+          <Box
             sx={{
-              bgcolor: alpha('#10b981', 0.08),
+              px: 2,
+              py: 0.75,
+              borderRadius: 2,
+              bgcolor: alpha('#10b981', 0.1),
               color: '#059669',
-              fontWeight: 700,
-              fontSize: '0.72rem',
-              height: 26,
+              fontWeight: 900,
+              fontSize: '0.75rem',
+              letterSpacing: '0.04em',
             }}
-          />
+          >
+            {classes.length} ACTIVE
+          </Box>
         </Box>
 
         {/* Mobile view */}
-        <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+        <Box sx={{ display: { xs: 'flex', sm: 'none' }, flexDirection: 'column', gap: 2 }}>
           {classes.length === 0 ? (
-            <Box textAlign="center" py={5}>
+            <Box textAlign="center" py={6}>
               <Box
                 sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  bgcolor: alpha('#10b981', 0.08),
+                  width: 64,
+                  height: 64,
+                  borderRadius: 4,
+                  bgcolor: alpha('#10b981', 0.05),
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  mb: 1.5,
+                  mb: 2,
                 }}
               >
-                <MenuBookIcon sx={{ fontSize: 24, color: '#10b981' }} />
+                <MenuBookIcon sx={{ fontSize: 28, color: '#10b981' }} />
               </Box>
-              <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                No active classes found
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                No active courses at the moment
               </Typography>
             </Box>
           ) : (
-            classes.slice(0, 4).map((cls) => {
+            classes.map((cls) => {
               const progress = getProgress(cls);
               const pColor = getProgressColor(progress);
               const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
@@ -159,49 +173,53 @@ const ActiveClassesOverviewCard: React.FC = () => {
                 <Box
                   key={cls.id}
                   sx={{
-                    p: 2,
-                    mb: 1.5,
-                    borderRadius: 2.5,
+                    p: 2.5,
+                    borderRadius: 4,
                     border: '1px solid',
-                    borderColor: alpha(pColor, 0.12),
-                    bgcolor: alpha(pColor, 0.02),
-                    transition: 'all 0.2s',
+                    borderColor: alpha('#e2e8f0', 0.6),
+                    bgcolor: '#ffffff',
+                    boxShadow: '0 2px 8px rgba(15, 23, 42, 0.02)',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      borderColor: alpha(pColor, 0.25),
+                      borderColor: alpha(pColor, 0.2),
+                      boxShadow: '0 8px 16px rgba(15, 23, 42, 0.04)',
                     },
                   }}
                 >
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                     <Box>
-                      <Typography variant="subtitle2" fontWeight={700}>{cls.studentName}</Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        {subjects} • Grade {cls.grade}
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>{cls.studentName}</Typography>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                        {subjects} • GRADE {cls.grade}
                       </Typography>
                     </Box>
-                    <Chip
-                      label={cls.status}
-                      size="small"
+                    <Box
                       sx={{
+                        px: 1.25,
+                        py: 0.5,
+                        borderRadius: 1.5,
                         bgcolor: alpha('#10b981', 0.08),
-                        color: '#059669',
-                        textTransform: 'capitalize',
-                        fontSize: '0.62rem',
-                        height: 20,
-                        fontWeight: 600,
+                        color: '#10b981',
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
                       }}
-                    />
+                    >
+                      {cls.status}
+                    </Box>
                   </Box>
 
-                  <Box mb={1.5}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600}>Progress</Typography>
-                      <Typography variant="caption" fontWeight={700} sx={{ color: pColor }}>{progress}%</Typography>
+                  <Box mb={2}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Completion</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 900, color: pColor }}>{progress}%</Typography>
                     </Box>
                     <LinearProgress
                       variant="determinate"
                       value={progress}
                       sx={{
-                        height: 5,
+                        height: 6,
                         borderRadius: 3,
                         bgcolor: alpha(pColor, 0.1),
                         '& .MuiLinearProgress-bar': {
@@ -212,14 +230,14 @@ const ActiveClassesOverviewCard: React.FC = () => {
                     />
                   </Box>
 
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box display="flex" justifyContent="space-between" alignItems="center" pt={1.5} borderTop="1px dashed" borderColor="#f1f5f9">
                     <Box>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem' }}>Coordinator</Typography>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem' }}>{coordinatorName}</Typography>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>COORDINATOR</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#334155' }}>{coordinatorName}</Typography>
                     </Box>
                     <Box textAlign="right">
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem' }}>Sessions</Typography>
-                      <Typography variant="body2" fontWeight={700} sx={{ fontSize: '0.8rem' }}>{completedForMonth} / {monthlyTotalSessions}</Typography>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>SESSIONS</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>{completedForMonth} / {monthlyTotalSessions}</Typography>
                     </Box>
                   </Box>
                 </Box>
@@ -233,19 +251,20 @@ const ActiveClassesOverviewCard: React.FC = () => {
           <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
-                {['Student & Class', 'Status', 'Progress', 'Coordinator', 'Sessions'].map((h, i) => (
+                {['Student & Subject', 'Status', 'Performance', 'Account Manager', 'Progress'].map((h, i) => (
                   <TableCell
                     key={h}
                     align={i === 4 ? 'right' : 'left'}
                     sx={{
-                      fontWeight: 700,
-                      fontSize: '0.78rem',
-                      color: 'text.secondary',
-                      letterSpacing: '0.02em',
+                      fontWeight: 800,
+                      fontSize: '0.72rem',
+                      color: '#64748b',
+                      letterSpacing: '0.06em',
                       textTransform: 'uppercase',
-                      borderBottom: '2px solid',
-                      borderColor: 'grey.100',
-                      py: 1.5,
+                      borderBottom: '1px solid',
+                      borderColor: '#f1f5f9',
+                      py: 2,
+                      px: 0,
                     }}
                   >
                     {h}
@@ -256,8 +275,8 @@ const ActiveClassesOverviewCard: React.FC = () => {
             <TableBody>
               {classes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-                    <Typography variant="body2" color="text.secondary">No active classes found.</Typography>
+                  <TableCell colSpan={5} align="center" sx={{ py: 8, border: 'none' }}>
+                    <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 500 }}>No active teaching portfolio matches found.</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -273,58 +292,62 @@ const ActiveClassesOverviewCard: React.FC = () => {
                     <TableRow
                       key={cls.id}
                       sx={{
-                        '&:hover': { bgcolor: alpha('#6366f1', 0.02) },
+                        '&:hover': { bgcolor: alpha('#f8fafc', 0.8) },
                         transition: 'background 0.2s',
-                        '& td': { borderColor: 'grey.50' },
+                        '& td': { borderBottom: '1px solid', borderColor: '#f8fafc', py: 2.5, px: 0 },
+                        '&:last-child td': { borderBottom: 'none' },
                       }}
                     >
                       <TableCell>
-                        <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.88rem' }}>{cls.studentName}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {getSubjectList(cls.subject).join(', ')} • Grade {cls.grade}
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem' }}>{cls.studentName}</Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                          {getSubjectList(cls.subject).join(', ')} • GRADE {cls.grade}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={cls.status}
-                          size="small"
+                        <Box
                           sx={{
+                            display: 'inline-flex',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1.5,
                             bgcolor: alpha('#10b981', 0.08),
-                            color: '#059669',
-                            textTransform: 'capitalize',
-                            fontWeight: 600,
-                            fontSize: '0.72rem',
+                            color: '#10b981',
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
                           }}
-                        />
+                        >
+                          {cls.status}
+                        </Box>
                       </TableCell>
-                      <TableCell sx={{ width: 200 }}>
-                        <Box display="flex" alignItems="center" gap={1.5}>
-                          <Box sx={{ flex: 1 }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={progress}
-                              sx={{
-                                height: 5,
-                                borderRadius: 3,
-                                bgcolor: alpha(pColor, 0.1),
-                                '& .MuiLinearProgress-bar': {
-                                  bgcolor: pColor,
-                                  borderRadius: 3,
-                                },
-                              }}
-                            />
+                      <TableCell sx={{ minWidth: 180 }}>
+                        <Box sx={{ pr: 4 }}>
+                          <Box display="flex" justifyContent="space-between" mb={0.75}>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: pColor }}>{progress}%</Typography>
                           </Box>
-                          <Typography variant="caption" fontWeight={700} sx={{ color: pColor, minWidth: 30 }}>
-                            {progress}%
-                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
+                            value={progress}
+                            sx={{
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: alpha(pColor, 0.1),
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: pColor,
+                                borderRadius: 3,
+                              },
+                            }}
+                          />
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>{coordinatorName}</Typography>
+                        <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>{coordinatorName}</Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" fontWeight={700} sx={{ fontSize: '0.85rem' }}>
-                          {completedForMonth} / {monthlyTotalSessions}
+                        <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a', fontSize: '0.9rem' }}>
+                          {completedForMonth} <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.75rem' }}>/ {monthlyTotalSessions}</span>
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -336,6 +359,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
         </TableContainer>
       </CardContent>
     </Card>
+
   );
 };
 
