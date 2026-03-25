@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { getPublicLeadById } from '../../services/leadService';
 import { getAnnouncementByLeadId } from '../../services/announcementService';
+import { getSubjectList } from '../../utils/subjectUtils';
 
 import PublicNavbar from '../../components/layout/PublicNavbar';
 
@@ -113,14 +114,7 @@ const PublicLeadDetails: React.FC = () => {
         );
     }
 
-    const subjects = Array.isArray(lead.subject) 
-        ? lead.subject.map((s: any) => {
-            if (typeof s === 'string') return s;
-            return s?.name || s?.label || s?._id || 'N/A';
-        }).join(', ') 
-        : (typeof lead.subject === 'object' && lead.subject !== null 
-            ? (lead.subject as any).name || (lead.subject as any).label || (lead.subject as any)._id || 'N/A' 
-            : String(lead.subject || '-'));
+    const subjects = getSubjectList(lead.subject).join(', ') || 'N/A';
 
     const sectionStyle = {
         p: 4,
