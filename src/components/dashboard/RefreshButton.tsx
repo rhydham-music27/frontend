@@ -34,3 +34,4 @@ const RefreshButton: React.FC<Props> = ({ onRefresh, autoRefresh, onAutoRefreshT
 };
 
 export default RefreshButton;
+

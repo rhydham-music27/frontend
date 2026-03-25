@@ -30,3 +30,4 @@ const CoordinatorStudentProfilePage: React.FC = () => {
 };
 
 export default CoordinatorStudentProfilePage;
+

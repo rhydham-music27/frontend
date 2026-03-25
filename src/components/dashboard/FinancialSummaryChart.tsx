@@ -117,3 +117,4 @@ const FinancialSummaryChart: React.FC<FinancialSummaryChartProps> = ({ data, loa
 };
 
 export default FinancialSummaryChart;
+

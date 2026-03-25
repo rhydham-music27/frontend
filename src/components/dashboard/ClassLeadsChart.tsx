@@ -222,3 +222,4 @@ const ClassLeadsChart: React.FC<ClassLeadsChartProps> = ({ data, loading }) => {
 };
 
 export default ClassLeadsChart;
+

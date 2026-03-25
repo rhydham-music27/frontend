@@ -143,3 +143,4 @@ export default function AttendanceApprovalCard({ attendance, userRole }: Props) 
       </Card>
    );
 }
+

@@ -673,3 +673,4 @@ const AssignedClassesPage: React.FC = () => {
 };
 
 export default AssignedClassesPage;
+

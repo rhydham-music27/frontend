@@ -73,7 +73,7 @@ export const CurriculumTreeSelector: React.FC<CurriculumTreeSelectorProps> = ({
     <Box sx={{ width: '100%' }}>
       <Box sx={{ 
         p: 2, 
-        borderRadius: 3, 
+        borderRadius: 2, 
         bgcolor: 'white', 
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.02)}`,
@@ -149,3 +149,4 @@ export const CurriculumTreeSelector: React.FC<CurriculumTreeSelectorProps> = ({
     </Box>
   );
 };
+

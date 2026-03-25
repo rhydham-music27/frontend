@@ -718,3 +718,4 @@ const getDocumentComponent = (url: string) => {
 };
 
 export default ManagerVerificationPage;
+

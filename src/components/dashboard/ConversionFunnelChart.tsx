@@ -85,3 +85,4 @@ const ConversionFunnelChart: React.FC<Props> = ({ data, loading = false }) => {
 };
 
 export default ConversionFunnelChart;
+

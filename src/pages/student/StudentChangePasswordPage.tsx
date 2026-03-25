@@ -209,3 +209,4 @@ const StudentChangePasswordPage: React.FC = () => {
 };
 
 export default StudentChangePasswordPage;
+

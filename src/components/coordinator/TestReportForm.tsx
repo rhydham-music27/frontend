@@ -118,3 +118,4 @@ const TestReportForm: React.FC<Props> = ({ onSubmit, loading = false, error = nu
 };
 
 export default TestReportForm;
+

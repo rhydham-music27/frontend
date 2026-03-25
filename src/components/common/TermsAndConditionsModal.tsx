@@ -165,7 +165,7 @@ These Terms constitute an electronic record and do not require physical or digit
       scroll="paper"
       disableEscapeKeyDown
       PaperProps={{
-        sx: { borderRadius: 3 }
+        sx: { borderRadius: 2 }
       }}
     >
       <DialogTitle sx={{ bgcolor: 'primary.main', color: 'white', py: 2.5, fontWeight: 700 }}>
@@ -251,3 +251,4 @@ These Terms constitute an electronic record and do not require physical or digit
 };
 
 export default TermsAndConditionsModal;
+

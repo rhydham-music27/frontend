@@ -191,7 +191,7 @@ const FeedbackPerformanceCard: React.FC = () => {
             sx={{
               border: '1px solid',
               borderColor: 'grey.200',
-              borderRadius: 3,
+              borderRadius: 2,
               p: { xs: 2, sm: 2.5 },
               mb: 3,
               bgcolor: 'background.paper',
@@ -266,7 +266,7 @@ const FeedbackPerformanceCard: React.FC = () => {
           <Typography variant="h6" fontWeight={600} mb={2}>Performance Insights</Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 2, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant="caption" color="text.secondary">Recommendation Rate</Typography>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Typography variant="h5" fontWeight={700}>{formatPercentage(recommendationRate)}</Typography>
@@ -276,7 +276,7 @@ const FeedbackPerformanceCard: React.FC = () => {
               </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 2, p: 2.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant="caption" color="text.secondary">Average Test Score</Typography>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Typography variant="h5" fontWeight={700}>{`${avgTestScore.toFixed(1)}/100`}</Typography>
@@ -286,7 +286,7 @@ const FeedbackPerformanceCard: React.FC = () => {
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 3, p: 2.5, bgcolor: 'grey.50' }}>
+              <Box sx={{ border: '1px solid', borderColor: 'grey.200', borderRadius: 2, p: 2.5, bgcolor: 'grey.50' }}>
                 <Typography variant="caption" color="text.secondary">Total Feedback Received</Typography>
                 <Typography variant="h4" fontWeight={700} sx={{ color: 'primary.main' }}>{totalFeedback}</Typography>
                 <Typography variant="body2" color="text.secondary">Thank you for your dedication! Keep up the great work.</Typography>
@@ -308,3 +308,4 @@ const FeedbackPerformanceCard: React.FC = () => {
 };
 
 export default React.memo(FeedbackPerformanceCard);
+

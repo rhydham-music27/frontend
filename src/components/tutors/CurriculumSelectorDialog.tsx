@@ -139,7 +139,7 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
       maxWidth="md"
       PaperProps={{
         sx: {
-          borderRadius: 4,
+          borderRadius: 2,
           height: '80vh',
           maxHeight: 800,
           overflow: 'hidden',
@@ -174,7 +174,7 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
+              borderRadius: 2,
               bgcolor: 'white',
             }
           }}
@@ -341,3 +341,4 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
     </Dialog>
   );
 };
+

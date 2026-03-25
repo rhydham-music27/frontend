@@ -112,7 +112,7 @@ export const ManagerVerificationForm: React.FC<ManagerVerificationFormProps> = (
                     flexDirection: 'column',
                     alignItems: 'center',
                     p: 3,
-                    borderRadius: 4,
+                    borderRadius: 2,
                     bgcolor: isUploaded ? alpha(theme.palette.success.main, 0.05) : 'background.paper',
                     border: '2px dashed',
                     borderColor: isUploaded 
@@ -209,7 +209,7 @@ export const ManagerVerificationForm: React.FC<ManagerVerificationFormProps> = (
         })}
       </Grid>
 
-      <Box sx={{ mt: 6, p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.info.main, 0.05), borderLeft: `4px solid ${theme.palette.info.main}` }}>
+      <Box sx={{ mt: 6, p: 3, borderRadius: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderLeft: `4px solid ${theme.palette.info.main}` }}>
         <Typography variant="subtitle2" fontWeight={700} color="info.main" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           <HelpOutlineIcon fontSize="small" /> Why is this required?
         </Typography>
@@ -240,7 +240,7 @@ export const ManagerVerificationForm: React.FC<ManagerVerificationFormProps> = (
                 sx={{ 
                   px: 6, 
                   py: 1.5, 
-                  borderRadius: 3, 
+                  borderRadius: 2, 
                   fontWeight: 800,
                   boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`
                 }}
@@ -254,3 +254,4 @@ export const ManagerVerificationForm: React.FC<ManagerVerificationFormProps> = (
     </Box>
   );
 };
+

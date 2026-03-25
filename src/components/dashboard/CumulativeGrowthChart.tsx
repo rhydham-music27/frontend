@@ -39,3 +39,4 @@ const CumulativeGrowthChart: React.FC<Props> = ({ data, loading = false, title =
 };
 
 export default CumulativeGrowthChart;
+

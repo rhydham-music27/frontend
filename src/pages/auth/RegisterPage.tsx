@@ -231,7 +231,7 @@ const RegisterPage: React.FC = () => {
         <Card
           elevation={24}
           sx={{
-            borderRadius: 4,
+            borderRadius: 2,
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
             boxShadow: '0 20px 60px rgba(0,0,0,0.4)',

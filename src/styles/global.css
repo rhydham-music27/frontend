@@ -49,7 +49,7 @@
   --info-foreground: 255 255 255;
 
   /* Shapes */
-  --radius: 0.75rem;
+  --radius: 0.25rem;
 
   /* Custom Properties */
   --glass-bg: rgba(255, 255, 255, 0.8);
@@ -383,7 +383,7 @@
 /* Modern Card Styles */
 .card-premium {
   background: white;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid #E2E8F0;
   box-shadow: 
     0px 2px 8px rgba(0, 0, 0, 0.04), 
@@ -403,7 +403,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border-radius: 20px;
+  border-radius: 10px;
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -417,11 +417,11 @@
 
 .card-elevated {
   background: white;
-  border-radius: 20px;
+  border-radius: 10px;
   border: none;
   box-shadow: 
-    0px 4px 16px rgba(0, 0, 0, 0.06), 
-    0px 8px 24px rgba(0, 0, 0, 0.08);
+    0px 4px 16px rgba(0, 0, 0, 0.05), 
+    0px 8px 24px rgba(0, 0, 0, 0.07);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -434,11 +434,11 @@
 
 /* Modern Button Enhancements */
 .btn-premium {
-  border-radius: 10px;
+  border-radius: 4px;
   font-weight: 600;
   padding: 10px 24px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .btn-premium:hover {
@@ -471,12 +471,12 @@
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #F1F5F9;
-  border-radius: 10px;
+  border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #2D68C4 0%, #00B7EB 100%);
-  border-radius: 10px;
+  border-radius: 4px;
   border: 2px solid #F1F5F9;
 }
 
@@ -512,7 +512,7 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .skeleton-wave {
@@ -524,7 +524,7 @@
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 /* Modern Hover Effects */

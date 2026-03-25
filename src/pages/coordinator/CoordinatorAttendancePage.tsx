@@ -105,3 +105,4 @@ const CoordinatorAttendancePage: React.FC = () => {
 };
 
 export default CoordinatorAttendancePage;
+

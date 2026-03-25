@@ -312,7 +312,7 @@ const ClassDetailPage: React.FC = () => {
           </Box>
 
           {/* Profile Summary */}
-          <Card sx={{ mb: 3, borderRadius: 3 }}>
+          <Card sx={{ mb: 3, borderRadius: 2 }}>
             <CardContent>
               <Box display="flex" gap={2} alignItems="center">
                 <Avatar sx={{ width: 56, height: 56, bgcolor: theme.palette.primary.main, fontWeight: 800 }}>
@@ -344,7 +344,7 @@ const ClassDetailPage: React.FC = () => {
 
           {/* Sections */}
           <Box id="info" sx={{ scrollMarginTop: 80 }}>
-            <Card sx={{ borderRadius: 3 }}>
+            <Card sx={{ borderRadius: 2 }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={800} gutterBottom>
                   Class Information
@@ -366,7 +366,7 @@ const ClassDetailPage: React.FC = () => {
           </Box>
 
           <Box id="schedule" sx={{ mt: 3, scrollMarginTop: 80 }}>
-            <Card sx={{ borderRadius: 3 }}>
+            <Card sx={{ borderRadius: 2 }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={800} gutterBottom>
                   Schedule
@@ -380,7 +380,7 @@ const ClassDetailPage: React.FC = () => {
           </Box>
 
           <Box id="attendance" sx={{ mt: 3, scrollMarginTop: 80 }}>
-            <Card sx={{ borderRadius: 3 }}>
+            <Card sx={{ borderRadius: 2 }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Typography variant="h6" fontWeight={800}>
@@ -458,7 +458,7 @@ const ClassDetailPage: React.FC = () => {
           </Box>
 
           <Box id="payments" sx={{ mt: 3, scrollMarginTop: 80 }}>
-            <Card sx={{ borderRadius: 3 }}>
+            <Card sx={{ borderRadius: 2 }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
                   <Typography variant="h6" fontWeight={800}>
@@ -598,3 +598,4 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 };
 
 export default ClassDetailPage;
+

@@ -114,7 +114,7 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
       fullWidth 
       disableEscapeKeyDown
       PaperProps={{
-        sx: { borderRadius: 3, p: 1 }
+        sx: { borderRadius: 2, p: 1 }
       }}
     >
       <DialogTitle>
@@ -277,3 +277,4 @@ const ManagerProfileCompletionModal: React.FC<ManagerProfileCompletionModalProps
 };
 
 export default ManagerProfileCompletionModal;
+

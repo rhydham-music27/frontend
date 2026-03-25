@@ -292,3 +292,4 @@ const ClassGrowthChart: React.FC<ClassGrowthChartProps> = ({ data, loading }) =>
 };
 
 export default ClassGrowthChart;
+

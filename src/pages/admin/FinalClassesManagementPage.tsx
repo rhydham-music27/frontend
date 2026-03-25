@@ -446,7 +446,7 @@ const FinalClassesManagementPage: React.FC = () => {
       )}
 
       {!isXs ? (
-        <Paper sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }} elevation={0}>
+        <Paper sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }} elevation={0}>
           <TableContainer sx={{ overflowX: "auto" }}>
             <Table size="small" sx={{ minWidth: 750 }}>
               <TableHead>
@@ -641,7 +641,7 @@ const FinalClassesManagementPage: React.FC = () => {
               <Box>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>Session Progress</Typography>
                 <Box display="flex" alignItems="center" gap={2}>
-                  <Box sx={{ flexGrow: 1, bgcolor: 'action.hover', height: 10, borderRadius: 5, overflow: 'hidden' }}>
+                  <Box sx={{ flexGrow: 1, bgcolor: 'action.hover', height: 10, borderRadius: 2, overflow: 'hidden' }}>
                     <Box
                       sx={{
                         width: `${selectedClass.progressPercentage}%`,
@@ -873,3 +873,4 @@ const FinalClassesManagementPage: React.FC = () => {
 };
 
 export default FinalClassesManagementPage;
+

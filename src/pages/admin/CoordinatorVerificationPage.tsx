@@ -117,7 +117,7 @@ const CoordinatorVerificationPage: React.FC = () => {
             {loading ? (
                 <LoadingSpinner />
             ) : coordinators.length === 0 ? (
-                <Paper elevation={0} sx={{ p: 6, borderRadius: 3, border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
+                <Paper elevation={0} sx={{ p: 6, borderRadius: 2, border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
                     <VerifiedUserIcon sx={{ fontSize: 56, color: 'success.main', mb: 2 }} />
                     <Typography variant="h6" fontWeight={700} gutterBottom>All caught up!</Typography>
                     <Typography color="text.secondary">No coordinators are pending verification.</Typography>
@@ -126,7 +126,7 @@ const CoordinatorVerificationPage: React.FC = () => {
                     </Button>
                 </Paper>
             ) : (
-                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflowX: 'auto' }}>
+                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflowX: 'auto' }}>
                     <Table sx={{ minWidth: 700 }}>
                         <TableHead>
                             <TableRow sx={{ bgcolor: 'grey.100', '& .MuiTableCell-root': { fontWeight: 700, color: 'text.primary', borderBottom: '2px solid', borderColor: 'divider' } }}>
@@ -282,3 +282,4 @@ const CoordinatorVerificationPage: React.FC = () => {
 };
 
 export default CoordinatorVerificationPage;
+

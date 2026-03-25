@@ -80,3 +80,4 @@ const DocumentViewerModal: React.FC<Props> = ({ open, onClose, document }) => {
 };
 
 export default DocumentViewerModal;
+

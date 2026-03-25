@@ -190,10 +190,10 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
             color={progressColor as any}
             sx={{ 
               height: 10, 
-              borderRadius: 5, 
+              borderRadius: 2, 
               bgcolor: alpha(theme.palette.divider, 0.05),
               boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)',
-              '& .MuiLinearProgress-bar': { borderRadius: 5 }
+              '& .MuiLinearProgress-bar': { borderRadius: 2 }
             }}
           />
         </Box>
@@ -364,3 +364,4 @@ const ClassDetailCard: React.FC<ClassDetailCardProps> = ({
 };
 
 export default ClassDetailCard;
+

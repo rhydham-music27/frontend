@@ -76,7 +76,7 @@ const TodaysTasks: React.FC<Props> = ({ stats, loading = false, onViewAction }) 
 
   if (loading) {
     return (
-      <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', height: '100%' }}>
          <Typography variant="h6" fontWeight={700} gutterBottom><Skeleton width="60%" /></Typography>
          <Box mt={2}>
              {[1,2,3,4,5].map(i => <Skeleton key={i} height={60} sx={{ mb: 1, transform: 'none' }} />)}
@@ -86,7 +86,7 @@ const TodaysTasks: React.FC<Props> = ({ stats, loading = false, onViewAction }) 
   }
 
   return (
-    <Paper elevation={0} sx={{ p: 0, borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden', height: '100%' }}>
+    <Paper elevation={0} sx={{ p: 0, borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden', height: '100%' }}>
       <Box p={3} pb={2} bgcolor="#FAFAFA" borderBottom="1px solid" borderColor="divider">
           <Typography variant="h6" fontWeight={800} display="flex" alignItems="center" gap={1}>
              📝 Today's Tasks
@@ -168,3 +168,4 @@ const TodaysTasks: React.FC<Props> = ({ stats, loading = false, onViewAction }) 
 };
 
 export default TodaysTasks;
+

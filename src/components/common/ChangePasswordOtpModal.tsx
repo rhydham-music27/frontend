@@ -224,3 +224,4 @@ const ChangePasswordOtpModal: React.FC<ChangePasswordOtpModalProps> = ({ open, o
 };
 
 export default ChangePasswordOtpModal;
+

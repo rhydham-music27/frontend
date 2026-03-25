@@ -85,3 +85,4 @@ const DateWiseLeadsChart: React.FC<Props> = ({ data, loading = false }) => {
 };
 
 export default DateWiseLeadsChart;
+

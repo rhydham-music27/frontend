@@ -99,7 +99,7 @@ const StudentDashboardPage: React.FC = () => {
           </Box>
 
           {/* Student Info Card */}
-          <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #001F54 0%, #4589FF 100%)', borderRadius: 3 }}>
+          <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #001F54 0%, #4589FF 100%)', borderRadius: 2 }}>
             <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
               <Grid container spacing={3} alignItems="center">
                 <Grid item>
@@ -297,3 +297,4 @@ const StudentDashboardPage: React.FC = () => {
 };
 
 export default StudentDashboardPage;
+

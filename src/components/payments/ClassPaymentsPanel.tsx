@@ -57,3 +57,4 @@ const ClassPaymentsPanel: React.FC<ClassPaymentsPanelProps> = ({ payments, onGen
 };
 
 export default ClassPaymentsPanel;
+

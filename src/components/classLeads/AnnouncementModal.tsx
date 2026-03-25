@@ -66,3 +66,4 @@ export default function AnnouncementModal({ open, onClose, classLead, onSuccess 
     </Dialog>
   );
 }
+

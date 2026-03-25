@@ -392,7 +392,7 @@ const TutorProfilePage: React.FC = () => {
                     startIcon={<LaunchIcon sx={{ fontSize: 13 }} />}
                     onClick={() => window.open(`/ourtutor/${tutorProfile.teacherId}`, '_blank')}
                     sx={{
-                      borderRadius: 2.5,
+                      borderRadius: 1.5,
                       textTransform: 'none',
                       fontWeight: 700,
                       fontSize: '0.65rem',
@@ -454,7 +454,7 @@ const TutorProfilePage: React.FC = () => {
                   startIcon={<LockResetIcon sx={{ fontSize: 16 }} />}
                   onClick={() => setChangePasswordOpen(true)}
                   sx={{
-                    borderRadius: 2.5,
+                    borderRadius: 1.5,
                     textTransform: 'none',
                     fontWeight: 700,
                     fontSize: '0.75rem',
@@ -482,7 +482,7 @@ const TutorProfilePage: React.FC = () => {
                   startIcon={<LaunchIcon sx={{ fontSize: 16 }} />}
                   onClick={() => window.open(`/ourtutor/${tutorProfile.teacherId}`, '_blank')}
                   sx={{
-                    borderRadius: 2.5,
+                    borderRadius: 1.5,
                     textTransform: 'none',
                     fontWeight: 700,
                     fontSize: '0.75rem',
@@ -516,7 +516,7 @@ const TutorProfilePage: React.FC = () => {
                     size="small"
                     onClick={() => window.location.href = '/tutor-register?mode=edit'}
                     sx={{
-                      borderRadius: 2.5,
+                      borderRadius: 1.5,
                       textTransform: 'none',
                       fontWeight: 800,
                       fontSize: '0.75rem',
@@ -630,7 +630,7 @@ const TutorProfilePage: React.FC = () => {
                       sx={{
                         width: 44,
                         height: 44,
-                        borderRadius: 2.5,
+                        borderRadius: 1.5,
                         bgcolor: alpha(stat.color, 0.1),
                         display: 'flex',
                         alignItems: 'center',
@@ -708,7 +708,7 @@ const TutorProfilePage: React.FC = () => {
             <Box
               sx={{
                 p: { xs: 3, sm: 4 },
-                borderRadius: 4,
+                borderRadius: 2,
                 bgcolor: '#fff',
                 border: '1px solid',
                 borderColor: alpha('#64748b', 0.08),
@@ -793,7 +793,7 @@ const TutorProfilePage: React.FC = () => {
               sx={{
                 height: 480,
                 width: '100%',
-                borderRadius: 4,
+                borderRadius: 2,
                 border: '1px solid',
                 borderColor: alpha('#64748b', 0.08),
                 overflow: 'hidden',
@@ -871,7 +871,7 @@ const TutorProfilePage: React.FC = () => {
             </Box>
             <Box
               sx={{
-                borderRadius: 4,
+                borderRadius: 2,
                 border: '1px solid',
                 borderColor: alpha('#64748b', 0.08),
                 bgcolor: '#fff',
@@ -1058,7 +1058,7 @@ const TutorProfilePage: React.FC = () => {
         onClose={() => !saving && setCompleteModalOpen(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
+        PaperProps={{ sx: { borderRadius: 2, overflow: 'hidden' } }}
       >
         <DialogTitle
           sx={{
@@ -1274,7 +1274,7 @@ const TutorProfilePage: React.FC = () => {
         onClose={() => setDetailsModalOpen(false)}
         fullWidth
         maxWidth="md"
-        PaperProps={{ sx: { borderRadius: 3, overflow: 'hidden' } }}
+        PaperProps={{ sx: { borderRadius: 2, overflow: 'hidden' } }}
       >
         <DialogTitle
           sx={{
@@ -1363,7 +1363,7 @@ const TutorProfilePage: React.FC = () => {
               {loadingDetails ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress size={32} sx={{ color: '#6366f1' }} /></Box>
               ) : classAttendance.length > 0 ? (
-                <Box sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden', bgcolor: '#fff' }}>
+                <Box sx={{ borderRadius: 1.5, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden', bgcolor: '#fff' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
@@ -1401,7 +1401,7 @@ const TutorProfilePage: React.FC = () => {
               {loadingDetails ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress size={32} sx={{ color: '#6366f1' }} /></Box>
               ) : classPayments.length > 0 ? (
-                <Box sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden', bgcolor: '#fff' }}>
+                <Box sx={{ borderRadius: 1.5, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden', bgcolor: '#fff' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: `2px solid ${alpha('#6366f1', 0.06)}` }}>
@@ -1439,3 +1439,4 @@ const TutorProfilePage: React.FC = () => {
 };
 
 export default TutorProfilePage;
+

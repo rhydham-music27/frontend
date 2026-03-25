@@ -51,7 +51,7 @@ const UpcomingTestsCard: React.FC = () => {
   }, [user]);
 
   const cardSx = {
-    borderRadius: 3,
+    borderRadius: 2,
     border: '1px solid',
     borderColor: 'grey.100',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
@@ -180,7 +180,7 @@ const UpcomingTestsCard: React.FC = () => {
                 key={key}
                 sx={{
                   p: 2,
-                  borderRadius: 2.5,
+                  borderRadius: 1.5,
                   border: '1px solid',
                   borderColor: alpha('#f59e0b', 0.12),
                   bgcolor: alpha('#f59e0b', 0.03),
@@ -215,3 +215,4 @@ const UpcomingTestsCard: React.FC = () => {
 };
 
 export default React.memo(UpcomingTestsCard);
+

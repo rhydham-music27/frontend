@@ -123,3 +123,4 @@ const FeedbackSummaryCard: React.FC = () => {
 };
 
 export default React.memo(FeedbackSummaryCard);
+

@@ -101,7 +101,7 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
       elevation={0}
       sx={{ 
         mb: 1.5, 
-        borderRadius: 2.5, 
+        borderRadius: 1.5, 
         border: '1px solid',
         borderColor: 'divider',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -462,7 +462,7 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
         open={reassignModalOpen}
         onClose={handleReassignClose}
         PaperProps={{
-          sx: { p: 2, minWidth: 300, borderRadius: 3 }
+          sx: { p: 2, minWidth: 300, borderRadius: 2 }
         }}
         anchorReference="anchorPosition"
         anchorPosition={{ top: window.innerHeight / 2, left: window.innerWidth / 2 }}
@@ -735,7 +735,7 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
                 sx={{ 
                   height: '100%', 
                   bgcolor: alpha(col.color, 0.02), 
-                  borderRadius: 4, 
+                  borderRadius: 2, 
                   border: '1px solid', 
                   borderColor: highlightColumn === col.key ? col.color : 'divider',
                   display: 'flex', 
@@ -748,7 +748,7 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Box>
                       <Typography variant="subtitle2" fontWeight={800} display="flex" alignItems="center" gap={1} sx={{ color: 'text.primary', fontSize: '0.875rem' }}>
-                        <Box sx={{ width: 10, height: 10, borderRadius: 3, bgcolor: col.color, boxShadow: `0 0 8px ${alpha(col.color, 0.5)}` }} />
+                        <Box sx={{ width: 10, height: 10, borderRadius: 2, bgcolor: col.color, boxShadow: `0 0 8px ${alpha(col.color, 0.5)}` }} />
                         {col.label}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" sx={{ mt: 0.25, display: 'block', fontWeight: 500, fontSize: '0.65rem' }}>
@@ -823,3 +823,4 @@ const ManagerLeadCRMPage: React.FC = () => {
 };
 
 export default ManagerLeadCRMPage;
+

@@ -71,3 +71,4 @@ const StatusDistributionChart: React.FC<Props> = ({ data, loading = false }) => 
 // I will rewrite the Tooltip to use Box text styles to avoid import errors.
 
 export default StatusDistributionChart;
+

@@ -192,3 +192,4 @@ const EditManagerModal: React.FC<EditManagerModalProps> = ({ open, onClose, mana
 };
 
 export default EditManagerModal;
+

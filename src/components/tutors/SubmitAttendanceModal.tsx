@@ -302,3 +302,4 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
 };
 
 export default SubmitAttendanceModal;
+

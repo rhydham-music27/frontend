@@ -171,7 +171,7 @@ const ManagerTodayTasksPage: React.FC = () => {
                                         onClick={() => navigate(`/manager/leads-crm?column=${col.key}`)}
                                         sx={{ 
                                             p: 2, 
-                                            borderRadius: 3, 
+                                            borderRadius: 2, 
                                             border: '1px solid', 
                                             borderColor: 'divider',
                                             cursor: 'pointer',
@@ -196,7 +196,7 @@ const ManagerTodayTasksPage: React.FC = () => {
 
                     {/* Detailed View Side */}
                     <Grid item xs={12} md={8}>
-                        <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden', minHeight: 600 }}>
+                        <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden', minHeight: 600 }}>
                            <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#FAFAFA' }}>
                                 <Tabs value={tabValue} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
                                     <Tab label="Website Leads" />
@@ -329,3 +329,4 @@ const ManagerTodayTasksPage: React.FC = () => {
 };
 
 export default ManagerTodayTasksPage;
+

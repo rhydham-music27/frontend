@@ -211,7 +211,7 @@ const CoordinatorsPage: React.FC = () => {
         {/* KPI Row (Overlapping) */}
         <Grid container spacing={3} sx={{ position: 'relative', top: 30 }}>
             <Grid item xs={12} md={4}>
-               <Paper sx={{ p: 2.5, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2, boxShadow: 3 }}>
+               <Paper sx={{ p: 2.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: 3 }}>
                    <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main, width: 56, height: 56 }}>
                        <PersonIcon fontSize="large" />
                    </Avatar>
@@ -222,7 +222,7 @@ const CoordinatorsPage: React.FC = () => {
                </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-               <Paper sx={{ p: 2.5, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2, boxShadow: 3 }}>
+               <Paper sx={{ p: 2.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: 3 }}>
                    <Avatar sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main, width: 56, height: 56 }}>
                        <SchoolIcon fontSize="large" />
                    </Avatar>
@@ -235,7 +235,7 @@ const CoordinatorsPage: React.FC = () => {
                </Paper>
             </Grid>
              <Grid item xs={12} md={4}>
-               <Paper sx={{ p: 2.5, borderRadius: 3, display: 'flex', alignItems: 'center', gap: 2, boxShadow: 3 }}>
+               <Paper sx={{ p: 2.5, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2, boxShadow: 3 }}>
                    <Avatar sx={{ bgcolor: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main, width: 56, height: 56 }}>
                        <CheckCircleIcon fontSize="large" />
                    </Avatar>
@@ -343,3 +343,4 @@ const CoordinatorsPage: React.FC = () => {
 };
 
 export default CoordinatorsPage;
+

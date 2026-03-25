@@ -109,7 +109,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   return (
     <Box
       sx={{
-        borderRadius: 5,
+        borderRadius: 2,
         bgcolor: '#ffffff',
         mb: 2.5,
         p: { xs: 2.5, sm: 3 },
@@ -213,11 +213,11 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               value={progressPercentage}
               sx={{
                 height: 8,
-                borderRadius: 4,
+                borderRadius: 2,
                 bgcolor: alpha(config.color, 0.1),
                 '& .MuiLinearProgress-bar': {
                   background: config.gradient,
-                  borderRadius: 4,
+                  borderRadius: 2,
                 },
               }}
             />
@@ -241,7 +241,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               bgcolor: alpha(config.color, 0.06),
               px: 2,
               py: 1,
-              borderRadius: 2.5,
+              borderRadius: 1.5,
               border: `1px solid ${alpha(config.color, 0.12)}`,
             }}
           >
@@ -292,3 +292,4 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 };
 
 export default ClassCard;
+

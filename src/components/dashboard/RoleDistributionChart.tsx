@@ -73,3 +73,4 @@ const RoleDistributionChart: React.FC<RoleDistributionChartProps> = ({ data, loa
 };
 
 export default RoleDistributionChart;
+

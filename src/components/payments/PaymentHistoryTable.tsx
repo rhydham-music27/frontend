@@ -53,3 +53,4 @@ export default function PaymentHistoryTable({ payments, showTutor = true, showCl
     </TableContainer>
   );
 }
+

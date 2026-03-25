@@ -105,3 +105,4 @@ export default function PaymentUpdateModal({ open, onClose, payment, onUpdate }:
     </Dialog>
   );
 }
+

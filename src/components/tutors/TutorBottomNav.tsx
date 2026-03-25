@@ -186,7 +186,7 @@ const TutorBottomNav: React.FC = () => {
           sx: {
             mb: 1,
             minWidth: 180,
-            borderRadius: 3,
+            borderRadius: 2,
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           },
         }}
@@ -235,3 +235,4 @@ const TutorBottomNav: React.FC = () => {
 };
 
 export default TutorBottomNav;
+

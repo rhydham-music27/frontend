@@ -308,7 +308,7 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
               <Tooltip
                 formatter={(value: number) => formatCurrency(value)}
                 labelFormatter={formatXAxis}
-                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ borderRadius: 2, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
               />
 
 
@@ -325,3 +325,4 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
 };
 
 export default RevenueTrendsChart;
+

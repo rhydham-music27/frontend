@@ -195,3 +195,4 @@ const EditCoordinatorModal: React.FC<EditCoordinatorModalProps> = ({ open, onClo
 };
 
 export default EditCoordinatorModal;
+

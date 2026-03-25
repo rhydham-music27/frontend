@@ -402,3 +402,4 @@ const TutorVerificationDetailsPage: React.FC = () => {
 };
 
 export default TutorVerificationDetailsPage;
+

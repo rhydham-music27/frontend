@@ -87,7 +87,7 @@ const CalendarDayCell: React.FC<CalendarDayCellProps> = ({ date, classesForDate,
         boxShadow: isToday 
           ? `inset 0 0 0 1.5px ${alpha('#6366f1', 0.15)}, 0 4px 12px ${alpha('#6366f1', 0.04)}`
           : '0 2px 8px rgba(15, 23, 42, 0.02)',
-        borderRadius: 4,
+        borderRadius: 2,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -836,7 +836,7 @@ const TutorTimetablePage: React.FC = () => {
               sx={{
                 display: { xs: 'none', sm: 'flex' },
                 p: 1.25,
-                borderRadius: 2.5,
+                borderRadius: 1.5,
                 bgcolor: alpha('#fff', 0.08),
                 backdropFilter: 'blur(8px)',
                 border: `1px solid ${alpha('#fff', 0.1)}`,
@@ -854,7 +854,7 @@ const TutorTimetablePage: React.FC = () => {
           sx={{
             mb: { xs: 3, sm: 4 },
             bgcolor: alpha('#f59e0b', 0.03),
-            borderRadius: 4,
+            borderRadius: 2,
             p: { xs: 2.5, sm: 3 },
             border: `1px solid ${alpha('#f59e0b', 0.1)}`,
             position: 'relative',
@@ -917,7 +917,7 @@ const TutorTimetablePage: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     p: 2,
-                    borderRadius: 3,
+                    borderRadius: 2,
                     bgcolor: '#ffffff',
                     boxShadow: '0 2px 8px rgba(15, 23, 42, 0.03)',
                     transition: 'all 0.2s ease',
@@ -989,7 +989,7 @@ const TutorTimetablePage: React.FC = () => {
             mb: 2,
             p: 1.5,
             bgcolor: '#ffffff',
-            borderRadius: 4,
+            borderRadius: 2,
             boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
           }}
         >
@@ -1062,7 +1062,7 @@ const TutorTimetablePage: React.FC = () => {
                   textAlign: 'center',
                   py: 1.5,
                   px: 1,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   cursor: 'pointer',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   bgcolor: isSelected
@@ -1145,7 +1145,7 @@ const TutorTimetablePage: React.FC = () => {
               sx={{
                 textAlign: 'center',
                 py: 6,
-                borderRadius: 5,
+                borderRadius: 2,
                 bgcolor: alpha('#6366f1', 0.02),
                 border: `1px dashed ${alpha('#6366f1', 0.15)}`,
               }}
@@ -1154,7 +1154,7 @@ const TutorTimetablePage: React.FC = () => {
                 sx={{
                   width: 54,
                   height: 54,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   bgcolor: alpha('#6366f1', 0.06),
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -1186,7 +1186,7 @@ const TutorTimetablePage: React.FC = () => {
                   <Box
                     key={cls.id || idx}
                     sx={{
-                      borderRadius: 4,
+                      borderRadius: 2,
                       bgcolor: '#ffffff',
                       boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)',
                       overflow: 'hidden',
@@ -1272,7 +1272,7 @@ const TutorTimetablePage: React.FC = () => {
                           display: 'flex',
                           gap: 1.5,
                           p: 1.5,
-                          borderRadius: 3,
+                          borderRadius: 2,
                           bgcolor: alpha('#f8fafc', 0.8),
                           mb: 2,
                         }}
@@ -1302,7 +1302,7 @@ const TutorTimetablePage: React.FC = () => {
                             variant="outlined"
                             onClick={() => openTestModalForClass(cls)}
                             sx={{
-                              borderRadius: 2.5,
+                              borderRadius: 1.5,
                               textTransform: 'none',
                               fontWeight: 800,
                               fontSize: '0.75rem',
@@ -1324,7 +1324,7 @@ const TutorTimetablePage: React.FC = () => {
                             setSelectedClasses(mobileSelectedDayClasses);
                           }}
                           sx={{
-                            borderRadius: 2.5,
+                            borderRadius: 1.5,
                             textTransform: 'none',
                             fontWeight: 800,
                             fontSize: '0.75rem',
@@ -1359,7 +1359,7 @@ const TutorTimetablePage: React.FC = () => {
             mb: 4,
             p: 2.5,
             bgcolor: '#ffffff',
-            borderRadius: 4,
+            borderRadius: 2,
             boxShadow: '0 4px 20px rgba(15, 23, 42, 0.03)',
           }}
         >
@@ -1417,7 +1417,7 @@ const TutorTimetablePage: React.FC = () => {
           elevation={0}
           sx={{
             bgcolor: 'transparent',
-            borderRadius: 5,
+            borderRadius: 2,
             border: 'none',
           }}
         >
@@ -1432,7 +1432,7 @@ const TutorTimetablePage: React.FC = () => {
                       py: 1.5,
                       bgcolor: alpha('#6366f1', 0.04),
                       color: '#4f46e5',
-                      borderRadius: 2.5,
+                      borderRadius: 1.5,
                       fontWeight: 900,
                       fontSize: '0.75rem',
                       letterSpacing: '0.1em',
@@ -1451,7 +1451,7 @@ const TutorTimetablePage: React.FC = () => {
                 if (!date) {
                   return (
                     <Grid item xs={12 / 7} key={idx}>
-                      <Box minHeight={{ sm: 95, md: 115 }} sx={{ bgcolor: alpha('#f8fafc', 0.4), borderRadius: 4 }} />
+                      <Box minHeight={{ sm: 95, md: 115 }} sx={{ bgcolor: alpha('#f8fafc', 0.4), borderRadius: 2 }} />
                     </Grid>
                   );
                 }
@@ -1512,7 +1512,7 @@ const TutorTimetablePage: React.FC = () => {
             <Box 
               sx={{ 
                 p: 1.25, 
-                borderRadius: 2.5, 
+                borderRadius: 1.5, 
                 bgcolor: alpha('#fff', 0.1), 
                 display: 'flex',
                 backdropFilter: 'blur(10px)',
@@ -1555,7 +1555,7 @@ const TutorTimetablePage: React.FC = () => {
                 sx={{
                   width: 72,
                   height: 72,
-                  borderRadius: 4,
+                  borderRadius: 2,
                   bgcolor: alpha('#6366f1', 0.05),
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -1588,7 +1588,7 @@ const TutorTimetablePage: React.FC = () => {
                     key={cls.id || index}
                     sx={{
                       p: { xs: 2.5, sm: 3 },
-                      borderRadius: 4,
+                      borderRadius: 2,
                       bgcolor: '#ffffff',
                       boxShadow: '0 4px 15px rgba(15, 23, 42, 0.04)',
                       border: isRescheduled ? `1px solid ${alpha('#f59e0b', 0.2)}` : 'none',
@@ -1651,7 +1651,7 @@ const TutorTimetablePage: React.FC = () => {
 
                     <Grid container spacing={2} mb={3}>
                       <Grid item xs={12} sm={6}>
-                        <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#f8fafc', 0.8), display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Box sx={{ color: '#6366f1', display: 'flex' }}><AccessTimeIcon sx={{ fontSize: 20 }} /></Box>
                           <Box>
                             <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 800, letterSpacing: '0.02em', mb: 0.25 }}>TIME SLOT</Typography>
@@ -1660,7 +1660,7 @@ const TutorTimetablePage: React.FC = () => {
                         </Box>
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#f8fafc', 0.8), display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Box sx={{ color: '#6366f1', display: 'flex' }}><LocationOnIcon sx={{ fontSize: 20 }} /></Box>
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 800, letterSpacing: '0.02em', mb: 0.25 }}>LOCATION</Typography>
@@ -1676,7 +1676,7 @@ const TutorTimetablePage: React.FC = () => {
                         fullWidth
                         onClick={() => openScheduleModal(cls)}
                         sx={{
-                          borderRadius: 2.5,
+                          borderRadius: 1.5,
                           textTransform: 'none',
                           fontWeight: 800,
                           fontSize: '0.75rem',
@@ -1694,7 +1694,7 @@ const TutorTimetablePage: React.FC = () => {
                           fullWidth
                           onClick={() => openTestModalForClass(cls)}
                           sx={{
-                            borderRadius: 2.5,
+                            borderRadius: 1.5,
                             textTransform: 'none',
                             fontWeight: 800,
                             fontSize: '0.75rem',
@@ -1732,7 +1732,7 @@ const TutorTimetablePage: React.FC = () => {
         maxWidth="sm"
         PaperProps={{
           sx: { 
-            borderRadius: 5, 
+            borderRadius: 2, 
             overflow: 'hidden',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           },
@@ -1805,7 +1805,7 @@ const TutorTimetablePage: React.FC = () => {
               onChange={(e) => setScheduleStartDate(e.target.value)}
               sx={{ 
                 '& .MuiOutlinedInput-root': { 
-                  borderRadius: 3,
+                  borderRadius: 2,
                   bgcolor: '#f8fafc',
                   '& fieldset': { borderColor: alpha('#e2e8f0', 1) },
                 } 
@@ -1857,7 +1857,7 @@ const TutorTimetablePage: React.FC = () => {
                   onChange={(e) => setScheduleStartTime(e.target.value)}
                   sx={{ 
                     '& .MuiOutlinedInput-root': { 
-                      borderRadius: 3,
+                      borderRadius: 2,
                       bgcolor: '#f8fafc',
                       '& fieldset': { borderColor: alpha('#e2e8f0', 1) },
                     } 
@@ -1868,7 +1868,7 @@ const TutorTimetablePage: React.FC = () => {
                 <Box 
                   sx={{ 
                     p: 1.5, 
-                    borderRadius: 3, 
+                    borderRadius: 2, 
                     bgcolor: alpha('#6366f1', 0.04),
                     border: `1px solid ${alpha('#6366f1', 0.1)}`,
                     height: '100%',
@@ -1893,7 +1893,7 @@ const TutorTimetablePage: React.FC = () => {
           <Button
             onClick={closeScheduleModal}
             disabled={scheduleSaving}
-            sx={{ borderRadius: 2.5, textTransform: 'none', fontWeight: 800, color: '#64748b', px: 3 }}
+            sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 800, color: '#64748b', px: 3 }}
           >
             Cancel
           </Button>
@@ -1902,7 +1902,7 @@ const TutorTimetablePage: React.FC = () => {
             onClick={handleSaveSchedule}
             disabled={scheduleSaving || scheduleDays.length === 0}
             sx={{
-              borderRadius: 3,
+              borderRadius: 2,
               textTransform: 'none',
               fontWeight: 900,
               bgcolor: '#6366f1',

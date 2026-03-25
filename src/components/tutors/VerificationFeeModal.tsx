@@ -190,3 +190,4 @@ const VerificationFeeModal: React.FC<VerificationFeeModalProps> = ({
 };
 
 export default VerificationFeeModal;
+

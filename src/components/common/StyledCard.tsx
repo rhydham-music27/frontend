@@ -87,3 +87,4 @@ export const ModernCard = styled(Card)<CardProps>(({ theme }) => ({
     },
   },
 }));
+

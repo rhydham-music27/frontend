@@ -297,7 +297,7 @@ const PaymentsEarningsCard: React.FC = () => {
       <Card
         elevation={0}
         sx={{
-          borderRadius: 3,
+          borderRadius: 2,
           border: '1px solid',
           borderColor: 'grey.100',
           boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
@@ -384,7 +384,7 @@ const PaymentsEarningsCard: React.FC = () => {
           <TableContainer
             sx={{
               '&::-webkit-scrollbar': { height: 4 },
-              '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: 4 },
+              '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: 2 },
             }}
           >
             <Table sx={{ minWidth: 750 }}>
@@ -534,3 +534,4 @@ const PaymentsEarningsCard: React.FC = () => {
 };
 
 export default PaymentsEarningsCard;
+

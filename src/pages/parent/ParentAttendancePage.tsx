@@ -226,3 +226,4 @@ const ParentAttendancePage: React.FC = () => {
 };
 
 export default ParentAttendancePage;
+

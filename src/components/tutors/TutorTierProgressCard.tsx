@@ -190,11 +190,11 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
             value={progress}
             sx={{
               height: 10,
-              borderRadius: 5,
+              borderRadius: 2,
               bgcolor: alpha(tierColor, 0.05),
               boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)',
               '& .MuiLinearProgress-bar': {
-                borderRadius: 5,
+                borderRadius: 2,
                 background: `linear-gradient(90deg, ${tierColor} 0%, ${alpha(tierColor, 0.6)} 100%)`,
                 boxShadow: `0 0 10px ${alpha(tierColor, 0.3)}`,
               },
@@ -205,7 +205,7 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
             sx={{ 
               p: 2, 
               bgcolor: alpha('#3b82f6', 0.03), 
-              borderRadius: 3, 
+              borderRadius: 2, 
               border: '1px solid',
               borderColor: alpha('#3b82f6', 0.08),
               display: 'flex', 
@@ -234,7 +234,7 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
             mt: 1,
             p: 3,
             bgcolor: alpha('#fbbf24', 0.05),
-            borderRadius: 4,
+            borderRadius: 2,
             display: 'flex',
             alignItems: 'center',
             gap: 2,
@@ -267,3 +267,4 @@ const TutorTierProgressCard: React.FC<TutorTierProgressCardProps> = ({ tutor }) 
 };
 
 export default TutorTierProgressCard;
+

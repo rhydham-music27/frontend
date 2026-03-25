@@ -130,7 +130,7 @@ const StudentClassesPage: React.FC = () => {
                         sx={{
                           height: 8,
                           backgroundColor: 'grey.200',
-                          borderRadius: 4,
+                          borderRadius: 2,
                           overflow: 'hidden',
                         }}
                       >
@@ -182,3 +182,4 @@ const StudentClassesPage: React.FC = () => {
 };
 
 export default StudentClassesPage;
+

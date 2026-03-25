@@ -57,7 +57,7 @@ const TutorClassesPage: React.FC = () => {
             sx={{
               display: { xs: 'none', sm: 'flex' },
               p: 1.25,
-              borderRadius: 2.5,
+              borderRadius: 1.5,
               bgcolor: alpha('#fff', 0.08),
               backdropFilter: 'blur(8px)',
               border: `1px solid ${alpha('#fff', 0.1)}`,
@@ -74,3 +74,4 @@ const TutorClassesPage: React.FC = () => {
 };
 
 export default TutorClassesPage;
+

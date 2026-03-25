@@ -200,7 +200,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
               size="small"
               sx={{
                 p: 0.5,
-                borderRadius: 3,
+                borderRadius: 2,
                 border: `1px solid ${alpha('#6366f1', 0.1)}`,
                 bgcolor: alpha('#6366f1', 0.02),
                 '&:hover': { backgroundColor: alpha('#6366f1', 0.06) }
@@ -233,14 +233,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
               sx: {
                 mt: 1.5,
                 minWidth: 240,
-                borderRadius: 4,
+                borderRadius: 2,
                 boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
                 border: `1px solid ${alpha('#64748b', 0.08)}`,
                 p: 1
               },
             }}
           >
-            <Box sx={{ px: 2, py: 2, mb: 1, borderRadius: 3, bgcolor: alpha('#6366f1', 0.03) }}>
+            <Box sx={{ px: 2, py: 2, mb: 1, borderRadius: 2, bgcolor: alpha('#6366f1', 0.03) }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#0f172a' }}>
                 {user?.name || 'User'}
               </Typography>
@@ -254,7 +254,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
               sx={{
                 py: 1.5,
                 px: 2,
-                borderRadius: 2.5,
+                borderRadius: 1.5,
                 gap: 1.5,
                 '&:hover': {
                   backgroundColor: alpha('#6366f1', 0.04),
@@ -271,7 +271,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
               sx={{
                 py: 1.5,
                 px: 2,
-                borderRadius: 2.5,
+                borderRadius: 1.5,
                 gap: 1.5,
               }}
             >
@@ -286,7 +286,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showSidebarMenu = true }) 
               sx={{
                 py: 1.5,
                 px: 2,
-                borderRadius: 2.5,
+                borderRadius: 1.5,
                 gap: 1.5,
                 color: '#ef4444',
                 '&:hover': {

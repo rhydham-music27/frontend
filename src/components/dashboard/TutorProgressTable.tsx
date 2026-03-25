@@ -192,3 +192,4 @@ const TutorProgressTable: React.FC<Props> = ({ tutors, total, page, limit, loadi
 };
 
 export default TutorProgressTable;
+

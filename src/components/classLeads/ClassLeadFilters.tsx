@@ -32,3 +32,4 @@ export default function ClassLeadFilters({ filters, onFilterChange, onClearFilte
     </Box>
   );
 }
+

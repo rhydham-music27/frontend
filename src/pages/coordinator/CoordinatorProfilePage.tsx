@@ -376,3 +376,4 @@ const CoordinatorProfilePage: React.FC = () => {
 };
 
 export default CoordinatorProfilePage;
+

@@ -142,57 +142,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
           px: 4,
         }}
       >
-        <Box
-          sx={{
-            p: 0.5,
-            borderRadius: 2,
-            bgcolor: alpha('#6366f1', 0.06),
-            display: 'flex',
-            border: `1px solid ${alpha('#6366f1', 0.1)}`
-          }}
-        >
-          <Box
-            component="img"
-            src="/1.jpg"
-            alt="Logo"
-            sx={{
-              height: { xs: 36, sm: 42 },
-              width: { xs: 36, sm: 42 },
-              borderRadius: '50%',
-            }}
-          />
-        </Box>
-        <Box sx={{ minWidth: 0, flex: 1, display: isCollapsed ? 'none' : 'block' }}>
-          <Typography
-            variant="h6"
-            sx={{
-              color: '#0f172a',
-              fontWeight: 900,
-              fontSize: '1.1rem',
-              lineHeight: 1.2,
-              fontFamily: "'Manrope', sans-serif",
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Shikshak
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#64748b',
-              fontWeight: 750,
-              fontSize: '0.65rem',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-            }}
-          >
-            {userRole || 'Dashboard'}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Box sx={{ px: 2, mb: 2 }}>
-        <Divider sx={{ opacity: 0.5 }} />
+        {/* Branding removed as per user request, but space preserved */}
       </Box>
 
       <List sx={{ flexGrow: 1, py: 1, px: 2 }}>
@@ -236,7 +186,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
                   disabled={isItemDisabled}
                   onClick={() => !isItemDisabled && handleNavigation(resolvedPath)}
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: 2,
                     py: 1.5,
                     px: 2,
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -290,7 +240,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, drawerWidth = 280, onR
         <Box 
           sx={{ 
             p: 2, 
-            borderRadius: 3, 
+            borderRadius: 2, 
             bgcolor: alpha('#6366f1', 0.03), 
             border: `1px solid ${alpha('#6366f1', 0.05)}`,
             textAlign: 'center'

@@ -372,7 +372,7 @@ const CoordinatorsManagementPage: React.FC = () => {
           width: '100%',
           overflowX: 'auto',
           mb: 3,
-          borderRadius: 3,
+          borderRadius: 2,
           border: '1px solid',
           borderColor: 'divider',
         }}
@@ -542,3 +542,4 @@ const CoordinatorsManagementPage: React.FC = () => {
 };
 
 export default CoordinatorsManagementPage;
+

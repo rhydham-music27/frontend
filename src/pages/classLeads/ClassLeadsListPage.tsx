@@ -353,7 +353,7 @@ export default function ClassLeadsListPage() {
           elevation={0}
           sx={{
             mb: 3,
-            borderRadius: 3,
+            borderRadius: 2,
             border: '1px solid',
             borderColor: 'divider',
             overflowX: 'auto',
@@ -676,4 +676,5 @@ export default function ClassLeadsListPage() {
     </Container>
   );
 }
+
 

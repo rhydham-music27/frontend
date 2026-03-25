@@ -68,7 +68,7 @@ function SectionCard({ children, sx }: { children: React.ReactNode; sx?: any }) 
   return (
     <Card
       sx={{
-        borderRadius: 3,
+        borderRadius: 2,
         border: '1px solid',
         borderColor: 'grey.100',
         boxShadow: '0 2px 12px -4px rgba(0,0,0,0.06)',
@@ -389,7 +389,7 @@ export default function ClassLeadDetailPage() {
         anchorEl={null}
         open={reassignModalOpen}
         onClose={handleReassignClose}
-        PaperProps={{ sx: { p: 2.5, minWidth: 320, borderRadius: 3, boxShadow: '0 8px 32px -8px rgba(0,0,0,0.15)' } }}
+        PaperProps={{ sx: { p: 2.5, minWidth: 320, borderRadius: 2, boxShadow: '0 8px 32px -8px rgba(0,0,0,0.15)' } }}
         anchorReference="anchorPosition"
         anchorPosition={{ top: window.innerHeight / 2, left: window.innerWidth / 2 }}
         transformOrigin={{ vertical: 'center', horizontal: 'center' }}
@@ -465,7 +465,7 @@ export default function ClassLeadDetailPage() {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
-            PaperProps={{ sx: { borderRadius: 2.5, boxShadow: '0 8px 24px -6px rgba(0,0,0,0.12)', minWidth: 200 } }}
+            PaperProps={{ sx: { borderRadius: 1.5, boxShadow: '0 8px 24px -6px rgba(0,0,0,0.12)', minWidth: 200 } }}
           >
             <MenuItem onClick={handleEdit} sx={{ gap: 1.5, py: 1, fontSize: '0.875rem' }}>
               <EditIcon fontSize="small" sx={{ color: 'text.secondary' }} /> Edit Lead
@@ -654,7 +654,7 @@ export default function ClassLeadDetailPage() {
                     sx={{
                       flex: '1 1 140px',
                       p: 2,
-                      borderRadius: 2.5,
+                      borderRadius: 1.5,
                       bgcolor: (theme: any) => alpha(theme.palette.primary.main, 0.04),
                       border: '1px solid',
                       borderColor: (theme: any) => alpha(theme.palette.primary.main, 0.1),
@@ -673,7 +673,7 @@ export default function ClassLeadDetailPage() {
                       sx={{
                         flex: '1 1 140px',
                         p: 2,
-                        borderRadius: 2.5,
+                        borderRadius: 1.5,
                         bgcolor: (theme: any) => alpha(theme.palette.info.main, 0.04),
                         border: '1px solid',
                         borderColor: (theme: any) => alpha(theme.palette.info.main, 0.1),
@@ -693,7 +693,7 @@ export default function ClassLeadDetailPage() {
                       sx={{
                         flex: '1 1 140px',
                         p: 2,
-                        borderRadius: 2.5,
+                        borderRadius: 1.5,
                         bgcolor: (theme: any) => alpha(theme.palette.success.main, 0.04),
                         border: '1px solid',
                         borderColor: (theme: any) => alpha(theme.palette.success.main, 0.1),
@@ -775,7 +775,7 @@ export default function ClassLeadDetailPage() {
                     <Box
                       sx={{
                         p: 2,
-                        borderRadius: 2.5,
+                        borderRadius: 1.5,
                         background: 'linear-gradient(135deg, rgba(15,98,254,0.04) 0%, rgba(15,98,254,0.08) 100%)',
                         border: '1px solid',
                         borderColor: 'primary.100',
@@ -1083,7 +1083,7 @@ export default function ClassLeadDetailPage() {
         anchorEl={null}
         open={approveWithCoordinatorOpen}
         onClose={handleApproveDemoCancel}
-        PaperProps={{ sx: { p: 2.5, minWidth: 350, borderRadius: 3, boxShadow: '0 8px 32px -8px rgba(0,0,0,0.15)' } }}
+        PaperProps={{ sx: { p: 2.5, minWidth: 350, borderRadius: 2, boxShadow: '0 8px 32px -8px rgba(0,0,0,0.15)' } }}
         anchorReference="anchorPosition"
         anchorPosition={{ top: window.innerHeight / 2, left: window.innerWidth / 2 }}
         transformOrigin={{ vertical: 'center', horizontal: 'center' }}
@@ -1126,3 +1126,4 @@ export default function ClassLeadDetailPage() {
     </Container>
   );
 }
+

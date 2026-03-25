@@ -182,7 +182,7 @@ const TutorAttendancePage: React.FC = () => {
             ) : (
                 rows.map((row) => (
                     <Grid item xs={12} md={6} lg={4} key={row.classId}>
-                        <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                        <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                             <CardContent>
                                 <Typography variant="h6" fontWeight={700} gutterBottom>{row.studentName}</Typography>
                                 <Typography variant="body2" color="primary" sx={{ mb: 2 }}>{row.className}</Typography>
@@ -229,3 +229,4 @@ const TutorAttendancePage: React.FC = () => {
 };
 
 export default TutorAttendancePage;
+

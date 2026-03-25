@@ -56,7 +56,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 6,
+    borderRadius: 2,
     bgcolor: '#ffffff',
     boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
     border: 'none',
@@ -82,7 +82,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
     return (
       <Card sx={cardSx}>
         <CardContent sx={{ py: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+          <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 2 }}>
             <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
             <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
               {error}
@@ -102,7 +102,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
               sx={{
                 width: 44,
                 height: 44,
-                borderRadius: 3,
+                borderRadius: 2,
                 bgcolor: alpha('#10b981', 0.08),
                 display: 'flex',
                 alignItems: 'center',
@@ -125,7 +125,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
             sx={{
               px: 2,
               py: 0.75,
-              borderRadius: 2,
+              borderRadius: 1.5,
               bgcolor: alpha('#10b981', 0.1),
               color: '#059669',
               fontWeight: 900,
@@ -145,7 +145,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                 sx={{
                   width: 64,
                   height: 64,
-                  borderRadius: 4,
+                  borderRadius: 1.5,
                   bgcolor: alpha('#10b981', 0.05),
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -174,7 +174,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                   key={cls.id}
                   sx={{
                     p: 2.5,
-                    borderRadius: 4,
+                    borderRadius: 2,
                     border: '1px solid',
                     borderColor: alpha('#e2e8f0', 0.6),
                     bgcolor: '#ffffff',
@@ -220,12 +220,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                       value={progress}
                       sx={{
                         height: 6,
-                        borderRadius: 3,
-                        bgcolor: alpha(pColor, 0.1),
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor: pColor,
-                          borderRadius: 3,
-                        },
+                        borderRadius: 1.5,
                       }}
                     />
                   </Box>
@@ -332,11 +327,11 @@ const ActiveClassesOverviewCard: React.FC = () => {
                             value={progress}
                             sx={{
                               height: 6,
-                              borderRadius: 3,
+                              borderRadius: 1.5,
                               bgcolor: alpha(pColor, 0.1),
                               '& .MuiLinearProgress-bar': {
                                 bgcolor: pColor,
-                                borderRadius: 3,
+                                borderRadius: 1.5,
                               },
                             }}
                           />
@@ -364,3 +359,4 @@ const ActiveClassesOverviewCard: React.FC = () => {
 };
 
 export default React.memo(ActiveClassesOverviewCard);
+

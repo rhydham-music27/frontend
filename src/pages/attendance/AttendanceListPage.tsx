@@ -438,7 +438,7 @@ export default function AttendanceListPage() {
                    {/* Monthly Sheets Section */}
                   {pendingSheets.map((sheet) => (
                     <Grid item xs={12} md={6} lg={4} key={sheet.id}>
-                      <Paper sx={{ p: 2.5, borderRadius: 3, border: '1px solid', borderColor: 'divider', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <Paper sx={{ p: 2.5, borderRadius: 2, border: '1px solid', borderColor: 'divider', height: '100%', display: 'flex', flexDirection: 'column' }}>
                          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                             <Box display="flex" alignItems="center" gap={1}>
                                <Box sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), p: 1, borderRadius: 2 }}>
@@ -607,3 +607,4 @@ export default function AttendanceListPage() {
     </Container>
   );
 }
+

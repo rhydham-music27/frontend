@@ -91,7 +91,7 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
           <Box
             sx={{
               height: '100%',
-              borderRadius: { xs: 4, sm: 6 },
+              borderRadius: 2,
               bgcolor: '#ffffff',
               p: { xs: 2.25, sm: 3.5 },
               position: 'relative',
@@ -143,7 +143,7 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
                   sx={{
                     width: { xs: 36, sm: 44 },
                     height: { xs: 36, sm: 44 },
-                    borderRadius: { xs: 2.5, sm: 3.5 },
+                    borderRadius: 2,
                     bgcolor: alpha(card.color, 0.08),
                     color: card.color,
                     display: 'flex',
@@ -223,3 +223,4 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
 };
 
 export default TutorAdvancedAnalyticsCards;
+

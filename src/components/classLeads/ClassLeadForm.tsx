@@ -87,7 +87,7 @@ function SectionCard({ children }: { children: React.ReactNode }) {
   return (
     <Card
       sx={{
-        borderRadius: 3,
+        borderRadius: 2,
         border: '1px solid',
         borderColor: 'grey.100',
         boxShadow: '0 2px 12px -4px rgba(0,0,0,0.06)',
@@ -238,7 +238,7 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
         p: { xs: 2, sm: 2.5 },
         mb: 2,
         bgcolor: 'grey.50',
-        borderRadius: 2.5,
+        borderRadius: 1.5,
         border: '1px solid',
         borderColor: 'grey.100',
         borderLeft: '4px solid',
@@ -381,9 +381,10 @@ function GroupStudentRow({ index, control, register, setValue, watch, errors, re
                 getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
                 isOptionEqualToValue={(option, value) => option.value === value.value}
                 value={
-                  (value || []).map((val: string) => {
-                    const opt = subjectOptions.find(o => o.value === val);
-                    return opt ? opt : { label: val, value: val };
+                  (value || []).map((val: any) => {
+                    const valueToFind = typeof val === 'object' ? (val.value || val.label || val._id) : val;
+                    const opt = subjectOptions.find(o => o.value === valueToFind);
+                    return opt ? opt : { label: String(valueToFind), value: String(valueToFind) };
                   })
                 }
                 onChange={(_, newValue) => {
@@ -499,7 +500,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       parentPhone: (initialData as any)?.parentPhone || '',
       grade: initialData?.grade || '',
       subject: Array.isArray(initialData?.subject)
-        ? (initialData?.subject as unknown as string[])
+        ? (initialData?.subject as any[]).map((s: any) => typeof s === 'object' ? (s.value || s.label || s._id) : String(s))
         : initialData?.subject
           ? String(initialData.subject).split(',').map((s: string) => s.trim()).filter(Boolean)
           : [],
@@ -521,8 +522,18 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
       internalNotes: (initialData as any)?.internalNotes || '',
       numberOfStudents: (initialData as any)?.numberOfStudents ?? 1,
       studentDetails: (initialData as any)?.studentDetails?.length > 0
-        ? (initialData as any).studentDetails
-        : (initialData as any)?.groupClass?.students || [
+        ? (initialData as any).studentDetails.map((sd: any) => ({
+          ...sd,
+          subject: Array.isArray(sd.subject)
+            ? sd.subject.map((s: any) => typeof s === 'object' ? (s.value || s.label || s._id) : String(s))
+            : sd.subject ? String(sd.subject).split(',').map((s: string) => s.trim()).filter(Boolean) : []
+        }))
+        : (initialData as any)?.groupClass?.students?.map((sd: any) => ({
+          ...sd,
+          subject: Array.isArray(sd.subject)
+            ? sd.subject.map((s: any) => typeof s === 'object' ? (s.value || s.label || s._id) : String(s))
+            : sd.subject ? String(sd.subject).split(',').map((s: string) => s.trim()).filter(Boolean) : []
+        })) || [
           { name: '', gender: 'M' as 'M' | 'F', fees: 0, tutorFees: 0, board: '', grade: '', subject: [], parentName: '', parentEmail: '', parentPhone: '' }
         ],
     };
@@ -819,9 +830,10 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
                 getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
                 isOptionEqualToValue={(option, value) => option.value === value.value}
                 value={
-                  (watch('subject') || []).map((val: string) => {
-                    const opt = subjectOptions.find(o => o.value === val);
-                    return opt ? opt : { label: val, value: val };
+                  (watch('subject') || []).map((val: any) => {
+                    const valueToFind = typeof val === 'object' ? (val.value || val.label || val._id) : val;
+                    const opt = subjectOptions.find(o => o.value === valueToFind);
+                    return opt ? opt : { label: String(valueToFind), value: String(valueToFind) };
                   })
                 }
                 onChange={(_, newValue) => {
@@ -934,7 +946,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
           <Box
             sx={{
               p: 2.5,
-              borderRadius: 2.5,
+              borderRadius: 1.5,
               background: 'linear-gradient(135deg, rgba(15,98,254,0.04) 0%, rgba(15,98,254,0.08) 100%)',
               border: '1px solid',
               borderColor: 'primary.100',
@@ -1001,7 +1013,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
               sx={{
                 border: '1px solid',
                 borderColor: 'grey.100',
-                borderRadius: 2.5,
+                borderRadius: 1.5,
                 p: 2.5,
                 bgcolor: 'grey.50',
               }}
@@ -1403,7 +1415,7 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
             py: 1.5,
             fontWeight: 700,
             fontSize: '1rem',
-            borderRadius: 2.5,
+            borderRadius: 1.5,
             textTransform: 'none',
             boxShadow: '0 4px 14px -4px rgba(15,98,254,0.4)',
             '&:hover': {
@@ -1417,3 +1429,4 @@ export default function ClassLeadForm({ initialData, onSubmit, loading, error, s
     </Box>
   );
 }
+

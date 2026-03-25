@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Card, CardContent, Typography, Box, Chip, Divider, Grid, alpha } from '@mui/material';
 import { ITest } from '../../types';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -14,7 +14,7 @@ const TestReportCard: React.FC<TestReportCardProps> = ({ test }) => {
     const report = (test as any).report || {};
 
     return (
-        <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'grey.100' }}>
+        <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'grey.100' }}>
             <CardContent sx={{ p: 3 }}>
                 <Box display="flex" alignItems="center" gap={1.5} mb={2}>
                     <Box sx={{ p: 0.75, borderRadius: 1.5, bgcolor: alpha('#6366f1', 0.1) }}>
@@ -65,3 +65,4 @@ const TestReportCard: React.FC<TestReportCardProps> = ({ test }) => {
 };
 
 export default TestReportCard;
+

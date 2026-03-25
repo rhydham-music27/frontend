@@ -268,3 +268,4 @@ const StudentPaymentsPage: React.FC = () => {
 };
 
 export default StudentPaymentsPage;
+

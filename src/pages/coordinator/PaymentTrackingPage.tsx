@@ -327,7 +327,7 @@ const PaymentTrackingPage: React.FC = () => {
 
             {proofPreview && (
               <Box mb={3} textAlign="center">
-                <img src={proofPreview} alt="Proof Preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
+                <img src={proofPreview} alt="Proof Preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 2 }} />
               </Box>
             )}
 
@@ -359,3 +359,4 @@ const PaymentTrackingPage: React.FC = () => {
 };
 
 export default PaymentTrackingPage;
+

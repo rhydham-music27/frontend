@@ -98,7 +98,7 @@ const TutorLeadsPage: React.FC = () => {
               Track all your assigned demo sessions and class interest expressions.
             </Typography>
           </Box>
-          <Box sx={{ display: { xs: 'none', sm: 'flex' }, p: 1.25, borderRadius: 2.5, bgcolor: alpha('#fff', 0.08), backdropFilter: 'blur(8px)', border: `1px solid ${alpha('#fff', 0.1)}` }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, p: 1.25, borderRadius: 1.5, bgcolor: alpha('#fff', 0.08), backdropFilter: 'blur(8px)', border: `1px solid ${alpha('#fff', 0.1)}` }}>
             <ActivityIcon sx={{ fontSize: 22, color: alpha('#fff', 0.7) }} />
           </Box>
         </Box>
@@ -107,10 +107,10 @@ const TutorLeadsPage: React.FC = () => {
       {/* ─── KPI Cards ──────────────────────────────── */}
       <Grid container spacing={2.5} mb={4}>
         <Grid item xs={12} sm={6}>
-          <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: alpha('#a855f7', 0.15), background: `linear-gradient(135deg, ${alpha('#a855f7', 0.06)} 0%, ${alpha('#7c3aed', 0.03)} 100%)` }}>
+          <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: alpha('#a855f7', 0.15), background: `linear-gradient(135deg, ${alpha('#a855f7', 0.06)} 0%, ${alpha('#7c3aed', 0.03)} 100%)` }}>
             <CardContent sx={{ p: 2.5 }}>
               <Box display="flex" alignItems="center" gap={2}>
-                <Box sx={{ p: 1.5, borderRadius: 2.5, bgcolor: alpha('#a855f7', 0.12) }}>
+                <Box sx={{ p: 1.5, borderRadius: 1.5, bgcolor: alpha('#a855f7', 0.12) }}>
                   <VideocamIcon sx={{ fontSize: 26, color: '#a855f7' }} />
                 </Box>
                 <Box>
@@ -127,10 +127,10 @@ const TutorLeadsPage: React.FC = () => {
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: alpha('#10b981', 0.15), background: `linear-gradient(135deg, ${alpha('#10b981', 0.06)} 0%, ${alpha('#059669', 0.03)} 100%)` }}>
+          <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: alpha('#10b981', 0.15), background: `linear-gradient(135deg, ${alpha('#10b981', 0.06)} 0%, ${alpha('#059669', 0.03)} 100%)` }}>
             <CardContent sx={{ p: 2.5 }}>
               <Box display="flex" alignItems="center" gap={2}>
-                <Box sx={{ p: 1.5, borderRadius: 2.5, bgcolor: alpha('#10b981', 0.12) }}>
+                <Box sx={{ p: 1.5, borderRadius: 1.5, bgcolor: alpha('#10b981', 0.12) }}>
                   <FavoriteIcon sx={{ fontSize: 26, color: '#10b981' }} />
                 </Box>
                 <Box>
@@ -170,7 +170,7 @@ const TutorLeadsPage: React.FC = () => {
         ) : demos.length === 0 ? (
           <EmptyState title="No Demos Yet" description="You have no demo sessions assigned yet." />
         ) : (
-          <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden' }}>
+          <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden' }}>
             <TableContainer sx={{ overflowX: 'auto' }}>
               <Table sx={{ minWidth: 700 }}>
                 <TableHead>
@@ -287,7 +287,7 @@ const TutorLeadsPage: React.FC = () => {
         ) : interests.length === 0 ? (
           <EmptyState title="No Interests Yet" description="You haven't expressed interest in any class announcements yet." />
         ) : (
-          <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden' }}>
+          <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'grey.100', overflow: 'hidden' }}>
             <TableContainer sx={{ overflowX: 'auto' }}>
               <Table sx={{ minWidth: 600 }}>
                 <TableHead>
@@ -347,3 +347,4 @@ const TutorLeadsPage: React.FC = () => {
 };
 
 export default TutorLeadsPage;
+

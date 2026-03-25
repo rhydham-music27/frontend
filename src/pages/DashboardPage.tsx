@@ -89,7 +89,7 @@ const DashboardPage: React.FC = () => {
       <Card
         elevation={0}
         sx={{
-          borderRadius: 3,
+          borderRadius: 2,
           background: gradient,
           color: 'white',
           position: 'relative',
@@ -183,7 +183,7 @@ const DashboardPage: React.FC = () => {
         elevation={0} 
         sx={{ 
             p: 2, 
-            borderRadius: 3, 
+            borderRadius: 2, 
             mb: 5, 
             position: 'relative', 
             zIndex: 3, 
@@ -270,7 +270,7 @@ const DashboardPage: React.FC = () => {
       </Box>
 
       <Box mb={5}>
-        <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <Box display="flex" alignItems="center" gap={1} mb={3}>
             <Box width={4} height={20} bgcolor="primary.main" borderRadius={1} />
             <Typography variant="h6" fontWeight={700}>Lead CRM</Typography>
@@ -284,7 +284,7 @@ const DashboardPage: React.FC = () => {
         <Grid container spacing={4}>
             {/* Status Distribution */}
              <Grid item xs={12} lg={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: '1px solid', borderColor: 'divider' }}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <Box display="flex" alignItems="center" gap={1} mb={3}>
                        <Box width={4} height={20} bgcolor="secondary.main" borderRadius={1} />
                        <Typography variant="h6" fontWeight={700}>Lead Status</Typography>
@@ -295,7 +295,7 @@ const DashboardPage: React.FC = () => {
             
             {/* Financials & Funnel */}
              <Grid item xs={12} lg={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: '1px solid', borderColor: 'divider' }}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <Box display="flex" alignItems="center" gap={1} mb={3}>
                        <Box width={4} height={20} bgcolor="success.main" borderRadius={1} />
                        <Typography variant="h6" fontWeight={700}>Revenue Trends</Typography>
@@ -304,7 +304,7 @@ const DashboardPage: React.FC = () => {
                 </Paper>
             </Grid>
              <Grid item xs={12} lg={6}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 3, height: '100%', border: '1px solid', borderColor: 'divider' }}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: '100%', border: '1px solid', borderColor: 'divider' }}>
                     <Box display="flex" alignItems="center" gap={1} mb={3}>
                        <Box width={4} height={20} bgcolor="warning.main" borderRadius={1} />
                        <Typography variant="h6" fontWeight={700}>Conversion Funnel</Typography>
@@ -315,7 +315,7 @@ const DashboardPage: React.FC = () => {
 
             {/* Cumulative Growth */}
             <Grid item xs={12}>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" fontWeight={700} gutterBottom>Cumulative Growth</Typography>
                     <CumulativeGrowthChart data={cumulativeGrowth} loading={loading} />
                 </Paper>
@@ -328,7 +328,7 @@ const DashboardPage: React.FC = () => {
          <Typography variant="h5" fontWeight={800} gutterBottom sx={{ mb: 3 }}>
             Tutor Performance
          </Typography>
-         <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+         <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
             <TutorProgressTable
                 tutors={tutorReport.tutors}
                 total={tutorReport.total}
@@ -347,3 +347,4 @@ const DashboardPage: React.FC = () => {
 };
 
 export default DashboardPage;
+

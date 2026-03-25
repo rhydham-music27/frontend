@@ -177,7 +177,7 @@ const CompletedLeadsTable: React.FC = () => {
               <Box
                 key={demo.id}
                 sx={{
-                  borderRadius: 2.5,
+                  borderRadius: 1.5,
                   border: '1px solid',
                   borderColor: alpha('#a855f7', 0.1),
                   bgcolor: '#fff',
@@ -308,7 +308,7 @@ const CompletedLeadsTable: React.FC = () => {
         elevation={0}
         sx={{
           display: { xs: 'none', sm: 'block' },
-          borderRadius: 3,
+          borderRadius: 2,
           border: '1px solid',
           borderColor: 'grey.100',
           boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
@@ -318,7 +318,7 @@ const CompletedLeadsTable: React.FC = () => {
         <TableContainer
           sx={{
             '&::-webkit-scrollbar': { height: 4 },
-            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: 4 },
+            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: 2 },
           }}
         >
           <Table sx={{ minWidth: 750 }} aria-label="demo history table">
@@ -511,3 +511,4 @@ const CompletedLeadsTable: React.FC = () => {
 };
 
 export default CompletedLeadsTable;
+

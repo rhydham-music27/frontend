@@ -202,7 +202,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
       <Card
         elevation={0}
         sx={{
-          borderRadius: 4,
+          borderRadius: 2,
           overflow: 'visible',
           background: 'rgba(255, 255, 255, 0.9)',
           backdropFilter: 'blur(20px)',
@@ -383,7 +383,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
               </Grid>
 
               <Grid item xs={12}>
-                <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.03), border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}` }}>
+                <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.03), border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}` }}>
                   <Typography variant="subtitle2" gutterBottom fontWeight={700} color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LibraryBooksIcon fontSize="inherit" /> Select Your Subjects
                   </Typography>
@@ -703,7 +703,7 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
                 disabled={isLoading}
                 sx={{
                   py: 1.8,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   fontWeight: 800,
                   fontSize: '1.1rem',
                   textTransform: 'none',
@@ -726,4 +726,5 @@ export const TutorLeadForm = ({ onSubmit, isLoading, initialData, mode = 'create
     </motion.div>
   );
 };
+
 

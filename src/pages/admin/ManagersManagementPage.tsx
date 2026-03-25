@@ -362,7 +362,7 @@ const ManagersManagementPage: React.FC = () => {
       )}
 
       {!isXs ? (
-        <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+        <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
           <TableContainer sx={{ overflowX: 'auto' }}>
             <Table size="small" sx={{ minWidth: 750 }}>
               <TableHead>
@@ -562,3 +562,4 @@ const ManagersManagementPage: React.FC = () => {
 };
 
 export default ManagersManagementPage;
+

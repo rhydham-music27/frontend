@@ -441,3 +441,4 @@ const ApprovalsManagementPage: React.FC = () => {
 };
 
 export default ApprovalsManagementPage;
+

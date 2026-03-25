@@ -278,7 +278,7 @@ const ManagerProfilePage: React.FC = () => {
 
       {error && <ErrorAlert error={error} />}
       {profileMissing && (
-        <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <CardContent>
             <Typography variant="h6" gutterBottom fontWeight={700}>Manager profile not found</Typography>
             <Typography color="text.secondary" paragraph>
@@ -295,7 +295,7 @@ const ManagerProfilePage: React.FC = () => {
             <Paper
               sx={{
                 p: 4,
-                borderRadius: 4,
+                borderRadius: 2,
                 background: 'linear-gradient(135deg, #0f172a, #1e293b)',
                 color: 'white',
                 position: 'relative',
@@ -429,7 +429,7 @@ const ManagerProfilePage: React.FC = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      borderRadius: 3,
+                      borderRadius: 2,
                       transition: 'all 0.2s',
                       '&:hover': {
                         transform: 'translateY(-4px)',
@@ -455,7 +455,7 @@ const ManagerProfilePage: React.FC = () => {
 
           {/* Details & Activity Section */}
           <Box sx={{ mb: 4 }}>
-            <Paper variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
+            <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
                 <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ px: 2 }}>
                   <Tab icon={<InfoIcon sx={{ fontSize: '1.2rem' }} />} iconPosition="start" label="Overview" />
@@ -565,7 +565,7 @@ const ManagerProfilePage: React.FC = () => {
 
           {isAdminViewing && (
             <Box sx={{ mb: 6 }}>
-              <Paper variant="outlined" sx={{ borderRadius: 4, p: 3 }}>
+              <Paper variant="outlined" sx={{ borderRadius: 2, p: 3 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
                   Documents
                 </Typography>
@@ -646,7 +646,7 @@ const ManagerProfilePage: React.FC = () => {
         onClose={() => !saving && setCompleteModalOpen(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: 3 } }}
+        PaperProps={{ sx: { borderRadius: 2 } }}
       >
         <DialogTitle sx={{ fontWeight: 700 }}>Update Manager Profile</DialogTitle>
         <DialogContent dividers>
@@ -847,3 +847,4 @@ const ManagerProfilePage: React.FC = () => {
 };
 
 export default ManagerProfilePage;
+

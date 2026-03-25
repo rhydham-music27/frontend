@@ -124,7 +124,7 @@ export default function EditClassLeadPage() {
         sx={{
           mb: 3,
           p: 2,
-          borderRadius: 2.5,
+          borderRadius: 1.5,
           bgcolor: 'grey.50',
           border: '1px solid',
           borderColor: 'grey.100',
@@ -161,3 +161,4 @@ export default function EditClassLeadPage() {
     </Container>
   );
 }
+

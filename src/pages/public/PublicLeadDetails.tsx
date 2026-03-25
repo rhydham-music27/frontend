@@ -96,7 +96,7 @@ const PublicLeadDetails: React.FC = () => {
             <Box sx={{ minHeight: '100vh', bgcolor: '#f8faff' }}>
                 <PublicNavbar />
                 <Container maxWidth="lg" sx={{ py: 8 }}>
-                    <Skeleton variant="rectangular" height={600} sx={{ borderRadius: 8 }} />
+                    <Skeleton variant="rectangular" height={600} sx={{ borderRadius: 2 }} />
                 </Container>
             </Box>
         );
@@ -107,7 +107,7 @@ const PublicLeadDetails: React.FC = () => {
             <Box sx={{ minHeight: '100vh', bgcolor: '#f8faff' }}>
                 <PublicNavbar />
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 20 }}>
-                    <Alert severity="error" sx={{ borderRadius: 4, px: 4 }}>{error || 'Lead not found'}</Alert>
+                    <Alert severity="error" sx={{ borderRadius: 2, px: 4 }}>{error || 'Lead not found'}</Alert>
                 </Box>
             </Box>
         );
@@ -124,7 +124,7 @@ const PublicLeadDetails: React.FC = () => {
 
     const sectionStyle = {
         p: 4,
-        borderRadius: 6,
+        borderRadius: 2,
         bgcolor: alpha('#fff', 0.4),
         border: '1px solid rgba(255, 255, 255, 0.5)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -230,7 +230,7 @@ const PublicLeadDetails: React.FC = () => {
                                 <Grid item xs={12} sm={6}>
                                     <Box sx={sectionStyle}>
                                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                                            <Box sx={{ p: 1.2, borderRadius: 2.5, bgcolor: '#eff6ff', color: 'primary.main', display: 'flex' }}>
+                                            <Box sx={{ p: 1.2, borderRadius: 1.5, bgcolor: '#eff6ff', color: 'primary.main', display: 'flex' }}>
                                                 <CalendarMonth fontSize="small" />
                                             </Box>
                                             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>Class Schedule</Typography>
@@ -255,7 +255,7 @@ const PublicLeadDetails: React.FC = () => {
                                 <Grid item xs={12} sm={6}>
                                     <Box sx={sectionStyle}>
                                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                                            <Box sx={{ p: 1.2, borderRadius: 2.5, bgcolor: '#fef2f2', color: '#dc2626', display: 'flex' }}>
+                                            <Box sx={{ p: 1.2, borderRadius: 1.5, bgcolor: '#fef2f2', color: '#dc2626', display: 'flex' }}>
                                                 <Person fontSize="small" />
                                             </Box>
                                             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b' }}>Requirements</Typography>
@@ -290,7 +290,7 @@ const PublicLeadDetails: React.FC = () => {
                                 <Box sx={{ 
                                     mb: 6, 
                                     p: 5, 
-                                    borderRadius: 8, 
+                                    borderRadius: 2, 
                                     background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
                                     color: 'white',
                                     boxShadow: '0 32px 64px -16px rgba(6, 95, 70, 0.35)',
@@ -354,7 +354,7 @@ const PublicLeadDetails: React.FC = () => {
                                         onClick={handleExpressInterest}
                                         sx={{ 
                                             py: 2, 
-                                            borderRadius: 4, 
+                                            borderRadius: 2, 
                                             fontWeight: 800, 
                                             fontSize: '1.15rem',
                                             textTransform: 'none',
@@ -379,7 +379,7 @@ const PublicLeadDetails: React.FC = () => {
                                         onClick={handleWhatsAppShare}
                                         sx={{ 
                                             py: 1.8, 
-                                            borderRadius: 4, 
+                                            borderRadius: 2, 
                                             fontWeight: 800, 
                                             fontSize: '1.1rem',
                                             textTransform: 'none',
@@ -404,7 +404,7 @@ const PublicLeadDetails: React.FC = () => {
                                         href="tel:+919110045450"
                                         sx={{ 
                                             py: 1.8, 
-                                            borderRadius: 4, 
+                                            borderRadius: 2, 
                                             fontWeight: 800, 
                                             fontSize: '1.1rem',
                                             textTransform: 'none',
@@ -450,3 +450,4 @@ const PublicLeadDetails: React.FC = () => {
 };
 
 export default PublicLeadDetails;
+

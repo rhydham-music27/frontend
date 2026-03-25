@@ -223,7 +223,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
             </Box>
 
             {mappedRecords.length === 0 ? (
-                <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+                <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 2 }}>
                     <AssignmentTurnedInIcon sx={{ fontSize: 48, color: 'grey.300', mb: 2 }} />
                     <Typography variant="h6" color="text.secondary">No attendance records found for this month.</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -249,3 +249,4 @@ const ClassAttendanceSheetPage: React.FC = () => {
 };
 
 export default ClassAttendanceSheetPage;
+

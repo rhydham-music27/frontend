@@ -106,7 +106,7 @@ export const ManagerVerificationModal: React.FC<ManagerVerificationModalProps> =
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 3 }
+        sx: { borderRadius: 2 }
       }}
     >
       <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
@@ -309,3 +309,4 @@ export const ManagerVerificationModal: React.FC<ManagerVerificationModalProps> =
 };
 
 export default ManagerVerificationModal;
+

@@ -75,3 +75,4 @@ export default function RejectAttendanceModal({ open, onClose, attendance, onRej
     </Dialog>
   );
 }
+

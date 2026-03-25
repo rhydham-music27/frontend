@@ -364,7 +364,7 @@ const MyClassesCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 3,
+    borderRadius: 2,
     border: '1px solid',
     borderColor: 'grey.100',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
@@ -505,7 +505,7 @@ const MyClassesCard: React.FC = () => {
                     sx={{
                       border: '1px solid',
                       borderColor: isSelected ? alpha('#6366f1', 0.35) : alpha('#6366f1', 0.08),
-                      borderRadius: 2.5,
+                      borderRadius: 1.5,
                       p: 2.5,
                       mb: 2,
                       cursor: 'pointer',
@@ -612,11 +612,11 @@ const MyClassesCard: React.FC = () => {
                         value={progress}
                         sx={{
                           height: 5,
-                          borderRadius: 3,
+                          borderRadius: 2,
                           bgcolor: alpha(progressColor, 0.1),
                           '& .MuiLinearProgress-bar': {
                             bgcolor: progressColor,
-                            borderRadius: 3,
+                            borderRadius: 2,
                           },
                         }}
                       />
@@ -709,7 +709,7 @@ const MyClassesCard: React.FC = () => {
               sx={{
                 border: '1px solid',
                 borderColor: alpha('#6366f1', 0.1),
-                borderRadius: 3,
+                borderRadius: 2,
                 p: 2.5,
                 height: '100%',
                 bgcolor: '#fff',
@@ -733,7 +733,7 @@ const MyClassesCard: React.FC = () => {
                 <>
                   <Box
                     sx={{
-                      borderRadius: 2.5,
+                      borderRadius: 1.5,
                       p: 2.5,
                       background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                       color: '#fff',
@@ -786,11 +786,11 @@ const MyClassesCard: React.FC = () => {
                         value={calculateProgress(selectedClass)}
                         sx={{
                           height: 6,
-                          borderRadius: 3,
+                          borderRadius: 2,
                           bgcolor: alpha('#6366f1', 0.08),
                           '& .MuiLinearProgress-bar': {
                             bgcolor: '#6366f1',
-                            borderRadius: 3,
+                            borderRadius: 2,
                           },
                         }}
                       />
@@ -925,3 +925,4 @@ const MyClassesCard: React.FC = () => {
 };
 
 export default MyClassesCard;
+

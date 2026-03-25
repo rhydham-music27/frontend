@@ -8,6 +8,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import DescriptionIcon from '@mui/icons-material/Description';
+import TimerIcon from '@mui/icons-material/Timer';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorAlert from '../common/ErrorAlert';
 import { getMyDemos, updateDemoStatus } from '../../services/demoService';
@@ -94,11 +97,19 @@ const DemoClassesCard: React.FC = () => {
     duration: string;
     feedback: string;
   }) => {
-    if (!selectedDemo || !selectedDemo.id) return;
+    // Correctly extract identifiers (handle both _id and id from backend)
+    const demoId = (selectedDemo as any)?._id || selectedDemo?.id;
+    const leadId = (selectedDemo?.classLead as any)?._id || selectedDemo?.classLead?.id;
+
+    if (!selectedDemo || !leadId) {
+      console.warn('[DemoClassesCard] Cannot submit: Missing leadId', { selectedDemo });
+      return;
+    }
+
     try {
-      setUpdatingDemoId(selectedDemo.id);
+      setUpdatingDemoId(demoId);
       await updateDemoStatus(
-        selectedDemo.id,
+        leadId,
         DEMO_STATUS.COMPLETED,
         data.feedback,
         undefined,
@@ -111,6 +122,7 @@ const DemoClassesCard: React.FC = () => {
       setShowAttendanceModal(false);
     } catch (e: any) {
       handleError(e);
+      throw e; // Re-throw to keep modal open in DemoAttendanceModal
     } finally {
       setUpdatingDemoId(null);
     }
@@ -129,9 +141,9 @@ const DemoClassesCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 6,
+    borderRadius: 2,
     bgcolor: '#ffffff',
-    boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)',
     border: 'none',
     transition: 'all 0.3s ease',
   };
@@ -156,7 +168,7 @@ const DemoClassesCard: React.FC = () => {
       <Card sx={cardSx}>
         <CardContent sx={{ py: 4 }}>
           <Box display="flex" flexDirection="column" gap={2}>
-            <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+            <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 2 }}>
               <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
               <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
                 {error}
@@ -194,7 +206,7 @@ const DemoClassesCard: React.FC = () => {
               sx={{
                 width: 44,
                 height: 44,
-                borderRadius: 3,
+                borderRadius: 1.5,
                 bgcolor: alpha('#8b5cf6', 0.08),
                 display: 'flex',
                 alignItems: 'center',
@@ -217,7 +229,7 @@ const DemoClassesCard: React.FC = () => {
             sx={{
               px: 2,
               py: 0.75,
-              borderRadius: 2,
+              borderRadius: 1.5,
               bgcolor: alpha('#8b5cf6', 0.1),
               color: '#7c3aed',
               fontWeight: 900,
@@ -244,6 +256,7 @@ const DemoClassesCard: React.FC = () => {
           }}
         >
           {activeDemos.map((demo, index) => {
+            const demoId = (demo as any)._id || demo.id;
             const studentName = demo.classLead?.studentName || '-';
             const studentGender = demo.classLead?.studentGender || '-';
             const leadIdStr = demo.classLead?.leadId || '-';
@@ -255,19 +268,24 @@ const DemoClassesCard: React.FC = () => {
             const area = getOptionLabel(demo.classLead?.area) || '-';
             const city = getOptionLabel(demo.classLead?.city) || '-';
             const timing = demo.classLead?.timing || '-';
+            const tutorFees = demo.classLead?.tutorFees || 0;
+            const classesPerMonth = demo.classLead?.classesPerMonth || '-';
+            const classDurationHours = demo.classLead?.classDurationHours || '-';
+            const leadNotes = demo.classLead?.notes || '';
+            const demoNotes = demo.notes || '';
             const statusProps = getStatusChipProps(demo.status);
 
             return (
               <Box
-                key={demo.id || index}
+                key={demoId || index}
                 sx={{
-                  borderRadius: 5,
-                  p: 3,
+                  borderRadius: 2,
+                  p: 2.5,
                   position: 'relative',
                   bgcolor: '#ffffff',
                   border: '1px solid',
                   borderColor: alpha('#e2e8f0', 0.6),
-                  boxShadow: '0 2px 8px rgba(15, 23, 42, 0.02)',
+                  boxShadow: '0 2px 6px rgba(15, 23, 42, 0.02)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     borderColor: alpha('#8b5cf6', 0.2),
@@ -275,7 +293,7 @@ const DemoClassesCard: React.FC = () => {
                   },
                 }}
               >
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2.5}>
                   <Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 0.5 }}>
                       {studentName} {studentGender !== '-' && <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.8rem' }}>({studentGender})</span>}
@@ -301,9 +319,9 @@ const DemoClassesCard: React.FC = () => {
                   </Box>
                 </Box>
 
-                <Grid container spacing={2} mb={3}>
+                <Grid container spacing={2.5} mb={2.5}>
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
+                    <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Session Details</Typography>
                       <Stack spacing={1}>
                         <Box display="flex" alignItems="center" gap={1}>
@@ -318,7 +336,7 @@ const DemoClassesCard: React.FC = () => {
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
+                    <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Parent Info & Schedule</Typography>
                       <Stack spacing={1}>
                         <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{demo.classLead?.parentName} • {demo.classLead?.parentPhone}</Typography>
@@ -327,9 +345,41 @@ const DemoClassesCard: React.FC = () => {
                     </Box>
                   </Grid>
 
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: alpha('#10b981', 0.04), border: '1px solid', borderColor: alpha('#10b981', 0.1) }}>
+                      <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Financials & Frequency</Typography>
+                      <Stack spacing={1}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <PaymentsIcon sx={{ fontSize: 16, color: '#10b981' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#059669' }}>
+                            {'\u20B9'}{tutorFees.toLocaleString()} <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b' }}>/ MONTHLY</span>
+                          </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <TimerIcon sx={{ fontSize: 16, color: '#10b981' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{classesPerMonth} Classes/mo • {classDurationHours} hr/session</Typography>
+                        </Box>
+                      </Stack>
+                    </Box>
+                  </Grid>
+
+                  {demoNotes && (
+                    <Grid item xs={12}>
+                      <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: alpha('#3b82f6', 0.04), border: '1px solid', borderColor: alpha('#3b82f6', 0.1) }}>
+                        <Typography variant="caption" sx={{ color: '#2563eb', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Special Instructions</Typography>
+                        <Box display="flex" gap={1}>
+                          <DescriptionIcon sx={{ fontSize: 16, color: '#3b82f6', mt: 0.2 }} />
+                          <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                            Demo Note: {demoNotes}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  )}
+
                   {mode !== 'ONLINE' && (
                     <Grid item xs={12}>
-                      <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
+                      <Box sx={{ p: 2.5, borderRadius: 2, bgcolor: alpha('#f8fafc', 0.8), border: '1px solid #f1f5f9' }}>
                         <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>Address</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>{address}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b' }}>{area}, {city}</Typography>
@@ -356,9 +406,9 @@ const DemoClassesCard: React.FC = () => {
                     variant="contained"
                     startIcon={<CheckCircleIcon sx={{ fontSize: 18 }} />}
                     onClick={() => handleMarkCompletedClick(demo)}
-                    disabled={updatingDemoId === demo.id}
+                    disabled={updatingDemoId === demoId}
                     sx={{
-                      borderRadius: 3,
+                      borderRadius: 1.5,
                       py: 1,
                       px: 3,
                       textTransform: 'none',
@@ -371,7 +421,7 @@ const DemoClassesCard: React.FC = () => {
                       }
                     }}
                   >
-                    {updatingDemoId === demo.id ? <CircularProgress size={18} color="inherit" /> : 'Mark Completed'}
+                    {updatingDemoId === demoId ? <CircularProgress size={18} color="inherit" /> : 'Mark Completed'}
                   </Button>
                 </Box>
               </Box>
@@ -421,3 +471,4 @@ const DemoClassesCard: React.FC = () => {
 };
 
 export default React.memo(DemoClassesCard);
+

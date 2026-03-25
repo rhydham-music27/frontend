@@ -79,3 +79,4 @@ export default function StatusTimeline({ classLead, demoHistory = [], announceme
     </Timeline>
   );
 }
+

@@ -232,9 +232,9 @@ const ClassLeadsFeedCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 6,
+    borderRadius: 2,
     bgcolor: '#ffffff',
-    boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
+    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)',
     border: 'none',
     transition: 'all 0.3s ease',
   };
@@ -259,7 +259,7 @@ const ClassLeadsFeedCard: React.FC = () => {
       <Card sx={cardSx}>
         <CardContent sx={{ py: 4 }}>
           <Box display="flex" flexDirection="column" gap={2}>
-            <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+            <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 2 }}>
               <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
               <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
                 {error}
@@ -287,7 +287,7 @@ const ClassLeadsFeedCard: React.FC = () => {
               sx={{
                 width: 72,
                 height: 72,
-                borderRadius: 4,
+                borderRadius: 1.5,
                 bgcolor: alpha('#3b82f6', 0.06),
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -319,7 +319,7 @@ const ClassLeadsFeedCard: React.FC = () => {
               sx={{
                 width: 44,
                 height: 44,
-                borderRadius: 3,
+                borderRadius: 1.5,
                 bgcolor: alpha('#3b82f6', 0.08),
                 display: 'flex',
                 alignItems: 'center',
@@ -346,7 +346,7 @@ const ClassLeadsFeedCard: React.FC = () => {
             onClose={() => setSuccessMessage(null)} 
             sx={{ 
               mb: 3, 
-              borderRadius: 3, 
+              borderRadius: 1.5, 
               fontWeight: 600,
               bgcolor: alpha('#10b981', 0.1),
               color: '#059669',
@@ -386,8 +386,8 @@ const ClassLeadsFeedCard: React.FC = () => {
               <Box
                 key={id}
                 sx={{
-                  borderRadius: 5,
-                  p: 3,
+                  borderRadius: 2,
+                  p: 2.5,
                   position: 'relative',
                   overflow: 'hidden',
                   bgcolor: isHighlighted ? alpha('#10b981', 0.02) : '#ffffff',
@@ -406,14 +406,14 @@ const ClassLeadsFeedCard: React.FC = () => {
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: 16,
-                    right: 16,
+                    top: 20,
+                    right: 20,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
                     px: 1.5,
                     py: 0.5,
-                    borderRadius: 2,
+                    borderRadius: 1,
                     bgcolor: alpha(matchColor, 0.08),
                     backdropFilter: 'blur(8px)',
                     border: `1px solid ${alpha(matchColor, 0.1)}`,
@@ -457,18 +457,18 @@ const ClassLeadsFeedCard: React.FC = () => {
                   </Box>
                 </Box>
 
-                <Box 
-                  sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(2, 1fr)', 
-                    gap: 2, 
-                    mb: 3, 
-                    p: 2, 
-                    borderRadius: 3, 
-                    bgcolor: alpha('#f8fafc', 0.8),
-                    border: '1px solid #f1f5f9' 
-                  }}
-                >
+                  <Box 
+                    sx={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(2, 1fr)', 
+                      gap: 2.5, 
+                      mb: 2.5, 
+                    p: 2.5, 
+                      borderRadius: 1.5, 
+                      bgcolor: alpha('#f8fafc', 0.8),
+                      border: '1px solid #f1f5f9' 
+                    }}
+                  >
                   <Box>
                     <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, display: 'block', mb: 0.5 }}>LOCATION</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.85rem' }}>
@@ -502,7 +502,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                       variant="outlined"
                       disabled
                       sx={{
-                        borderRadius: 3,
+                        borderRadius: 1.5,
                         py: 1.25,
                         textTransform: 'none',
                         fontWeight: 800,
@@ -522,7 +522,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                         onClick={() => handleExpressInterest(id)}
                         disabled={!!actionLoading[id]}
                         sx={{
-                          borderRadius: 3,
+                          borderRadius: 1.5,
                           py: 1.25,
                           textTransform: 'none',
                           fontWeight: 800,
@@ -540,7 +540,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                       <IconButton
                         onClick={() => handleIgnore(id)}
                         sx={{
-                          borderRadius: 3,
+                          borderRadius: 1.5,
                           width: 48,
                           height: 48,
                           bgcolor: alpha('#ef4444', 0.05),
@@ -570,3 +570,4 @@ const ClassLeadsFeedCard: React.FC = () => {
 };
 
 export default React.memo(ClassLeadsFeedCard);
+

@@ -203,7 +203,7 @@ const TodayTasksPage: React.FC = () => {
                      onClick={() => setActiveTab(cat.key as any)}
                      sx={{ 
                          cursor: 'pointer',
-                         borderRadius: 3,
+                         borderRadius: 2,
                          border: activeTab === cat.key ? `2px solid ${cat.color}` : '1px solid transparent',
                          boxShadow: activeTab === cat.key ? 4 : 1,
                          transition: 'all 0.2s',
@@ -296,3 +296,4 @@ const TodayTasksPage: React.FC = () => {
 };
 
 export default TodayTasksPage;
+

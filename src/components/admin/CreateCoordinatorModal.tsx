@@ -182,3 +182,4 @@ const CreateCoordinatorModal: React.FC<CreateCoordinatorModalProps> = ({ open, o
 };
 
 export default CreateCoordinatorModal;
+

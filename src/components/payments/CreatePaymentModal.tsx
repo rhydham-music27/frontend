@@ -116,7 +116,7 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({ open, onClose, 
           transform: 'translate(-50%, -50%)',
           width: { xs: '90%', sm: 500 },
           bgcolor: 'background.paper',
-          borderRadius: 3,
+          borderRadius: 2,
           boxShadow: 24,
           p: 4,
           maxHeight: '90vh',
@@ -247,3 +247,4 @@ const CreatePaymentModal: React.FC<CreatePaymentModalProps> = ({ open, onClose, 
 };
 
 export default CreatePaymentModal;
+

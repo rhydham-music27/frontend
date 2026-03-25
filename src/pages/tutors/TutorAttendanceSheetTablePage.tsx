@@ -463,7 +463,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
 
       {selectedClassId && (
         <Box mb={2}>
-          <Paper sx={{ p: 2, borderRadius: 3 }}>
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
               <Typography variant="subtitle2" color="text.secondary">
                 Tutor Payout Status (for selected cycle)
@@ -480,7 +480,7 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
 
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
 
-      <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+      <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Tabs
           value={tab}
           onChange={(_, v) => setTab(v)}
@@ -533,3 +533,4 @@ const TutorAttendanceSheetTablePage: React.FC = () => {
 };
 
 export default TutorAttendanceSheetTablePage;
+

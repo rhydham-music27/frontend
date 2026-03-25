@@ -29,7 +29,7 @@ const WhatsAppCommunityModal: React.FC<Props> = ({ open, onConfirm, link }) => {
       maxWidth="xs" 
       fullWidth 
       PaperProps={{
-        sx: { borderRadius: 3, p: 1 }
+        sx: { borderRadius: 2, p: 1 }
       }}
     >
       <DialogTitle sx={{ textAlign: 'center', pb: 0 }}>
@@ -97,3 +97,4 @@ const WhatsAppCommunityModal: React.FC<Props> = ({ open, onConfirm, link }) => {
 };
 
 export default WhatsAppCommunityModal;
+

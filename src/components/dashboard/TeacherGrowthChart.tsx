@@ -243,7 +243,7 @@ const TeacherGrowthChart: React.FC<TeacherGrowthChartProps> = ({ data, loading }
               <XAxis dataKey="month" tickFormatter={formatXAxis} stroke="#94a3b8" />
               <YAxis stroke="#94a3b8" />
               <Tooltip
-                contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ borderRadius: 2, border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 labelFormatter={formatXAxis}
               />
               {renderSeries('total', 'Total Registered', '#8884d8', !visibleSeries.total)}
@@ -258,3 +258,4 @@ const TeacherGrowthChart: React.FC<TeacherGrowthChartProps> = ({ data, loading }
 };
 
 export default TeacherGrowthChart;
+

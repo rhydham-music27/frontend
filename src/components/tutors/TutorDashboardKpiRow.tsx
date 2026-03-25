@@ -74,7 +74,7 @@ const TutorDashboardKpiRow: React.FC = () => {
             sx={{
               background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
               color: 'common.white',
-              borderRadius: 4,
+              borderRadius: 2,
               boxShadow: '0 8px 16px -4px rgba(37, 99, 235, 0.4)',
               transition: 'transform 0.2s ease-in-out',
               '&:hover': { transform: 'translateY(-4px)' }
@@ -109,7 +109,7 @@ const TutorDashboardKpiRow: React.FC = () => {
             sx={{
               background: 'linear-gradient(135deg, #16A34A, #15803D)',
               color: 'common.white',
-              borderRadius: 4,
+              borderRadius: 2,
               boxShadow: '0 8px 16px -4px rgba(22, 163, 74, 0.4)',
               transition: 'transform 0.2s ease-in-out',
               '&:hover': { transform: 'translateY(-4px)' },
@@ -145,7 +145,7 @@ const TutorDashboardKpiRow: React.FC = () => {
             sx={{
               background: 'linear-gradient(135deg, #F97316, #EA580C)',
               color: 'common.white',
-              borderRadius: 4,
+              borderRadius: 2,
               boxShadow: '0 8px 16px -4px rgba(249, 115, 22, 0.4)',
               transition: 'transform 0.2s ease-in-out',
               '&:hover': { transform: 'translateY(-4px)' },
@@ -182,3 +182,4 @@ const TutorDashboardKpiRow: React.FC = () => {
 };
 
 export default TutorDashboardKpiRow;
+

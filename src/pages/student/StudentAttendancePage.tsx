@@ -225,3 +225,4 @@ const StudentAttendancePage: React.FC = () => {
 };
 
 export default StudentAttendancePage;
+

@@ -124,7 +124,7 @@ const AdminStudentProfilePage: React.FC = () => {
       <Grid container spacing={3}>
         {/* Sidebar Info */}
         <Grid item xs={12} md={3}>
-          <Card sx={{ borderRadius: 3, textAlign: 'center', p: 2 }}>
+          <Card sx={{ borderRadius: 2, textAlign: 'center', p: 2 }}>
             <CardContent>
               <Avatar
                 sx={{
@@ -430,4 +430,5 @@ const AdminStudentProfilePage: React.FC = () => {
 };
 
 export default AdminStudentProfilePage;
+
 

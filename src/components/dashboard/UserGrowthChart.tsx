@@ -64,3 +64,4 @@ const UserGrowthChart: React.FC<UserGrowthChartProps> = ({ data, loading = false
 };
 
 export default UserGrowthChart;
+

@@ -115,7 +115,7 @@ export const TutorClassesStatsBox: React.FC<TutorClassesStatsBoxProps> = ({
             onClick={card.title === 'New Leads' ? onNewLeadsClick : undefined}
             sx={{
               height: '100%',
-              borderRadius: 3,
+              borderRadius: 2,
               bgcolor: '#fff',
               border: '1px solid',
               borderColor: alpha(card.color, 0.12),
@@ -217,3 +217,4 @@ export const TutorClassesStatsBox: React.FC<TutorClassesStatsBoxProps> = ({
 };
 
 export default TutorClassesStatsBox;
+

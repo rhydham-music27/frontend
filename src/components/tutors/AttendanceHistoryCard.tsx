@@ -407,7 +407,7 @@ const AttendanceHistoryCard: React.FC = () => {
             '&::-webkit-scrollbar': { width: 8 },
             '&::-webkit-scrollbar-thumb': {
               backgroundColor: 'rgba(0,0,0,0.2)',
-              borderRadius: 8,
+              borderRadius: 2,
             },
             '&::-webkit-scrollbar-track': { backgroundColor: 'rgba(0,0,0,0.06)' },
           }}
@@ -442,7 +442,7 @@ const AttendanceHistoryCard: React.FC = () => {
                 sx={{
                   border: '1px solid',
                   borderColor: 'grey.200',
-                  borderRadius: 3,
+                  borderRadius: 2,
                   p: 2.5,
                   mb: 2,
                   position: 'relative',
@@ -601,3 +601,4 @@ const AttendanceHistoryCard: React.FC = () => {
 };
 
 export default React.memo(AttendanceHistoryCard);
+

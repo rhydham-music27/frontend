@@ -127,7 +127,7 @@ const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, on
                         variant="determinate" 
                         value={progress} 
                         color={progressColor as any}
-                        sx={{ height: 6, borderRadius: 3, bgcolor: alpha(theme.palette.divider, 0.05) }}
+                        sx={{ height: 6, borderRadius: 2, bgcolor: alpha(theme.palette.divider, 0.05) }}
                       />
                     </Box>
                     <Typography variant="caption" fontWeight={700}>{progress}%</Typography>
@@ -181,3 +181,4 @@ const AssignedClassesTable: React.FC<AssignedClassesTableProps> = ({ classes, on
 };
 
 export default AssignedClassesTable;
+

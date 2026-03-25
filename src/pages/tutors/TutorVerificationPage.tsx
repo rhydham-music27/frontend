@@ -134,7 +134,7 @@ export default function TutorVerificationPage() {
         key={id}
         variant="outlined"
         sx={{
-          borderRadius: 3,
+          borderRadius: 2,
           borderColor: 'divider',
         }}
       >
@@ -479,15 +479,15 @@ export default function TutorVerificationPage() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
           {tab === 0 ? (
             loading ? (
-              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
                 <LoadingSpinner />
               </Paper>
             ) : error ? (
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <ErrorAlert error={error} />
               </Paper>
             ) : pending.length === 0 ? (
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography>No tutors pending verification.</Typography>
               </Paper>
             ) : (
@@ -495,14 +495,14 @@ export default function TutorVerificationPage() {
             )
           ) : (
             loadingTutors ? (
-              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', borderRadius: 2 }}>
                 <LoadingSpinner />
               </Paper>
             ) : (
               <>
                 {tutors.map((t) => renderTutorCard(t, 'all'))}
                 {tutorsError ? (
-                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                     <ErrorAlert error={tutorsError} />
                   </Paper>
                 ) : null}
@@ -518,7 +518,7 @@ export default function TutorVerificationPage() {
             width: '100%',
             overflowX: 'auto',
             mb: 3,
-            borderRadius: 3,
+            borderRadius: 2,
             border: '1px solid',
             borderColor: 'divider',
           }}
@@ -966,3 +966,4 @@ export default function TutorVerificationPage() {
     </Container>
   );
 }
+

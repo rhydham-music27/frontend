@@ -157,7 +157,7 @@ const ManagerAnalyticsPage: React.FC = () => {
 
                  {/* Charts Section */}
                  <Grid item xs={12} md={8}>
-                     <Paper sx={{ p: 3, borderRadius: 3, height: '100%', minHeight: 400 }}>
+                     <Paper sx={{ p: 3, borderRadius: 2, height: '100%', minHeight: 400 }}>
                          <Box display="flex" alignItems="center" gap={1} mb={3}>
                              <TimelineIcon color="primary" />
                              <Typography variant="h6" fontWeight={700}>Growth Trends</Typography>
@@ -178,7 +178,7 @@ const ManagerAnalyticsPage: React.FC = () => {
                                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9CA3AF'}} dy={10} />
                                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9CA3AF'}} />
                                  <Tooltip 
-                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                     contentStyle={{ borderRadius: 2, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                  />
                                  <Legend verticalAlign="top" height={36} />
                                  <Area type="monotone" dataKey="Leads" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#colorLeads)" />
@@ -189,7 +189,7 @@ const ManagerAnalyticsPage: React.FC = () => {
                  </Grid>
 
                  <Grid item xs={12} md={4}>
-                     <Paper sx={{ p: 3, borderRadius: 3, height: '100%', minHeight: 400 }}>
+                     <Paper sx={{ p: 3, borderRadius: 2, height: '100%', minHeight: 400 }}>
                          <Typography variant="h6" fontWeight={700} mb={3}>Efficiency Metrics</Typography>
                          <Stack spacing={3}>
                              <Box>
@@ -218,7 +218,7 @@ const ManagerAnalyticsPage: React.FC = () => {
 
                  {/* Detailed History Table */}
                  <Grid item xs={12}>
-                     <Paper sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 2 }}>
+                     <Paper sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 2 }}>
                          <Box p={2} bgcolor={alpha(theme.palette.primary.main, 0.04)} borderBottom="1px solid" borderColor="divider">
                              <Typography variant="subtitle1" fontWeight={700}>Detailed Performance Log</Typography>
                          </Box>
@@ -268,3 +268,4 @@ const ManagerAnalyticsPage: React.FC = () => {
 };
 
 export default ManagerAnalyticsPage;
+

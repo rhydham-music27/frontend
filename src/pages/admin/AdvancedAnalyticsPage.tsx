@@ -190,7 +190,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
         <Card
           elevation={0}
           sx={{
-            borderRadius: 3,
+            borderRadius: 2,
             border: '1px solid',
             borderColor: 'divider',
             height: '100%',
@@ -275,7 +275,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
           color: 'white',
           py: 4,
           px: { xs: 2, md: 4 },
-          borderRadius: 3,
+          borderRadius: 2,
           mb: 5,
           position: 'relative',
           overflow: 'hidden',
@@ -320,7 +320,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
                 elevation={0}
                 sx={{
                   p: 2.5,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   border: '1px solid',
                   borderColor: 'divider',
                   bgcolor: 'background.paper',
@@ -369,7 +369,7 @@ const AdvancedAnalyticsPage: React.FC = () => {
               sx={{
                 p: 3,
                 height: '100%',
-                borderRadius: 3,
+                borderRadius: 2,
                 bgcolor: alpha(theme.palette.primary.main, 0.04), // darker standout
                 border: '1px solid',
                 borderColor: alpha(theme.palette.primary.main, 0.1)
@@ -382,28 +382,28 @@ const AdvancedAnalyticsPage: React.FC = () => {
                     <Typography variant="caption" fontWeight={600}>Day 30</Typography>
                     <Typography variant="caption" fontWeight={700}>{data?.retention.d30.toFixed(1)}%</Typography>
                   </Box>
-                  <LinearProgress variant="determinate" value={data?.retention.d30 || 0} sx={{ height: 6, borderRadius: 3 }} />
+                  <LinearProgress variant="determinate" value={data?.retention.d30 || 0} sx={{ height: 6, borderRadius: 2 }} />
                 </Box>
                 <Box>
                   <Box display="flex" justifyContent="space-between" mb={0.5}>
                     <Typography variant="caption" fontWeight={600}>Day 60</Typography>
                     <Typography variant="caption" fontWeight={700}>{data?.retention.d60.toFixed(1)}%</Typography>
                   </Box>
-                  <LinearProgress variant="determinate" value={data?.retention.d60 || 0} color="secondary" sx={{ height: 6, borderRadius: 3 }} />
+                  <LinearProgress variant="determinate" value={data?.retention.d60 || 0} color="secondary" sx={{ height: 6, borderRadius: 2 }} />
                 </Box>
                 <Box>
                   <Box display="flex" justifyContent="space-between" mb={0.5}>
                     <Typography variant="caption" fontWeight={600}>Day 90</Typography>
                     <Typography variant="caption" fontWeight={700}>{data?.retention.d90.toFixed(1)}%</Typography>
                   </Box>
-                  <LinearProgress variant="determinate" value={data?.retention.d90 || 0} color="warning" sx={{ height: 6, borderRadius: 3 }} />
+                  <LinearProgress variant="determinate" value={data?.retention.d90 || 0} color="warning" sx={{ height: 6, borderRadius: 2 }} />
                 </Box>
                 <Box>
                   <Box display="flex" justifyContent="space-between" mb={0.5}>
                     <Typography variant="caption" fontWeight={600}>Day 365</Typography>
                     <Typography variant="caption" fontWeight={700}>{data?.retention.d365.toFixed(1)}%</Typography>
                   </Box>
-                  <LinearProgress variant="determinate" value={data?.retention.d365 || 0} color="success" sx={{ height: 6, borderRadius: 3 }} />
+                  <LinearProgress variant="determinate" value={data?.retention.d365 || 0} color="success" sx={{ height: 6, borderRadius: 2 }} />
                 </Box>
               </Box>
             </Paper>
@@ -433,3 +433,4 @@ const AdvancedAnalyticsPage: React.FC = () => {
 };
 
 export default AdvancedAnalyticsPage;
+

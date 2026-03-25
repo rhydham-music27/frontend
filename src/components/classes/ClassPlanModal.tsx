@@ -230,3 +230,4 @@ const ClassPlanModal: React.FC<ClassPlanModalProps> = ({ open, onClose, classId,
 };
 
 export default ClassPlanModal;
+

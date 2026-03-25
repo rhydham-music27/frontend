@@ -108,3 +108,4 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     </Drawer>
   );
 }
+

@@ -82,7 +82,7 @@ const PublicNavbar: React.FC = () => {
                                 fontFamily: "'Inter', sans-serif",
                                 px: 2,
                                 py: 1,
-                                borderRadius: 3,
+                                borderRadius: 2,
                                 '&:hover': {
                                     bgcolor: alpha(theme.palette.primary.main, 0.05),
                                     color: 'primary.main'
@@ -99,3 +99,4 @@ const PublicNavbar: React.FC = () => {
 };
 
 export default PublicNavbar;
+

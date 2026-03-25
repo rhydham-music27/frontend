@@ -134,7 +134,7 @@ const TutorDashboardPage: React.FC = () => {
       <Box
         sx={{
           position: 'relative',
-          borderRadius: { xs: 4, sm: 5 },
+          borderRadius: 2,
           background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)',
           p: { xs: 2.5, sm: 5 },
           mb: { xs: 2.5, sm: 5 },
@@ -218,7 +218,7 @@ const TutorDashboardPage: React.FC = () => {
               gap: 1.5,
               px: 3,
               py: 1.25,
-              borderRadius: 3.5,
+              borderRadius: 1.5,
               bgcolor: alpha('#fff', 0.05),
               backdropFilter: 'blur(16px)',
               border: `1px solid ${alpha('#fff', 0.12)}`,
@@ -271,7 +271,7 @@ const TutorDashboardPage: React.FC = () => {
               <Card
                 sx={{
                   mb: 4.5,
-                  borderRadius: 4,
+                  borderRadius: 2,
                   background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
                   color: '#fff',
                   overflow: 'hidden',
@@ -318,7 +318,7 @@ const TutorDashboardPage: React.FC = () => {
                   TabIndicatorProps={{
                     style: {
                       height: '100%',
-                      borderRadius: 16,
+                      borderRadius: 1.5,
                       backgroundColor: '#fff',
                       boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
                       transition: 'left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -328,7 +328,7 @@ const TutorDashboardPage: React.FC = () => {
                     },
                   }}
                   sx={{
-                    borderRadius: 4,
+                    borderRadius: 1.5,
                     minHeight: 44,
                     bgcolor: alpha(theme.palette.primary.main, 0.05),
                     p: 0.5,
@@ -372,7 +372,7 @@ const TutorDashboardPage: React.FC = () => {
           <>
             <Box mb={6}>
               <Box display="flex" alignItems="center" gap={2} mb={3.5}>
-                <Box sx={{ width: 6, height: 32, borderRadius: 3, background: 'linear-gradient(to bottom, #6366f1, #3b82f6)' }} />
+                <Box sx={{ width: 6, height: 32, borderRadius: 1, background: 'linear-gradient(to bottom, #6366f1, #3b82f6)' }} />
                 <Typography
                   variant="h5"
                   fontWeight={900}
@@ -400,7 +400,7 @@ const TutorDashboardPage: React.FC = () => {
 
             <Box mt={6} mb={8}>
               <Box display="flex" alignItems="center" gap={2} mb={3.5}>
-                <Box sx={{ width: 6, height: 32, borderRadius: 3, background: 'linear-gradient(to bottom, #10b981, #059669)' }} />
+                <Box sx={{ width: 6, height: 32, borderRadius: 1, background: 'linear-gradient(to bottom, #10b981, #059669)' }} />
                 <Typography
                   variant="h5"
                   fontWeight={900}
@@ -437,7 +437,7 @@ const TutorDashboardPage: React.FC = () => {
             sx={{
               maxWidth: 460,
               width: "100%",
-              borderRadius: 6,
+              borderRadius: 2,
               boxShadow: '0 40px 100px rgba(0,0,0,0.3)',
               border: 'none',
               overflow: 'visible',
@@ -450,7 +450,7 @@ const TutorDashboardPage: React.FC = () => {
                   sx={{
                     width: 72,
                     height: 72,
-                    borderRadius: 3,
+                    borderRadius: 1.5,
                     bgcolor: alpha(theme.palette.primary.main, 0.08),
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -488,7 +488,7 @@ const TutorDashboardPage: React.FC = () => {
                 }}
                 sx={{
                   py: 2,
-                  borderRadius: 3.5,
+                  borderRadius: 1.5,
                   fontWeight: 800,
                   textTransform: 'none',
                   fontSize: '1.05rem',
@@ -522,3 +522,4 @@ const TutorDashboardPage: React.FC = () => {
 };
 
 export default TutorDashboardPage;
+

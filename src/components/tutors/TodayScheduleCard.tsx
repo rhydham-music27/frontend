@@ -97,7 +97,7 @@ const TodayScheduleCard: React.FC = () => {
   };
 
   const cardSx = {
-    borderRadius: 6,
+    borderRadius: 2,
     bgcolor: '#ffffff',
     boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
     border: 'none',
@@ -123,7 +123,7 @@ const TodayScheduleCard: React.FC = () => {
     return (
       <Card sx={cardSx}>
         <CardContent sx={{ py: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 3 }}>
+          <Box display="flex" alignItems="center" gap={2} sx={{ bgcolor: alpha('#ef4444', 0.05), p: 2, borderRadius: 2 }}>
             <ErrorOutlineIcon sx={{ color: '#ef4444' }} />
             <Typography variant="body2" sx={{ color: '#b91c1c', fontWeight: 600 }}>
               {error}
@@ -143,7 +143,7 @@ const TodayScheduleCard: React.FC = () => {
               sx={{
                 width: 72,
                 height: 72,
-                borderRadius: 4,
+                borderRadius: 2,
                 bgcolor: alpha('#6366f1', 0.06),
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -176,7 +176,7 @@ const TodayScheduleCard: React.FC = () => {
                 sx={{
                   width: 44,
                   height: 44,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   bgcolor: alpha('#6366f1', 0.08),
                   display: 'flex',
                   alignItems: 'center',
@@ -199,7 +199,7 @@ const TodayScheduleCard: React.FC = () => {
               sx={{
                 px: 2,
                 py: 0.75,
-                borderRadius: 2,
+                borderRadius: 1.5,
                 bgcolor: '#4f46e5',
                 color: '#fff',
                 fontWeight: 900,
@@ -271,3 +271,4 @@ const TodayScheduleCard: React.FC = () => {
 };
 
 export default React.memo(TodayScheduleCard);
+

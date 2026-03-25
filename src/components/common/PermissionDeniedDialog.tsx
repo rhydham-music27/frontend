@@ -42,3 +42,4 @@ const PermissionDeniedDialog: React.FC<PermissionDeniedDialogProps> = ({
 };
 
 export default PermissionDeniedDialog;
+

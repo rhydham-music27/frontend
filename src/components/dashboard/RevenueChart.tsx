@@ -93,3 +93,4 @@ const RevenueChart: React.FC<Props> = ({ data, loading = false }) => {
 };
 
 export default RevenueChart;
+

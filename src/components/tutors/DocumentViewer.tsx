@@ -94,3 +94,4 @@ export default function DocumentViewer({ documents, onDelete, canDelete = false,
     </Grid>
   );
 }
+

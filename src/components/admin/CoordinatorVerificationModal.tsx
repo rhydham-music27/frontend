@@ -69,7 +69,7 @@ const CoordinatorVerificationModal: React.FC<Props> = ({ open, coordinator, onCl
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
             <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
                 <Box display="flex" alignItems="center" gap={1}>
                     <VerifiedIcon color="primary" />
@@ -254,3 +254,4 @@ const CoordinatorVerificationModal: React.FC<Props> = ({ open, coordinator, onCl
 };
 
 export default CoordinatorVerificationModal;
+
