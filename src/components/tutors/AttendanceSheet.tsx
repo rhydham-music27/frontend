@@ -83,6 +83,7 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const imgWidth = 210; // A4 width in mm
+      if (canvas.width === 0) continue; // Skip if empty
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       if (i > 0) {

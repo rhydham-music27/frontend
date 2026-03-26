@@ -73,6 +73,8 @@ const iconForLabel = (label: string) => {
       return <PersonAddIcon />;
     case 'Attendance':
       return <CheckCircleIcon />;
+    case 'Attendance Sheet':
+      return <AssignmentIcon />;
     case 'Attendance Approvals':
       return <CheckCircleOutlineIcon />;
     case 'Payments':

@@ -42,6 +42,7 @@ import TestReportAnalysisPage from "./pages/coordinator/TestReportAnalysisPage";
 import TutorPerformancePage from "./pages/coordinator/TutorPerformancePage";
 import PaymentTrackingPage from "./pages/coordinator/PaymentTrackingPage";
 import CoordinatorProfilePage from "./pages/coordinator/CoordinatorProfilePage";
+import CoordinatorAttendanceSheetTablePage from "./pages/coordinator/CoordinatorAttendanceSheetTablePage";
 import CoordinatorsPage from "./pages/manager/CoordinatorsPage";
 import ManagerTodayTasksPage from "./pages/manager/ManagerTodayTasksPage";
 import ManagerAnalyticsPage from "./pages/manager/ManagerAnalyticsPage";
@@ -453,6 +454,16 @@ const App: React.FC = () => {
                     allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}
                   >
                     <CoordinatorProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="coordinator-attendance-sheet"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={[USER_ROLES.COORDINATOR, USER_ROLES.ADMIN]}
+                  >
+                    <CoordinatorAttendanceSheetTablePage />
                   </ProtectedRoute>
                 }
               />

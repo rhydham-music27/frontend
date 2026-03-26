@@ -30,9 +30,11 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { format } from 'date-fns';
 import { ATTENDANCE_STATUS } from '../../constants';
 import { getOptionLabel, getSubjectLabel, getLeafSubjectLabel } from '../../utils/subjectUtils';
+import AttendanceSheet from '../tutors/AttendanceSheet';
 
 interface AttendanceSheetReviewModalProps {
   open: boolean;
@@ -52,9 +54,38 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
   canRenew = false,
 }) => {
   const theme = useTheme();
+  const attendanceSheetRef = React.useRef<{ exportPdf: () => Promise<void> }>(null);
+  const [showApproveOptions, setShowApproveOptions] = React.useState(false);
+
   if (!sheet) return null;
 
-  const [showApproveOptions, setShowApproveOptions] = React.useState(false);
+  // Map sheet data to AttendanceSheet format
+  const tutorData = {
+    attendanceRecords: sheet.records?.map((r: any) => {
+      const dateObj = r.sessionDate ? new Date(r.sessionDate) : null;
+      const yyyyMmDd = dateObj
+        ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(
+          dateObj.getDate()
+        ).padStart(2, '0')}`
+        : '';
+
+      return {
+        classId: sheet.finalClass?._id || '',
+        date: yyyyMmDd,
+        status: r.status,
+        duration: r.durationHours,
+        topicsCovered: r.topicCovered || undefined,
+        markedAt: r.submittedAt ? String(r.submittedAt) : r.createdAt ? String(r.createdAt) : '',
+      };
+    }) || []
+  };
+
+  const classInfo = {
+    classId: sheet.finalClass?.className || sheet._id,
+    studentName: sheet.finalClass?.studentName || '',
+    subject: getLeafSubjectLabel(sheet.finalClass?.subject),
+    tutorName: sheet.tutor?.name || 'Tutor',
+  };
 
   const handleApprove = async (shouldRenew: boolean = false) => {
     await onApprove(sheet._id, shouldRenew);
@@ -271,6 +302,16 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
       </DialogContent>
       
       <DialogActions sx={{ p: 4, pt: 2, gap: 1.5 }}>
+        <Box sx={{ flexGrow: 1 }} />
+        <Button
+          onClick={() => attendanceSheetRef.current?.exportPdf()}
+          color="inherit"
+          variant="outlined"
+          startIcon={<FileDownloadIcon />}
+          sx={{ fontWeight: 700, borderRadius: '12px', px: 3, borderColor: alpha(theme.palette.divider, 0.2) }}
+        >
+          Download Sheet
+        </Button>
         <Button 
           onClick={onClose} 
           variant="text" 
@@ -307,6 +348,16 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
           </>
         )}
       </DialogActions>
+
+      {/* Hidden Attendance Sheet for PDF Generation */}
+      <Box sx={{ position: 'absolute', top: -10000, left: -10000, pointerEvents: 'none', zIndex: -1 }}>
+        <AttendanceSheet
+          ref={attendanceSheetRef}
+          tutorData={tutorData}
+          classInfo={classInfo}
+          sheetNo={sheet.cycleNumber || 1}
+        />
+      </Box>
     </Dialog>
 
     {/* Approval Options Dialog */}
