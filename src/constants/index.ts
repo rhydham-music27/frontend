@@ -152,7 +152,6 @@ export const NAVIGATION_ITEMS = [
   { label: 'Timetable', path: '/tutor-timetable', allowedRoles: [USER_ROLES.TUTOR], description: 'View and manage your weekly class schedule' },
   { label: 'Classes', path: '/tutor-classes', allowedRoles: [USER_ROLES.TUTOR], description: 'Access your assigned classes and student details' },
   { label: 'Payments', path: '/tutor-payments', allowedRoles: [USER_ROLES.TUTOR], description: 'Track your earnings and payment history' },
-  { label: 'Attendance Sheet', path: '/tutor-attendance-sheet', allowedRoles: [USER_ROLES.TUTOR], description: 'Upcoming/completed sessions, payout status, and PDF exports' },
   { label: 'Tests', path: '/tutor-tests', allowedRoles: [USER_ROLES.TUTOR], description: 'Schedule and manage student assessments' },
   { label: 'My Activity', path: '/tutor-leads', allowedRoles: [USER_ROLES.TUTOR], description: 'Track your demo sessions and class interests' },
   { label: 'Notes', path: '/tutor-notes', allowedRoles: [USER_ROLES.TUTOR], description: 'Personal notes and scratchpad' },

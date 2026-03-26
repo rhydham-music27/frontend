@@ -5,10 +5,11 @@ import ConfirmDialog from '../common/ConfirmDialog';
 interface RenewClassModalProps {
   open: boolean;
   onClose: () => void;
-  onRenew: (payload: { monthlyFee: number; sessionsPerMonth: number }) => void;
+  onRenew: (payload: { monthlyFee: number; sessionsPerMonth: number; attendanceSheetId?: string }) => void;
   isAdmin?: boolean;
   initialMonthlyFee?: number;
   initialSessionsPerMonth?: number;
+  attendanceSheetId?: string;
 }
 
 const RenewClassModal: React.FC<RenewClassModalProps> = ({ 
@@ -17,7 +18,8 @@ const RenewClassModal: React.FC<RenewClassModalProps> = ({
   onRenew, 
   isAdmin = false,
   initialMonthlyFee,
-  initialSessionsPerMonth
+  initialSessionsPerMonth,
+  attendanceSheetId
 }) => {
   const [monthlyFee, setMonthlyFee] = useState<string>(initialMonthlyFee?.toString() || '');
   const [sessionsPerMonth, setSessionsPerMonth] = useState<string>(initialSessionsPerMonth?.toString() || '');
@@ -48,6 +50,7 @@ const RenewClassModal: React.FC<RenewClassModalProps> = ({
     onRenew({
       monthlyFee: Number(monthlyFee),
       sessionsPerMonth: Number(sessionsPerMonth),
+      attendanceSheetId
     });
     onClose();
   };

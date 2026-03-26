@@ -138,7 +138,20 @@ const ActiveClassesOverviewCard: React.FC = () => {
         </Box>
 
         {/* Mobile view */}
-        <Box sx={{ display: { xs: 'flex', sm: 'none' }, flexDirection: 'column', gap: 2 }}>
+        <Box 
+          sx={{ 
+            display: { xs: 'flex', sm: 'none' }, 
+            flexDirection: 'column', 
+            gap: 2,
+            maxHeight: 480, // Limit to roughly 2 classes
+            overflowY: 'auto',
+            mx: -1,
+            px: 1,
+            '&::-webkit-scrollbar': { width: '4px' },
+            '&::-webkit-scrollbar-track': { background: 'transparent' },
+            '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
+          }}
+        >
           {classes.length === 0 ? (
             <Box textAlign="center" py={6}>
               <Box
@@ -225,12 +238,21 @@ const ActiveClassesOverviewCard: React.FC = () => {
                     />
                   </Box>
 
-                  <Box display="flex" justifyContent="space-between" alignItems="center" pt={1.5} borderTop="1px dashed" borderColor="#f1f5f9">
+                  <Box 
+                    display="flex" 
+                    flexDirection={{ xs: 'column', sm: 'row' }} 
+                    justifyContent="space-between" 
+                    alignItems={{ xs: 'flex-start', sm: 'center' }} 
+                    gap={2}
+                    pt={1.5} 
+                    borderTop="1px dashed" 
+                    borderColor="#f1f5f9"
+                  >
                     <Box>
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>COORDINATOR</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 700, color: '#334155' }}>{coordinatorName}</Typography>
                     </Box>
-                    <Box textAlign="right">
+                    <Box textAlign={{ xs: 'left', sm: 'right' }}>
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>SESSIONS</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>{completedForMonth} / {monthlyTotalSessions}</Typography>
                     </Box>

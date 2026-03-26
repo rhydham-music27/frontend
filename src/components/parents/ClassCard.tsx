@@ -15,6 +15,7 @@ interface ClassCardProps {
   classId: string;
   subject: string;
   grade: string;
+  board?: string;
   studentName: string;
   topic: string;
   schedule: string;
@@ -236,8 +237,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           sx={{
             flexShrink: 0,
             display: 'flex',
-            flexDirection: { xs: 'row', sm: 'column' },
-            alignItems: { xs: 'center', sm: 'flex-end' },
+            flexDirection: 'column',
+            alignItems: { xs: 'flex-start', sm: 'flex-end' },
             justifyContent: 'space-between',
             width: { xs: '100%', sm: 'auto' },
             gap: 2,
@@ -245,8 +246,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         >
           <Box
             sx={{
+              width: { xs: '100%', sm: 'auto' },
               bgcolor: alpha(config.color, 0.06),
-              px: 2,
+              px: { xs: 2.5, sm: 2 },
               py: 1,
               borderRadius: 1.5,
               border: `1px solid ${alpha(config.color, 0.12)}`,

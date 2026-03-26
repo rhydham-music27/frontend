@@ -200,7 +200,7 @@ const PaymentTrackingPage: React.FC = () => {
                   <TableCell><strong>Tutor</strong></TableCell>
                   <TableCell><strong>Period</strong></TableCell>
                   <TableCell align="right"><strong>Amount</strong></TableCell>
-                  <TableCell><strong>Due Date</strong></TableCell>
+                  <TableCell><strong>Date Created</strong></TableCell>
                   <TableCell><strong>Status</strong></TableCell>
                   <TableCell align="center"><strong>Action</strong></TableCell>
                 </TableRow>
@@ -235,7 +235,7 @@ const PaymentTrackingPage: React.FC = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {formatDate(payment.dueDate)}
+                        {formatDate(payment.createdAt)}
                       </TableCell>
                       <TableCell>
                         <Chip

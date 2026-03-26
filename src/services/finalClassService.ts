@@ -165,7 +165,7 @@ export const repostAsLead = async (classId: string): Promise<ApiResponse<any>> =
 
 export const renewClass = async (
   classId: string,
-  payload?: { monthlyFee?: number; sessionsPerMonth?: number }
+  payload?: { monthlyFee?: number; sessionsPerMonth?: number; attendanceSheetId?: string }
 ): Promise<ApiResponse<any>> => {
   const { data } = await api.post(`/api/final-classes/${classId}/renew`, payload || {});
   return data as ApiResponse<any>;

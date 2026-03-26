@@ -68,9 +68,6 @@ export default function TutorVerificationPage() {
 
   const { options: subjectOptions } = useOptions('SUBJECT');
 
-    // Use standard leaf-level label extraction
-    return getLeafSubjectLabel(subject);
-
   const formatSubjectDisplay = (subjects: any[], limit?: number) => {
     if (!subjects || subjects.length === 0) return '-';
     const leafSubjects = getLeafSubjectList(subjects);
@@ -278,13 +275,13 @@ export default function TutorVerificationPage() {
 
   // Find selected city ID to fetch areas
   const selectedCityValue = filters.city;
-  const selectedCityOption = cityOptions.find(o => o.label === selectedCityValue);
-  const { options: areaOptions } = useOptions(selectedCityOption ? `AREA_${selectedCityOption.value}` : 'NONE', selectedCityOption?._id);
+  const selectedCityOption = cityOptions.find(o => (o as any).label === selectedCityValue);
+  const { options: areaOptions } = useOptions(selectedCityOption?.value ? `AREA_${selectedCityOption.value}` : 'NONE', selectedCityOption?._id);
   const { options: boardOptions } = useOptions('BOARD');
   // Find selected board ID to fetch classes (grades)
   const selectedBoardValue = filters.board;
-  const selectedBoardOption = boardOptions.find(o => o.label === selectedBoardValue);
-  const { options: gradeOptions } = useOptions(selectedBoardOption ? `GRADE_${selectedBoardOption.value}` : 'GRADE', selectedBoardOption?._id);
+  const selectedBoardOption = boardOptions.find(o => (o as any).label === selectedBoardValue);
+  const { options: gradeOptions } = useOptions(selectedBoardOption?.value ? `GRADE_${selectedBoardOption.value}` : 'GRADE', selectedBoardOption?._id);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -659,7 +656,7 @@ export default function TutorVerificationPage() {
                   <Autocomplete
                     size="small"
                     options={subjectsList}
-                    getOptionLabel={(option) => formatSubjectLabel(option)}
+                    getOptionLabel={(option) => getOptionLabel(option)}
                     value={
                       subjectsList.find(s => s._id === filters.subjects) || 
                       subjectOptions.find(o => o._id === filters.subjects || o.value === filters.subjects) || 
@@ -895,7 +892,7 @@ export default function TutorVerificationPage() {
         <DialogContent>
           {selectedTutor && (
             <DocumentViewer
-              documents={selectedTutor.documents || []}
+              documents={selectedTutor?.documents || []}
               onView={handleViewDoc}
               canDelete={false}
             />

@@ -145,12 +145,17 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string, shouldRenew: boolean = false) => {
     try {
       const response = await approveAttendanceSheet(id);
       if (response.success) {
         setSnackbar({ open: true, message: 'Sheet approved successfully', severity: 'success' });
         fetchSheets();
+        
+        if (shouldRenew && selectedSheet) {
+          // Trigger renewal flow
+          handleOpenRenewModal(selectedSheet);
+        }
       } else {
         setSnackbar({ open: true, message: response.message || 'Approval failed', severity: 'error' });
       }
@@ -405,22 +410,24 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
                                 View
                               </Button>
 
-                              <Button
-                                size="small"
-                                startIcon={<AutorenewIcon sx={{ fontSize: '1rem !important' }} />}
-                                onClick={() => handleOpenRenewModal(sheet)}
-                                sx={{
-                                  color: 'warning.main',
-                                  bgcolor: alpha(theme.palette.warning.main, 0.08),
-                                  fontWeight: 700,
-                                  px: 1.5,
-                                  borderRadius: '8px',
-                                  fontSize: '0.75rem',
-                                  '&:hover': { bgcolor: alpha(theme.palette.warning.main, 0.15) }
-                                }}
-                              >
-                                Renew
-                              </Button>
+                              {sheet.status !== 'PENDING' && sheet.status === 'APPROVED' && !sheet.renewedAt && (
+                                <Button
+                                  size="small"
+                                  startIcon={<AutorenewIcon sx={{ fontSize: '1rem !important' }} />}
+                                  onClick={() => handleOpenRenewModal(sheet)}
+                                  sx={{
+                                    color: 'warning.main',
+                                    bgcolor: alpha(theme.palette.warning.main, 0.08),
+                                    fontWeight: 700,
+                                    px: 1.5,
+                                    borderRadius: '8px',
+                                    fontSize: '0.75rem',
+                                    '&:hover': { bgcolor: alpha(theme.palette.warning.main, 0.15) }
+                                  }}
+                                >
+                                  Renew
+                                </Button>
+                              )}
 
                               {String(sheet.status) === 'PENDING' && (
                                 <>
@@ -429,16 +436,22 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
                                     color="success"
                                     startIcon={<CheckCircleIcon sx={{ fontSize: '1rem !important' }} />}
                                     onClick={() => {
-                                      setConfirmData({
-                                        title: 'Approve Attendance Sheet',
-                                        message: 'Approve this sheet and create a one-time payout for sessions recorded so far?',
-                                        severity: 'success',
-                                        onConfirm: () => {
-                                          handleApprove(sheet._id);
-                                          setConfirmOpen(false);
-                                        }
-                                      });
-                                      setConfirmOpen(true);
+
+                                      if (true) { // No longer restricted by session count
+                                        // Use handleReview to let them choose in the modal
+                                        handleReview(sheet);
+                                      } else {
+                                        setConfirmData({
+                                          title: 'Approve Attendance Sheet',
+                                          message: 'Approve this sheet and create a one-time payout for sessions recorded so far?',
+                                          severity: 'success',
+                                          onConfirm: () => {
+                                            handleApprove(sheet._id, false);
+                                            setConfirmOpen(false);
+                                          }
+                                        });
+                                        setConfirmOpen(true);
+                                      }
                                     }}
                                     sx={{ 
                                       bgcolor: alpha(theme.palette.success.main, 0.08),
@@ -449,7 +462,7 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
                                       '&:hover': { bgcolor: alpha(theme.palette.success.main, 0.15) } 
                                     }}
                                   >
-                                    Approve
+                                    {sheet.renewedAt ? 'Approve' : 'Approve & Renew'}
                                   </Button>
                                   <Button
                                     size="small"
@@ -492,6 +505,7 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
         sheet={selectedSheet}
         onApprove={handleApprove}
         onReject={handleReject}
+        canRenew={true}
       />
 
       <RenewClassModal
@@ -501,6 +515,7 @@ const AttendanceSheetApprovalsPage: React.FC = () => {
         isAdmin={false} // Coordinators use this page
         initialMonthlyFee={renewInitialData.fee}
         initialSessionsPerMonth={renewInitialData.sessions}
+        attendanceSheetId={selectedSheet?._id}
       />
 
       <ConfirmDialog

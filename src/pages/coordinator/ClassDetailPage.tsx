@@ -403,6 +403,7 @@ const ClassDetailPage: React.FC = () => {
                         <TableCell sx={{ fontWeight: 800 }}>Period</TableCell>
                         <TableCell sx={{ fontWeight: 800 }} align="center">Sessions</TableCell>
                         <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 800 }}>Renewed At</TableCell>
                         <TableCell sx={{ fontWeight: 800 }} align="right">Actions</TableCell>
                       </TableRow>
                     </TableHead>
@@ -430,6 +431,11 @@ const ClassDetailPage: React.FC = () => {
                               sx={{ fontWeight: 800, borderRadius: 1.5, fontSize: '0.65rem' }}
                             />
                           </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" color="text.secondary">
+                              {s.renewedAt ? new Date(s.renewedAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                            </Typography>
+                          </TableCell>
                           <TableCell align="right">
                             <Stack direction="row" spacing={1} justifyContent="flex-end">
                               <Tooltip title="View Sheet">
@@ -437,15 +443,17 @@ const ClassDetailPage: React.FC = () => {
                                   <VisibilityIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="Renew Class">
-                                <IconButton 
-                                  size="small" 
-                                  onClick={() => handleOpenRenew(s)} 
-                                  sx={{ color: 'warning.main', bgcolor: alpha(theme.palette.warning.main, 0.05) }}
-                                >
-                                  <AutorenewIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
+                              {!s.renewedAt && (
+                                <Tooltip title="Renew Class">
+                                  <IconButton 
+                                    size="small" 
+                                    onClick={() => handleOpenRenew(s)} 
+                                    sx={{ color: 'warning.main', bgcolor: alpha(theme.palette.warning.main, 0.05) }}
+                                  >
+                                    <AutorenewIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
                             </Stack>
                           </TableCell>
                         </TableRow>
@@ -564,6 +572,7 @@ const ClassDetailPage: React.FC = () => {
             onRenew={handleRenewSuccess}
             initialMonthlyFee={finalClass.monthlyFees || finalClass.monthlyFee}
             initialSessionsPerMonth={finalClass.classesPerMonth || finalClass.sessionsPerMonth}
+            attendanceSheetId={selectedSheet?._id}
           />
 
           <SnackbarNotification

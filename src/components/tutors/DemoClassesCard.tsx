@@ -246,7 +246,7 @@ const DemoClassesCard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 3,
-            maxHeight: 600,
+            maxHeight: { xs: 500, sm: 600 }, // Limit to roughly 2 leads on mobile
             overflowY: 'auto',
             mx: -1,
             px: 1,
@@ -391,7 +391,13 @@ const DemoClassesCard: React.FC = () => {
                   )}
                 </Grid>
 
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Box 
+                  display="flex" 
+                  flexDirection={{ xs: 'column', sm: 'row' }} 
+                  justifyContent="space-between" 
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  gap={2}
+                >
                   <Box display="flex" gap={1}>
                     <Chip 
                       label={mode} 
@@ -406,13 +412,15 @@ const DemoClassesCard: React.FC = () => {
                     />
                   </Box>
                   <Button
+                    fullWidth={true} // For mobile as it's flex item in column
                     variant="contained"
                     startIcon={<CheckCircleIcon sx={{ fontSize: 18 }} />}
                     onClick={() => handleMarkCompletedClick(demo)}
                     disabled={updatingDemoId === demoId}
                     sx={{
+                      width: { xs: '100%', sm: 'auto' },
                       borderRadius: 1.5,
-                      py: 1,
+                      py: 1.25,
                       px: 3,
                       textTransform: 'none',
                       fontWeight: 800,

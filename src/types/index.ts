@@ -282,6 +282,7 @@ export interface IFinalClass {
   notes?: string;
   tutorHistory?: ITutorHistory[];
   progressPercentage?: number;
+  sheetCount?: number;
   metrics?: {
     progressPercentage: number;
     pendingAttendanceCount: number;

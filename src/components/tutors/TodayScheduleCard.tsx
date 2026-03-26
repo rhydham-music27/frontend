@@ -219,7 +219,7 @@ const TodayScheduleCard: React.FC = () => {
               gap: 0.5,
               flex: '1 1 auto',
               overflowY: 'auto',
-              maxHeight: 600,
+              maxHeight: { xs: 450, sm: 600 },
               mx: -1,
               px: 1,
               '& > *': { flexShrink: 0 },

@@ -28,16 +28,19 @@ import CloseIcon from '@mui/icons-material/Close';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { format } from 'date-fns';
 import { ATTENDANCE_STATUS } from '../../constants';
-import { getOptionLabel, getSubjectLabel } from '../../utils/subjectUtils';
+import { getOptionLabel, getSubjectLabel, getLeafSubjectLabel } from '../../utils/subjectUtils';
 
 interface AttendanceSheetReviewModalProps {
   open: boolean;
   onClose: () => void;
   sheet: any;
-  onApprove: (id: string) => Promise<void>;
+  onApprove: (id: string, shouldRenew: boolean) => Promise<void>;
   onReject: (id: string, reason: string) => Promise<void>;
+  canRenew?: boolean;
 }
 
 const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
@@ -46,14 +49,24 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
   sheet,
   onApprove,
   onReject,
+  canRenew = false,
 }) => {
   const theme = useTheme();
   if (!sheet) return null;
 
-  const handleApprove = async () => {
-    if (window.confirm('Approve this sheet and create a one-time payout for the sessions recorded so far? After approval, this sheet will be closed and new sessions will go into a new sheet.')) {
-      await onApprove(sheet._id);
-      onClose();
+  const [showApproveOptions, setShowApproveOptions] = React.useState(false);
+
+  const handleApprove = async (shouldRenew: boolean = false) => {
+    await onApprove(sheet._id, shouldRenew);
+    setShowApproveOptions(false);
+    onClose();
+  };
+
+  const handleApproveClick = () => {
+    if (sheet.renewedAt) {
+      handleApprove(false);
+    } else {
+      setShowApproveOptions(true);
     }
   };
 
@@ -79,6 +92,7 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
   };
 
   return (
+    <>
     <Dialog 
       open={open} 
       onClose={onClose} 
@@ -141,8 +155,8 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
                     variant="outlined" 
                     sx={{ fontWeight: 700, borderColor: alpha(theme.palette.divider, 0.2) }} 
                   />
-                  <Chip 
-                    label={`${getOptionLabel(sheet.finalClass?.grade)} Grade - ${getSubjectLabel(sheet.finalClass?.subject)}`} 
+                   <Chip 
+                    label={`${getOptionLabel(sheet.finalClass?.grade)} Grade - ${getLeafSubjectLabel(sheet.finalClass?.subject)}`} 
                     size="small" 
                     variant="outlined" 
                     sx={{ fontWeight: 700, borderColor: alpha(theme.palette.divider, 0.2) }} 
@@ -275,7 +289,7 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
               Reject Sheet
             </Button>
             <Button 
-              onClick={handleApprove} 
+              onClick={handleApproveClick} 
               color="primary" 
               variant="contained"
               sx={{ 
@@ -288,12 +302,83 @@ const AttendanceSheetReviewModal: React.FC<AttendanceSheetReviewModalProps> = ({
                 }
               }}
             >
-              Approve & Authorize
+              {sheet.renewedAt ? 'Approve' : 'Approve & Authorize'}
             </Button>
           </>
         )}
       </DialogActions>
     </Dialog>
+
+    {/* Approval Options Dialog */}
+      <Dialog 
+        open={showApproveOptions} 
+        onClose={() => setShowApproveOptions(false)}
+        PaperProps={{
+          sx: { 
+            borderRadius: '24px', 
+            p: 1,
+            bgcolor: alpha(theme.palette.background.paper, 0.95),
+            backdropFilter: 'blur(20px)',
+            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+          <Typography variant="h5" fontWeight={900} sx={{ letterSpacing: '-0.02em' }}>
+            Choose Action
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, px: 2, fontWeight: 500 }}>
+            How would you like to proceed with the approval for <strong>{sheet.finalClass?.className}</strong>?
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Button 
+              fullWidth 
+              variant="contained" 
+              color="primary" 
+              onClick={() => handleApprove(true)}
+              startIcon={<AutorenewIcon />}
+              sx={{ 
+                fontWeight: 800, 
+                borderRadius: '16px', 
+                py: 2,
+                fontSize: '1rem',
+                boxShadow: '0 8px 20px -6px rgba(79, 70, 229, 0.4)',
+              }}
+            >
+              Approve & Renew Class
+            </Button>
+
+            <Button 
+              fullWidth 
+              variant="outlined" 
+              onClick={() => handleApprove(false)}
+              startIcon={<CheckCircleIcon />}
+              sx={{ 
+                fontWeight: 800, 
+                borderRadius: '16px', 
+                py: 2,
+                fontSize: '1rem',
+                borderWidth: '2px',
+                '&:hover': { borderWidth: '2px' }
+              }}
+            >
+              Approve Sheet Only
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2, pt: 1 }}>
+          <Button 
+            onClick={() => setShowApproveOptions(false)}
+            sx={{ fontWeight: 700, color: 'text.secondary' }}
+          >
+            Go Back
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

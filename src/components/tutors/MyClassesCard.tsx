@@ -89,6 +89,8 @@ const MyClassesCard: React.FC = () => {
 
   const [newLeadsCount, setNewLeadsCount] = useState<number>(0);
 
+  const attendanceSheetRef = React.useRef<{ exportPdf: () => Promise<void> }>(null);
+
   const [reportOpen, setReportOpen] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
@@ -645,12 +647,21 @@ const MyClassesCard: React.FC = () => {
                         }}
                         sx={{ width: 100, '& .MuiInputBase-input': { fontSize: '0.75rem', py: 0.5 } }}
                       >
-                        {Array.from({ length: 12 }, (_, i) => (
+                        {Array.from({ length: Math.max(1, (cls as any).sheetCount || 0) }, (_, i) => (
                           <MenuItem key={i + 1} value={(i + 1).toString()}>
                             Cycle {i + 1}
                           </MenuItem>
                         ))}
                       </TextField>
+
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={(e) => { e.stopPropagation(); void openAttendanceSheetModal(cls); }}
+                        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', height: 32 }}
+                      >
+                        Show Attendance
+                      </Button>
 
                       <TextField
                         select
@@ -686,15 +697,6 @@ const MyClassesCard: React.FC = () => {
                         sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', height: 32 }}
                       >
                         Show Test
-                      </Button>
-
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => { e.stopPropagation(); void openAttendanceSheetModal(cls); }}
-                        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', height: 32 }}
-                      >
-                        Show Attendance
                       </Button>
                     </Box>
                   </Box>
@@ -851,6 +853,7 @@ const MyClassesCard: React.FC = () => {
             {!sheetLoading && sheetTutorData && sheetClassInfo && (
               <Box display="flex" justifyContent="center" sx={{ overflowX: 'auto' }}>
                 <AttendanceSheet
+                  ref={attendanceSheetRef}
                   tutorData={sheetTutorData}
                   classInfo={sheetClassInfo}
                   range={sheetRange}
@@ -860,6 +863,14 @@ const MyClassesCard: React.FC = () => {
             )}
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'space-between' }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => attendanceSheetRef.current?.exportPdf()}
+              disabled={sheetLoading || !sheetTutorData}
+            >
+              Download PDF
+            </Button>
             <Button
               variant="outlined"
               onClick={() => {
