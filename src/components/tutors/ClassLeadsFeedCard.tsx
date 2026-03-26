@@ -363,13 +363,13 @@ const ClassLeadsFeedCard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 2.5,
-            maxHeight: { xs: 480, sm: 520 }, // Limit to roughly 2 leads on mobile
+            maxHeight: { xs: 440, sm: 800 },
             overflowY: 'auto',
             mx: -1,
             px: 1,
             '&::-webkit-scrollbar': { width: '4px' },
             '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
+            '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
           }}
         >
           {filteredAnnouncements.map((item) => {

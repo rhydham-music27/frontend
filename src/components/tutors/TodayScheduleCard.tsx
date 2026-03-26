@@ -219,13 +219,13 @@ const TodayScheduleCard: React.FC = () => {
               gap: 0.5,
               flex: '1 1 auto',
               overflowY: 'auto',
-              maxHeight: { xs: 450, sm: 600 },
+              maxHeight: { xs: 440, sm: 600 },
               mx: -1,
               px: 1,
               '& > *': { flexShrink: 0 },
               '&::-webkit-scrollbar': { width: '4px' },
               '&::-webkit-scrollbar-track': { background: 'transparent' },
-              '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
+              '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
             }}
           >
             {classes.map((cls) => {

@@ -246,13 +246,13 @@ const DemoClassesCard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 3,
-            maxHeight: { xs: 500, sm: 600 }, // Limit to roughly 2 leads on mobile
+            maxHeight: { xs: 440, sm: 600 }, // Limit to roughly 2 leads on mobile
             overflowY: 'auto',
             mx: -1,
             px: 1,
             '&::-webkit-scrollbar': { width: '4px' },
             '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
+            '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
           }}
         >
           {activeDemos.map((demo, index) => {

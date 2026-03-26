@@ -143,13 +143,13 @@ const ActiveClassesOverviewCard: React.FC = () => {
             display: { xs: 'flex', sm: 'none' }, 
             flexDirection: 'column', 
             gap: 2,
-            maxHeight: 480, // Limit to roughly 2 classes
+            maxHeight: 440, // Limit to roughly 2 classes
             overflowY: 'auto',
             mx: -1,
             px: 1,
             '&::-webkit-scrollbar': { width: '4px' },
             '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#e2e8f0', borderRadius: '4px' },
+            '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
           }}
         >
           {classes.length === 0 ? (
