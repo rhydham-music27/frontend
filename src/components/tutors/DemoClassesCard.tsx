@@ -246,7 +246,7 @@ const DemoClassesCard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 3,
-            maxHeight: { xs: 440, sm: 600 }, // Limit to roughly 2 leads on mobile
+            maxHeight: { xs: 320, sm: 600 }, // Limit visibility on mobile
             overflowY: 'auto',
             mx: -1,
             px: 1,

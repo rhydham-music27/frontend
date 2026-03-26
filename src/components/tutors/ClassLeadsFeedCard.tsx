@@ -363,7 +363,7 @@ const ClassLeadsFeedCard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             gap: 2.5,
-            maxHeight: { xs: 440, sm: 800 },
+            maxHeight: { xs: 320, sm: 800 },
             overflowY: 'auto',
             mx: -1,
             px: 1,
