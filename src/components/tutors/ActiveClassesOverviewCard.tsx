@@ -143,7 +143,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
             display: { xs: 'flex', sm: 'none' }, 
             flexDirection: 'column', 
             gap: 2,
-            maxHeight: 320, // Limit visibility on mobile
+            maxHeight: 500, // Ensure full details are visible
             overflowY: 'auto',
             mx: -1,
             px: 1,
