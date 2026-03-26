@@ -390,15 +390,6 @@ const theme = createTheme({
         },
       },
     },
-    MuiDataGrid: {
-      styleOverrides: {
-        root: {
-          borderRadius: '16px',
-          overflow: 'hidden',
-          borderColor: '#E2E8F0',
-        },
-      },
-    },
   },
 });
 
