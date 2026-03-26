@@ -12,14 +12,14 @@ export const TutorLeadNavbar = () => {
       position="fixed"
       elevation={trigger ? 4 : 0}
       sx={{
-        bgcolor: trigger ? alpha('#001F54', 0.98) : 'transparent',
-        backdropFilter: trigger ? 'blur(12px)' : 'none',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        borderBottom: trigger ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+        bgcolor: '#001F54',
+        boxShadow: trigger ? '0 4px 20px rgba(0,0,0,0.15)' : 'none',
+        transition: 'all 0.3s ease-in-out',
+        borderBottom: trigger ? 'none' : '1px solid rgba(255, 255, 255, 0.12)',
         zIndex: (theme) => theme.zIndex.drawer + 1
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false} sx={{ px: { xs: 2, sm: 4 } }}>
         <Toolbar disableGutters sx={{ py: trigger ? 0.5 : 1.5, transition: 'all 0.4s' }}>
           {/* Logo + Brand */}
           <Box component={RouterLink} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none', '&:hover img': { transform: 'scale(1.05)' } }}>
@@ -43,7 +43,7 @@ export const TutorLeadNavbar = () => {
                 }}
               />
             </Avatar>
-            <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, sm: 2 } }}>
               <Typography 
                 variant="h6" 
                 fontWeight={900} 
@@ -51,25 +51,26 @@ export const TutorLeadNavbar = () => {
                 sx={{ 
                   letterSpacing: '-0.03em', 
                   lineHeight: 1, 
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
                   textTransform: 'uppercase'
                 }}
               >
-                YourShikshak
+                Your Shikshak
               </Typography>
+              <Box sx={{ width: '1px', height: 16, bgcolor: 'rgba(255,255,255,0.3)', display: { xs: 'none', sm: 'block' } }} />
               <Typography 
                 variant="caption" 
                 color="common.white" 
                 sx={{ 
-                  opacity: 0.7, 
+                  opacity: 0.85, 
                   fontWeight: 600, 
-                  display: { xs: 'none', sm: 'block' },
                   letterSpacing: '0.05em',
-                  fontSize: '0.65rem',
-                  mt: 0.5
+                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                  lineHeight: 1,
+                  textTransform: 'uppercase'
                 }}
               >
-                PREMIUM TUTORING NETWORK
+                Empowering Education
               </Typography>
             </Box>
           </Box>
@@ -78,46 +79,7 @@ export const TutorLeadNavbar = () => {
 
           {/* Nav Links */}
           <Stack direction="row" spacing={1.5} sx={{ display: { xs: 'none', md: 'flex' } }}>
-            {['Home', 'Blog', 'Contact'].map((item) => (
-              <Button 
-                key={item}
-                component={RouterLink} 
-                to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
-                color="inherit" 
-                sx={{ 
-                  textTransform: 'none', 
-                  fontWeight: 600, 
-                  px: 2.5, 
-                  borderRadius: '12px',
-                  opacity: 0.85,
-                  '&:hover': { opacity: 1, bgcolor: 'rgba(255,255,255,0.08)' }
-                }}
-              >
-                {item}
-              </Button>
-            ))}
-            <Button
-              component={RouterLink}
-              to="/login"
-              variant="contained"
-              sx={{
-                ml: 1.5,
-                textTransform: 'none',
-                fontWeight: 700,
-                borderRadius: '12px',
-                bgcolor: 'white',
-                color: '#001F54',
-                px: 3,
-                boxShadow: '0 4px 14px rgba(255,255,255,0.2)',
-                '&:hover': {
-                  bgcolor: alpha('#fff', 0.9),
-                  boxShadow: '0 6px 20px rgba(255,255,255,0.3)',
-                  transform: 'translateY(-1px)'
-                }
-              }}
-            >
-              Sign In
-            </Button>
+           
           </Stack>
         </Toolbar>
       </Container>

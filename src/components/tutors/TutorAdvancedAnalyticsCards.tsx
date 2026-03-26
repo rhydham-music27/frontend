@@ -159,8 +159,8 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
                   variant="caption"
                   sx={{
                     color: '#64748b',
-                    fontWeight: 800,
-                    fontSize: { xs: '0.62rem', sm: '0.7rem' },
+                    fontWeight: 900,
+                    fontSize: { xs: '0.7rem', sm: '0.8rem' },
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     lineHeight: 1.2,
@@ -175,7 +175,7 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
                 sx={{
                   fontWeight: 900,
                   color: '#0f172a',
-                  fontSize: { xs: '1.2rem', sm: '1.85rem' },
+                  fontSize: { xs: '1.4rem', sm: '2.25rem' },
                   lineHeight: 1,
                   letterSpacing: '-0.04em',
                   mb: { xs: 1, sm: 1.5 },
@@ -206,8 +206,8 @@ const TutorAdvancedAnalyticsCards: React.FC = () => {
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: { xs: '0.68rem', sm: '0.78rem' },
-                  fontWeight: 600,
+                  fontSize: { xs: '0.72rem', sm: '0.85rem' },
+                  fontWeight: 700,
                   color: '#64748b',
                   letterSpacing: '0.01em',
                 }}

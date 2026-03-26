@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Container, CircularProgress } from '@mui/material';
+import { Box, Container, CircularProgress, Typography, Toolbar } from '@mui/material';
 import { ITutor } from '../../types';
 import tutorService from '../../services/tutorService';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -33,6 +33,14 @@ const TutorPublicProfilePage: React.FC = () => {
       }
     };
     fetchTutorAndReviews();
+    
+    // Set document title
+    document.title = "YourShikshak Tutor Profile";
+    
+    return () => {
+      // Optional: reset title on unmount
+      document.title = "YourShikshak";
+    };
   }, [teacherId]);
 
   if (loading) {
@@ -70,7 +78,22 @@ const TutorPublicProfilePage: React.FC = () => {
         background: 'linear-gradient(135deg, #EEF2FF 0%, #F9FAFB 40%, #ECFDF5 100%)',
       }}
     >
-      <Container maxWidth="md" sx={{ py: { xs: 4, sm: 6 } }}>
+      <TutorLeadNavbar />
+      <Toolbar sx={{ mb: { xs: 2, sm: 4 } }} />
+      <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 } }}>
+        <Typography 
+          variant="h4" 
+          align="center" 
+          fontWeight={900} 
+          gutterBottom 
+          sx={{ 
+            mb: 4, 
+            color: '#1e293b',
+            letterSpacing: '-0.02em'
+          }}
+        >
+          Your Shikshak Tutor Profile
+        </Typography>
         <PublicTutorProfileCard tutor={tutor} />
       </Container>
     </Box>

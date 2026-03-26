@@ -49,12 +49,20 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
     if (!url) return undefined;
     if (url.startsWith('http')) return url;
 
+    // If it's a relative path starting with common S3 prefix, we should really be seeing an S3 URL from the backend.
+    // If we don't, it might be exactly the case where the backend hasn't resolved it yet.
+    // However, if only AWS is used, we can fallback to a public S3 URL pattern if we have enough info.
+    // But for now, let's just ensure we handle the 'uploads/' case which is causing 404s.
+    
     // Fallback if VITE_API_BASE_URL is relative or missing
     const baseUrlFromEnv = (import.meta as any).env?.VITE_API_BASE_URL;
     const baseUrl = baseUrlFromEnv && baseUrlFromEnv.startsWith('http')
       ? baseUrlFromEnv
       : window.location.origin.replace(':3000', ':5000'); // Heuristic fallback for local dev
 
+    // If the path already has 'uploads/' at the start, and we are hit with 404, 
+    // it's likely because it was meant for S3 but returned as a relative path.
+    // We'll keep the current behavior but the backend fix should have resolved this already.
     return `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
   };
 
@@ -64,7 +72,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
     // 1. Try exact matches
     const exact = docs.find((d: any) => {
       const type = String(d.documentType || '').toUpperCase().trim();
-      return ['PROFILE_PHOTO', 'PROFILE_PHOTOS', 'PROFILE_PICTURE'].includes(type);
+      return ['PROFILE_PHOTO', 'PROFILE_PHOTOS', 'PROFILE_PICTURE', 'PROFILE_PHOTO_UPLOAD', 'AVATAR'].includes(type);
     });
     if (exact) return exact;
 
@@ -500,57 +508,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
 
           {/* Sidebar Column */}
           <Grid item xs={12} lg={4}>
-            <Stack spacing={4} sx={{ position: 'sticky', top: 32 }}>
-              {/* Validation Status */}
-              <Paper sx={{ p: 4, borderRadius: '2.5rem', border: '1px solid', borderColor: tutor.verificationStatus === 'VERIFIED' ? '#dcfce7' : '#fef3c7', bgcolor: tutor.verificationStatus === 'VERIFIED' ? alpha('#10b981', 0.02) : alpha('#f59e0b', 0.02) }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2, color: '#1e293b' }}>
-                  <ShieldCheck color={tutor.verificationStatus === 'VERIFIED' ? '#10b981' : '#f59e0b'} /> Account Validation
-                </Typography>
-                <Stack spacing={3}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>Status:</Typography>
-                    <Chip label={tutor.verificationStatus || 'PENDING'} sx={{ fontWeight: 900, bgcolor: tutor.verificationStatus === 'VERIFIED' ? '#10b981' : '#f59e0b', color: 'white', height: 26, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }} />
-                  </Box>
-                  {tutor.verifiedAt && (
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>Authenticated:</Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 900, color: '#334155' }}>{new Date(tutor.verifiedAt).toLocaleDateString()}</Typography>
-                    </Box>
-                  )}
-                  <Divider sx={{ borderStyle: 'dashed', borderColor: alpha('#64748b', 0.1) }} />
-                  <Box sx={{ p: 2, bgcolor: 'white', borderRadius: '1.25rem', border: '1px solid #f1f5f9' }}>
-                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 1, mb: 1, textTransform: 'uppercase', fontWeight: 900, fontSize: '9px' }}><Info size={12} /> Registry Compliance</Typography>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontStyle: 'italic', fontWeight: 600, lineHeight: 1.5 }}>Authorized educator in the YourShikshak database. Credentials have been verified through our standard academic vetting process.</Typography>
-                  </Box>
-
-                  <Button
-                    component="a"
-                    href="/#contact"
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      py: 2,
-                      borderRadius: '1.25rem',
-                      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                      fontWeight: 900,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      fontSize: '0.75rem',
-                      boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.2)',
-                      '&:hover': { background: '#0f172a', transform: 'translateY(-2px)' }
-                    }}
-                  >
-                    Enquire for Demo
-                  </Button>
-                </Stack>
-              </Paper>
-
-              <Paper sx={{ p: 4, borderRadius: '2.5rem', textAlign: 'center', bgcolor: alpha('#1e293b', 0.02), border: '1px solid #f1f5f9' }}>
-                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.3em', display: 'block' }}>
-                  YourShikshak
-                </Typography>
-              </Paper>
-            </Stack>
+            
           </Grid>
         </Grid>
       </Box>
