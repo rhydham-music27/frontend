@@ -55,6 +55,17 @@ const ActiveClassesOverviewCard: React.FC = () => {
     return '#f59e0b';
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 1;
+  const totalItems = classes.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const currentItem = classes[currentPage - 1];
+
+  // Reset page when classes change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [classes.length]);
+
   const cardSx = {
     borderRadius: 2,
     bgcolor: '#ffffff',
@@ -121,38 +132,55 @@ const ActiveClassesOverviewCard: React.FC = () => {
               </Typography>
             </Box>
           </Box>
-          <Box
-            sx={{
-              px: 2,
-              py: 0.75,
-              borderRadius: 1.5,
-              bgcolor: alpha('#10b981', 0.1),
-              color: '#059669',
-              fontWeight: 900,
-              fontSize: '0.75rem',
-              letterSpacing: '0.04em',
-            }}
-          >
-            {classes.length} ACTIVE
-          </Box>
+
+          {totalPages > 1 && (
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>
+                {currentPage} of {totalPages}
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                {/* Manual Navigation Arrows */}
+                <Box
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  sx={{ 
+                    cursor: currentPage === 1 ? 'default' : 'pointer',
+                    opacity: currentPage === 1 ? 0.3 : 1,
+                    bgcolor: '#f8fafc', 
+                    border: '1px solid #e2e8f0',
+                    px: 1,
+                    borderRadius: 1,
+                    fontWeight: 900
+                  }}
+                >
+                  ←
+                </Box>
+                <Box
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  sx={{ 
+                    cursor: currentPage === totalPages ? 'default' : 'pointer',
+                    opacity: currentPage === totalPages ? 0.3 : 1,
+                    bgcolor: '#f8fafc', 
+                    border: '1px solid #e2e8f0',
+                    px: 1,
+                    borderRadius: 1,
+                    fontWeight: 900
+                  }}
+                >
+                  →
+                </Box>
+              </Stack>
+            </Box>
+          )}
         </Box>
 
         {/* Mobile view */}
         <Box 
           sx={{ 
-            display: { xs: 'flex', sm: 'none' }, 
-            flexDirection: 'column', 
-            gap: 2,
-            maxHeight: 500, // Ensure full details are visible
-            overflowY: 'auto',
-            mx: -1,
-            px: 1,
-            '&::-webkit-scrollbar': { width: '4px' },
-            '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
+            display: { xs: 'block', sm: 'none' }, 
+            minHeight: 300 
           }}
         >
-          {classes.length === 0 ? (
+          {totalItems === 0 ? (
             <Box textAlign="center" py={6}>
               <Box
                 sx={{
@@ -173,7 +201,8 @@ const ActiveClassesOverviewCard: React.FC = () => {
               </Typography>
             </Box>
           ) : (
-            classes.map((cls) => {
+            currentItem && (() => {
+              const cls = currentItem;
               const progress = getProgress(cls);
               const pColor = getProgressColor(progress);
               const coordinatorName = (cls.coordinator as any)?.name || 'Not Assigned';
@@ -259,7 +288,7 @@ const ActiveClassesOverviewCard: React.FC = () => {
                   </Box>
                 </Box>
               );
-            })
+            })()
           )}
         </Box>
 

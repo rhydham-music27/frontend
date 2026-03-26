@@ -231,6 +231,17 @@ const ClassLeadsFeedCard: React.FC = () => {
     });
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 1;
+  const totalItems = filteredAnnouncements.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const currentItem = filteredAnnouncements[currentPage - 1];
+
+  // Reset page when announcements change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredAnnouncements.length]);
+
   const cardSx = {
     borderRadius: 2,
     bgcolor: '#ffffff',
@@ -254,7 +265,7 @@ const ClassLeadsFeedCard: React.FC = () => {
     );
   }
 
-  if (error && filteredAnnouncements.length === 0) {
+  if (error && totalItems === 0) {
     return (
       <Card sx={cardSx}>
         <CardContent sx={{ py: 4 }}>
@@ -278,7 +289,7 @@ const ClassLeadsFeedCard: React.FC = () => {
     );
   }
 
-  if (!loading && filteredAnnouncements.length === 0) {
+  if (!loading && totalItems === 0) {
     return (
       <Card sx={cardSx}>
         <CardContent sx={{ py: 8 }}>
@@ -338,6 +349,33 @@ const ClassLeadsFeedCard: React.FC = () => {
               </Typography>
             </Box>
           </Box>
+
+          {totalPages > 1 && (
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>
+                {currentPage} of {totalPages}
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                <IconButton 
+                  size="small" 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                >
+                  <CloseIcon sx={{ fontSize: 16, transform: 'rotate(180deg)', visibility: 'hidden' }} />
+                  <Typography sx={{ position: 'absolute', fontWeight: 900 }}>←</Typography>
+                </IconButton>
+                <IconButton 
+                  size="small" 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                >
+                  <Typography sx={{ position: 'absolute', fontWeight: 900 }}>→</Typography>
+                </IconButton>
+              </Stack>
+            </Box>
+          )}
         </Box>
 
         {successMessage && (
@@ -358,21 +396,9 @@ const ClassLeadsFeedCard: React.FC = () => {
           </Alert>
         )}
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2.5,
-            maxHeight: { xs: 500, sm: 800 },
-            overflowY: 'auto',
-            mx: -1,
-            px: 1,
-            '&::-webkit-scrollbar': { width: '4px' },
-            '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
-          }}
-        >
-          {filteredAnnouncements.map((item) => {
+        <Box sx={{ minHeight: 400 }}>
+          {currentItem && (() => {
+            const item = currentItem;
             const a = item.announcement as IAnnouncement;
             const matchPercentage = item.matchPercentage as number;
             const id = (((a as any).id || (a as any)._id) as string);
@@ -397,7 +423,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                   transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: isHighlighted ? `0 16px 32px ${alpha('#10b981', 0.1)}` : '0 12px 24px rgba(15, 23, 42, 0.06)',
+                    boxShadow: '0 16px 32px rgba(15, 23, 42, 0.06)',
                     borderColor: isHighlighted ? alpha('#10b981', 0.3) : alpha('#3b82f6', 0.2),
                   },
                 }}
@@ -558,7 +584,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                 )}
               </Box>
             );
-          })}
+          })()}
         </Box>
       </CardContent>
     </Card>
@@ -566,4 +592,3 @@ const ClassLeadsFeedCard: React.FC = () => {
 };
 
 export default React.memo(ClassLeadsFeedCard);
-

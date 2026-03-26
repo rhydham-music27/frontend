@@ -65,26 +65,35 @@ const DemoClassesCard: React.FC = () => {
       const requested = page ?? 1;
       const safeRequestedPage = Math.max(1, requested);
 
-      const resp: PaginatedResponse<IDemoHistory[]> = await getMyDemos(safeRequestedPage, pagination.limit);
+      // Fetch only SCHEDULED demos with limit 1
+      const resp: PaginatedResponse<IDemoHistory[]> = await getMyDemos(
+        safeRequestedPage, 
+        1, 
+        DEMO_STATUS.SCHEDULED
+      );
       const { data, pagination: p } = resp as any;
 
-      const pages = p?.pages || 1;
-      const safePageFromApi = Math.min(Math.max(p?.page || 1, 1), pages);
+      const pages = p?.pages || 0;
+      const safePageFromApi = pages > 0 ? Math.min(Math.max(p?.page || 1, 1), pages) : 1;
 
       setDemos(Array.isArray(data) ? data : []);
-      setPagination({ page: safePageFromApi, limit: p.limit, total: p.total, pages });
+      setPagination({ 
+        page: safePageFromApi, 
+        limit: 1, 
+        total: p?.total || 0, 
+        pages 
+      });
     } catch (e: any) {
       const msg = e?.response?.data?.message || e?.message || 'Failed to load demo sessions.';
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [pagination.limit]);
+  }, []);
 
   useEffect(() => {
     fetchDemos(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchDemos]);
   
   const handleMarkCompletedClick = (demo: IDemoHistory) => {
     setSelectedDemo(demo);
@@ -97,14 +106,10 @@ const DemoClassesCard: React.FC = () => {
     duration: string;
     feedback: string;
   }) => {
-    // Correctly extract identifiers (handle both _id and id from backend)
     const demoId = (selectedDemo as any)?._id || selectedDemo?.id;
     const leadId = (selectedDemo?.classLead as any)?._id || selectedDemo?.classLead?.id;
 
-    if (!selectedDemo || !leadId) {
-      console.warn('[DemoClassesCard] Cannot submit: Missing leadId', { selectedDemo });
-      return;
-    }
+    if (!selectedDemo || !leadId) return;
 
     try {
       setUpdatingDemoId(demoId);
@@ -122,7 +127,7 @@ const DemoClassesCard: React.FC = () => {
       setShowAttendanceModal(false);
     } catch (e: any) {
       handleError(e);
-      throw e; // Re-throw to keep modal open in DemoAttendanceModal
+      throw e;
     } finally {
       setUpdatingDemoId(null);
     }
@@ -187,15 +192,11 @@ const DemoClassesCard: React.FC = () => {
     );
   }
 
-  if (!loading && demos.length === 0) {
+  if (!loading && pagination.total === 0) {
     return null;
   }
 
-  const activeDemos = demos.filter((demo) => demo.status === DEMO_STATUS.SCHEDULED);
-
-  if (!loading && activeDemos.length === 0) {
-    return null;
-  }
+  const currentDemo = demos[0];
 
   return (
     <Card sx={cardSx}>
@@ -225,37 +226,37 @@ const DemoClassesCard: React.FC = () => {
               </Typography>
             </Box>
           </Box>
-          <Box
-            sx={{
-              px: 2,
-              py: 0.75,
-              borderRadius: 1.5,
-              bgcolor: alpha('#8b5cf6', 0.1),
-              color: '#7c3aed',
-              fontWeight: 900,
-              fontSize: '0.75rem',
-              letterSpacing: '0.04em',
-            }}
-          >
-            {activeDemos.length} SCHEDULED
-          </Box>
+          
+          {pagination.pages > 1 && (
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>
+                {pagination.page} of {pagination.pages}
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                <IconButton 
+                  size="small" 
+                  onClick={onPrev}
+                  disabled={pagination.page === 1}
+                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                >
+                  <Typography sx={{ fontWeight: 900 }}>←</Typography>
+                </IconButton>
+                <IconButton 
+                  size="small" 
+                  onClick={onNext}
+                  disabled={pagination.page === pagination.pages}
+                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                >
+                  <Typography sx={{ fontWeight: 900 }}>→</Typography>
+                </IconButton>
+              </Stack>
+            </Box>
+          )}
         </Box>
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-            maxHeight: { xs: 500, sm: 600 }, // Ensure full details are visible
-            overflowY: 'auto',
-            mx: -1,
-            px: 1,
-            '&::-webkit-scrollbar': { width: '4px' },
-            '&::-webkit-scrollbar-track': { background: 'transparent' },
-            '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
-          }}
-        >
-          {activeDemos.map((demo, index) => {
+        <Box sx={{ minHeight: 400 }}>
+          {currentDemo && (() => {
+            const demo = currentDemo;
             const demoId = (demo as any)._id || demo.id;
             const studentName = demo.classLead?.studentName || '-';
             const studentGender = demo.classLead?.studentGender || '-';
@@ -271,13 +272,12 @@ const DemoClassesCard: React.FC = () => {
             const tutorFees = demo.classLead?.tutorFees || 0;
             const classesPerMonth = demo.classLead?.classesPerMonth || '-';
             const classDurationHours = demo.classLead?.classDurationHours || '-';
-            const leadNotes = demo.classLead?.notes || '';
             const demoNotes = demo.notes || '';
             const statusProps = getStatusChipProps(demo.status);
 
             return (
               <Box
-                key={demoId || index}
+                key={demoId}
                 sx={{
                   borderRadius: 2,
                   p: 2.5,
@@ -412,7 +412,7 @@ const DemoClassesCard: React.FC = () => {
                     />
                   </Box>
                   <Button
-                    fullWidth={true} // For mobile as it's flex item in column
+                    fullWidth={true}
                     variant="contained"
                     startIcon={<CheckCircleIcon sx={{ fontSize: 18 }} />}
                     onClick={() => handleMarkCompletedClick(demo)}
@@ -437,32 +437,8 @@ const DemoClassesCard: React.FC = () => {
                 </Box>
               </Box>
             );
-          })}
+          })()}
         </Box>
-
-        {pagination.pages > 1 && (
-          <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={3}>
-            <Button
-              variant="text"
-              disabled={pagination.page <= 1}
-              onClick={onPrev}
-              sx={{ fontWeight: 800, color: '#64748b' }}
-            >
-              PREVIOUS
-            </Button>
-            <Typography variant="caption" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: '0.1em' }}>
-              {pagination.page} / {pagination.pages}
-            </Typography>
-            <Button
-              variant="text"
-              disabled={pagination.page >= pagination.pages}
-              onClick={onNext}
-              sx={{ fontWeight: 800, color: '#64748b' }}
-            >
-              NEXT
-            </Button>
-          </Box>
-        )}
       </CardContent>
       <ErrorDialog
         open={showError}
@@ -477,9 +453,9 @@ const DemoClassesCard: React.FC = () => {
         demo={selectedDemo}
       />
     </Card>
-
   );
 };
 
 export default React.memo(DemoClassesCard);
+rd);
 
