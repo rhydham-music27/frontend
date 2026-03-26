@@ -47,22 +47,21 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
 
   const getFullUrl = (url: string | undefined) => {
     if (!url) return undefined;
-    if (url.startsWith('https')) return url;
-
-    // If it's a relative path starting with common S3 prefix, we should really be seeing an S3 URL from the backend.
-    // If we don't, it might be exactly the case where the backend hasn't resolved it yet.
-    // However, if only AWS is used, we can fallback to a public S3 URL pattern if we have enough info.
-    // But for now, let's just ensure we handle the 'uploads/' case which is causing 404s.
     
-    // Fallback if VITE_API_BASE_URL is relative or missing
+    // If it's already a full URL with protocol, return it
+    if (/^https?:\/\//i.test(url)) return url;
+    
+    // If it starts with // (protocol-relative), prepend https:
+    if (url.startsWith('//')) return `https:${url}`;
+
     const baseUrlFromEnv = (import.meta as any).env?.VITE_API_BASE_URL;
     const baseUrl = baseUrlFromEnv && baseUrlFromEnv.startsWith('http')
       ? baseUrlFromEnv
-      : window.location.origin.replace(':3000', ':5000'); // Heuristic fallback for local dev
+      : window.location.origin.replace(':3000', ':5000');
 
-    // If the path already has 'uploads/' at the start, and we are hit with 404, 
-    // it's likely because it was meant for S3 but returned as a relative path.
-    // We'll keep the current behavior but the backend fix should have resolved this already.
+    // If the URL looks like an S3 path (e.g., uploads/tutors/...) and we are on production,
+    // but the backend failed to provide a full URL, this is a fallback.
+    // However, it's safer to just prepend the baseUrl and let the 404 happen or be handled by the backend fix.
     return `${baseUrl.replace(/\/$/, '')}/${url.replace(/^\//, '')}`;
   };
 
@@ -88,7 +87,14 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
     });
   }, [tutor.documents]);
 
-  const profileImageUrl = getFullUrl((profilePhotoDoc as any)?.documentUrl);
+  const profileImageUrl = useMemo(() => {
+    const rawUrl = (profilePhotoDoc as any)?.documentUrl;
+    const fullUrl = getFullUrl(rawUrl);
+    console.log('[PublicTutorProfileCard] Profile Photo Doc:', profilePhotoDoc);
+    console.log('[PublicTutorProfileCard] Raw URL:', rawUrl);
+    console.log('[PublicTutorProfileCard] Resolved Full URL:', fullUrl);
+    return fullUrl;
+  }, [profilePhotoDoc]);
 
   const getTierColor = (tier: string = '') => {
     const t = tier.toUpperCase();
