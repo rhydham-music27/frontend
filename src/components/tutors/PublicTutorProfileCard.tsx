@@ -47,7 +47,7 @@ const PublicTutorProfileCard: React.FC<PublicTutorProfileCardProps> = ({ tutor }
 
   const getFullUrl = (url: string | undefined) => {
     if (!url) return undefined;
-    if (url.startsWith('http')) return url;
+    if (url.startsWith('https')) return url;
 
     // If it's a relative path starting with common S3 prefix, we should really be seeing an S3 URL from the backend.
     // If we don't, it might be exactly the case where the backend hasn't resolved it yet.
