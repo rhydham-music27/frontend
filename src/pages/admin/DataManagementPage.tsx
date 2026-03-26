@@ -141,6 +141,11 @@ const DataManagementPage: React.FC = () => {
       bulkDeleteSupported: true,
       bulkUpdateSupported: false,
       filters: ['status', 'search'],
+      sortOptions: [
+        { value: 'createdAt', label: 'Created Date' },
+        { value: 'studentName', label: 'Student Name' },
+        { value: 'status', label: 'Status' }
+      ]
     },
     Payment: {
       label: 'Payments',
@@ -148,6 +153,12 @@ const DataManagementPage: React.FC = () => {
       bulkDeleteSupported: true,
       bulkUpdateSupported: true,
       filters: ['status', 'tutorId', 'finalClassId', 'fromDate', 'toDate'],
+      sortOptions: [
+        { value: 'createdAt', label: 'Created Date' },
+        { value: 'paymentDate', label: 'Payment Date' },
+        { value: 'dueDate', label: 'Due Date' },
+        { value: 'amount', label: 'Amount' }
+      ]
     },
     Attendance: {
       label: 'Attendance Records',
@@ -155,6 +166,10 @@ const DataManagementPage: React.FC = () => {
       bulkDeleteSupported: true,
       bulkUpdateSupported: false,
       filters: ['status', 'finalClassId', 'fromDate', 'toDate'],
+      sortOptions: [
+        { value: 'sessionDate', label: 'Session Date' },
+        { value: 'createdAt', label: 'Created Date' }
+      ]
     },
     Tutor: {
       label: 'Tutors',
@@ -162,6 +177,10 @@ const DataManagementPage: React.FC = () => {
       bulkDeleteSupported: false,
       bulkUpdateSupported: false,
       filters: ['verificationStatus', 'isAvailable'],
+      sortOptions: [
+        { value: 'createdAt', label: 'Created Date' },
+        { value: 'averageRating', label: 'Rating' },
+      ]
     },
     FinalClass: {
       label: 'Final Classes',
@@ -169,6 +188,9 @@ const DataManagementPage: React.FC = () => {
       bulkDeleteSupported: false,
       bulkUpdateSupported: false,
       filters: ['status', 'coordinatorId', 'tutorId'],
+      sortOptions: [
+        { value: 'createdAt', label: 'Created Date' }
+      ]
     },
   }), []);
 
@@ -365,7 +387,16 @@ const DataManagementPage: React.FC = () => {
   }, []);
 
   const handleFilterChange = useCallback((key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters(prev => {
+      // Create a new filters object to trigger react updates correctly
+      const newFilters = { ...prev, [key]: value };
+      
+      // Default empty strings/undefined for sortBy and sortOrder so they always show correctly in UI
+      if (key === 'sortBy' && !value) delete newFilters.sortBy;
+      if (key === 'sortOrder' && !value) delete newFilters.sortOrder;
+      
+      return newFilters;
+    });
     setPage(1);
   }, []);
 
@@ -587,6 +618,38 @@ const DataManagementPage: React.FC = () => {
               </Grid>
             )}
             {fs.includes('tutorId') && !ENTITY_CONFIG[entityType] && null}
+
+            {/* Global Sort Controls */}
+            <Grid item xs={12} sm={6} md={2}>
+              <TextField
+                fullWidth
+                select
+                size="small"
+                label="Sort By"
+                value={filters.sortBy || ''}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+              >
+                <MenuItem value="">Default</MenuItem>
+                {cfg?.sortOptions?.map((o: any) => (
+                  <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              {filters.sortBy && (
+                <TextField
+                  fullWidth
+                  select
+                  size="small"
+                  label="Sort Order"
+                  value={filters.sortOrder || 'desc'}
+                  onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
+                >
+                  <MenuItem value="desc">Descending</MenuItem>
+                  <MenuItem value="asc">Ascending</MenuItem>
+                </TextField>
+              )}
+            </Grid>
 
             <Grid item xs={12} md="auto">
               <Stack direction="row" spacing={1} alignItems="center">

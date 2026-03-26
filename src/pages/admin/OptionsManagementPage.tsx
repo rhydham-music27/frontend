@@ -22,7 +22,8 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   CircularProgress,
-  Stack
+  Stack,
+  Chip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -77,6 +78,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [extraValue, setExtraValue] = useState(''); // for metadata.Link
   const [cityCodeValue, setCityCodeValue] = useState(''); // for metadata.cityCode
+  const [sortOrderValue, setSortOrderValue] = useState<number | string>(''); // NEW
   const [saving, setSaving] = useState(false);
 
   // Deletion Multi-step Confirmation
@@ -113,6 +115,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
         type,
         label: trimmed,
         value: trimmed.toUpperCase().replace(/\s+/g, '_'),
+        sortOrder: sortOrderValue === '' ? 0 : Number(sortOrderValue),
         parent: parentId, // Link to the parent from the previous column
         metadata: type === 'CITY'
           ? { whatsappLink: extraValue.trim(), cityCode: cityCodeValue.trim().toUpperCase() }
@@ -125,6 +128,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
       setInputValue('');
       setExtraValue('');
       setCityCodeValue('');
+      setSortOrderValue('');
       setIsAdding(false);
       setEditingId(null);
       setConfirmSaveOpen(false);
@@ -142,6 +146,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
     setInputValue(item.label);
     setExtraValue(item.metadata?.whatsappLink || '');
     setCityCodeValue(item.metadata?.cityCode || '');
+    setSortOrderValue(item.sortOrder ?? 0);
     setIsAdding(false);
   };
 
@@ -229,6 +234,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
             setInputValue('');
             setExtraValue(''); // Reset link field for new city
             setCityCodeValue('');
+            setSortOrderValue('');
           }}
         >
           <AddIcon fontSize="small" />
@@ -245,6 +251,15 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
             placeholder="Enter Name"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            sx={{ mb: 1, bgcolor: 'white' }}
+          />
+          <TextField
+            fullWidth
+            type="number"
+            size="small"
+            placeholder="Sort Order (optional)"
+            value={sortOrderValue}
+            onChange={(e) => setSortOrderValue(e.target.value)}
             sx={{ mb: 1, bgcolor: 'white' }}
           />
           {type.toUpperCase() === 'CITY' && (
@@ -268,7 +283,7 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
             />
           )}
           <Stack direction="row" spacing={1} justifyContent="flex-end">
-            <Button size="small" onClick={() => { setIsAdding(false); setEditingId(null); setExtraValue(''); setCityCodeValue(''); }}>Cancel</Button>
+            <Button size="small" onClick={() => { setIsAdding(false); setEditingId(null); setExtraValue(''); setCityCodeValue(''); setSortOrderValue(''); }}>Cancel</Button>
             <Button size="small" variant="contained" disabled={saving || !inputValue.trim()} onClick={handleSave}>
               {saving ? '...' : 'Save'}
             </Button>
@@ -319,11 +334,19 @@ const OptionColumn: React.FC<OptionColumnProps> = ({
                 onClick={() => !disabled && onSelect(opt)}
               >
                 <ListItemText
-                  primary={opt.label}
+                  primary={
+                    <Box display="flex" alignItems="center" flexWrap="wrap" pr={8}>
+                      <Typography sx={{ fontWeight: selectedId === opt._id ? 600 : 400, mr: 1 }}>
+                        {opt.label}
+                      </Typography>
+                      {opt.sortOrder !== undefined && opt.sortOrder !== 0 && (
+                        <Chip size="small" label={`Order: ${opt.sortOrder}`} sx={{ height: 20, fontSize: '0.7rem' }} />
+                      )}
+                    </Box>
+                  }
                   secondary={type.toUpperCase() === 'CITY'
                     ? `${opt.metadata?.cityCode ? `Code: ${opt.metadata.cityCode}   ` : ''}${opt.metadata?.whatsappLink ? `Link: ${opt.metadata.whatsappLink}` : ''}`
                     : undefined}
-                  primaryTypographyProps={{ fontWeight: selectedId === opt._id ? 600 : 400 }}
                 />
               </ListItemButton>
             </ListItem>
@@ -685,6 +708,7 @@ const OptionsManagementPage: React.FC = () => {
               <Stack spacing={2}>
                 <TextField label="Label" value={label} onChange={e => setLabel(e.target.value)} fullWidth />
                 <TextField label="Code" value={value} onChange={e => setValue(e.target.value)} fullWidth />
+                <TextField label="Sort Order" type="number" value={sortOrder} onChange={e => setSortOrder(Number(e.target.value))} fullWidth />
                 <Stack direction="row" spacing={1}>
                   {editingOption && <Button onClick={resetFlatForm} fullWidth>Cancel</Button>}
                   <Button variant="contained" onClick={handleSaveFlat} disabled={savingFlat} fullWidth>Save</Button>
@@ -697,12 +721,23 @@ const OptionsManagementPage: React.FC = () => {
               <List>
                 {flatOptions.map(o => (
                   <ListItem key={o._id} divider>
-                    <ListItemText primary={o.label} secondary={o.value} />
+                    <ListItemText 
+                      primary={
+                        <Box display="flex" alignItems="center" flexWrap="wrap" pr={8}>
+                          <Typography sx={{ mr: 1 }}>{o.label}</Typography>
+                          {o.sortOrder !== undefined && o.sortOrder !== 0 && (
+                            <Chip size="small" label={`Order: ${o.sortOrder}`} sx={{ height: 20, fontSize: '0.7rem' }} />
+                          )}
+                        </Box>
+                      } 
+                      secondary={o.value} 
+                    />
                     <ListItemSecondaryAction>
                       <IconButton onClick={() => {
                         setEditingOption(o);
                         setLabel(o.label);
                         setValue(o.value);
+                        setSortOrder(o.sortOrder ?? 0);
                       }}><EditIcon /></IconButton>
                       <IconButton onClick={() => handleDeleteFlat(o._id)}><DeleteIcon /></IconButton>
                     </ListItemSecondaryAction>
