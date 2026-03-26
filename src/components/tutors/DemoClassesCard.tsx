@@ -456,6 +456,6 @@ const DemoClassesCard: React.FC = () => {
   );
 };
 
+
 export default React.memo(DemoClassesCard);
-rd);
 
