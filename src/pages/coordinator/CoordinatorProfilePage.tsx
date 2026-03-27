@@ -22,6 +22,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { subDays, format } from 'date-fns';
+import DocumentViewerModal from '../../components/common/DocumentViewerModal';
 
 const CoordinatorProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +45,9 @@ const CoordinatorProfilePage: React.FC = () => {
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docUploading, setDocUploading] = useState<boolean>(false);
   const [docError, setDocError] = useState<string | null>(null);
+
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,7 +94,7 @@ const CoordinatorProfilePage: React.FC = () => {
 
   const initials = user?.name ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '';
 
-  const canEditDocuments = !id && user?.role === 'COORDINATOR';
+  const canEditDocuments = !id && user?.role === 'COORDINATOR' && String((coordinatorProfile as any)?.verificationStatus) !== 'VERIFIED';
 
   const handleUploadDoc = async () => {
     if (!coordinatorProfile) return;
@@ -127,11 +131,19 @@ const CoordinatorProfilePage: React.FC = () => {
       const resp = await coordinatorService.deleteCoordinatorDocument(String(coordinatorId), index);
       setCoordinatorProfile(resp.data as unknown as ICoordinator);
       setSnackbar({ open: true, message: 'Document deleted', severity: 'success' });
-    } catch (e: any) {
-      setDocError(e?.response?.data?.message || e?.response?.data?.error || 'Failed to delete document');
     } finally {
       setDocUploading(false);
     }
+  };
+
+  const handleOpenViewer = (doc: any) => {
+    setViewingDocument(doc);
+    setViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setViewerOpen(false);
+    setViewingDocument(null);
   };
 
   return (
@@ -246,23 +258,41 @@ const CoordinatorProfilePage: React.FC = () => {
 
                     <List dense sx={{ mt: 1 }}>
                       {Array.isArray((coordinatorProfile as any).documents) && (coordinatorProfile as any).documents.length > 0 ? (
-                        (coordinatorProfile as any).documents.map((d: any, idx: number) => (
-                          <ListItem
-                            key={`${d?.documentType || 'DOC'}-${idx}`}
-                            secondaryAction={
-                              canEditDocuments ? (
-                                <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDoc(idx)} disabled={docUploading}>
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              ) : null
-                            }
-                          >
-                            <ListItemText
-                              primary={`${d?.documentType || 'Document'}${d?.verifiedAt ? ' (Verified)' : ''}`}
-                              secondary={''}
-                            />
-                          </ListItem>
-                        ))
+                        (coordinatorProfile as any).documents.map((d: any, idx: number) => {
+                          const isClickable = !!id; // "Strictly this feature is for this page only" - when id is present in params
+                          return (
+                            <ListItem
+                              key={`${d?.documentType || 'DOC'}-${idx}`}
+                              onClick={isClickable ? () => handleOpenViewer(d) : undefined}
+                              sx={{
+                                cursor: isClickable ? 'pointer' : 'default',
+                                '&:hover': isClickable ? { bgcolor: 'action.hover' } : {},
+                                borderRadius: 1
+                              }}
+                              secondaryAction={
+                                canEditDocuments ? (
+                                  <IconButton edge="end" aria-label="delete" onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteDoc(idx);
+                                  }} disabled={docUploading}>
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                ) : null
+                              }
+                            >
+                              <ListItemText
+                                primary={`${d?.documentType || 'Document'}${d?.verifiedAt ? ' (Verified)' : ''}`}
+                                secondary={''}
+                                primaryTypographyProps={{
+                                  variant: 'body2',
+                                  fontWeight: isClickable ? 600 : 400,
+                                  color: isClickable ? 'primary.main' : 'text.primary',
+                                  sx: isClickable ? { textDecoration: 'underline', textUnderlineOffset: 2 } : {}
+                                }}
+                              />
+                            </ListItem>
+                          );
+                        })
                       ) : (
                         <Typography variant="caption" color="text.secondary">
                           No documents uploaded yet.
@@ -369,6 +399,12 @@ const CoordinatorProfilePage: React.FC = () => {
       )}
 
       <ChangePasswordOtpModal open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+
+      <DocumentViewerModal
+        open={viewerOpen}
+        onClose={handleCloseViewer}
+        document={viewingDocument}
+      />
 
       <SnackbarNotification open={snackbar.open} message={snackbar.message} severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} />
     </Container>

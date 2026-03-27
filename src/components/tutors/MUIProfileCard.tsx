@@ -875,15 +875,15 @@ const MUIProfileCard: React.FC<MUIProfileCardProps> = ({ tutorId }) => {
                   }`}
               >
                 <div className={`p-3 rounded-2xl w-fit mb-4 transition-all ${tutor.verificationFeeStatus === 'PAID' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' :
-                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' :
-                      'bg-slate-300 text-white'
+                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200' :
+                    'bg-slate-300 text-white'
                   }`}>
                   <CreditCard size={24} />
                 </div>
                 <p className="text-[11px] font-black text-[#1e293b] uppercase mb-1 font-['Manrope'] tracking-tight">System Fee</p>
                 <p className={`text-[9px] font-black tracking-widest uppercase ${tutor.verificationFeeStatus === 'PAID' ? 'text-emerald-600' :
-                    tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'text-indigo-600' :
-                      'text-slate-400'
+                  tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'text-indigo-600' :
+                    'text-slate-400'
                   }`}>
                   {tutor.verificationFeeStatus === 'PAID' ? 'SETTLED' :
                     tutor.verificationFeeStatus === 'DEDUCT_FROM_FIRST_MONTH' ? 'DEFERRED' :

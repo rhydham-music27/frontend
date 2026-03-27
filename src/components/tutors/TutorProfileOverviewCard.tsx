@@ -130,8 +130,8 @@ const TutorProfileOverviewCard: React.FC = () => {
             <Box flex={1} minWidth={0} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</Typography>
               <Typography sx={{ opacity: 0.85, mb: 1 }}>
-                {Array.isArray((tutor as any).qualifications) 
-                  ? (tutor as any).qualifications.map((q: any) => typeof q === 'string' ? q : q.label).join(', ') 
+                {Array.isArray((tutor as any).qualifications)
+                  ? (tutor as any).qualifications.map((q: any) => typeof q === 'string' ? q : q.label).join(', ')
                   : 'Tutor'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', md: 'flex-start' }, gap: 1 }}>
