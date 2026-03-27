@@ -173,6 +173,12 @@ export interface ICoordinator {
   verificationStatus?: string;
   joiningDate: Date;
   performanceScore: number;
+  bio?: string;
+  languagesKnown?: string[];
+  skills?: string[];
+  permanentAddress?: string;
+  residentialAddress?: string;
+  isProfileComplete?: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

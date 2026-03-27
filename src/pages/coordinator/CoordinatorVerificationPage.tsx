@@ -242,97 +242,99 @@ const CoordinatorVerificationPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent>
-          <Typography variant="h6" fontWeight={800} gutterBottom>
-            Document Upload
-          </Typography>
+      {verificationStatus !== VERIFICATION_STATUS.VERIFIED && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" fontWeight={800} gutterBottom>
+              Document Upload
+            </Typography>
 
-          {!coordinatorProfile ? (
-            <Alert severity="info">Coordinator profile not loaded.</Alert>
-          ) : (
-            <>
-              <Box display="flex" flexDirection="column" gap={1.5}>
-                <TextField
-                  select
-                  size="small"
-                  label="Document Type"
-                  value={docType}
-                  onChange={(e) => setDocType(e.target.value)}
-                  fullWidth
-                >
-                  {documentTypes.map((t) => (
-                    <MenuItem key={t} value={t}>
-                      {t}
-                    </MenuItem>
-                  ))}
-                </TextField>
+            {!coordinatorProfile ? (
+              <Alert severity="info">Coordinator profile not loaded.</Alert>
+            ) : (
+              <>
+                <Box display="flex" flexDirection="column" gap={1.5}>
+                  <TextField
+                    select
+                    size="small"
+                    label="Document Type"
+                    value={docType}
+                    onChange={(e) => setDocType(e.target.value)}
+                    fullWidth
+                  >
+                    {documentTypes.map((t) => (
+                      <MenuItem key={t} value={t}>
+                        {t}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
-                <Button variant="outlined" component="label" size="small" disabled={docUploading} startIcon={<CloudUploadIcon />}>
-                  Choose File
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/jpeg,image/png,application/pdf"
-                    onChange={(e) => setDocFile(e.target.files?.[0] || null)}
-                  />
-                </Button>
+                  <Button variant="outlined" component="label" size="small" disabled={docUploading} startIcon={<CloudUploadIcon />}>
+                    Choose File
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/jpeg,image/png,application/pdf"
+                      onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+                    />
+                  </Button>
 
-                {docFile ? (
-                  <Typography variant="caption" color="text.secondary">
-                    {docFile.name}
-                  </Typography>
-                ) : null}
+                  {docFile ? (
+                    <Typography variant="caption" color="text.secondary">
+                      {docFile.name}
+                    </Typography>
+                  ) : null}
 
-                {docError ? (
-                  <Typography variant="caption" color="error">
-                    {docError}
-                  </Typography>
-                ) : null}
+                  {docError ? (
+                    <Typography variant="caption" color="error">
+                      {docError}
+                    </Typography>
+                  ) : null}
 
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleUploadDoc}
-                  disabled={docUploading || !docType || !docFile}
-                >
-                  {docUploading ? 'Uploading...' : 'Upload Document'}
-                </Button>
-              </Box>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleUploadDoc}
+                    disabled={docUploading || !docType || !docFile}
+                  >
+                    {docUploading ? 'Uploading...' : 'Upload Document'}
+                  </Button>
+                </Box>
 
-              <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: 2 }} />
 
-              <Typography variant="subtitle1" fontWeight={800} gutterBottom>
-                Uploaded Documents
-              </Typography>
-
-              {documents.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  No documents uploaded yet.
+                <Typography variant="subtitle1" fontWeight={800} gutterBottom>
+                  Uploaded Documents
                 </Typography>
-              ) : (
-                <List dense>
-                  {documents.map((d: any, idx: number) => (
-                    <ListItem
-                      key={`${d?.documentType || 'DOC'}-${idx}`}
-                      secondaryAction={
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDoc(idx)} disabled={docUploading}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemText
-                        primary={`${d?.documentType || 'Document'}${d?.verifiedAt ? ' (Verified)' : ''}`}
-                        secondary={d?.documentUrl ? 'Uploaded' : ''}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+
+                {documents.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    No documents uploaded yet.
+                  </Typography>
+                ) : (
+                  <List dense>
+                    {documents.map((d: any, idx: number) => (
+                      <ListItem
+                        key={`${d?.documentType || 'DOC'}-${idx}`}
+                        secondaryAction={
+                          <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDoc(idx)} disabled={docUploading}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        }
+                      >
+                        <ListItemText
+                          primary={`${d?.documentType || 'Document'}${d?.verifiedAt ? ' (Verified)' : ''}`}
+                          secondary={d?.documentUrl ? 'Uploaded' : ''}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <SnackbarNotification
         open={snackbar.open}

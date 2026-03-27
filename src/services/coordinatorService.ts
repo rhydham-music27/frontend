@@ -144,7 +144,16 @@ export const deleteCoordinatorDocument = async (
 
 export const updateCoordinator = async (
   coordinatorId: string,
-  updateData: Partial<{ maxClassCapacity: number; specialization: string[]; isActive: boolean }>
+  updateData: Partial<{ 
+    maxClassCapacity: number; 
+    specialization: string[]; 
+    isActive: boolean;
+    bio: string;
+    languagesKnown: string[];
+    skills: string[];
+    permanentAddress: string;
+    residentialAddress: string;
+  }>
 ): Promise<ApiResponse<any>> => {
   const { data } = await api.put(`${API_ENDPOINTS.COORDINATORS}/${coordinatorId}`, updateData);
   return data as ApiResponse<any>;
