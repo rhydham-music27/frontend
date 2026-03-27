@@ -146,7 +146,7 @@ const MainLayout: React.FC = () => {
       display="flex"
       sx={{
         position: 'relative',
-        minHeight: 'calc(100vh / var(--app-scale))',
+        minHeight: { xs: '100dvh', sm: 'calc(100vh / var(--app-scale))' },
       }}
     >
       {isTutor && isMobile ? (
@@ -167,7 +167,7 @@ const MainLayout: React.FC = () => {
           ml: { md: `${sidebarWidth}px`, xs: 0 },
           width: { md: `calc(100% - ${sidebarWidth}px)`, xs: '100%' },
           minWidth: 0,
-          height: 'calc(100vh / var(--app-scale))',
+          height: { xs: '100dvh', sm: 'calc(100vh / var(--app-scale))' },
           overflowY: 'auto',
           backgroundColor: 'background.default',
           transition: isResizing ? 'none' : 'margin 0.3s ease, width 0.3s ease, filter 0.2s ease',

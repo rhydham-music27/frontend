@@ -148,6 +148,11 @@ export const updateVerificationFeeStatus = async (
   return data as ApiResponse<ITutor>;
 };
 
+export const deductTutorVerificationFee = async (tutorId: string): Promise<ApiResponse<any>> => {
+  const { data } = await api.post(`${API_ENDPOINTS.TUTORS}/${tutorId}/deduct-verification-fee`);
+  return data as ApiResponse<any>;
+};
+
 export const getPendingVerifications = async (): Promise<ApiResponse<ITutor[]>> => {
   const { data } = await api.get(API_ENDPOINTS.TUTORS_PENDING_VERIFICATIONS);
   return data as ApiResponse<ITutor[]>;
@@ -336,4 +341,5 @@ export default {
   getAttendanceByClass,
   upsertAttendanceSheet,
   submitAttendanceSheet,
+  deductTutorVerificationFee,
 };

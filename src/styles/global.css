@@ -618,6 +618,12 @@
 
 /* Responsive Utilities */
 @media (max-width: 640px) {
+  #root {
+    transform: none !important;
+    width: 100% !important;
+    height: 100dvh !important;
+  }
+
   .mobile-full-width {
     width: 100% !important;
   }

@@ -26,6 +26,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SnackbarNotification from '../../components/common/SnackbarNotification';
 import { format } from 'date-fns';
+import { deductTutorVerificationFee } from '../../services/tutorService';
 
 const formatCurrency = (amount: number): string => `₹${(amount || 0).toLocaleString('en-IN')}`;
 const formatDate = (date?: Date | string): string => (date ? format(new Date(date), 'dd MMM yyyy') : '-');
@@ -142,6 +143,21 @@ const PaymentTrackingPage: React.FC = () => {
     }
   };
 
+  const handleDeductFee = async (paymentId: string, tutorName: string, tutorId: string) => {
+    if (window.confirm(`Are you sure you want to process the verification fee for ${tutorName}? This will mark their verification fee as paid.`)) {
+      setProcessingId(paymentId);
+      try {
+        await deductTutorVerificationFee(tutorId);
+        setSnackbar({ open: true, message: 'Fee deducted successfully', severity: 'success' });
+        fetchPayments();
+      } catch (err: any) {
+        setSnackbar({ open: true, message: err?.response?.data?.message || 'Failed to deduct fee.', severity: 'error' });
+      } finally {
+        setProcessingId(null);
+      }
+    }
+  };
+
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -161,6 +177,7 @@ const PaymentTrackingPage: React.FC = () => {
         >
           <Tab value={PAYMENT_TYPE.FEES_COLLECTED} label="Pending Fees (From Parents)" />
           <Tab value={PAYMENT_TYPE.TUTOR_PAYOUT} label="Pending Payouts (To Tutors)" />
+          <Tab value={PAYMENT_TYPE.TUTOR_VERIFICATION_FEES} label="Verification Fees" />
         </Tabs>
 
         {/* Simple Status Filter Toggles if needed, but user specifically asked for "pending payments" */}
@@ -196,9 +213,13 @@ const PaymentTrackingPage: React.FC = () => {
             <Table sx={{ minWidth: 750 }}>
               <TableHead sx={{ bgcolor: 'grey.100' }}>
                 <TableRow>
-                  <TableCell><strong>Class / Student</strong></TableCell>
+                  {paymentTypeTab !== PAYMENT_TYPE.TUTOR_VERIFICATION_FEES && (
+                    <TableCell><strong>Class / Student</strong></TableCell>
+                  )}
                   <TableCell><strong>Tutor</strong></TableCell>
-                  <TableCell><strong>Period</strong></TableCell>
+                  {paymentTypeTab !== PAYMENT_TYPE.TUTOR_VERIFICATION_FEES && (
+                    <TableCell><strong>Period</strong></TableCell>
+                  )}
                   <TableCell align="right"><strong>Amount</strong></TableCell>
                   <TableCell><strong>Date Created</strong></TableCell>
                   <TableCell><strong>Status</strong></TableCell>
@@ -208,27 +229,31 @@ const PaymentTrackingPage: React.FC = () => {
               <TableBody>
                 {payments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={paymentTypeTab !== PAYMENT_TYPE.TUTOR_VERIFICATION_FEES ? 7 : 5} align="center" sx={{ py: 4 }}>
                       <Typography color="textSecondary">No payments found.</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
                   payments.map((payment) => (
                     <TableRow key={payment.id} hover>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="bold">
-                          {(payment.finalClass as any)?.studentName || 'Unknown Student'}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {(payment.finalClass as any)?.className || 'No Class Name'}
-                        </Typography>
-                      </TableCell>
+                      {paymentTypeTab !== PAYMENT_TYPE.TUTOR_VERIFICATION_FEES && (
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="bold">
+                            {(payment.finalClass as any)?.studentName || 'Unknown Student'}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {(payment.finalClass as any)?.className || 'No Class Name'}
+                          </Typography>
+                        </TableCell>
+                      )}
                       <TableCell>
                         {(payment.tutor as any)?.name || 'N/A'}
                       </TableCell>
-                      <TableCell>
-                        {(payment.attendanceSheet as any)?.periodLabel || '-'}
-                      </TableCell>
+                      {paymentTypeTab !== PAYMENT_TYPE.TUTOR_VERIFICATION_FEES && (
+                        <TableCell>
+                          {(payment.attendanceSheet as any)?.periodLabel || '-'}
+                        </TableCell>
+                      )}
                       <TableCell align="right">
                         <Typography fontWeight="bold">
                           {formatCurrency(payment.amount)}
@@ -247,16 +272,41 @@ const PaymentTrackingPage: React.FC = () => {
                       </TableCell>
                       <TableCell align="center">
                         {payment.status === PAYMENT_STATUS.PENDING || payment.status === PAYMENT_STATUS.OVERDUE ? (
-                          <Button
-                            variant="contained"
-                            color="success"
-                            size="small"
-                            startIcon={<CheckCircleIcon />}
-                            disabled={processingId === payment.id}
-                            onClick={() => handleOpenProofModal(payment.id)}
-                          >
-                            {paymentTypeTab === PAYMENT_TYPE.FEES_COLLECTED ? 'Received' : 'Paid'}
-                          </Button>
+                          <Box display="flex" flexDirection="column" gap={1} alignItems="center">
+                            {paymentTypeTab === PAYMENT_TYPE.TUTOR_PAYOUT ? (
+                              <Button
+                                variant="contained"
+                                color="success"
+                                size="small"
+                                startIcon={<CheckCircleIcon />}
+                                disabled={processingId === payment.id}
+                                onClick={() => handleOpenProofModal(payment.id)}
+                              >
+                                Paid
+                              </Button>
+                            ) : paymentTypeTab === PAYMENT_TYPE.TUTOR_VERIFICATION_FEES ? (
+                               <Button
+                                variant="contained"
+                                color="secondary"
+                                size="small"
+                                disabled={processingId === payment.id}
+                                onClick={() => handleDeductFee(payment.id, (payment.tutor as any)?.name || 'Tutor', (payment.tutor as any)?._id || (payment.tutor as any)?.id)}
+                              >
+                                Proceed
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="contained"
+                                color="success"
+                                size="small"
+                                startIcon={<CheckCircleIcon />}
+                                disabled={processingId === payment.id}
+                                onClick={() => handleOpenProofModal(payment.id)}
+                              >
+                                Received
+                              </Button>
+                            )}
+                          </Box>
                         ) : (
                           <Typography variant="caption" color="success.main" display="flex" alignItems="center" justifyContent="center">
                             <CheckCircleIcon fontSize="small" sx={{ mr: 0.5 }} /> Completed
