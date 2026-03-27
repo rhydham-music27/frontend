@@ -52,7 +52,10 @@ const RevenueTrendsChart: React.FC<RevenueTrendsChartProps> = ({ data, loading }
     const aggregated: Record<string, RevenueTrendPoint> = {};
 
     data.forEach(d => {
-      const date = parseISO(d.date);
+      if (!d.date) return;
+      const date = parseISO(String(d.date));
+      if (isNaN(date.getTime())) return;
+
       let key = d.date;
 
       if (interval === 'weekly') {
