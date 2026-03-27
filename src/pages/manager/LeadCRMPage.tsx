@@ -23,7 +23,9 @@ import {
   useMediaQuery,
   FormControl,
   Select,
-  InputLabel
+  InputLabel,
+  ThemeProvider,
+  createTheme
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SchoolIcon from '@mui/icons-material/School';
@@ -49,21 +51,59 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
 import { USER_ROLES } from '../../constants';
 
+const managerTheme = createTheme({
+  palette: {
+    mode: 'light',
+    background: { default: '#f6fafe', paper: '#ffffff' },
+    primary: { main: '#0035c5', light: '#0047ff', dark: '#001257' },
+    secondary: { main: '#4658ac', light: '#94a6ff', dark: '#24388b' },
+    text: { primary: '#171c1f', secondary: '#434657' },
+    divider: 'rgba(196, 197, 218, 0.4)',
+  },
+  typography: {
+    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
+    h4: { fontFamily: '"Manrope", sans-serif', fontWeight: 800 },
+    h5: { fontFamily: '"Manrope", sans-serif', fontWeight: 700 },
+    subtitle1: { fontFamily: '"Manrope", sans-serif', fontWeight: 700 },
+    subtitle2: { fontFamily: '"Manrope", sans-serif', fontWeight: 700 },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: { textTransform: 'none', borderRadius: 8, fontWeight: 600 },
+        containedPrimary: {
+          background: 'linear-gradient(135deg, #0035c5 0%, #0047ff 100%)',
+          boxShadow: '0 4px 12px rgba(0, 53, 197, 0.2)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #001257 0%, #0035c5 100%)',
+            boxShadow: '0 6px 16px rgba(0, 53, 197, 0.3)',
+          }
+        }
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: { borderRadius: 9999, fontWeight: 600 },
+      },
+    },
+  },
+});
+
 const COLUMN_CONFIG = [
-  { key: 'new', label: 'New', color: '#3B82F6', description: 'Newly created leads' },
-  { key: 'announced', label: 'Announced', color: '#F59E0B', description: 'Announced to tutors (0 interest)' },
-  { key: 'interested', label: 'Interested', color: '#8B5CF6', description: 'Tutors showing interest' },
-  { key: 'demoScheduled', label: 'Demo Scheduled', color: '#10B981', description: 'Demos are scheduled' },
-  { key: 'demoPending', label: 'Demo Completed', color: '#EC4899', description: 'Demos done, approval pending' },
-  { key: 'won', label: 'Won', color: '#059669', description: 'Leads converted to classes' },
-  { key: 'others', label: 'Others', color: '#6B7280', description: 'Rejected or closed leads' },
+  { key: 'new', label: 'New', color: '#0047ff', description: 'Newly created leads' },
+  { key: 'announced', label: 'Announced', color: '#8b5cf6', description: 'Announced to tutors (0 interest)' },
+  { key: 'interested', label: 'Interested', color: '#f59e0b', description: 'Tutors showing interest' },
+  { key: 'demoScheduled', label: 'Demo Scheduled', color: '#10b981', description: 'Demos are scheduled' },
+  { key: 'demoPending', label: 'Demo Completed', color: '#0035c5', description: 'Demos done, approval pending' },
+  { key: 'won', label: 'Won', color: '#008a5b', description: 'Leads converted to classes' },
+  { key: 'others', label: 'Others', color: '#747688', description: 'Rejected or closed leads' },
 ];
 
 const getPriority = (date: string | Date) => {
   const days = Math.floor((new Date().getTime() - new Date(date).getTime()) / (1000 * 3600 * 24));
-  if (days > 7) return { label: 'High Priority', color: '#EF4444', icon: <PriorityHighIcon /> };
-  if (days > 3) return { label: 'Medium Priority', color: '#F59E0B', icon: <InfoIcon /> };
-  return { label: 'Normal', color: '#6B7280', icon: null };
+  if (days > 7) return { label: 'High Priority', color: '#b82800', bg: '#ffd1c6', icon: <PriorityHighIcon /> };
+  if (days > 3) return { label: 'Medium Priority', color: '#ca8100', bg: '#ffeccc', icon: <InfoIcon /> };
+  return { label: 'Normal', color: '#434657', bg: '#eaeef2', icon: null };
 };
 
 const getDaysInStage = (date: string | Date) => {
@@ -100,25 +140,26 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
     <Card 
       elevation={0}
       sx={{ 
-        mb: 1.5, 
-        borderRadius: 1.5, 
-        border: '1px solid',
-        borderColor: 'divider',
+        mb: 2, 
+        borderRadius: 3, 
+        border: 'none',
+        bgcolor: '#ffffff',
+        boxShadow: '0 4px 12px rgba(23, 28, 31, 0.02)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         overflow: 'hidden',
         cursor: 'pointer',
+        position: 'relative',
         '&:hover': {
-          boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
-          borderColor: theme.palette.primary.main,
+          boxShadow: '0 12px 32px rgba(23, 28, 31, 0.06)',
           transform: 'translateY(-4px)',
           '& .MuiTypography-subtitle2': {
-            color: 'primary.dark'
+            color: 'primary.main'
           }
         }
       }}
       onClick={() => navigate(`/class-leads/${lead.id}`)}
     >
-      <CardContent sx={{ p: '14px !important' }}>
+      <CardContent sx={{ p: '16px !important' }}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
           <Box display="flex" alignItems="center" gap={1.5}>
             <Avatar 
@@ -216,10 +257,9 @@ const LeadCard: React.FC<{ lead: IClassLead; managers: { id: string, name: strin
                   height: 22, 
                   fontSize: '0.7rem', 
                   fontWeight: 800,
-                  bgcolor: alpha(getPriority(lead.createdAt).color, 0.1),
+                  bgcolor: getPriority(lead.createdAt).bg,
                   color: getPriority(lead.createdAt).color,
-                  border: '1px solid',
-                  borderColor: alpha(getPriority(lead.createdAt).color, 0.2),
+                  border: 'none',
                   '& .MuiChip-label': { px: 1 }
                 }}
               />
@@ -500,19 +540,22 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
       {showHeader && (
         <Box 
           sx={{ 
-            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-            color: 'white',
+            bgcolor: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(196, 197, 218, 0.4)',
+            color: '#171c1f',
             pt: { xs: 4, md: 5 },
             pb: { xs: 8, md: 9 },
             px: { xs: 2, md: 4 },
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            zIndex: 10
           }}
         >
           <Container maxWidth={false} sx={{ position: 'relative', zIndex: 2 }}>
             <Breadcrumbs 
               separator={<NavigateNextIcon fontSize="small" />} 
-              sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
+              sx={{ color: '#434657', mb: 2 }}
             >
               <Link 
                 underline="hover" 
@@ -523,7 +566,7 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
                 <DashboardIcon sx={{ mr: 0.5, fontSize: 16 }} />
                 Dashboard
               </Link>
-              <Typography color="white" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography color="primary.main" sx={{ display: 'flex', alignItems: 'center', fontWeight: 600 }}>
                 <LeadIcon sx={{ mr: 0.5, fontSize: 16 }} />
                 Lead CRM
               </Typography>
@@ -531,10 +574,10 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
 
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Box>
-                <Typography variant="h4" fontWeight={800} gutterBottom sx={{ letterSpacing: '-0.02em' }}>
+                <Typography variant="h4" fontWeight={800} gutterBottom sx={{ letterSpacing: '-0.02em', color: '#171c1f' }}>
                   Lead Tracker CRM
                 </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.8, fontWeight: 400, maxWidth: 600 }}>
+                <Typography variant="body1" sx={{ color: '#434657', fontWeight: 400, maxWidth: 600 }}>
                   {isAdmin 
                     ? "Monitor all manager leads through the CRM funnel to oversee team performance."
                     : "Manage and track your leads through the sales funnel with real-time interest tracking."}
@@ -547,31 +590,34 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
                   value={searchQuery}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                   InputProps={{
-                    startAdornment: <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }} />,
+                    startAdornment: <SearchIcon sx={{ color: '#747688', mr: 1 }} />,
                     sx: { 
-                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      bgcolor: '#f0f4f8', 
                       borderRadius: 2,
-                      color: 'white',
+                      color: '#171c1f',
                       width: { xs: 200, md: 300 },
-                      '& fieldset': { border: 'none' },
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
-                      '&.Mui-focused': { bgcolor: 'rgba(255,255,255,0.15)' }
+                      '& fieldset': { 
+                         border: 'none',
+                         borderBottom: '1px solid rgba(196, 197, 218, 0.4)',
+                         borderRadius: '8px 8px 0 0'
+                      },
+                      '&:hover': { bgcolor: '#eaeef2' },
+                      '&.Mui-focused fieldset': { 
+                         borderBottom: '2px solid #0035c5 !important',
+                         boxShadow: '0 2px 8px rgba(0, 53, 197, 0.1)'
+                      }
                     }
                   }}
                 />
                 <Button 
                     variant="contained" 
+                    color="primary"
                     startIcon={<RefreshIcon />} 
                     onClick={fetchLeads}
                     disabled={loading}
                     sx={{ 
-                        bgcolor: 'rgba(255,255,255,0.1)', 
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
                         px: 3,
                         py: 1,
-                        borderRadius: 2,
                         height: 40
                     }}
                 >
@@ -734,14 +780,14 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
                 elevation={0}
                 sx={{ 
                   height: '100%', 
-                  bgcolor: alpha(col.color, 0.02), 
-                  borderRadius: 2, 
-                  border: '1px solid', 
-                  borderColor: highlightColumn === col.key ? col.color : 'divider',
+                  bgcolor: highlightColumn === col.key ? '#e4e9ed' : '#eaeef2', 
+                  borderRadius: 4, 
+                  border: 'none', 
                   display: 'flex', 
                   flexDirection: 'column',
-                  boxShadow: highlightColumn === col.key ? `0 8px 32px ${alpha(col.color, 0.15)}` : '0 4px 6px -1px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s'
+                  transition: 'all 0.3s',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
                 <Box p={1.75} sx={{ position: 'relative' }}>
@@ -819,7 +865,11 @@ export const ManagerLeadCRMBoard: React.FC<{ showHeader?: boolean; showBackgroun
 };
 
 const ManagerLeadCRMPage: React.FC = () => {
-  return <ManagerLeadCRMBoard showHeader showBackground />;
+  return (
+    <ThemeProvider theme={managerTheme}>
+      <ManagerLeadCRMBoard showHeader showBackground />
+    </ThemeProvider>
+  );
 };
 
 export default ManagerLeadCRMPage;

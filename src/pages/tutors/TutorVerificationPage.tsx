@@ -773,7 +773,7 @@ export default function TutorVerificationPage() {
                               size="small"
                               variant="outlined"
                               component={RouterLink}
-                              to={`/tutors/verify/${t.id}`}
+                              to={`/tutors/verify/${t.id || (t as any)._id}`}
                             >
                               Details
                             </Button>
@@ -811,7 +811,7 @@ export default function TutorVerificationPage() {
                               <MuiLink
                                 variant="subtitle2"
                                 component={RouterLink}
-                                to={`/tutor-profile/${t.id}`}
+                                to={`/tutor-profile/${(t as any).id || (t as any)._id}`}
                                 sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                               >
                                 {t.user?.name || 'Unknown Tutor'}
@@ -857,7 +857,7 @@ export default function TutorVerificationPage() {
                               size="small"
                               variant="outlined"
                               component={RouterLink}
-                              to={`/tutors/verify/${t.id}`}
+                              to={`/tutors/verify/${(t as any).id || (t as any)._id}`}
                             >
                               View
                             </Button>
