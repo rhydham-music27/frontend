@@ -271,8 +271,8 @@ export default function PaymentsListPage() {
                 borderRadius: 2,
                 border: stat.isProfit || stat.isHighlight ? '1px solid rgba(255,255,255,0.3)' : 'none'
               }}>
-                <Typography variant="caption" sx={{ opacity: 0.8, display: 'block', mb: 0.5, whiteSpace: 'nowrap' }}>{stat.label}</Typography>
-                <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>₹{stat.value?.toLocaleString() ?? '0'}</Typography>
+                <Typography variant="caption" sx={{ color: alpha('#fff', 0.9), fontWeight: 800, display: 'block', mb: 0.5, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.02em', fontSize: '0.65rem' }}>{stat.label}</Typography>
+                <Typography variant="h6" fontWeight={800} sx={{ color: '#fff', fontSize: { xs: '1.2rem', md: '1.4rem' }, letterSpacing: '-0.02em' }}>₹{stat.value?.toLocaleString() ?? '0'}</Typography>
               </Box>
             </Grid>
           ))}
