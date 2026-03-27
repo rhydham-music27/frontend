@@ -323,13 +323,20 @@ const ClassLeadsFeedCard: React.FC = () => {
 
   return (
     <Card sx={cardSx}>
-      <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
-        <Box mb={4} display="flex" alignItems="center" justifyContent="space-between">
+      <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
+        <Box 
+          mb={4} 
+          display="flex" 
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'flex-start', sm: 'center' }} 
+          justifyContent="space-between"
+          gap={2}
+        >
           <Box display="flex" alignItems="center" gap={2}>
             <Box
               sx={{
-                width: 44,
-                height: 44,
+                width: { xs: 36, sm: 44 },
+                height: { xs: 36, sm: 44 },
                 borderRadius: 1.5,
                 bgcolor: alpha('#3b82f6', 0.08),
                 display: 'flex',
@@ -338,20 +345,20 @@ const ClassLeadsFeedCard: React.FC = () => {
                 color: '#3b82f6',
               }}
             >
-              <CampaignIcon sx={{ fontSize: 24 }} />
+              <CampaignIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, letterSpacing: '-0.03em' }}>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2, letterSpacing: '-0.03em', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 Class Opportunities
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.02em' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, letterSpacing: '0.02em', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                 LIVE MARKETPLACE FEED
               </Typography>
             </Box>
           </Box>
 
           {totalPages > 1 && (
-            <Box display="flex" alignItems="center" gap={1.5}>
+            <Box display="flex" alignItems="center" justifyContent="space-between" width={{ xs: '100%', sm: 'auto' }} gap={1.5}>
               <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b' }}>
                 {currentPage} of {totalPages}
               </Typography>
@@ -360,18 +367,17 @@ const ClassLeadsFeedCard: React.FC = () => {
                   size="small" 
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0', width: 32, height: 32 }}
                 >
-                  <CloseIcon sx={{ fontSize: 16, transform: 'rotate(180deg)', visibility: 'hidden' }} />
-                  <Typography sx={{ position: 'absolute', fontWeight: 900 }}>←</Typography>
+                  <Typography sx={{ fontWeight: 900, fontSize: '1.1rem' }}>←</Typography>
                 </IconButton>
                 <IconButton 
                   size="small" 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}
+                  sx={{ bgcolor: '#f8fafc', border: '1px solid #e2e8f0', width: 32, height: 32 }}
                 >
-                  <Typography sx={{ position: 'absolute', fontWeight: 900 }}>→</Typography>
+                  <Typography sx={{ fontWeight: 900, fontSize: '1.1rem' }}>→</Typography>
                 </IconButton>
               </Stack>
             </Box>
@@ -413,7 +419,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                 key={id}
                 sx={{
                   borderRadius: 2,
-                  p: 2.5,
+                  p: { xs: 2.5, sm: 2.5 },
                   position: 'relative',
                   overflow: 'hidden',
                   bgcolor: isHighlighted ? alpha('#10b981', 0.02) : '#ffffff',
@@ -431,14 +437,15 @@ const ClassLeadsFeedCard: React.FC = () => {
                 {/* Match Indicator */}
                 <Box
                   sx={{
-                    position: 'absolute',
-                    top: 20,
-                    right: 20,
-                    display: 'flex',
+                    position: { xs: 'static', sm: 'absolute' },
+                    top: { sm: 20 },
+                    right: { sm: 20 },
+                    display: 'inline-flex',
                     alignItems: 'center',
                     gap: 1,
                     px: 1.5,
                     py: 0.5,
+                    mb: { xs: 2, sm: 0 },
                     borderRadius: 1,
                     bgcolor: alpha(matchColor, 0.08),
                     backdropFilter: 'blur(8px)',
@@ -452,7 +459,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                 </Box>
 
                 <Box mb={2.5}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 1.5, lineHeight: 1.3 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a', mb: 1.5, lineHeight: 1.3, fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
                     {subjects}
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
@@ -477,7 +484,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                     sx={{ 
                       display: 'grid', 
                       gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, 
-                      gap: 2.5, 
+                      gap: { xs: 2, sm: 2.5 }, 
                       mb: 2.5, 
                     p: 2.5, 
                       borderRadius: 1.5, 
@@ -517,7 +524,7 @@ const ClassLeadsFeedCard: React.FC = () => {
                   </Box>
                 </Box>
 
-                <Box display="flex" gap={1.5}>
+                <Box display="flex" gap={1.5} alignItems="center">
                   {interested ? (
                     <Button
                       fullWidth
@@ -544,7 +551,8 @@ const ClassLeadsFeedCard: React.FC = () => {
                         onClick={() => handleExpressInterest(id)}
                         disabled={!!actionLoading[id]}
                         sx={{
-                          borderRadius: 1.5,
+                          borderRadius: 2,
+                          height: { xs: 48, sm: 54 },
                           py: 1.25,
                           textTransform: 'none',
                           fontWeight: 800,
@@ -562,9 +570,9 @@ const ClassLeadsFeedCard: React.FC = () => {
                       <IconButton
                         onClick={() => handleIgnore(id)}
                         sx={{
-                          borderRadius: 1.5,
-                          width: 48,
-                          height: 48,
+                          borderRadius: 2,
+                          width: { xs: 48, sm: 54 },
+                          height: { xs: 48, sm: 54 },
                           bgcolor: alpha('#ef4444', 0.05),
                           color: '#ef4444',
                           border: '1px solid',
