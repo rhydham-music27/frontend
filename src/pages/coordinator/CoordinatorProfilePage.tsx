@@ -131,6 +131,8 @@ const CoordinatorProfilePage: React.FC = () => {
       const resp = await coordinatorService.deleteCoordinatorDocument(String(coordinatorId), index);
       setCoordinatorProfile(resp.data as unknown as ICoordinator);
       setSnackbar({ open: true, message: 'Document deleted', severity: 'success' });
+    } catch (e: any) {
+      setDocError(e?.response?.data?.message || e?.response?.data?.error || 'Failed to delete document');
     } finally {
       setDocUploading(false);
     }
