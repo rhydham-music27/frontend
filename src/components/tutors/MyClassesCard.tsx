@@ -18,6 +18,8 @@ import {
   DialogActions,
   Alert,
   MenuItem,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -72,6 +74,8 @@ interface AssignedClass {
 const MyClassesCard: React.FC = () => {
   const user = useSelector(selectCurrentUser);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [classes, setClasses] = useState<IFinalClass[]>([]);
   const [loading, setLoading] = useState(true);
@@ -841,9 +845,15 @@ const MyClassesCard: React.FC = () => {
           onClose={sheetLoading ? undefined : () => { setSheetOpen(false); setSheetError(null); setSheetTutorData(null); setSheetClassInfo(null); }}
           maxWidth="lg"
           fullWidth
+          PaperProps={{
+            sx: {
+              m: { xs: 1, sm: 2 },
+              width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+            }
+          }}
         >
           <DialogTitle>Attendance Sheet</DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ p: { xs: 0, sm: 3 } }}>
             {sheetError && <Alert severity={sheetTutorData ? 'info' : 'error'} sx={{ mb: 2 }}>{sheetError}</Alert>}
             {sheetLoading && (
               <Box py={6} display="flex" justifyContent="center">
@@ -864,10 +874,11 @@ const MyClassesCard: React.FC = () => {
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'space-between' }}>
             <Button
-              variant="outlined"
+              variant="contained"
               color="primary"
               onClick={() => attendanceSheetRef.current?.exportPdf()}
               disabled={sheetLoading || !sheetTutorData}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
             >
               Download PDF
             </Button>

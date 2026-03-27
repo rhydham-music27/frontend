@@ -29,12 +29,15 @@ import { IFinalClass } from '../../types';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/slices/authSlice';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 const ClassAttendanceSheetPage: React.FC = () => {
     const { classId } = useParams<{ classId: string }>();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const searchParams = useSearchParams()[0];
     const user = useSelector(selectCurrentUser);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [finalClass, setFinalClass] = useState<IFinalClass | null>(null);
     const [attendances, setAttendances] = useState<any[]>([]);
@@ -157,7 +160,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
     }
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 2 }, px: { xs: 1, sm: 1 } }}>
             <Box mb={4}>
                 <Breadcrumbs sx={{ mb: 2 }}>
                     <Link component="button" variant="body2" onClick={() => navigate('/tutor-classes')} underline="hover" color="inherit">
@@ -175,14 +178,14 @@ const ClassAttendanceSheetPage: React.FC = () => {
                             Viewing attendance for <strong>{finalClass.studentName}</strong> ({finalClass.className || 'No class name'})
                         </Typography>
                     </Box>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }} width={{ xs: '100%', sm: 'auto' }}>
                         <TextField
                             type="month"
                             size="small"
                             label="Filter Month"
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
-                            sx={{ width: 160 }}
+                            sx={{ width: { xs: '100%', sm: 160 } }}
                         />
                         <TextField
                             select
@@ -190,7 +193,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
                             label="Sessions/Page"
                             value={rowsPerPage}
                             onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                            sx={{ width: 140 }}
+                            sx={{ width: { xs: '100%', sm: 140 } }}
                         >
                             <MenuItem value={10}>10 Sessions</MenuItem>
                             <MenuItem value={20}>20 Sessions</MenuItem>
@@ -201,13 +204,14 @@ const ClassAttendanceSheetPage: React.FC = () => {
                             label="Sheet No."
                             value={sheetNo}
                             onChange={(e) => setSheetNo(Number(e.target.value))}
-                            sx={{ width: 100 }}
+                            sx={{ width: { xs: '100%', sm: 100 } }}
                         />
                         <Button
                             variant="contained"
                             startIcon={<DownloadIcon />}
                             onClick={handleDownloadPdf}
                             disabled={mappedRecords.length === 0}
+                            fullWidth={isMobile}
                         >
                             Download PDF
                         </Button>
@@ -215,6 +219,7 @@ const ClassAttendanceSheetPage: React.FC = () => {
                             variant="outlined"
                             startIcon={<ArrowBackIcon />}
                             onClick={() => navigate(-1)}
+                            fullWidth={isMobile}
                         >
                             Back
                         </Button>

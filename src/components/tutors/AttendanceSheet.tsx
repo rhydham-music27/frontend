@@ -130,6 +130,22 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
               minHeight: '297mm',
               position: 'relative',
               boxSizing: 'border-box',
+              // Dynamic scaling for mobile to match width perfectly
+              '@media screen and (max-width: 800px)': {
+                width: '210mm',
+                zoom: 'calc(1.05 * 100vw / 794px)', // Over-scale slightly to fill modal space
+                transformOrigin: 'top center',
+                margin: '0',
+                left: '50%',
+                transform: 'translateX(-50%)'
+              },
+              // Firefox fallback
+              '@supports not (zoom: 1)': {
+                '@media screen and (max-width: 800px)': {
+                  transform: 'translateX(-50%) scale(calc(1.05 * 100vw / 794px))',
+                  transformOrigin: 'top left',
+                }
+              },
               '*': {
                 letterSpacing: '0.01em !important',
                 lineHeight: '1.3 !important',
@@ -137,7 +153,9 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
               },
               '@media print': {
                 border: 'none',
-                p: 0
+                p: 0,
+                zoom: '1 !important',
+                transform: 'none !important',
               }
             }}
           >
@@ -311,7 +329,7 @@ const AttendanceSheet = forwardRef(function AttendanceSheet(
             )}
 
             {/* Table */}
-            <Box component={Paper} variant="outlined" sx={{ overflow: 'hidden', borderRadius: 1, mt: 1 }}>
+            <Box component={Paper} variant="outlined" sx={{ overflowX: 'auto', borderRadius: 1, mt: 1 }}>
               <Table size="small" sx={{ '& th': { bgcolor: 'grey.50', fontWeight: 700, borderBottom: '2px solid', borderColor: 'grey.300' }, '& td, & th': { fontSize: '0.85rem', py: 1, borderRight: '1px solid', borderColor: 'grey.200' }, '& td:last-child, & th:last-child': { borderRight: 'none' } }}>
                 <TableHead>
                   <TableRow>

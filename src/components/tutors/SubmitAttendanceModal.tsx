@@ -12,6 +12,8 @@ import {
   CircularProgress,
   IconButton,
   MenuItem,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
@@ -30,6 +32,8 @@ interface SubmitAttendanceModalProps {
 const todayStr = () => new Date().toISOString().split('T')[0];
 
 const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onClose, finalClass, onSuccess }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [sessionDate, setSessionDate] = useState<string>(todayStr());
   const [topicCovered, setTopicCovered] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
@@ -230,8 +234,8 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
             </Alert>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button variant="outlined" onClick={handleClose} disabled={loading}>
+        <DialogActions sx={{ flexDirection: isMobile ? 'column' : 'row', gap: 1 }}>
+          <Button variant="outlined" onClick={handleClose} disabled={loading} fullWidth={isMobile}>
             Cancel
           </Button>
           <Button
@@ -239,6 +243,8 @@ const SubmitAttendanceModal: React.FC<SubmitAttendanceModalProps> = ({ open, onC
             onClick={handleSubmit}
             disabled={loading || checking || !sessionDate || !isTodayClassDay || alreadyMarked}
             startIcon={loading ? <CircularProgress size={18} /> : <CheckCircleIcon />}
+            fullWidth={isMobile}
+            sx={{ ml: isMobile ? '0 !important' : undefined }}
           >
             {loading ? 'Submitting...' : checking ? 'Checking...' : alreadyMarked ? 'Already Marked' : 'Submit Attendance'}
           </Button>
