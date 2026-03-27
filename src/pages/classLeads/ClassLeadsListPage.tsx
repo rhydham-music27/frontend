@@ -293,59 +293,62 @@ export default function ClassLeadsListPage() {
               onChange={(e) => handleFilterChange('search', e.target.value)}
             />
           </Card>
-          {loading ? <LoadingSpinner /> : formattedLeads.map((lead) => (
-            <Card key={lead.id} variant="outlined">
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" mb={1}>
-                  <Typography
-                    variant="h6"
-                    fontWeight={600}
-                    sx={{
-                      cursor: 'pointer',
-                      color: 'text.primary',
-                      transition: 'color 0.2s',
-                      '&:hover': { color: 'primary.main', textDecoration: 'underline' }
-                    }}
-                    onClick={() => handleStudentNameClick(lead)}
-                  >
-                    {lead.studentName}
-                  </Typography>
-                  <ClassLeadStatusChip status={lead.status} />
-                </Box>
-                <Typography variant="body2" color="text.secondary">Grade: {lead.grade}</Typography>
-                <Typography variant="body2" color="text.secondary">Mode: {lead.mode} | Board: {lead.board}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Address: {lead.mode === 'OFFLINE' ? `${lead.address || ''} ${lead.area ? `, ${lead.area}` : ''} ${lead.city ? `, ${lead.city}` : ''}`.trim() : 'Zoom'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">Timing: {lead.timing}</Typography>
-                <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                  {lead.displaySubjects.map((s: any, idx: number) => {
-                    const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
-                    return <Chip key={`${lead.id}-subj-${idx}`} label={label} size="small" />;
-                  })}
-                </Box>
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="caption">By: {(lead.createdBy as any)?.name || '-'}</Typography>
-                  <Box>
-                    {(lead.status === 'CONVERTED' || (lead as any).status === 'WON') && !(lead as any).paymentReceived && (
-                      <Tooltip title="Mark Payment Received">
-                        <IconButton
-                          size="small"
-                          color="success"
-                          onClick={() => handleMarkPaymentReceived(lead.id)}
-                        >
-                          <CheckCircleOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    <IconButton onClick={() => navigate(`/class-leads/${lead.id}`)}><VisibilityIcon /></IconButton>
-                    <IconButton onClick={() => navigate(`/class-leads/${lead.id}/edit`)}><EditIcon /></IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(lead.id)}><DeleteIcon /></IconButton>
+          {loading ? <LoadingSpinner /> : formattedLeads.map((lead) => {
+            const leadId = (lead as any)._id || lead.id;
+            return (
+              <Card key={leadId} variant="outlined">
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      sx={{
+                        cursor: 'pointer',
+                        color: 'text.primary',
+                        transition: 'color 0.2s',
+                        '&:hover': { color: 'primary.main', textDecoration: 'underline' }
+                      }}
+                      onClick={() => handleStudentNameClick(lead)}
+                    >
+                      {lead.studentName}
+                    </Typography>
+                    <ClassLeadStatusChip status={lead.status} />
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                  <Typography variant="body2" color="text.secondary">Grade: {lead.grade}</Typography>
+                  <Typography variant="body2" color="text.secondary">Mode: {lead.mode} | Board: {lead.board}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Address: {lead.mode === 'OFFLINE' ? `${lead.address || ''} ${lead.area ? `, ${lead.area}` : ''} ${lead.city ? `, ${lead.city}` : ''}`.trim() : 'Zoom'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">Timing: {lead.timing}</Typography>
+                  <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {lead.displaySubjects.map((s: any, idx: number) => {
+                      const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
+                      return <Chip key={`${leadId}-subj-${idx}`} label={label} size="small" />;
+                    })}
+                  </Box>
+                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption">By: {(lead.createdBy as any)?.name || '-'}</Typography>
+                    <Box>
+                      {(lead.status === 'CONVERTED' || (lead as any).status === 'WON') && !(lead as any).paymentReceived && (
+                        <Tooltip title="Mark Payment Received">
+                          <IconButton
+                            size="small"
+                            color="success"
+                            onClick={() => handleMarkPaymentReceived(leadId)}
+                          >
+                            <CheckCircleOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <IconButton onClick={() => navigate(`/class-leads/${leadId}`)}><VisibilityIcon /></IconButton>
+                      <IconButton onClick={() => navigate(`/class-leads/${leadId}/edit`)}><EditIcon /></IconButton>
+                      <IconButton color="error" onClick={() => handleDelete(leadId)}><DeleteIcon /></IconButton>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            );
+          })}
         </Stack>
       ) : (
         <TableContainer
@@ -527,105 +530,108 @@ export default function ClassLeadsListPage() {
               ) : formattedLeads.length === 0 ? (
                 <TableRow><TableCell colSpan={11} align="center" sx={{ py: 3 }}><Typography color="text.secondary">No leads found</Typography></TableCell></TableRow>
               ) : (
-                formattedLeads.map((lead) => (
-                  <TableRow key={lead.id} hover>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        fontWeight={600}
-                        sx={{
-                          cursor: 'pointer',
-                          color: 'text.primary',
-                          transition: 'color 0.2s',
-                          '&:hover': { color: 'primary.main', textDecoration: 'underline' }
-                        }}
-                        onClick={() => handleStudentNameClick(lead)}
-                      >
-                        {lead.studentName}
-                      </Typography>
-                      {lead.studentType === 'GROUP' && <Chip label="Group" size="small" variant="outlined" sx={{ height: 16, fontSize: '0.65rem' }} />}
-                    </TableCell>
-                    <TableCell>{lead.grade}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {lead.displaySubjects.map((s: any, idx: number) => {
-                          const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
-                          return <Chip key={`${lead.id}-subj-desk-${idx}`} label={label} size="small" variant="outlined" />;
-                        })}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{lead.board}</TableCell>
-                    <TableCell><Chip label={lead.mode} size="small" color={lead.mode === 'ONLINE' ? 'primary' : 'secondary'} variant="outlined" /></TableCell>
-                    <TableCell>
-                      {lead.mode === 'OFFLINE' ? (
+                formattedLeads.map((lead) => {
+                  const leadId = (lead as any)._id || lead.id;
+                  return (
+                    <TableRow key={leadId} hover>
+                      <TableCell>
                         <Typography
                           variant="body2"
-                          color="primary"
-                          sx={{ fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
-                          onClick={() => handleAddressClick(lead)}
+                          fontWeight={600}
+                          sx={{
+                            cursor: 'pointer',
+                            color: 'text.primary',
+                            transition: 'color 0.2s',
+                            '&:hover': { color: 'primary.main', textDecoration: 'underline' }
+                          }}
+                          onClick={() => handleStudentNameClick(lead)}
                         >
-                          {lead.area || 'View Address'}
+                          {lead.studentName}
                         </Typography>
-                      ) : (
-                        <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>Zoom</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell><Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{lead.timing}</Typography></TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <ClassLeadStatusChip status={lead.status} />
-                        {!!(lead as any).paymentReceived ? (
-                          <Tooltip title="Payment Received">
-                            <CheckCircleIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
-                          </Tooltip>
-                        ) : (
-                          (lead.status === 'CONVERTED' || (lead as any).status === 'WON') && (
-                            <Tooltip title="Mark Payment Received">
-                              <IconButton
-                                size="small"
-                                color="success"
-                                onClick={() => handleMarkPaymentReceived(lead.id)}
-                              >
-                                <CheckCircleOutlineIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        )}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      {(lead as any).leadSource ? (
-                        <Chip
-                          label={(lead as any).leadSource.replace(/_/g, ' ')}
-                          size="small"
-                          variant="outlined"
-                          color={
-                            (lead as any).leadSource === 'SITE' ? 'info' :
-                              (lead as any).leadSource === 'WHATSAPP' ? 'success' :
-                                (lead as any).leadSource === 'REFERRED' ? 'secondary' :
-                                  (lead as any).leadSource === 'GOOGLE_PROFILE' ? 'primary' :
-                                    'default'
-                          }
-                          sx={{ fontSize: '0.7rem', textTransform: 'capitalize' }}
-                        />
-                      ) : <Typography variant="caption" color="text.disabled">—</Typography>}
-                    </TableCell>
-                    {isAdmin && (
-                      <TableCell>
-                        <Typography variant="caption" display="block">{(lead.createdBy as any)?.name || '-'}</Typography>
-                        <Typography variant="caption" color="text.secondary">{(lead.createdBy as any)?.role || ''}</Typography>
+                        {lead.studentType === 'GROUP' && <Chip label="Group" size="small" variant="outlined" sx={{ height: 16, fontSize: '0.65rem' }} />}
                       </TableCell>
-                    )}
-                    <TableCell>{new Date(lead.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell align="right">
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                        <Tooltip title="View"><IconButton size="small" onClick={() => navigate(`/class-leads/${lead.id}`)}><VisibilityIcon fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Edit"><IconButton size="small" onClick={() => navigate(`/class-leads/${lead.id}/edit`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => handleDelete(lead.id)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      <TableCell>{lead.grade}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {lead.displaySubjects.map((s: any, idx: number) => {
+                            const label = typeof s === 'string' ? s : s?.label || s?.name || 'N/A';
+                            return <Chip key={`${leadId}-subj-desk-${idx}`} label={label} size="small" variant="outlined" />;
+                          })}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{lead.board}</TableCell>
+                      <TableCell><Chip label={lead.mode} size="small" color={lead.mode === 'ONLINE' ? 'primary' : 'secondary'} variant="outlined" /></TableCell>
+                      <TableCell>
+                        {lead.mode === 'OFFLINE' ? (
+                          <Typography
+                            variant="body2"
+                            color="primary"
+                            sx={{ fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                            onClick={() => handleAddressClick(lead)}
+                          >
+                            {lead.area || 'View Address'}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>Zoom</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell><Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{lead.timing}</Typography></TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <ClassLeadStatusChip status={lead.status} />
+                          {!!(lead as any).paymentReceived ? (
+                            <Tooltip title="Payment Received">
+                              <CheckCircleIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
+                            </Tooltip>
+                          ) : (
+                            (lead.status === 'CONVERTED' || (lead as any).status === 'WON') && (
+                              <Tooltip title="Mark Payment Received">
+                                <IconButton
+                                  size="small"
+                                  color="success"
+                                  onClick={() => handleMarkPaymentReceived(leadId)}
+                                >
+                                  <CheckCircleOutlineIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        {(lead as any).leadSource ? (
+                          <Chip
+                            label={(lead as any).leadSource.replace(/_/g, ' ')}
+                            size="small"
+                            variant="outlined"
+                            color={
+                              (lead as any).leadSource === 'SITE' ? 'info' :
+                                (lead as any).leadSource === 'WHATSAPP' ? 'success' :
+                                  (lead as any).leadSource === 'REFERRED' ? 'secondary' :
+                                    (lead as any).leadSource === 'GOOGLE_PROFILE' ? 'primary' :
+                                      'default'
+                            }
+                            sx={{ fontSize: '0.7rem', textTransform: 'capitalize' }}
+                          />
+                        ) : <Typography variant="caption" color="text.disabled">—</Typography>}
+                      </TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          <Typography variant="caption" display="block">{(lead.createdBy as any)?.name || '-'}</Typography>
+                          <Typography variant="caption" color="text.secondary">{(lead.createdBy as any)?.role || ''}</Typography>
+                        </TableCell>
+                      )}
+                      <TableCell>{new Date(lead.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell align="right">
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                          <Tooltip title="View"><IconButton size="small" onClick={() => navigate(`/class-leads/${leadId}`)}><VisibilityIcon fontSize="small" /></IconButton></Tooltip>
+                          <Tooltip title="Edit"><IconButton size="small" onClick={() => navigate(`/class-leads/${leadId}/edit`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                          <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => handleDelete(leadId)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
