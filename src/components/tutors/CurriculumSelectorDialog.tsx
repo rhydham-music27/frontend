@@ -20,6 +20,7 @@ import {
   CircularProgress,
   Grid,
   Divider,
+  useMediaQuery,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -46,6 +47,7 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
   onSave,
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeBoardTab, setActiveBoardTab] = useState(0);
@@ -136,12 +138,13 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
       open={open}
       onClose={onClose}
       fullWidth
+      fullScreen={isMobile}
       maxWidth="md"
       PaperProps={{
         sx: {
-          borderRadius: 2,
-          height: '80vh',
-          maxHeight: 800,
+          borderRadius: isMobile ? 0 : 2,
+          height: isMobile ? '100%' : '80vh',
+          maxHeight: isMobile ? 'none' : 800,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -206,24 +209,41 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
             <Typography variant="body2" color="text.secondary">No options matching your search.</Typography>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flex: 1, width: '100%', overflow: 'hidden' }}>
-            {/* Left Rail: Boards */}
-            <Box sx={{ width: 200, borderRight: 1, borderColor: 'divider', bgcolor: alpha(theme.palette.divider, 0.02), display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'flex', flex: 1, width: '100%', overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row' }}>
+            {/* Left Rail / Top Bar: Boards */}
+            <Box sx={{ 
+              width: isMobile ? '100%' : 200, 
+              borderRight: isMobile ? 0 : 1, 
+              borderBottom: isMobile ? 1 : 0,
+              borderColor: 'divider', 
+              bgcolor: alpha(theme.palette.divider, 0.02), 
+              display: 'flex', 
+              flexDirection: isMobile ? 'row' : 'column' 
+            }}>
               <Tabs
-                orientation="vertical"
+                orientation={isMobile ? "horizontal" : "vertical"}
+                variant={isMobile ? "scrollable" : "standard"}
+                scrollButtons={isMobile ? "auto" : false}
                 value={activeBoardTab}
                 onChange={(_, v) => setActiveBoardTab(v)}
                 sx={{
-                  '& .MuiTabs-indicator': { left: 0, width: 4, borderRadius: '0 4px 4px 0' },
+                  '& .MuiTabs-indicator': { 
+                    left: isMobile ? 'auto' : 0, 
+                    bottom: isMobile ? 0 : 'auto',
+                    width: isMobile ? 'auto' : 4, 
+                    height: isMobile ? 4 : 'auto',
+                    borderRadius: isMobile ? '4px 4px 0 0' : '0 4px 4px 0' 
+                  },
                   '& .MuiTab-root': {
-                    alignItems: 'flex-start',
-                    textAlign: 'left',
+                    alignItems: isMobile ? 'center' : 'flex-start',
+                    textAlign: isMobile ? 'center' : 'left',
                     textTransform: 'none',
                     fontWeight: 700,
                     fontSize: '0.85rem',
-                    py: 2,
+                    py: isMobile ? 1.5 : 2,
                     px: 3,
                     minHeight: 0,
+                    minWidth: isMobile ? 'auto' : 200,
                     color: 'text.secondary',
                     '&.Mui-selected': { color: 'primary.main', bgcolor: alpha(theme.palette.primary.main, 0.05) }
                   }
@@ -251,10 +271,10 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
             </Box>
 
             {/* Right Pane: Grades & Subjects */}
-            <Box sx={{ flex: 1, p: 3, overflowY: 'auto', bgcolor: 'white' }}>
+            <Box sx={{ flex: 1, p: isMobile ? 2 : 3, overflowY: 'auto', bgcolor: 'white' }}>
               {currentBoard && (
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={800} color="primary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <Typography variant="subtitle1" fontWeight={800} color="primary" gutterBottom sx={{ display: isMobile ? 'none' : 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                     <SchoolIcon fontSize="small" /> {currentBoard.label}
                   </Typography>
                   
@@ -321,22 +341,32 @@ export const CurriculumSelectorDialog: React.FC<CurriculumSelectorDialogProps> =
 
       <Divider />
       
-      <DialogActions sx={{ p: 2, px: 3, bgcolor: alpha(theme.palette.divider, 0.02) }}>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            {selectedIds.length} subjects will be added to your profile across {tree.filter(b => b.children?.some(g => getSelectedCountInGrade(g) > 0)).length} boards.
-          </Typography>
+      <DialogActions sx={{ 
+        p: 2, 
+        px: isMobile ? 2 : 3, 
+        bgcolor: alpha(theme.palette.divider, 0.02),
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? 1.5 : 0
+      }}>
+        {!isMobile && (
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+              {selectedIds.length} subjects will be added to your profile across {tree.filter(b => b.children?.some(g => getSelectedCountInGrade(g) > 0)).length} boards.
+            </Typography>
+          </Box>
+        )}
+        <Box sx={{ display: 'flex', gap: 1, width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'space-between' : 'flex-end' }}>
+          <Button onClick={onClose} variant={isMobile ? "outlined" : "text"} sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', px: 3, flex: isMobile ? 1 : 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => onSave(selectedIds)}
+            variant="contained"
+            sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', px: 4, boxShadow: 'none', flex: isMobile ? 2 : 'none' }}
+          >
+            Save
+          </Button>
         </Box>
-        <Button onClick={onClose} sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', px: 3 }}>
-          Cancel
-        </Button>
-        <Button
-          onClick={() => onSave(selectedIds)}
-          variant="contained"
-          sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', px: 4, boxShadow: 'none' }}
-        >
-          Save Selections
-        </Button>
       </DialogActions>
     </Dialog>
   );

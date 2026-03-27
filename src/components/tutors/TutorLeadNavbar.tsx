@@ -29,7 +29,7 @@ export const TutorLeadNavbar = () => {
                 height: 48,
                 bgcolor: 'white',
                 boxShadow: trigger ? '0 4px 12px rgba(0,0,0,0.15)' : '0 8px 16px rgba(0,0,0,0.2)',
-                p: 0.5,
+                p: 0.2,
                 transition: 'all 0.3s'
               }}
             >
