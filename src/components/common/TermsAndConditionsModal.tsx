@@ -10,6 +10,8 @@ import {
   Checkbox,
   Box,
   Link,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 
 interface TermsAndConditionsModalProps {
@@ -19,6 +21,8 @@ interface TermsAndConditionsModalProps {
 }
 
 const TermsAndConditionsModal: React.FC<TermsAndConditionsModalProps> = ({ open, onAccept, loading }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [checked, setChecked] = useState(false);
 
   const termsText = `1. Nature of Platform
@@ -162,17 +166,25 @@ These Terms constitute an electronic record and do not require physical or digit
       open={open}
       maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
       scroll="paper"
       disableEscapeKeyDown
-      PaperProps={{
-        sx: { borderRadius: 2 }
+       PaperProps={{
+        sx: { borderRadius: isMobile ? 0 : 2 }
       }}
     >
-      <DialogTitle sx={{ bgcolor: 'primary.main', color: 'white', py: 2.5, fontWeight: 700 }}>
+      <DialogTitle sx={{ 
+        bgcolor: 'primary.main', 
+        color: 'white', 
+        py: isMobile ? 2 : 2.5, 
+        px: isMobile ? 2 : 3,
+        fontWeight: 700,
+        fontSize: isMobile ? '1.1rem' : '1.25rem'
+      }}>
         Terms and Conditions
       </DialogTitle>
-      <DialogContent dividers sx={{ py: 3 }}>
-        <Typography variant="body1" component="div" sx={{ lineHeight: 1.8 }}>
+      <DialogContent dividers sx={{ py: isMobile ? 2 : 3, px: isMobile ? 2 : 3 }}>
+        <Typography variant="body1" component="div" sx={{ lineHeight: 1.6, fontSize: isMobile ? '0.875rem' : '1rem' }}>
           <Typography variant="body1" component="p" sx={{ mb: 2 }}>
             These Terms &amp; Conditions ("Terms") govern access to and use of the website, mobile applications,
             and related services (collectively, the "Platform") operated by Kamaljeet Singh Dangi, Sole
@@ -211,21 +223,24 @@ These Terms constitute an electronic record and do not require physical or digit
           </Typography>
         </Typography>
 
-        <Box sx={{ mt: 2, whiteSpace: 'pre-wrap', fontSize: '0.95rem', lineHeight: 1.8 }}>
+        <Box sx={{ mt: 2, whiteSpace: 'pre-wrap', fontSize: isMobile ? '0.85rem' : '0.95rem', lineHeight: 1.6 }}>
           {termsText}
         </Box>
       </DialogContent>
-      <DialogActions sx={{ p: 4, flexDirection: 'column', alignItems: 'stretch', gap: 2 }}>
+      <DialogActions sx={{ 
+        p: isMobile ? 2 : 4, 
+        flexDirection: 'column', 
+        alignItems: 'stretch', 
+        gap: isMobile ? 1.5 : 2 
+      }}>
         <FormControlLabel
-          control={<Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} color="primary" />}
+          control={<Checkbox size={isMobile ? "small" : "medium"} checked={checked} onChange={(e) => setChecked(e.target.checked)} color="primary" />}
           label={
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
               I have read and agree to the Terms & Conditions, Privacy Policy, Parent Service Policy, Tutor Agreement, and Refund & Cancellation Policy of Your Shikshak.
-
-              By continuing, you acknowledge that you have read and accepted the policies governing the use of Your Shikshak services.
             </Typography>
           }
-          sx={{ ml: 0 }}
+          sx={{ ml: 0, alignItems: 'flex-start' }}
         />
         <Button
           variant="contained"
@@ -236,8 +251,8 @@ These Terms constitute an electronic record and do not require physical or digit
           size="large"
           sx={{
             borderRadius: 2,
-            height: 54,
-            fontSize: '1rem',
+            height: isMobile ? 48 : 54,
+            fontSize: isMobile ? '0.9375rem' : '1rem',
             fontWeight: 700,
             textTransform: 'none',
             boxShadow: '0 4px 14px 0 rgba(0,118,255,0.39)'
